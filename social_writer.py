@@ -14,18 +14,14 @@ def social_writer(
     if completion_params is None:
         completion_params = {}
 
-    system_message = Prompts.INITIAL_GENERATION
-    prompt = f"""{system_message}
-
-Initial information:
+    prompt = f"""Initial information:
 {initial_info}
 
-Write a social media post based on the information provided.  Keep it concise and engaging.
-"""
+Write a social media post based on the information provided. Keep it concise and engaging."""
 
     response = client.messages.create(
         model="claude-3-opus-20240229",
-        system=system_message,
+        system=Prompts.INITIAL_GENERATION,
         messages=[
             {
                 "role": "user",
@@ -37,7 +33,6 @@ Write a social media post based on the information provided.  Keep it concise an
 
     first_draft = response.content[0].text
 
-    system_message = Prompts.CONTENT_REFINEMENT
     prompt = f"""Initial content:
 {first_draft}
 
@@ -45,7 +40,7 @@ Refine and polish this content to maximize engagement. Consider optimizing for l
 
     response = client.messages.create(
         model="claude-3-opus-20240229",
-        system=system_message,
+        system=Prompts.CONTENT_REFINEMENT,
         messages=[
             {
                 "role": "user",
