@@ -23,34 +23,39 @@ Initial information:
 Write a social media post based on the information provided.  Keep it concise and engaging.
 """
 
-    response = client.completion(
-        model="claude-2",
-        prompt=prompt,
-        max_tokens_to_sample=200,
-        stop_sequences=["\n\n"],
-        **completion_params
+    response = client.messages.create(
+        model="claude-3-opus-20240229",
+        system=system_message,
+        messages=[
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ],
+        max_tokens=200
     )
 
-    first_draft = response.completion
+    first_draft = response.content[0].text
 
     system_message = Prompts.CONTENT_REFINEMENT
-    prompt = f"""{system_message}
-
-Initial content:
+    prompt = f"""Initial content:
 {first_draft}
 
-Refine and polish this content to maximize engagement. Consider optimizing for length, tone, and keywords.  Suggest relevant hashtags.
-"""
+Refine and polish this content to maximize engagement. Consider optimizing for length, tone, and keywords."""
 
-    response = client.completion(
-        model="claude-2",
-        prompt=prompt,
-        max_tokens_to_sample=200,
-        stop_sequences=["\n\n"],
-        **completion_params
+    response = client.messages.create(
+        model="claude-3-opus-20240229",
+        system=system_message,
+        messages=[
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ],
+        max_tokens=200
     )
 
-    optimized_content = response.completion
+    optimized_content = response.content[0].text
 
 
     return {
