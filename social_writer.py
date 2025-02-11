@@ -1,6 +1,8 @@
 import anthropic
 from typing import Dict
 import os
+import uuid
+import requests
 from prompts import Prompts
 
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
@@ -68,4 +70,49 @@ Refine and polish this content to maximize engagement. Consider optimizing for l
     return {
         "first_draft": first_draft,
         "optimized_content": optimized_content,
+        "content_chunks": content_chunks,
+        "template": template,
+        "client_brief": client_brief
     }
+
+def generated_content_uploader(content_data: Dict) -> Dict:
+    """
+    Upload generated content to Airtable
+    """
+    AIRTABLE_API_KEY = os.environ.get("AIRTABLE_API_KEY")
+    AIRTABLE_BASE_ID = "appLz2zuN6ZFu4mYS"
+    AIRTABLE_TABLE_NAME = "Generated Content"
+
+    content = content_data.get("first_draft", "")
+    content_chunks = content_data.get("content_chunks", "")
+    template = content_data.get("template", "")
+
+    headers = {
+        "Authorization": f"Bearer {AIRTABLE_API_KEY}",
+        "Content-Type": "application/json"
+    }
+
+    payload = {
+        "records": [{
+            "fields": {
+                "Content_ID": str(uuid.uuid4()),
+                "First Draft": content,
+                "Tag": "Legacy Generation Flow with Claude",
+                "Content Format": "Short Form Social",
+                "Status": "Draft",
+                "Source Chunk": content_chunks,
+                "Template": template,
+                "Counter": 1,
+                "Content Author": "AI Generated"
+            }
+        }]
+    }
+
+    url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE_NAME}"
+    
+    try:
+        response = requests.post(url, headers=headers, json=payload)
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        raise Exception(f"Failed to upload to Airtable: {str(e)}")
