@@ -1,6 +1,8 @@
-from typing import Union
 
-from fastapi import FastAPI
+from typing import Dict
+from fastapi import FastAPI, HTTPException
+from social_writer import social_writer
+import os
 
 app = FastAPI()
 
@@ -8,7 +10,13 @@ app = FastAPI()
 def read_root():
     return {"Hello": "World"}
 
-
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: Union[str, None] = None):
-    return {"item_id": item_id, "q": q}
+@app.post("/generate-social")
+async def generate_social_content(request_data: Dict):
+    if not os.getenv("ANTHROPIC_API_KEY"):
+        raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY not configured")
+    
+    try:
+        result = social_writer(request_data)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
