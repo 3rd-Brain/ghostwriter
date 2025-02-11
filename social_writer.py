@@ -38,7 +38,7 @@ Write a social media post based on the information provided. Keep it concise and
                 "content": prompt
             }
         ],
-        max_tokens=200
+        max_tokens=2048
     )
 
     first_draft = response.content[0].text
@@ -59,7 +59,7 @@ Refine and polish this content to maximize engagement. Consider optimizing for l
                 "content": prompt
             }
         ],
-        max_tokens=200
+        max_tokens=2048
     )
 
     optimized_content = response.content[0].text
