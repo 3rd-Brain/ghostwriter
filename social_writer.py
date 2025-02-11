@@ -14,8 +14,18 @@ def social_writer(
     if completion_params is None:
         completion_params = {}
 
-    prompt = f"""Initial information:
-{initial_info}
+    client_brief = initial_info.get('client_brief', '')
+    template = initial_info.get('template', '')
+    content_chunks = initial_info.get('content_chunks', '')
+
+    prompt = f"""<client_brief>
+{client_brief}
+
+<template>
+{template}
+
+<content_chunks>
+{content_chunks}
 
 Write a social media post based on the information provided. Keep it concise and engaging."""
 
@@ -36,7 +46,9 @@ Write a social media post based on the information provided. Keep it concise and
     prompt = f"""Initial content:
 {first_draft}
 
-Refine and polish this content to maximize engagement. Consider optimizing for length, tone, and keywords."""
+Refine and polish this content to maximize engagement. Consider optimizing for length, tone, and keywords. Client brief is provided below. Follow the user's brand voice:
+
+{client_brief}"""
 
     response = client.messages.create(
         model="claude-3-opus-20240229",
