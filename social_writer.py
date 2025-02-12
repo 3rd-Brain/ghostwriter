@@ -243,12 +243,12 @@ def top_content_sentiment_setup(query: str) -> Dict:
 
     # Generate filter using first system prompt
     filter_response = openai_client.chat.completions.create(
-        model="gpt-4",
+        model="gpt-4-0125-preview",
         messages=[
             {"role": "system", "content": Prompts.FILTER_GENERATION},
             {"role": "user", "content": augmented_query}
         ],
-        response_format={ "type": "json_object" }
+        response_format={"type": "json_object"}
     )
     
     try:
@@ -260,7 +260,7 @@ def top_content_sentiment_setup(query: str) -> Dict:
 
     # Generate metric sort using second system prompt
     metric_response = openai_client.chat.completions.create(
-        model="gpt-4",
+        model="gpt-4-0125-preview",
         messages=[
             {"role": "system", "content": Prompts.METRIC_SELECTION},
             {"role": "user", "content": query}
