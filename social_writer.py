@@ -247,10 +247,16 @@ def top_content_sentiment_setup(query: str) -> Dict:
         messages=[
             {"role": "system", "content": Prompts.FILTER_GENERATION},
             {"role": "user", "content": augmented_query}
-        ]
+        ],
+        response_format={ "type": "json_object" }
     )
     
-    metadata_filter = json.loads(filter_response.choices[0].message.content)
+    try:
+        filter_content = filter_response.choices[0].message.content.strip()
+        metadata_filter = json.loads(filter_content)
+    except json.JSONDecodeError as e:
+        print(f"Failed to parse filter response: {filter_content}")
+        raise Exception(f"Invalid JSON in filter response: {str(e)}")
 
     # Generate metric sort using second system prompt
     metric_response = openai_client.chat.completions.create(
