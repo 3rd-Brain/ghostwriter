@@ -136,9 +136,11 @@ def get_client_brand_voice(username: str) -> Dict:
         if not data.get("records"):
             raise Exception(f"No brand voice found for username: {username}")
 
-        # Extract the first record's fields
-        record = data["records"][0]["fields"]
-        return record
+        # Extract specifically the Brand Voice field
+        brand_voice = data["records"][0]["fields"].get("Brand Voice")
+        if not brand_voice:
+            raise Exception(f"No brand voice found for username: {username}")
+        return {"brand_voice": brand_voice}
 
     except requests.exceptions.RequestException as e:
         raise Exception(
