@@ -167,6 +167,9 @@ def vector_search_for_published_content(metadata_filter: Dict, text_to_vectorize
         model="text-embedding-3-small"
     )
     vector = response.data[0].embedding
+    print(f"Generated embedding for text: '{text_to_vectorize}'")
+    print(f"Embedding vector (first 5 dimensions): {vector[:5]}...")
+    print(f"Embedding dimension: {len(vector)}")
 
     # Prepare search request
     url = "https://d468cd02-85c9-4ee8-9bd3-3dc123ddf2ac-us-east-2.apps.astra.datastax.com/api/json/v1/default_keyspace/published_content"
