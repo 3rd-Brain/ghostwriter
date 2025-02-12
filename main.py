@@ -1,6 +1,6 @@
 from typing import Dict
 from fastapi import FastAPI, HTTPException
-from social_writer import social_writer, generated_content_uploader, get_client_brand_voice, vector_search_for_published_content # Added import for vector_search_for_published_content
+from social_writer import social_writer, generated_content_uploader, get_client_brand_voice, vector_search_for_published_content, metric_sorter, top_content_sentiment_setup
 import os
 
 app = FastAPI()
@@ -59,12 +59,27 @@ async def vector_search(request_data: Dict):
             raise HTTPException(status_code=400, detail="text_to_vectorize is required")
 
         result = vector_search_for_published_content(metadata_filter, text_to_vectorize)
-        
+
         # If sort_metric is provided, sort the results
         sort_metric = request_data.get("sort_metric")
         if sort_metric:
             result = metric_sorter(result, sort_metric)
-            
+
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/sentiment-setup")
+async def setup_sentiment(request_data: Dict):
+    if not os.getenv("OPENAI_API_KEY"):
+        raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
+
+    try:
+        query = request_data.get("query")
+        if not query:
+            raise HTTPException(status_code=400, detail="query is required")
+
+        result = top_content_sentiment_setup(query)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
