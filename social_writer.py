@@ -350,14 +350,6 @@ def source_content_retriever(topic_query: str) -> str:
     try:
         response = requests.post(url, headers=headers, json=payload)
         response.raise_for_status()
-        results = response.json()
-
-        # Concatenate content from results
-        content_chunks = []
-        for doc in results.get("data", {}).get("documents", []):
-            if "content" in doc:
-                content_chunks.append(doc["content"])
-
-        return "\n\n".join(content_chunks)
+        return response.json()
     except requests.exceptions.RequestException as e:
         raise Exception(f"Failed to retrieve source content: {str(e)}")

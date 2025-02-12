@@ -121,6 +121,6 @@ async def get_source_content(request_data: Dict):
             raise HTTPException(status_code=400, detail="topic_query is required")
 
         result = source_content_retriever(topic_query)
-        return {"content": result}
+        return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
