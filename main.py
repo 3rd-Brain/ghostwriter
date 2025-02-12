@@ -125,6 +125,31 @@ async def get_source_content(request_data: Dict):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/repurpose")
+async def repurpose_content(request_data: Dict):
+    if not os.getenv("OPENAI_API_KEY"):
+        raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
+    if not os.getenv("ASTRA_DB_APPLICATION_TOKEN"):
+        raise HTTPException(status_code=500, detail="ASTRA_DB_APPLICATION_TOKEN not configured")
+    if not os.getenv("ANTHROPIC_API_KEY"):
+        raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY not configured")
+    if not os.getenv("AIRTABLE_API_KEY"):
+        raise HTTPException(status_code=500, detail="AIRTABLE_API_KEY not configured")
+
+    try:
+        topic_query = request_data.get("topic_query")
+        username = request_data.get("username")
+        
+        if not topic_query:
+            raise HTTPException(status_code=400, detail="topic_query is required")
+        if not username:
+            raise HTTPException(status_code=400, detail="username is required")
+
+        result = short_form_social_repurposing(topic_query, username)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/multitemplate")
 async def get_multitemplate(request_data: Dict):
     if not os.getenv("OPENAI_API_KEY"):

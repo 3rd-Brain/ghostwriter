@@ -363,6 +363,41 @@ def multitemplate_retriever(content_chunk: str) -> Dict:
     except requests.exceptions.RequestException as e:
         raise Exception(f"Failed to retrieve templates: {str(e)}")
 
+def short_form_social_repurposing(topic_query: str, username: str) -> Dict:
+    """
+    Repurpose content based on topic query and user's brand voice
+    Args:
+        topic_query: String containing the topic to search for
+        username: String containing the username for brand voice
+    Returns:
+        Dictionary with status message
+    """
+    print("\n=== Starting Content Repurposing Process ===")
+    
+    # Step 1: Get source content
+    source_results = source_content_retriever(topic_query)
+    
+    # Extract first three content chunks
+    content_chunks = []
+    if source_results.get("data", {}).get("documents"):
+        content_chunks = [doc["content"] for doc in source_results["data"]["documents"][:3]]
+    
+    combined_chunks = "\n\n".join(content_chunks)
+    print("\n=== Extracted Content Chunks ===")
+    print(combined_chunks)
+    
+    # Step 2: Get templates
+    template_results = multitemplate_retriever(combined_chunks)
+    print("\n=== Template Search Results ===")
+    print(json.dumps(template_results, indent=2))
+    
+    # Step 3: Get brand voice
+    brand_voice = get_client_brand_voice(username)
+    print("\n=== Retrieved Brand Voice ===")
+    print(json.dumps(brand_voice, indent=2))
+    
+    return {"status": "Your content is being generated"}
+
 def source_content_retriever(topic_query: str) -> str:
     """
     Retrieve source content based on topic query using vector search
