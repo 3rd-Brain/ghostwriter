@@ -396,7 +396,27 @@ def short_form_social_repurposing(topic_query: str, username: str) -> Dict:
     print("\n=== Retrieved Brand Voice ===")
     print(json.dumps(brand_voice, indent=2))
     
-    return {"status": "Your content is being generated"}
+    # Return early with status message
+    result = {"status": "Your content is being generated"}
+    
+    # Step 4: Generate content for each template
+    if template_results.get("data", {}).get("documents"):
+        templates = template_results["data"]["documents"][:5]  # Get first 5 templates
+        
+        for template in templates:
+            initial_info = {
+                "client_brief": brand_voice["brand_voice"],
+                "template": template["content"],
+                "content_chunks": combined_chunks
+            }
+            
+            content_result = social_writer(initial_info)
+            print(f"\n--- Content Generated Using Template ---")
+            print(f"Template: {template['content']}")
+            print(f"First Draft: {content_result['first_draft']}")
+            print(f"Optimized Content: {content_result['optimized_content']}")
+    
+    return result
 
 def source_content_retriever(topic_query: str) -> str:
     """
