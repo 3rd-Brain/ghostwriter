@@ -287,5 +287,7 @@ def top_content_retriever(query: str) -> Dict:
         text_to_vectorize=query
     )
     
-    # Sort results by the chosen metric
-    return metric_sorter(search_result, setup_result["metric_sort"])
+    # Sort results by the chosen metric if present
+    if "metric_sort" in setup_result and search_result:
+        return metric_sorter(search_result, setup_result["metric_sort"])
+    return search_result
