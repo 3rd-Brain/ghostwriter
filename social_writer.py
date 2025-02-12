@@ -173,7 +173,7 @@ def vector_search_for_published_content(metadata_filter: Dict, text_to_vectorize
 
     # Prepare search request
     url = "https://d468cd02-85c9-4ee8-9bd3-3dc123ddf2ac-us-east-2.apps.astra.datastax.com/api/json/v1/default_keyspace/published_content"
-    
+
     headers = {
         "Token": ASTRA_DB_APPLICATION_TOKEN,
         "Content-Type": "application/json"
@@ -192,6 +192,10 @@ def vector_search_for_published_content(metadata_filter: Dict, text_to_vectorize
     try:
         response = requests.post(url, headers=headers, json=payload)
         response.raise_for_status()
-        return response.json()
+        response_data = response.json()
+        print(f"AstraDB API response:")
+        print(f"Request payload: {json.dumps(payload, indent=2)}")
+        print(f"Response: {json.dumps(response_data, indent=2)}")
+        return response_data
     except requests.exceptions.RequestException as e:
         raise Exception(f"Failed to perform vector search: {str(e)}")
