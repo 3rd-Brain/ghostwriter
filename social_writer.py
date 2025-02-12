@@ -3,6 +3,7 @@ from typing import Dict
 import os
 import uuid
 import requests
+from urllib.parse import quote
 from prompts import Prompts
 
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
@@ -116,3 +117,34 @@ def generated_content_uploader(content_data: Dict) -> Dict:
         return response.json()
     except requests.exceptions.RequestException as e:
         raise Exception(f"Failed to upload to Airtable: {str(e)}")
+
+def get_client_brand_voice(username: str) -> Dict:
+    """
+    Retrieve client brand voice information from Airtable
+    """
+    AIRTABLE_API_KEY = os.environ.get("AIRTABLE_API_KEY")
+    if not AIRTABLE_API_KEY:
+        raise Exception("AIRTABLE_API_KEY not configured")
+
+    encoded_username = quote(username)
+    url = f"https://api.airtable.com/v0/appLz2zuN6ZFu4mYS/tblpQGTYUROOEYPrY?filterByFormula=Account+(User)%3D%22{encoded_username}%22"
+    
+    headers = {
+        "Authorization": f"Bearer {AIRTABLE_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        data = response.json()
+        
+        if not data.get("records"):
+            raise Exception(f"No brand voice found for username: {username}")
+            
+        # Extract the first record's fields
+        record = data["records"][0]["fields"]
+        return record
+        
+    except requests.exceptions.RequestException as e:
+        raise Exception(f"Failed to retrieve brand voice from Airtable: {str(e)}")
