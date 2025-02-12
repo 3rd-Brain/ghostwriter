@@ -1,6 +1,6 @@
 from typing import Dict
 from fastapi import FastAPI, HTTPException
-from social_writer import social_writer, generated_content_uploader, get_client_brand_voice, vector_search_for_published_content, metric_sorter, top_content_sentiment_setup, source_content_retriever
+from social_writer import social_writer, generated_content_uploader, get_client_brand_voice, vector_search_for_published_content, metric_sorter, top_content_sentiment_setup, source_content_retriever, multitemplate_retriever
 import os
 
 app = FastAPI()
@@ -121,6 +121,25 @@ async def get_source_content(request_data: Dict):
             raise HTTPException(status_code=400, detail="topic_query is required")
 
         result = source_content_retriever(topic_query)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/multitemplate")
+async def get_multitemplate(request_data: Dict):
+    if not os.getenv("OPENAI_API_KEY"):
+        raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
+    if not os.getenv("ASTRA_DB_APPLICATION_TOKEN"):
+        raise HTTPException(status_code=500, detail="ASTRA_DB_APPLICATION_TOKEN not configured")
+    if not os.getenv("ANTHROPIC_API_KEY"):
+        raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY not configured")
+
+    try:
+        content_chunk = request_data.get("content_chunk")
+        if not content_chunk:
+            raise HTTPException(status_code=400, detail="content_chunk is required")
+
+        result = multitemplate_retriever(content_chunk)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
