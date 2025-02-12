@@ -1,0 +1,61 @@
+{
+    "records": [
+        {
+            "id": "recs9DiIBoLUljK51",
+            "createdTime": "2024-11-19T15:28:37.000Z",
+            "fields": {
+                "Generation Form Request 2": [
+                    "recvd7xJLc5jjCAfW",
+                    "recsHuc0EctCjYCyJ",
+                    "recMxCdhlG1bhlOH6",
+                    "recpAZqKkfBTUstye",
+                    "rec4g8LFzfvAhbkTk",
+                    "recuDjzjhvZY36lja",
+                    "recoLPj549mREWdzo",
+                    "recyACsogFIvAnzhF",
+                    "recVKeqm2DRxlddOp",
+                    "recoiASwdL7K5bJpw",
+                    "recFDgt42MeTXgSuT",
+                    "recSLl5wodnt9nuky",
+                    "recqXdysHj5TxaxY2",
+                    "recglCWWpVwpmgpDU",
+                    "recfNSCKaP8BvTcgZ",
+                    "rec0X4oy9rnHMxiDZ",
+                    "recDl9Eg5Ihwjppy1",
+                    "recvWKWRPjrTlur9P",
+                    "recXSSkjFsKHapypV"
+                ],
+                "Account (User)": "GentOfTech",
+                "Sources": [
+                    "recnfp1w47P1o2fkt",
+                    "rec6STF5Az1N4lp81",
+                    "recCGtgND1X3JVcKp",
+                    "rechEZQ9PnBPVUbys",
+                    "recUL11nfuZBbELrn",
+                    "recC9YiRymSJZWFUj",
+                    "recWFJrgB9rCIlZsL",
+                    "reclnbiKykEfTGUEu",
+                    "recvDJEEvvd2lr9MZ",
+                    "rechpJEp66Ei7xmf9",
+                    "recI1cvvIeWedoWOm",
+                    "recO0XMAnKJcpvCUS",
+                    "rec25oMMpyurzEiRV"
+                ],
+                "Brand Voice": "The Client's writing style should be informative, analytical, and ambitious, focusing on entrepreneurship, business strategy, and personal growth. The...",
+                "Sample Content": "<short_form_examples>\n\n\"$0-$10MM+ with a 5 Tool stack\n\nComms: G Suite (Slack optional)\nAI: ChatGPT Teams\nCRM: Hubspot\nWork: ClickUp\nAuto: Make or Zap\n...",
+                "Long Form Sample Content": "<long_form_sample>\n\n\"What makes a Modern Industrialist?\n\n    They are entrepreneur and creators. Active both in the digital economy and within their l..."
+            }
+        },
+        {
+            "id": "recpxUpLWxiM8tCmL",
+            "createdTime": "2025-01-20T18:23:41.000Z",
+            "fields": {
+                "Account (User)": "Test",
+                "Brand Voice": "Brand Voice",
+                "Sample Content": "Sample here",
+                "Long Form Sample Content": "long here"
+            }
+        }
+    ],
+    "offset": "itrY1ZayXqhMkZZRr/recpxUpLWxiM8tCmL"
+}

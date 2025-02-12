@@ -9,8 +9,9 @@ from prompts import Prompts
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
 client = anthropic.Client(api_key=ANTHROPIC_API_KEY)
 
+
 def social_writer(
-    initial_info: Dict, 
+    initial_info: Dict,
     completion_params: Dict = None,
 ) -> Dict:
 
@@ -32,17 +33,13 @@ def social_writer(
 
 Write a social media post based on the information provided. Keep it concise and engaging."""
 
-    response = client.messages.create(
-        model="claude-3-opus-20240229",
-        system=Prompts.INITIAL_GENERATION,
-        messages=[
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ],
-        max_tokens=2048
-    )
+    response = client.messages.create(model="claude-3-opus-20240229",
+                                      system=Prompts.INITIAL_GENERATION,
+                                      messages=[{
+                                          "role": "user",
+                                          "content": prompt
+                                      }],
+                                      max_tokens=2048)
 
     first_draft = response.content[0].text
 
@@ -53,20 +50,15 @@ Refine and polish this content to maximize engagement. Consider optimizing for l
 
 {client_brief}"""
 
-    response = client.messages.create(
-        model="claude-3-opus-20240229",
-        system=Prompts.CONTENT_REFINEMENT,
-        messages=[
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ],
-        max_tokens=2048
-    )
+    response = client.messages.create(model="claude-3-opus-20240229",
+                                      system=Prompts.CONTENT_REFINEMENT,
+                                      messages=[{
+                                          "role": "user",
+                                          "content": prompt
+                                      }],
+                                      max_tokens=2048)
 
     optimized_content = response.content[0].text
-
 
     return {
         "first_draft": first_draft,
@@ -75,6 +67,7 @@ Refine and polish this content to maximize engagement. Consider optimizing for l
         "template": template,
         "client_brief": client_brief
     }
+
 
 def generated_content_uploader(content_data: Dict) -> Dict:
     """
@@ -110,13 +103,14 @@ def generated_content_uploader(content_data: Dict) -> Dict:
     }
 
     url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE_NAME}"
-    
+
     try:
         response = requests.post(url, headers=headers, json=payload)
         response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as e:
         raise Exception(f"Failed to upload to Airtable: {str(e)}")
+
 
 def get_client_brand_voice(username: str) -> Dict:
     """
@@ -127,24 +121,25 @@ def get_client_brand_voice(username: str) -> Dict:
         raise Exception("AIRTABLE_API_KEY not configured")
 
     encoded_username = quote(username)
-    url = f"https://api.airtable.com/v0/appLz2zuN6ZFu4mYS/tblpQGTYUROOEYPrY?filterByFormula=Account+(User)%3D%22{encoded_username}%22"
-    
+    url = f"https://api.airtable.com/v0/appLz2zuN6ZFu4mYS/tblpQGTYUROOEYPrY?filterByFormula=%7BAccount+(User)%7D%3D'{encoded_username}'"
+
     headers = {
         "Authorization": f"Bearer {AIRTABLE_API_KEY}",
         "Content-Type": "application/json"
     }
-    
+
     try:
         response = requests.get(url, headers=headers)
         response.raise_for_status()
         data = response.json()
-        
+
         if not data.get("records"):
             raise Exception(f"No brand voice found for username: {username}")
-            
+
         # Extract the first record's fields
         record = data["records"][0]["fields"]
         return record
-        
+
     except requests.exceptions.RequestException as e:
-        raise Exception(f"Failed to retrieve brand voice from Airtable: {str(e)}")
+        raise Exception(
+            f"Failed to retrieve brand voice from Airtable: {str(e)}")
