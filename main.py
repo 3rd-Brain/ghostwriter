@@ -83,3 +83,27 @@ async def setup_sentiment(request_data: Dict):
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+def top_content_retriever(query: str):
+    filter_criteria, sort_metric = top_content_sentiment_setup(query)
+    results = vector_search_for_published_content(filter_criteria, query)
+    if sort_metric:
+        results = metric_sorter(results, sort_metric)
+    return results
+
+@app.post("/top-content")
+async def get_top_content(request_data: Dict):
+    if not os.getenv("OPENAI_API_KEY"):
+        raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
+    if not os.getenv("ASTRA_DB_APPLICATION_TOKEN"):
+        raise HTTPException(status_code=500, detail="ASTRA_DB_APPLICATION_TOKEN not configured")
+
+    try:
+        query = request_data.get("query")
+        if not query:
+            raise HTTPException(status_code=400, detail="query is required")
+
+        result = top_content_retriever(query)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
