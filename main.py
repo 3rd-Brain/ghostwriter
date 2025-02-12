@@ -1,6 +1,6 @@
 from typing import Dict
 from fastapi import FastAPI, HTTPException
-from social_writer import social_writer, generated_content_uploader, get_client_brand_voice, vector_search_for_published_content, metric_sorter, top_content_sentiment_setup
+from social_writer import social_writer, generated_content_uploader, get_client_brand_voice, vector_search_for_published_content, metric_sorter, top_content_sentiment_setup, source_content_retriever
 import os
 
 app = FastAPI()
@@ -105,5 +105,22 @@ async def get_top_content(request_data: Dict):
 
         result = top_content_retriever(query)
         return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/source-content")
+async def get_source_content(request_data: Dict):
+    if not os.getenv("OPENAI_API_KEY"):
+        raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
+    if not os.getenv("ASTRA_DB_APPLICATION_TOKEN"):
+        raise HTTPException(status_code=500, detail="ASTRA_DB_APPLICATION_TOKEN not configured")
+
+    try:
+        topic_query = request_data.get("topic_query")
+        if not topic_query:
+            raise HTTPException(status_code=400, detail="topic_query is required")
+
+        result = source_content_retriever(topic_query)
+        return {"content": result}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
