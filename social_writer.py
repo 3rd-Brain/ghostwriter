@@ -224,3 +224,46 @@ def metric_sorter(published_content: Dict, sort_metric: str) -> Dict:
             "nextPageState": published_content["data"].get("nextPageState")
         }
     }
+import datetime
+
+def get_current_utc():
+    """Get current UTC time as formatted string"""
+    return datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+
+def top_content_sentiment_setup(query: str) -> Dict:
+    """
+    Process user query to generate filter and metric sort parameters
+    """
+    if not OPENAI_API_KEY:
+        raise Exception("OPENAI_API_KEY not configured")
+
+    # Append UTC time to query
+    utc_time = get_current_utc()
+    augmented_query = f"{query} | Date Today: {utc_time}"
+
+    # Generate filter using first system prompt
+    filter_response = openai_client.chat.completions.create(
+        model="gpt-4",
+        messages=[
+            {"role": "system", "content": Prompts.FILTER_GENERATION},
+            {"role": "user", "content": augmented_query}
+        ]
+    )
+    
+    metadata_filter = json.loads(filter_response.choices[0].message.content)
+
+    # Generate metric sort using second system prompt
+    metric_response = openai_client.chat.completions.create(
+        model="gpt-4",
+        messages=[
+            {"role": "system", "content": Prompts.METRIC_SELECTION},
+            {"role": "user", "content": query}
+        ]
+    )
+    
+    metric_sort = metric_response.choices[0].message.content.strip()
+
+    return {
+        "filter": metadata_filter,
+        "metric_sort": metric_sort
+    }
