@@ -268,7 +268,7 @@ def top_content_sentiment_setup(query: str) -> Dict:
         ],
         response_format={"type": "json_object"}
     )
-    
+
     try:
         filter_content = filter_response.choices[0].message.content.strip()
         metadata_filter = json.loads(filter_content)
@@ -284,7 +284,7 @@ def top_content_sentiment_setup(query: str) -> Dict:
             {"role": "user", "content": query}
         ]
     )
-    
+
     metric_sort = metric_response.choices[0].message.content.strip()
 
     return {
@@ -298,14 +298,66 @@ def top_content_retriever(query: str) -> Dict:
     """
     # Get filter and metric sort from sentiment setup
     setup_result = top_content_sentiment_setup(query)
-    
+
     # Use vector search with the filter
     search_result = vector_search_for_published_content(
         metadata_filter=setup_result["filter"],
         text_to_vectorize=query
     )
-    
+
     # Sort results by the chosen metric if present
     if "metric_sort" in setup_result and search_result:
         return metric_sorter(search_result, setup_result["metric_sort"])
     return search_result
+
+def source_content_retriever(topic_query: str) -> str:
+    """
+    Retrieve source content based on topic query using vector search
+    Args:
+        topic_query: String containing the topic to search for
+    Returns:
+        String containing concatenated text chunks from search results
+    """
+    if not OPENAI_API_KEY:
+        raise Exception("OPENAI_API_KEY not configured")
+    if not ASTRA_DB_APPLICATION_TOKEN:
+        raise Exception("ASTRA_DB_APPLICATION_TOKEN not configured")
+
+    # Generate embedding for the topic query
+    response = openai_client.embeddings.create(
+        input=topic_query,
+        model="text-embedding-3-small"
+    )
+    vector = response.data[0].embedding
+
+    # Prepare search request
+    url = "https://168d1caf-ef22-4f69-a1a0-2e771cbd41bf-us-east-2.apps.astra.datastax.com/api/json/v1/default_keyspace/source_content"
+
+    headers = {
+        "Token": ASTRA_DB_APPLICATION_TOKEN,
+        "Content-Type": "application/json"
+    }
+
+    payload = {
+        "find": {
+            "sort": {"$vector": vector},
+            "options": {
+                "limit": 5
+            }
+        }
+    }
+
+    try:
+        response = requests.post(url, headers=headers, json=payload)
+        response.raise_for_status()
+        results = response.json()
+
+        # Concatenate content from results
+        content_chunks = []
+        for doc in results.get("data", {}).get("documents", []):
+            if "content" in doc:
+                content_chunks.append(doc["content"])
+
+        return "\n\n".join(content_chunks)
+    except requests.exceptions.RequestException as e:
+        raise Exception(f"Failed to retrieve source content: {str(e)}")
