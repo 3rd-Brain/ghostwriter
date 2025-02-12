@@ -179,14 +179,32 @@ def vector_search_for_published_content(metadata_filter: Dict, text_to_vectorize
         "Content-Type": "application/json"
     }
 
-    # Add "metadata." prefix to filter keys
-    modified_filter = {}
-    for key, value in metadata_filter.items():
-        modified_filter[f"metadata.{key}"] = value
+    # Handle filter structure and add metadata prefix to appropriate fields
+    metadata_fields = [
+        "weighted_impression_ratio", "weighted_like_ratio", 
+        "weighted_bookmark_ratio", "weighted_retweet_ratio", 
+        "weighted_reply_ratio", "total_weight_metric",
+        "post_id", "published_date"
+    ]
+
+    def process_filter(filter_obj):
+        if isinstance(filter_obj, dict):
+            new_obj = {}
+            for key, value in filter_obj.items():
+                if key in ['$and', '$or']:
+                    new_obj[key] = [process_filter(item) for item in value]
+                elif key in metadata_fields:
+                    new_obj[f"metadata.{key}"] = value
+                else:
+                    new_obj[key] = process_filter(value) if isinstance(value, dict) else value
+            return new_obj
+        return filter_obj
+
+    processed_filter = process_filter(metadata_filter)
 
     payload = {
         "find": {
-            "filter": modified_filter,
+            "filter": processed_filter,
             "sort": {"$vector": vector},
             "options": {
                 "limit": 1000
