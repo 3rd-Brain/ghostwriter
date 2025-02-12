@@ -85,10 +85,10 @@ async def setup_sentiment(request_data: Dict):
         raise HTTPException(status_code=500, detail=str(e))
 
 def top_content_retriever(query: str):
-    filter_criteria, sort_metric = top_content_sentiment_setup(query)
-    results = vector_search_for_published_content(filter_criteria, query)
-    if sort_metric:
-        results = metric_sorter(results, sort_metric)
+    setup_result = top_content_sentiment_setup(query)
+    results = vector_search_for_published_content(setup_result["filter"], query)
+    if setup_result.get("metric_sort"):
+        results = metric_sorter(results, setup_result["metric_sort"])
     return results
 
 @app.post("/top-content")
