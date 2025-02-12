@@ -1,6 +1,6 @@
 from typing import Dict
 from fastapi import FastAPI, HTTPException
-from social_writer import social_writer, generated_content_uploader, get_client_brand_voice, vector_search_for_published_content # Added import for vector_search_for_published_content
+from social_writer import social_writer, generated_content_uploader, get_client_brand_voice, vector_search_for_published_content, metric_sorter
 import os
 
 app = FastAPI()
