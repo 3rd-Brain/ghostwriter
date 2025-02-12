@@ -415,6 +415,21 @@ def short_form_social_repurposing(topic_query: str, username: str) -> Dict:
             print(f"Template: {template['content']}")
             print(f"First Draft: {content_result['first_draft']}")
             print(f"Optimized Content: {content_result['optimized_content']}")
+            
+            # Extract template without variations by splitting on "|" and taking first part
+            template_base = template["content"].split("|")[0].strip()
+            
+            # Prepare content data for upload
+            content_data = {
+                "first_draft": content_result["first_draft"],
+                "content_chunks": combined_chunks,
+                "template": template_base
+            }
+            
+            # Upload the generated content
+            upload_result = generated_content_uploader(content_data)
+            print(f"\n--- Content Upload Result ---")
+            print(json.dumps(upload_result, indent=2))
     
     return result
 
