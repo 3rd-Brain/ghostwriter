@@ -3,10 +3,16 @@ from typing import Dict
 import os
 import uuid
 import requests
+import json
 from urllib.parse import quote
 from prompts import Prompts
+from openai import OpenAI
 
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN")
+
+openai_client = OpenAI(api_key=OPENAI_API_KEY)
 client = anthropic.Client(api_key=ANTHROPIC_API_KEY)
 
 
@@ -145,3 +151,44 @@ def get_client_brand_voice(username: str) -> Dict:
     except requests.exceptions.RequestException as e:
         raise Exception(
             f"Failed to retrieve brand voice from Airtable: {str(e)}")
+
+def vector_search_for_published_content(metadata_filter: Dict, text_to_vectorize: str) -> Dict:
+    """
+    Perform vector search for published content using OpenAI embeddings
+    """
+    if not OPENAI_API_KEY:
+        raise Exception("OPENAI_API_KEY not configured")
+    if not ASTRA_DB_APPLICATION_TOKEN:
+        raise Exception("ASTRA_DB_APPLICATION_TOKEN not configured")
+
+    # Generate embedding for the input text
+    response = openai_client.embeddings.create(
+        input=text_to_vectorize,
+        model="text-embedding-3-small"
+    )
+    vector = response.data[0].embedding
+
+    # Prepare search request
+    url = "https://d468cd02-85c9-4ee8-9bd3-3dc123ddf2ac-us-east-2.apps.astra.datastax.com/api/json/v1/default_keyspace/published_content"
+    
+    headers = {
+        "Token": ASTRA_DB_APPLICATION_TOKEN,
+        "Content-Type": "application/json"
+    }
+
+    payload = {
+        "find": {
+            "filter": metadata_filter,
+            "sort": {"$vector": vector},
+            "options": {
+                "limit": 1000
+            }
+        }
+    }
+
+    try:
+        response = requests.post(url, headers=headers, json=payload)
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        raise Exception(f"Failed to perform vector search: {str(e)}")
