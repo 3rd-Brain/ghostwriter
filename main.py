@@ -10,6 +10,12 @@ app = FastAPI()
 def read_root():
     return {"Hello": "World"}
 
+@app.get("/delayed")
+async def delayed_response():
+    import asyncio
+    await asyncio.sleep(40)
+    return {"hello": "world"}
+
 @app.post("/generate-social")
 async def generate_social_content(request_data: Dict):
     if not os.getenv("ANTHROPIC_API_KEY"):
