@@ -1,4 +1,3 @@
-
 from typing import Dict
 from fastapi import FastAPI, HTTPException
 from social_writer import social_writer, generated_content_uploader
@@ -20,7 +19,7 @@ async def delayed_response():
 async def generate_social_content(request_data: Dict):
     if not os.getenv("ANTHROPIC_API_KEY"):
         raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY not configured")
-    
+
     try:
         result = social_writer(request_data)
         return result
@@ -31,7 +30,7 @@ async def generate_social_content(request_data: Dict):
 async def upload_content(content_data: Dict):
     if not os.getenv("AIRTABLE_API_KEY"):
         raise HTTPException(status_code=500, detail="AIRTABLE_API_KEY not configured")
-    
+
     try:
         result = generated_content_uploader(content_data)
         return result
