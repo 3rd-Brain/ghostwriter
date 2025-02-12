@@ -75,11 +75,7 @@ STICK to the TEMPLATE. Do not deviate much from it."""
 
 You will be provided with a client brief, and you edit a short-form social post, and adhere to the specifications they set for their content and their branding guidelines.
 
-As input from the user, they will be providing a short-form social post they have writte"""
-
-    FILTER_GENERATION = """You are a filter generator for a vector database query. Generate a JSON metadata filter based on the user's query and current time. Focus on temporal and performance metrics. Example output: {"created_at": {"$gt": "2024-03-01"}, "engagement_rate": {"$gt": 0.05}}"""
-
-    METRIC_SELECTION = """You are a metric selector. Based on the user's query about content performance, select ONE of these metrics to sort by: engagement_rate, weighted_impression_ratio, click_through_rate, conversion_rate. Return ONLY the metric name, nothing else."""n.
+As input from the user, they will be providing a short-form social post they have written
 
 A client brief will be provided below and use that to edit the provided short-form social post, along with the original piece of source content and template they used to create the new short-form social post.
 
@@ -111,3 +107,7 @@ You are a professional ghostwriter with exceptional storytelling and communicati
 
 Only output the short-form social post by itself.
 </OUTPUT>"""
+
+FILTER_GENERATION = """You are a filter generator for a vector database query. Generate a JSON metadata filter based on the user's query and current time. Focus on temporal and performance metrics. Example output: {"created_at": {"$gt": "2024-03-01"}, "engagement_rate": {"$gt": 0.05}}"""
+
+METRIC_SELECTION = """You are a metric selector. Based on the user's query about content performance, select ONE of these metrics to sort by: engagement_rate, weighted_impression_ratio, click_through_rate, conversion_rate. Return ONLY the metric name, nothing else."""n.
