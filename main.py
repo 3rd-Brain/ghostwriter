@@ -59,6 +59,12 @@ async def vector_search(request_data: Dict):
             raise HTTPException(status_code=400, detail="text_to_vectorize is required")
 
         result = vector_search_for_published_content(metadata_filter, text_to_vectorize)
+        
+        # If sort_metric is provided, sort the results
+        sort_metric = request_data.get("sort_metric")
+        if sort_metric:
+            result = metric_sorter(result, sort_metric)
+            
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

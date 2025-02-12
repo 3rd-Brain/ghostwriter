@@ -204,3 +204,23 @@ def vector_search_for_published_content(metadata_filter: Dict, text_to_vectorize
         return response_data
     except requests.exceptions.RequestException as e:
         raise Exception(f"Failed to perform vector search: {str(e)}")
+def metric_sorter(published_content: Dict, sort_metric: str) -> Dict:
+    """
+    Sort published content by specified metric in descending order
+    """
+    if not published_content.get("data", {}).get("documents"):
+        return published_content
+
+    # Sort documents by the specified metric
+    sorted_documents = sorted(
+        published_content["data"]["documents"],
+        key=lambda x: x.get("metadata", {}).get(sort_metric, 0),
+        reverse=True
+    )
+
+    return {
+        "data": {
+            "documents": sorted_documents,
+            "nextPageState": published_content["data"].get("nextPageState")
+        }
+    }
