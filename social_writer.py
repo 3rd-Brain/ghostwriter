@@ -310,6 +310,59 @@ def top_content_retriever(query: str) -> Dict:
         return metric_sorter(search_result, setup_result["metric_sort"])
     return search_result
 
+def multitemplate_retriever(content_chunk: str) -> Dict:
+    """
+    Retrieve template documents based on content chunk using vector search
+    Args:
+        content_chunk: String containing the content to find templates for
+    Returns:
+        Dictionary containing template search results
+    """
+    if not OPENAI_API_KEY:
+        raise Exception("OPENAI_API_KEY not configured")
+    if not ASTRA_DB_APPLICATION_TOKEN:
+        raise Exception("ASTRA_DB_APPLICATION_TOKEN not configured")
+    
+    # Get template description from Claude
+    response = client.messages.create(
+        model="claude-3-opus-20240229",
+        system="You are a professional content writer. Describe an ideal template structure for the given content chunk. Focus on the format and style that would best present this information.",
+        messages=[{"role": "user", "content": content_chunk}],
+        max_tokens=2048
+    )
+    template_description = response.content[0].text
+
+    # Generate embedding for the template description
+    response = openai_client.embeddings.create(
+        input=template_description,
+        model="text-embedding-3-small"
+    )
+    vector = response.data[0].embedding
+
+    # Prepare search request
+    url = "https://42ac68c8-bfd9-4149-ab5c-a5212153b560-us-east-2.apps.astra.datastax.com/api/json/v1/default_keyspace/templates_shortform"
+
+    headers = {
+        "Token": ASTRA_DB_APPLICATION_TOKEN,
+        "Content-Type": "application/json"
+    }
+
+    payload = {
+        "find": {
+            "sort": {"$vector": vector},
+            "options": {
+                "limit": 5
+            }
+        }
+    }
+
+    try:
+        response = requests.post(url, headers=headers, json=payload)
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        raise Exception(f"Failed to retrieve templates: {str(e)}")
+
 def source_content_retriever(topic_query: str) -> str:
     """
     Retrieve source content based on topic query using vector search
