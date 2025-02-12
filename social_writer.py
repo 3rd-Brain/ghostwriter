@@ -179,9 +179,14 @@ def vector_search_for_published_content(metadata_filter: Dict, text_to_vectorize
         "Content-Type": "application/json"
     }
 
+    # Add "metadata." prefix to filter keys
+    modified_filter = {}
+    for key, value in metadata_filter.items():
+        modified_filter[f"metadata.{key}"] = value
+
     payload = {
         "find": {
-            "filter": metadata_filter,
+            "filter": modified_filter,
             "sort": {"$vector": vector},
             "options": {
                 "limit": 1000
