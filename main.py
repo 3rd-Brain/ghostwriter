@@ -179,6 +179,33 @@ async def get_top_content_repurposing(request_data: Dict, background_tasks: Back
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/social-post-generation")
+async def generate_social_post(request_data: Dict):
+    if not os.getenv("ANTHROPIC_API_KEY"):
+        raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY not configured")
+
+    try:
+        flow_config = request_data.get("flow_config")
+        client_brief = request_data.get("client_brief")
+        template = request_data.get("template")
+        content_chunks = request_data.get("content_chunks")
+        brand_voice = request_data.get("brand_voice", "")
+
+        if not all([flow_config, client_brief, template, content_chunks]):
+            raise HTTPException(status_code=400, detail="Missing required fields")
+
+        from social_dynamic_generation_flow import social_post_generation_with_json
+        result = social_post_generation_with_json(
+            flow_config=flow_config,
+            client_brief=client_brief,
+            template=template,
+            content_chunks=content_chunks,
+            brand_voice=brand_voice
+        )
+        return {"generated_content": result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/templatizer-short-form")
 async def create_template_embedding(request_data: Dict):
     if not os.getenv("OPENAI_API_KEY"):
