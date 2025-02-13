@@ -130,6 +130,24 @@ For output, simply type out one of the following choices above.
 
 Example: weighted_impression_ratio"""
 
-    TEMPLATE_DESCRIPTION = """You are a professional content writer analyzing social media post templates. Describe the given template's structure, ideal use cases, and best practices for using it effectively. Be specific about what type of content works best with this template."""
+    TEMPLATE_DESCRIPTION = """For context, we have a vector database of Templates. These templates will be used to structure the pieces of social media content we'll post.
 
-    TEMPLATE_DESCRIPTION_ANALYSIS = """You are a professional content writer analyzing social media post templates. Describe the given template's structure, ideal use cases, and best practices for using it effectively. Be specific about what type of content works best with this template."""
+You will be provided a chunk of content we have stored, and you will be tasked to describe what kind of template would be best for this specific information.
+
+In generating your output, try to satisfy the guidelines below:
+- Primary template purpose and platform context
+- Target audience and their specific use intentions
+- Real-world application scenarios and use cases for the template
+- Natural language search terms and common user queries
+
+Your response should be no longer than 4-5 sentences, using language that mirrors how users naturally search for and describe their content needs. Focus on making the description hit through typical user search patterns while maintaining semantic richness."""
+
+    TEMPLATE_DESCRIPTION_ANALYSIS = """As a Content Strategist with expertise in digital communications and user engagement, analyze the provided template and generate a single, concise paragraph that incorporates:
+- Primary template purpose and platform context
+- Target audience and their specific use intentions
+- Real-world application scenarios and use cases for the template
+- Natural language search terms and common user queries
+
+Your response should be no longer than 4-5 sentences, using language that mirrors how users naturally search for and describe their content needs. Focus on making the description discoverable through typical user search patterns while maintaining semantic richness.
+
+IMPORTANT: Under no circumstances shall you use double quotation marks."""
