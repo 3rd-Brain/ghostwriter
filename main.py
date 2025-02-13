@@ -153,6 +153,26 @@ async def repurpose_content(request_data: Dict):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/top-content-repurposing")
+async def get_top_content_repurposing(request_data: Dict):
+    if not os.getenv("OPENAI_API_KEY"):
+        raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
+    if not os.getenv("ASTRA_DB_APPLICATION_TOKEN"):
+        raise HTTPException(status_code=500, detail="ASTRA_DB_APPLICATION_TOKEN not configured")
+
+    try:
+        query = request_data.get("query")
+        topic = request_data.get("topic")
+        if not query:
+            raise HTTPException(status_code=400, detail="query is required")
+        if not topic:
+            raise HTTPException(status_code=400, detail="topic is required")
+
+        result = top_content_to_repurposing(query, topic)
+        return {"posts": result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/multitemplate")
 async def get_multitemplate(request_data: Dict):
     if not os.getenv("OPENAI_API_KEY"):
