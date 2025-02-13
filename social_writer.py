@@ -481,6 +481,44 @@ def source_content_retriever(topic_query: str) -> str:
         return response.json()
     except requests.exceptions.RequestException as e:
         raise Exception(f"Failed to retrieve source content: {str(e)}")
+
+def templatizer_short_form(template: str) -> Dict:
+    """
+    Process a template by generating a description with Claude and creating a vector embedding
+    Args:
+        template: String containing the template for a short form social post
+    Returns:
+        Dictionary with vector embedding and combined text
+    """
+    print("\n=== Starting Template Processing ===")
+    print(f"Input template: {template}")
+
+    # Generate template description using Claude
+    response = client.messages.create(
+        model="claude-3-opus-20240229",
+        system="You are a professional content writer analyzing social media post templates. Describe the given template's structure, ideal use cases, and best practices for using it effectively. Be specific about what type of content works best with this template.",
+        messages=[{"role": "user", "content": template}],
+        max_tokens=2048
+    )
+    template_description = response.content[0].text
+    print(f"\n=== Generated Template Description ===\n{template_description}")
+
+    # Combine template and description
+    combined_text = f"{template}|{template_description}"
+    print(f"\n=== Combined Text ===\n{combined_text}")
+
+    # Generate vector embedding
+    embedding_response = openai_client.embeddings.create(
+        input=combined_text,
+        model="text-embedding-3-small"
+    )
+    vector = embedding_response.data[0].embedding
+
+    return {
+        "vector": vector,
+        "combined_text": combined_text
+    }
+
 def top_content_to_repurposing(query: str, topic: str, username: str) -> Dict:
     """
     Get top 5 posts and repurpose each one using short_form_social_repurposing
