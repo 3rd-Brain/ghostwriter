@@ -4,6 +4,7 @@ import os
 import uuid
 import requests
 import json
+import datetime
 from urllib.parse import quote
 from prompts import Prompts
 from openai import OpenAI
@@ -513,6 +514,33 @@ def templatizer_short_form(template: str) -> Dict:
         model="text-embedding-3-small"
     )
     vector = embedding_response.data[0].embedding
+
+    # Upload vector and text to AstraDB
+    url = "https://42ac68c8-bfd9-4149-ab5c-a5212153b560-us-east-2.apps.astra.datastax.com/api/json/v1/default_keyspace/templates_shortform"
+    headers = {
+        "Token": ASTRA_DB_APPLICATION_TOKEN,
+        "Content-Type": "application/json"
+    }
+    timestamp = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+    payload = {
+        "insertOne": {
+            "document": {
+                "content": combined_text,
+                "$vector": vector,
+                "metadata": {
+                    "files": [],
+                    "timestamp": timestamp
+                }
+            }
+        }
+    }
+
+    try:
+        response = requests.post(url, headers=headers, json=payload)
+        response.raise_for_status()
+        print(f"AstraDB upload successful: {response.json()}")
+    except requests.exceptions.RequestException as e:
+        print(f"AstraDB upload failed: {str(e)}")
 
     return {
         "vector": vector,
