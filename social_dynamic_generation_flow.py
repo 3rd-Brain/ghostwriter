@@ -44,6 +44,9 @@ def social_post_generation_with_json(
         for msg in step["Message"]:
             # Create template with variables to replace
             template_str = msg["content"]
+            
+            # First replace the raw newlines with actual newlines
+            template_str = template_str.replace('\\n', '\n')
             template_obj = Template(template_str)
             
             # Prepare replacement values
