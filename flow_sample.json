@@ -1,0 +1,38 @@
+{
+  "steps": [{
+    "Step_name": "initial_generation",
+    "Model": "claude-3-5-sonnet-20241022",
+    "System_prompt": "system prompt 1 here",
+    "Max_tokens": 4096,
+    "Order": 1,
+    "Temperature": 1,
+    "Message": [
+      {
+        "role": "user",
+        "content": "<client_brief>\n\n{client_brief}\n\n<template>\n\n{template}\n\n<content_chunks>\n\n{content_chunks}"
+      }
+    ]
+  },
+      {
+    "Step_name": "voice_brand_edit",
+    "Model": "claude-3-5-sonnet-20241022",
+    "System_prompt": "Another system prompt here",
+    "Max_tokens": 4096,
+    "Order": 2,
+    "Temperature": 1,
+    "Message": [
+      {
+        "role": "user",
+        "content": "<client_brief>\n\n{client_brief}\n\n<template>\n\n{template}\n\n<content_chunks>\n\n{content_chunks}"
+      },
+      {
+        "role": "assistant",
+        "content": "{prev_ai_output}"
+      },
+      {
+        "role": "user",
+        "content": "{brand_voice}"
+      }
+    ]
+  }]
+}
