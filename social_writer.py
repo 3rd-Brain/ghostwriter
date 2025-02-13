@@ -538,14 +538,10 @@ def templatizer_short_form(template: str) -> Dict:
     try:
         response = requests.post(url, headers=headers, json=payload)
         response.raise_for_status()
-        print(f"AstraDB upload successful: {response.json()}")
+        return response.json()
     except requests.exceptions.RequestException as e:
         print(f"AstraDB upload failed: {str(e)}")
-
-    return {
-        "vector": vector,
-        "combined_text": combined_text
-    }
+        raise Exception(f"Failed to upload to AstraDB: {str(e)}")
 
 def top_content_to_repurposing(query: str, topic: str, username: str) -> Dict:
     """
