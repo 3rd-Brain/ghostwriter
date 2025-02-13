@@ -58,6 +58,10 @@ def social_post_generation_with_json(
             # Replace variables in content
             content = template_obj.safe_substitute(values)
             messages.append({"role": msg["role"], "content": content})
+            
+            # Log the content being sent
+            print(f"\nMessage {msg['role']}:")
+            print(f"Content: {content}\n")
 
         # Make API call to Claude
         response = client.messages.create(
