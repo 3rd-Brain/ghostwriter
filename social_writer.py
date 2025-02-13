@@ -327,7 +327,7 @@ def multitemplate_retriever(content_chunk: str) -> Dict:
         raise Exception("OPENAI_API_KEY not configured")
     if not ASTRA_DB_APPLICATION_TOKEN:
         raise Exception("ASTRA_DB_APPLICATION_TOKEN not configured")
-    
+
     # Get template description from Claude
     response = client.messages.create(
         model="claude-3-opus-20240229",
@@ -378,64 +378,64 @@ def short_form_social_repurposing(topic_query: str, username: str) -> Dict:
         Dictionary with status message
     """
     print("\n=== Starting Content Repurposing Process ===")
-    
+
     # Step 1: Get source content
     source_results = source_content_retriever(topic_query)
-    
+
     # Extract first three content chunks
     content_chunks = []
     if source_results.get("data", {}).get("documents"):
         content_chunks = [doc["content"] for doc in source_results["data"]["documents"][:3]]
-    
+
     combined_chunks = "\n\n".join(content_chunks)
     print("\n=== Extracted Content Chunks ===")
     print(combined_chunks)
-    
+
     # Step 2: Get templates
     template_results = multitemplate_retriever(combined_chunks)
     print("\n=== Template Search Results ===")
     print(json.dumps(template_results, indent=2))
-    
+
     # Step 3: Get brand voice
     brand_voice = get_client_brand_voice(username)
     print("\n=== Retrieved Brand Voice ===")
     print(json.dumps(brand_voice, indent=2))
-    
+
     # Return early with status message
     result = {"status": "Your content is being generated"}
-    
+
     # Step 4: Generate content for each template
     if template_results.get("data", {}).get("documents"):
         templates = template_results["data"]["documents"][:5]  # Get first 5 templates
-        
+
         for template in templates:
             initial_info = {
                 "client_brief": brand_voice["brand_voice"],
                 "template": template["content"],
                 "content_chunks": combined_chunks
             }
-            
+
             content_result = social_writer(initial_info)
             print(f"\n--- Content Generated Using Template ---")
             print(f"Template: {template['content']}")
             print(f"First Draft: {content_result['first_draft']}")
             print(f"Optimized Content: {content_result['optimized_content']}")
-            
+
             # Extract template without variations by splitting on "|" and taking first part
             template_base = template["content"].split("|")[0].strip()
-            
+
             # Prepare content data for upload
             content_data = {
                 "first_draft": content_result["first_draft"],
                 "content_chunks": combined_chunks,
                 "template": template_base
             }
-            
+
             # Upload the generated content
             upload_result = generated_content_uploader(content_data)
             print(f"\n--- Content Upload Result ---")
             print(json.dumps(upload_result, indent=2))
-    
+
     return result
 
 def source_content_retriever(topic_query: str) -> str:
@@ -495,7 +495,7 @@ def templatizer_short_form(template: str) -> Dict:
 
     # Generate template description using Claude
     response = client.messages.create(
-        model="claude-3-opus-20240229",
+        model="claude-3-haiku-20240307",
         system="You are a professional content writer analyzing social media post templates. Describe the given template's structure, ideal use cases, and best practices for using it effectively. Be specific about what type of content works best with this template.",
         messages=[{"role": "user", "content": template}],
         max_tokens=2048
@@ -531,12 +531,12 @@ def top_content_to_repurposing(query: str, topic: str, username: str) -> Dict:
     """
     # Get top content using existing retriever
     results = top_content_retriever(query, topic)
-    
+
     # Process top 5 posts
     status_messages = []
     if results.get("data", {}).get("documents"):
         top_posts = [doc.get("content", "") for doc in results["data"]["documents"][:5]]
-        
+
         # Iterate through posts and repurpose each one
         for post in top_posts:
             try:
@@ -544,7 +544,7 @@ def top_content_to_repurposing(query: str, topic: str, username: str) -> Dict:
                 status_messages.append(f"Processed post: {post[:50]}...")
             except Exception as e:
                 status_messages.append(f"Failed to process post: {str(e)}")
-    
+
     return {
         "status": "Completed repurposing of top posts",
         "details": status_messages
