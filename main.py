@@ -100,10 +100,13 @@ async def get_top_content(request_data: Dict):
 
     try:
         query = request_data.get("query")
+        topic = request_data.get("topic")
         if not query:
             raise HTTPException(status_code=400, detail="query is required")
+        if not topic:
+            raise HTTPException(status_code=400, detail="topic is required")
 
-        result = top_content_retriever(query)
+        result = top_content_retriever(query, topic)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

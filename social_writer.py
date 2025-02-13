@@ -292,17 +292,22 @@ def top_content_sentiment_setup(query: str) -> Dict:
         "metric_sort": metric_sort
     }
 
-def top_content_retriever(query: str) -> Dict:
+def top_content_retriever(query: str, topic: str) -> Dict:
     """
     Process user query to get filtered and sorted content
+    Args:
+        query: String containing the search query (e.g. "Find top posts of the week")
+        topic: String containing the topic to vectorize (e.g. "Digital Operations")
+    Returns:
+        Dictionary containing filtered and sorted content
     """
     # Get filter and metric sort from sentiment setup
     setup_result = top_content_sentiment_setup(query)
 
-    # Use vector search with the filter
+    # Use vector search with the filter, but vectorize the topic
     search_result = vector_search_for_published_content(
         metadata_filter=setup_result["filter"],
-        text_to_vectorize=query
+        text_to_vectorize=topic
     )
 
     # Sort results by the chosen metric if present
