@@ -179,6 +179,23 @@ async def get_top_content_repurposing(request_data: Dict, background_tasks: Back
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/templatizer-short-form")
+async def create_template_embedding(request_data: Dict):
+    if not os.getenv("OPENAI_API_KEY"):
+        raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
+    if not os.getenv("ANTHROPIC_API_KEY"):
+        raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY not configured")
+
+    try:
+        template = request_data.get("template")
+        if not template:
+            raise HTTPException(status_code=400, detail="template is required")
+
+        result = templatizer_short_form(template)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/multitemplate")
 async def get_multitemplate(request_data: Dict):
     if not os.getenv("OPENAI_API_KEY"):
