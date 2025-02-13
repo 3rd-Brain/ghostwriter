@@ -481,3 +481,21 @@ def source_content_retriever(topic_query: str) -> str:
         return response.json()
     except requests.exceptions.RequestException as e:
         raise Exception(f"Failed to retrieve source content: {str(e)}")
+def top_content_to_repurposing(query: str, topic: str) -> list:
+    """
+    Get top 5 posts from published content and extract their content
+    Args:
+        query: String for searching top content (e.g. "Repurpose my most high-performing tweets")
+        topic: String containing topic to search for (e.g. "Digital Operations")
+    Returns:
+        List of content strings from top 5 posts
+    """
+    # Get top content using existing retriever
+    results = top_content_retriever(query, topic)
+    
+    # Extract top 5 posts' content
+    posts = []
+    if results.get("data", {}).get("documents"):
+        posts = [doc.get("content", "") for doc in results["data"]["documents"][:5]]
+    
+    return posts
