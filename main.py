@@ -84,9 +84,9 @@ async def setup_sentiment(request_data: Dict):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-def top_content_retriever(query: str):
+def top_content_retriever(query: str, topic: str) -> Dict:
     setup_result = top_content_sentiment_setup(query)
-    results = vector_search_for_published_content(setup_result["filter"], query)
+    results = vector_search_for_published_content(setup_result["filter"], topic)
     if setup_result.get("metric_sort"):
         results = metric_sorter(results, setup_result["metric_sort"])
     return results
