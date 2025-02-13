@@ -261,7 +261,7 @@ def top_content_sentiment_setup(query: str) -> Dict:
 
     # Generate filter using first system prompt
     filter_response = openai_client.chat.completions.create(
-        model="gpt-4-0125-preview",
+        model="gpt-4o-mini-2024-07-18",
         messages=[
             {"role": "system", "content": Prompts.FILTER_GENERATION},
             {"role": "user", "content": augmented_query}
@@ -278,7 +278,7 @@ def top_content_sentiment_setup(query: str) -> Dict:
 
     # Generate metric sort using second system prompt
     metric_response = openai_client.chat.completions.create(
-        model="gpt-4-0125-preview",
+        model="gpt-4o-mini-2024-07-18",
         messages=[
             {"role": "system", "content": Prompts.METRIC_SELECTION},
             {"role": "user", "content": query}
