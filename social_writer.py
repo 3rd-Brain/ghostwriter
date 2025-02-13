@@ -39,7 +39,7 @@ def social_writer(
 
 Write a social media post based on the information provided. Keep it concise and engaging."""
 
-    response = client.messages.create(model="claude-3-opus-20240229",
+    response = client.messages.create(model="claude-3-5-sonnet-20241022",
                                       system=Prompts.INITIAL_GENERATION,
                                       messages=[{
                                           "role": "user",
@@ -56,7 +56,7 @@ Refine and polish this content to maximize engagement. Consider optimizing for l
 
 {client_brief}"""
 
-    response = client.messages.create(model="claude-3-opus-20240229",
+    response = client.messages.create(model="claude-3-5-sonnet-20241022",
                                       system=Prompts.CONTENT_REFINEMENT,
                                       messages=[{
                                           "role": "user",
@@ -330,8 +330,8 @@ def multitemplate_retriever(content_chunk: str) -> Dict:
 
     # Get template description from Claude
     response = client.messages.create(
-        model="claude-3-opus-20240229",
-        system="You are a professional content writer. Describe an ideal template structure for the given content chunk. Focus on the format and style that would best present this information.",
+        model="claude-3-5-haiku-20241022",
+        system=Prompts.TEMPLATE_DESCRIPTION,
         messages=[{"role": "user", "content": content_chunk}],
         max_tokens=2048
     )
