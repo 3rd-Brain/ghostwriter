@@ -36,7 +36,9 @@ def social_post_generation_with_json(
     steps = sorted(flow_config["steps"], key=lambda x: x["Order"])
     prev_output = ""
     
+    print("\n=== Starting Generation Process ===")
     for step in steps:
+        print(f"\n--- Step: {step['Step_name']} ---")
         # Prepare messages by replacing variables in content
         messages = []
         for msg in step["Message"]:
@@ -68,5 +70,8 @@ def social_post_generation_with_json(
         
         # Store output for next step
         prev_output = response.content[0].text
+        print(f"Output: {prev_output}\n")
+        print(f"Character count: {len(prev_output)}")
     
+    print("\n=== Generation Process Complete ===")
     return prev_output
