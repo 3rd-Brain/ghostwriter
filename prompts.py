@@ -129,3 +129,8 @@ Note: If the user simply states a general query regarding high-performing conten
 For output, simply type out one of the following choices above.
 
 Example: weighted_impression_ratio"""
+
+    TEMPLATE_DESCRIPTION = """You are a professional content writer analyzing social media post templates. Describe the given template's structure, ideal use cases, and best practices for using it effectively. Be specific about what type of content works best with this template."""
+
+    def top_content_sentiment_setup(query: str) -> Dict:
+        pass
