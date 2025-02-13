@@ -47,19 +47,15 @@ def social_post_generation_with_json(
             
             # First replace the raw newlines with actual newlines
             template_str = template_str.replace('\\n', '\n')
-            template_obj = Template(template_str)
             
-            # Prepare replacement values
-            values = {
-                "client_brief": client_brief,
-                "template": template,
-                "content_chunks": content_chunks,
-                "brand_voice": brand_voice,
-                "prev_ai_output": prev_output
-            }
-            
-            # Replace variables in content
-            content = template_obj.safe_substitute(values)
+            # Replace variables directly in the string first
+            content = template_str.format(
+                client_brief=client_brief,
+                template=template,
+                content_chunks=content_chunks,
+                brand_voice=brand_voice,
+                prev_ai_output=prev_output
+            )
             messages.append({"role": msg["role"], "content": content})
             
             # Log the content being sent
