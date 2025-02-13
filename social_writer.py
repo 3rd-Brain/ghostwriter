@@ -496,7 +496,7 @@ def templatizer_short_form(template: str) -> Dict:
     # Generate template description using Claude
     response = client.messages.create(
         model="claude-3-5-haiku-20241022",
-        system="You are a professional content writer analyzing social media post templates. Describe the given template's structure, ideal use cases, and best practices for using it effectively. Be specific about what type of content works best with this template.",
+        system=Prompts.TEMPLATE_DESCRIPTION_ANALYSIS,
         messages=[{"role": "user", "content": template}],
         max_tokens=2048
     )
