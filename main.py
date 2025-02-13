@@ -163,12 +163,15 @@ async def get_top_content_repurposing(request_data: Dict):
     try:
         query = request_data.get("query")
         topic = request_data.get("topic")
+        username = request_data.get("username")
         if not query:
             raise HTTPException(status_code=400, detail="query is required")
         if not topic:
             raise HTTPException(status_code=400, detail="topic is required")
+        if not username:
+            raise HTTPException(status_code=400, detail="username is required")
 
-        result = top_content_to_repurposing(query, topic)
+        result = top_content_to_repurposing(query, topic, username)
         return {"posts": result}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

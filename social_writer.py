@@ -481,12 +481,13 @@ def source_content_retriever(topic_query: str) -> str:
         return response.json()
     except requests.exceptions.RequestException as e:
         raise Exception(f"Failed to retrieve source content: {str(e)}")
-def top_content_to_repurposing(query: str, topic: str) -> Dict:
+def top_content_to_repurposing(query: str, topic: str, username: str) -> Dict:
     """
     Get top 5 posts and repurpose each one using short_form_social_repurposing
     Args:
         query: String for searching top content (e.g. "Repurpose my most high-performing tweets")
         topic: String containing topic to search for (e.g. "Digital Operations")
+        username: String containing the username for brand voice
     Returns:
         Dictionary with status of repurposing process
     """
@@ -501,7 +502,7 @@ def top_content_to_repurposing(query: str, topic: str) -> Dict:
         # Iterate through posts and repurpose each one
         for post in top_posts:
             try:
-                result = short_form_social_repurposing(post, "GentOfTech")
+                result = short_form_social_repurposing(post, username)
                 status_messages.append(f"Processed post: {post[:50]}...")
             except Exception as e:
                 status_messages.append(f"Failed to process post: {str(e)}")
