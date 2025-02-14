@@ -86,6 +86,7 @@ def social_post_generation_with_json(
     
     print("\n=== Generation Process Complete ===")
     return prev_output
+    
 def flow_config_retriever(workflow_id: str) -> dict:
     """
     Retrieve flow configuration from Airtable based on workflow ID
