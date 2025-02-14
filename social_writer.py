@@ -551,13 +551,14 @@ def templatizer_short_form(template: str) -> Dict:
         print(f"AstraDB upload failed: {str(e)}")
         raise Exception(f"Failed to upload to AstraDB: {str(e)}")
 
-def top_content_to_repurposing(query: str, topic: str, username: str) -> Dict:
+def top_content_to_repurposing(query: str, topic: str, username: str, workflow_id: str = "Legacy Generation Flow with Claude") -> Dict:
     """
     Get top 5 posts and repurpose each one using short_form_social_repurposing
     Args:
         query: String for searching top content (e.g. "Repurpose my most high-performing tweets")
         topic: String containing topic to search for (e.g. "Digital Operations")
         username: String containing the username for brand voice
+        workflow_id: String containing the workflow ID for generation
     Returns:
         Dictionary with status of repurposing process
     """
@@ -572,7 +573,7 @@ def top_content_to_repurposing(query: str, topic: str, username: str) -> Dict:
         # Iterate through posts and repurpose each one
         for post in top_posts:
             try:
-                result = short_form_social_repurposing(post, username)
+                result = short_form_social_repurposing(post, username, workflow_id)
                 status_messages.append(f"Processed post: {post[:50]}...")
             except Exception as e:
                 status_messages.append(f"Failed to process post: {str(e)}")
