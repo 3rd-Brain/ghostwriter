@@ -217,9 +217,6 @@ def vector_search_for_published_content(metadata_filter: Dict, text_to_vectorize
         response = requests.post(url, headers=headers, json=payload)
         response.raise_for_status()
         response_data = response.json()
-        print(f"AstraDB API response:")
-        print(f"Request payload: {json.dumps(payload, indent=2)}")
-        print(f"Response: {json.dumps(response_data, indent=2)}")
         return response_data
     except requests.exceptions.RequestException as e:
         raise Exception(f"Failed to perform vector search: {str(e)}")
