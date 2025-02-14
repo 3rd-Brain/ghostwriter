@@ -387,18 +387,12 @@ def short_form_social_repurposing(topic_query: str, username: str, workflow_id: 
         content_chunks = [doc["content"] for doc in source_results["data"]["documents"][:3]]
 
     combined_chunks = "\n\n".join(content_chunks)
-    print("\n=== Extracted Content Chunks ===")
-    print(combined_chunks)
 
     # Step 2: Get templates
     template_results = multitemplate_retriever(combined_chunks)
-    print("\n=== Template Search Results ===")
-    print(json.dumps(template_results, indent=2))
 
     # Step 3: Get brand voice
     brand_voice = get_client_brand_voice(username)
-    print("\n=== Retrieved Brand Voice ===")
-    print(json.dumps(brand_voice, indent=2))
 
     # Return early with status message
     result = {"status": "Your content is being generated"}
@@ -561,6 +555,7 @@ def top_content_to_repurposing(query: str, topic: str, username: str, workflow_i
     """
     # Get top content using existing retriever
     results = top_content_retriever(query, topic)
+    print("Results from top_content_retriever:", results)
 
     # Process top 5 posts
     status_messages = []
