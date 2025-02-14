@@ -143,13 +143,14 @@ async def repurpose_content(request_data: Dict):
     try:
         topic_query = request_data.get("topic_query")
         username = request_data.get("username")
-        
+        workflow_id = request_data.get("workflow_id", "Legacy Generation Flow with Claude") #Added workflow_id with default value
+
         if not topic_query:
             raise HTTPException(status_code=400, detail="topic_query is required")
         if not username:
             raise HTTPException(status_code=400, detail="username is required")
 
-        result = short_form_social_repurposing(topic_query, username)
+        result = short_form_social_repurposing(topic_query, username, workflow_id) #Added workflow_id
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -165,6 +166,8 @@ async def get_top_content_repurposing(request_data: Dict, background_tasks: Back
         query = request_data.get("query")
         topic = request_data.get("topic")
         username = request_data.get("username")
+        workflow_id = request_data.get("workflow_id", "Legacy Generation Flow with Claude") #Added workflow_id with default value
+
         if not query:
             raise HTTPException(status_code=400, detail="query is required")
         if not topic:
@@ -173,8 +176,8 @@ async def get_top_content_repurposing(request_data: Dict, background_tasks: Back
             raise HTTPException(status_code=400, detail="username is required")
 
         # Add task to background
-        background_tasks.add_task(top_content_to_repurposing, query, topic, username)
-        
+        background_tasks.add_task(top_content_to_repurposing, query, topic, username, workflow_id) #Added workflow_id
+
         # Return immediately
         return {"status": "Content is now being generated"}
     except Exception as e:
@@ -253,3 +256,8 @@ async def get_multitemplate(request_data: Dict):
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+def top_content_to_repurposing(query: str, topic: str, username: str, workflow_id: str = "Legacy Generation Flow with Claude") -> Dict:
+    top_content = top_content_retriever(query, topic)
+    repurposed_content = short_form_social_repurposing(top_content["content"], username, workflow_id)
+    return repurposed_content
