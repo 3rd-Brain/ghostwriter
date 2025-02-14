@@ -257,10 +257,3 @@ async def get_multitemplate(request_data: Dict):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-def top_content_to_repurposing(query: str, topic: str, username: str, workflow_id: str = "Legacy Generation Flow with Claude") -> Dict:
-    top_content = top_content_retriever(query, topic)
-    if top_content.get("data", {}).get("documents"):
-        content = top_content["data"]["documents"][0].get("content", "")
-        repurposed_content = short_form_social_repurposing(content, username, workflow_id)
-        return repurposed_content
-    return {"status": "No content found to repurpose"}
