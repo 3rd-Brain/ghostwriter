@@ -369,12 +369,13 @@ def multitemplate_retriever(content_chunk: str) -> Dict:
     except requests.exceptions.RequestException as e:
         raise Exception(f"Failed to retrieve templates: {str(e)}")
 
-def short_form_social_repurposing(topic_query: str, username: str) -> Dict:
+def short_form_social_repurposing(topic_query: str, username: str, workflow_id: str = "Legacy Generation Flow with Claude") -> Dict:
     """
     Repurpose content based on topic query and user's brand voice
     Args:
         topic_query: String containing the topic to search for
         username: String containing the username for brand voice
+        workflow_id: String containing the workflow ID for generation
     Returns:
         Dictionary with status message
     """
@@ -413,7 +414,7 @@ def short_form_social_repurposing(topic_query: str, username: str) -> Dict:
             from social_dynamic_generation_flow import social_post_generation_with_json
             
             generated_content = social_post_generation_with_json(
-                workflow_id="Legacy Generation Flow with Claude",
+                workflow_id=workflow_id,
                 client_brief=brand_voice["brand_voice"],
                 template=template["content"],
                 content_chunks=combined_chunks
