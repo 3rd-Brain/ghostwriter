@@ -18,7 +18,7 @@ def legacy_generation_flow_with_claude() -> Dict:
     pass
 
 def social_post_generation_with_json(
-    flow_config: Dict,
+    workflow_id: str,
     client_brief: str,
     template: str,
     content_chunks: str,
@@ -36,6 +36,9 @@ def social_post_generation_with_json(
         String containing the generated social post
     """
     client = anthropic.Client(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+    
+    # Retrieve flow configuration using workflow_id
+    flow_config = flow_config_retriever(workflow_id)
     
     # Sort steps by order
     steps = sorted(flow_config["steps"], key=lambda x: x["Order"])
