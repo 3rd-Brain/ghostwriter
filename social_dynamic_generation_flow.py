@@ -1,4 +1,9 @@
 
+import os
+import requests
+from urllib.parse import quote
+
+
 from typing import Dict, List
 import anthropic
 import os
@@ -78,3 +83,42 @@ def social_post_generation_with_json(
     
     print("\n=== Generation Process Complete ===")
     return prev_output
+def flow_config_retriever(workflow_id: str) -> dict:
+    """
+    Retrieve flow configuration from Airtable based on workflow ID
+    Args:
+        workflow_id: String containing the workflow identifier
+    Returns:
+        Dictionary containing the flow configuration
+    """
+    AIRTABLE_API_KEY = os.environ.get("AIRTABLE_API_KEY")
+    if not AIRTABLE_API_KEY:
+        raise Exception("AIRTABLE_API_KEY not configured")
+
+    # URL encode the workflow_id
+    encoded_workflow_id = quote(workflow_id)
+    url = f"https://api.airtable.com/v0/appLz2zuN6ZFu4mYS/tblXFcCbZsmGYebZt?filterByFormula=%7Bworkflow_id%7D%3D'{encoded_workflow_id}'"
+
+    headers = {
+        "Authorization": f"Bearer {AIRTABLE_API_KEY}",
+        "Content-Type": "application/json"
+    }
+
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        data = response.json()
+
+        if not data.get("records"):
+            raise Exception(f"No flow configuration found for workflow_id: {workflow_id}")
+
+        # Extract JSON Payload field and parse it
+        json_payload = data["records"][0]["fields"].get("JSON Payload")
+        if not json_payload:
+            raise Exception(f"No JSON Payload found for workflow_id: {workflow_id}")
+
+        return json.loads(json_payload)
+
+    except requests.exceptions.RequestException as e:
+        raise Exception(f"Failed to retrieve flow configuration from Airtable: {str(e)}")
+import json
