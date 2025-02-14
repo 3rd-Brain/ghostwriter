@@ -410,17 +410,24 @@ def short_form_social_repurposing(topic_query: str, username: str) -> Dict:
         templates = template_results["data"]["documents"][:5]  # Get first 5 templates
 
         for template in templates:
-            initial_info = {
-                "client_brief": brand_voice["brand_voice"],
-                "template": template["content"],
-                "content_chunks": combined_chunks
-            }
-
-            content_result = social_writer(initial_info)
+            from social_dynamic_generation_flow import social_post_generation_with_json
+            
+            generated_content = social_post_generation_with_json(
+                workflow_id="Legacy Generation Flow with Claude",
+                client_brief=brand_voice["brand_voice"],
+                template=template["content"],
+                content_chunks=combined_chunks
+            )
+            
             print(f"\n--- Content Generated Using Template ---")
             print(f"Template: {template['content']}")
-            print(f"First Draft: {content_result['first_draft']}")
-            print(f"Optimized Content: {content_result['optimized_content']}")
+            print(f"Generated Content: {generated_content}")
+            
+            content_result = {
+                "first_draft": generated_content,
+                "content_chunks": combined_chunks,
+                "template": template["content"]
+            }
 
             # Extract template without variations by splitting on "|" and taking first part
             template_base = template["content"].split("|")[0].strip()
