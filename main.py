@@ -186,18 +186,18 @@ async def generate_social_post(request_data: Dict):
         raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY not configured")
 
     try:
-        flow_config = request_data.get("flow_config")
+        workflow_id = request_data.get("workflow_id")
         client_brief = request_data.get("client_brief")
         template = request_data.get("template")
         content_chunks = request_data.get("content_chunks")
         brand_voice = request_data.get("brand_voice", "")
 
-        if not all([flow_config, client_brief, template, content_chunks]):
+        if not all([workflow_id, client_brief, template, content_chunks]):
             raise HTTPException(status_code=400, detail="Missing required fields")
 
         from social_dynamic_generation_flow import social_post_generation_with_json
         result = social_post_generation_with_json(
-            flow_config=flow_config,
+            workflow_id=workflow_id,
             client_brief=client_brief,
             template=template,
             content_chunks=content_chunks,
