@@ -20,7 +20,7 @@ client = anthropic.Client(api_key=ANTHROPIC_API_KEY)
 
 
 
-def upload_social_post(content_data: Dict) -> Dict:
+def generated_content_uploader(content_data: Dict) -> Dict:
     """
     Upload generated content to Airtable
     """
@@ -97,7 +97,7 @@ def get_client_brand_voice(username: str) -> Dict:
         raise Exception(
             f"Failed to retrieve brand voice from Airtable: {str(e)}")
 
-def search_published_content(metadata_filter: Dict, text_to_vectorize: str) -> Dict:
+def vector_search_for_published_content(metadata_filter: Dict, text_to_vectorize: str) -> Dict:
     """
     Perform vector search for published content using OpenAI embeddings
     """
@@ -247,7 +247,7 @@ def top_content_retriever(query: str, topic: str) -> Dict:
     setup_result = top_content_sentiment_setup(query)
 
     # Use vector search with the filter, but vectorize the topic
-    search_result = search_published_content(
+    search_result = vector_search_for_published_content(
         metadata_filter=setup_result["filter"],
         text_to_vectorize=topic
     )
@@ -310,7 +310,7 @@ def multitemplate_retriever(content_chunk: str) -> Dict:
     except requests.exceptions.RequestException as e:
         raise Exception(f"Failed to retrieve templates: {str(e)}")
 
-def repurpose_single_post(topic_query: str, username: str, workflow_id: str = "Legacy Generation Flow with Claude") -> Dict:
+def short_form_social_repurposing(topic_query: str, username: str, workflow_id: str = "Legacy Generation Flow with Claude") -> Dict:
     """
     Repurpose content based on topic query and user's brand voice
     Args:
@@ -347,30 +347,33 @@ def repurpose_single_post(topic_query: str, username: str, workflow_id: str = "L
 
         for template in templates:
             from social_dynamic_generation_flow import social_post_generation_with_json
-
+            
             generated_content = social_post_generation_with_json(
                 workflow_id=workflow_id,
                 client_brief=brand_voice["brand_voice"],
                 template=template["content"],
                 content_chunks=combined_chunks
             )
-
+            
             print(f"\n--- Content Generated Using Template ---")
             print(f"Template: {template['content']}")
             print(f"Generated Content: {generated_content}")
+            
+            # Extract template without variations
+            template_base = template["content"].split("|")[0].strip()
 
             # Extract template without variations by splitting on "|" and taking first part
             template_base = template["content"].split("|")[0].strip()
 
             # Prepare content data for upload
             content_data = {
-                "first_draft": generated_content["first_draft"],
+                "first_draft": content_result["first_draft"],
                 "content_chunks": combined_chunks,
                 "template": template_base
             }
 
             # Upload the generated content
-            upload_result = upload_social_post(content_data)
+            upload_result = generated_content_uploader(content_data)
             print(f"\n--- Content Upload Result ---")
             print(json.dumps(upload_result, indent=2))
 
@@ -420,7 +423,7 @@ def source_content_retriever(topic_query: str) -> str:
     except requests.exceptions.RequestException as e:
         raise Exception(f"Failed to retrieve source content: {str(e)}")
 
-def process_social_template(template: str) -> Dict:
+def templatizer_short_form(template: str) -> Dict:
     """
     Process a template by generating a description with Claude and creating a vector embedding
     Args:
@@ -503,15 +506,15 @@ def top_content_to_repurposing(query: str, topic: str, username: str, workflow_i
         # Iterate through posts and repurpose each one
         for post in top_posts:
             try:
-                result = repurpose_single_post(post, username, workflow_id)
+                result = short_form_social_repurposing(post, username, workflow_id)
                 status_messages.append(f"Processed post: {post[:50]}...")
             except Exception as e:
                 status_messages.append(f"Failed to process post: {str(e)}")
-
+    
     print("---")
     print("Generation Done")
     print("---")
-
+    
     return {
         "status": "Completed repurposing of top posts",
         "details": status_messages
