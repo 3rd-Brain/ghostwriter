@@ -10,8 +10,6 @@ app = FastAPI()
 def read_root():
     return {"Hello": "World"}
 
-
-
 @app.post("/generate-social")
 async def generate_social_content(request_data: Dict):
     if not os.getenv("ANTHROPIC_API_KEY"):
