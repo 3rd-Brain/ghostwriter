@@ -1,6 +1,6 @@
 from typing import Dict
 from fastapi import FastAPI, HTTPException, BackgroundTasks
-from social_writer import generated_content_uploader, get_client_brand_voice, vector_search_for_published_content, metric_sorter, top_content_sentiment_setup, source_content_retriever, multitemplate_retriever, short_form_social_repurposing, top_content_to_repurposing, templatizer_short_form
+from social_writer import upload_social_post, get_client_brand_voice, search_published_content, metric_sorter, top_content_sentiment_setup, source_content_retriever, multitemplate_retriever, repurpose_single_post, top_content_to_repurposing, process_social_template
 from social_dynamic_generation_flow import flow_config_retriever
 import os
 
@@ -16,7 +16,7 @@ async def upload_post(content_data: Dict):
         raise HTTPException(status_code=500, detail="AIRTABLE_API_KEY not configured")
 
     try:
-        result = generated_content_uploader(content_data)
+        result = upload_social_post(content_data)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -46,7 +46,7 @@ async def search_posts(request_data: Dict):
         if not text_to_vectorize:
             raise HTTPException(status_code=400, detail="text_to_vectorize is required")
 
-        result = vector_search_for_published_content(metadata_filter, text_to_vectorize)
+        result = search_published_content(metadata_filter, text_to_vectorize)
 
         # If sort_metric is provided, sort the results
         sort_metric = request_data.get("sort_metric")
@@ -74,7 +74,7 @@ async def setup_sentiment(request_data: Dict):
 
 def top_content_retriever(query: str, topic: str) -> Dict:
     setup_result = top_content_sentiment_setup(query)
-    results = vector_search_for_published_content(setup_result["filter"], topic)
+    results = search_published_content(setup_result["filter"], topic)
     if setup_result.get("metric_sort"):
         results = metric_sorter(results, setup_result["metric_sort"])
     return results
@@ -137,7 +137,7 @@ async def repurpose_content(request_data: Dict):
         if not username:
             raise HTTPException(status_code=400, detail="username is required")
 
-        result = short_form_social_repurposing(topic_query, username, workflow_id) #Added workflow_id
+        result = repurpose_single_post(topic_query, username, workflow_id) #Added workflow_id
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -209,7 +209,7 @@ async def create_template_embedding(request_data: Dict):
         if not template:
             raise HTTPException(status_code=400, detail="template is required")
 
-        result = templatizer_short_form(template)
+        result = process_social_template(template)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
