@@ -358,9 +358,6 @@ def short_form_social_repurposing(topic_query: str, username: str, workflow_id: 
             print(f"\n--- Content Generated Using Template ---")
             print(f"Template: {template['content']}")
             print(f"Generated Content: {generated_content}")
-            
-            # Extract template without variations
-            template_base = template["content"].split("|")[0].strip()
 
             # Extract template without variations by splitting on "|" and taking first part
             template_base = template["content"].split("|")[0].strip()
