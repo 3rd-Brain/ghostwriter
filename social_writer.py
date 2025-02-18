@@ -247,7 +247,7 @@ def top_content_retriever(query: str, topic: str) -> Dict:
     setup_result = top_content_sentiment_setup(query)
 
     # Use vector search with the filter, but vectorize the topic
-    search_result = vector_search_for_published_content(
+    search_result = search_published_content(
         metadata_filter=setup_result["filter"],
         text_to_vectorize=topic
     )
