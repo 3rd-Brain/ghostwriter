@@ -12,6 +12,7 @@ from openai import OpenAI
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN")
+ASTRA_DB_APPLICATION_TOKEN_FOR_SOURCES = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_FOR_SOURCES")
 
 openai_client = OpenAI(api_key=OPENAI_API_KEY)
 client = anthropic.Client(api_key=ANTHROPIC_API_KEY)
@@ -403,18 +404,18 @@ def short_form_social_repurposing(topic_query: str, username: str, workflow_id: 
 
         for template in templates:
             from social_dynamic_generation_flow import social_post_generation_with_json
-            
+
             generated_content = social_post_generation_with_json(
                 workflow_id=workflow_id,
                 client_brief=brand_voice["brand_voice"],
                 template=template["content"],
                 content_chunks=combined_chunks
             )
-            
+
             print(f"\n--- Content Generated Using Template ---")
             print(f"Template: {template['content']}")
             print(f"Generated Content: {generated_content}")
-            
+
             content_result = {
                 "first_draft": generated_content,
                 "content_chunks": combined_chunks,
@@ -448,8 +449,9 @@ def source_content_retriever(topic_query: str) -> str:
     """
     if not OPENAI_API_KEY:
         raise Exception("OPENAI_API_KEY not configured")
-    if not ASTRA_DB_APPLICATION_TOKEN:
-        raise Exception("ASTRA_DB_APPLICATION_TOKEN not configured")
+    ASTRA_DB_APPLICATION_TOKEN_FOR_SOURCES = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_FOR_SOURCES")
+    if not ASTRA_DB_APPLICATION_TOKEN_FOR_SOURCES:
+        raise Exception("ASTRA_DB_APPLICATION_TOKEN_FOR_SOURCES not configured")
 
     # Generate embedding for the topic query
     response = openai_client.embeddings.create(
@@ -462,7 +464,7 @@ def source_content_retriever(topic_query: str) -> str:
     url = "https://168d1caf-ef22-4f69-a1a0-2e771cbd41bf-us-east-2.apps.astra.datastax.com/api/json/v1/default_keyspace/source_content"
 
     headers = {
-        "Token": ASTRA_DB_APPLICATION_TOKEN,
+        "Token": ASTRA_DB_APPLICATION_TOKEN_FOR_SOURCES,
         "Content-Type": "application/json"
     }
 
