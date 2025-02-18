@@ -10,8 +10,8 @@ app = FastAPI()
 def read_root():
     return {"Hello": "World"}
 
-@app.post("/upload-content")
-async def upload_content(content_data: Dict):
+@app.post("/posts/upload")
+async def upload_post(content_data: Dict):
     if not os.getenv("AIRTABLE_API_KEY"):
         raise HTTPException(status_code=500, detail="AIRTABLE_API_KEY not configured")
 
@@ -32,8 +32,8 @@ async def get_brand_voice(username: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/vector-search")
-async def vector_search(request_data: Dict):
+@app.post("/posts/search")
+async def search_posts(request_data: Dict):
     if not os.getenv("OPENAI_API_KEY"):
         raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
     if not os.getenv("ASTRA_DB_APPLICATION_TOKEN"):

@@ -20,7 +20,7 @@ client = anthropic.Client(api_key=ANTHROPIC_API_KEY)
 
 
 
-def generated_content_uploader(content_data: Dict) -> Dict:
+def upload_social_post(content_data: Dict) -> Dict:
     """
     Upload generated content to Airtable
     """
@@ -97,7 +97,7 @@ def get_client_brand_voice(username: str) -> Dict:
         raise Exception(
             f"Failed to retrieve brand voice from Airtable: {str(e)}")
 
-def vector_search_for_published_content(metadata_filter: Dict, text_to_vectorize: str) -> Dict:
+def search_published_content(metadata_filter: Dict, text_to_vectorize: str) -> Dict:
     """
     Perform vector search for published content using OpenAI embeddings
     """
@@ -310,7 +310,7 @@ def multitemplate_retriever(content_chunk: str) -> Dict:
     except requests.exceptions.RequestException as e:
         raise Exception(f"Failed to retrieve templates: {str(e)}")
 
-def short_form_social_repurposing(topic_query: str, username: str, workflow_id: str = "Legacy Generation Flow with Claude") -> Dict:
+def repurpose_single_post(topic_query: str, username: str, workflow_id: str = "Legacy Generation Flow with Claude") -> Dict:
     """
     Repurpose content based on topic query and user's brand voice
     Args:
@@ -420,7 +420,7 @@ def source_content_retriever(topic_query: str) -> str:
     except requests.exceptions.RequestException as e:
         raise Exception(f"Failed to retrieve source content: {str(e)}")
 
-def templatizer_short_form(template: str) -> Dict:
+def process_social_template(template: str) -> Dict:
     """
     Process a template by generating a description with Claude and creating a vector embedding
     Args:
