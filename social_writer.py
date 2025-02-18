@@ -477,9 +477,16 @@ def source_content_retriever(topic_query: str) -> str:
 
     try:
         response = requests.post(url, headers=headers, json=payload)
+        print(f"AstraDB Response Status: {response.status_code}")
+        print(f"AstraDB Response Headers: {response.headers}")
+        print(f"AstraDB Response Body: {response.text}")
         response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as e:
+        print(f"AstraDB Error Details: {str(e)}")
+        print(f"Request URL: {url}")
+        print(f"Request Headers: {headers}")
+        print(f"Request Payload: {payload}")
         raise Exception(f"Failed to retrieve source content: {str(e)}")
 
 def templatizer_short_form(template: str) -> Dict:
