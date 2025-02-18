@@ -17,7 +17,63 @@ openai_client = OpenAI(api_key=OPENAI_API_KEY)
 client = anthropic.Client(api_key=ANTHROPIC_API_KEY)
 
 
+def social_writer(
+    initial_info: Dict,
+    completion_params: Dict = None,
+) -> Dict:
 
+    if completion_params is None:
+        completion_params = {}
+
+    client_brief = initial_info.get('client_brief', '')
+    template = initial_info.get('template', '')
+    content_chunks = initial_info.get('content_chunks', '')
+
+    prompt = f"""<client_brief>
+{client_brief}
+
+<template>
+{template}
+
+<content_chunks>
+{content_chunks}
+
+Write a social media post based on the information provided. Keep it concise and engaging."""
+
+    response = client.messages.create(model="claude-3-5-sonnet-20241022",
+                                      system=Prompts.INITIAL_GENERATION,
+                                      messages=[{
+                                          "role": "user",
+                                          "content": prompt
+                                      }],
+                                      max_tokens=2048)
+
+    first_draft = response.content[0].text
+
+    prompt = f"""Initial content:
+{first_draft}
+
+Refine and polish this content to maximize engagement. Consider optimizing for length, tone, and keywords. Client brief is provided below. Follow the user's brand voice:
+
+{client_brief}"""
+
+    response = client.messages.create(model="claude-3-5-sonnet-20241022",
+                                      system=Prompts.CONTENT_REFINEMENT,
+                                      messages=[{
+                                          "role": "user",
+                                          "content": prompt
+                                      }],
+                                      max_tokens=2048)
+
+    optimized_content = response.content[0].text
+
+    return {
+        "first_draft": first_draft,
+        "optimized_content": optimized_content,
+        "content_chunks": content_chunks,
+        "template": template,
+        "client_brief": client_brief
+    }
 
 
 def generated_content_uploader(content_data: Dict) -> Dict:
@@ -359,8 +415,11 @@ def short_form_social_repurposing(topic_query: str, username: str, workflow_id: 
             print(f"Template: {template['content']}")
             print(f"Generated Content: {generated_content}")
             
-            # Extract template without variations
-            template_base = template["content"].split("|")[0].strip()
+            content_result = {
+                "first_draft": generated_content,
+                "content_chunks": combined_chunks,
+                "template": template["content"]
+            }
 
             # Extract template without variations by splitting on "|" and taking first part
             template_base = template["content"].split("|")[0].strip()
@@ -510,11 +569,7 @@ def top_content_to_repurposing(query: str, topic: str, username: str, workflow_i
                 status_messages.append(f"Processed post: {post[:50]}...")
             except Exception as e:
                 status_messages.append(f"Failed to process post: {str(e)}")
-    
-    print("---")
-    print("Generation Done")
-    print("---")
-    
+
     return {
         "status": "Completed repurposing of top posts",
         "details": status_messages
