@@ -347,14 +347,14 @@ def repurpose_single_post(topic_query: str, username: str, workflow_id: str = "L
 
         for template in templates:
             from social_dynamic_generation_flow import social_post_generation_with_json
-            
+
             generated_content = social_post_generation_with_json(
                 workflow_id=workflow_id,
                 client_brief=brand_voice["brand_voice"],
                 template=template["content"],
                 content_chunks=combined_chunks
             )
-            
+
             print(f"\n--- Content Generated Using Template ---")
             print(f"Template: {template['content']}")
             print(f"Generated Content: {generated_content}")
@@ -364,13 +364,13 @@ def repurpose_single_post(topic_query: str, username: str, workflow_id: str = "L
 
             # Prepare content data for upload
             content_data = {
-                "first_draft": content_result["first_draft"],
+                "first_draft": generated_content["first_draft"], #Corrected this line
                 "content_chunks": combined_chunks,
                 "template": template_base
             }
 
             # Upload the generated content
-            upload_result = generated_content_uploader(content_data)
+            upload_result = upload_social_post(content_data) #Corrected this line
             print(f"\n--- Content Upload Result ---")
             print(json.dumps(upload_result, indent=2))
 
@@ -503,15 +503,15 @@ def top_content_to_repurposing(query: str, topic: str, username: str, workflow_i
         # Iterate through posts and repurpose each one
         for post in top_posts:
             try:
-                result = short_form_social_repurposing(post, username, workflow_id)
+                result = repurpose_single_post(post, username, workflow_id) #Corrected this line
                 status_messages.append(f"Processed post: {post[:50]}...")
             except Exception as e:
                 status_messages.append(f"Failed to process post: {str(e)}")
-    
+
     print("---")
     print("Generation Done")
     print("---")
-    
+
     return {
         "status": "Completed repurposing of top posts",
         "details": status_messages
