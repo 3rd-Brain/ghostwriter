@@ -364,13 +364,13 @@ def repurpose_single_post(topic_query: str, username: str, workflow_id: str = "L
 
             # Prepare content data for upload
             content_data = {
-                "first_draft": generated_content["first_draft"], #Corrected this line
+                "first_draft": generated_content["first_draft"],
                 "content_chunks": combined_chunks,
                 "template": template_base
             }
 
             # Upload the generated content
-            upload_result = upload_social_post(content_data) #Corrected this line
+            upload_result = upload_social_post(content_data)
             print(f"\n--- Content Upload Result ---")
             print(json.dumps(upload_result, indent=2))
 
@@ -503,7 +503,7 @@ def top_content_to_repurposing(query: str, topic: str, username: str, workflow_i
         # Iterate through posts and repurpose each one
         for post in top_posts:
             try:
-                result = repurpose_single_post(post, username, workflow_id) #Corrected this line
+                result = repurpose_single_post(post, username, workflow_id)
                 status_messages.append(f"Processed post: {post[:50]}...")
             except Exception as e:
                 status_messages.append(f"Failed to process post: {str(e)}")
