@@ -569,7 +569,11 @@ def top_content_to_repurposing(query: str, topic: str, username: str, workflow_i
                 status_messages.append(f"Processed post: {post[:50]}...")
             except Exception as e:
                 status_messages.append(f"Failed to process post: {str(e)}")
-
+    
+    print("---")
+    print("Generation Done")
+    print("---")
+    
     return {
         "status": "Completed repurposing of top posts",
         "details": status_messages
