@@ -128,7 +128,7 @@ async def get_source_content(request_data: Dict):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/repurpose")
-async def repurpose_content(request_data: Dict):
+async def repurpose_content(request_data: Dict, background_tasks: BackgroundTasks):
     if not os.getenv("OPENAI_API_KEY"):
         raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
     if not os.getenv("ASTRA_DB_APPLICATION_TOKEN"):
@@ -141,15 +141,15 @@ async def repurpose_content(request_data: Dict):
     try:
         topic_query = request_data.get("topic_query")
         username = request_data.get("username")
-        workflow_id = request_data.get("workflow_id", "Legacy Generation Flow with Claude") #Added workflow_id with default value
+        workflow_id = request_data.get("workflow_id", "Legacy Generation Flow with Claude")
 
         if not topic_query:
             raise HTTPException(status_code=400, detail="topic_query is required")
         if not username:
             raise HTTPException(status_code=400, detail="username is required")
 
-        result = short_form_social_repurposing(topic_query, username, workflow_id) #Added workflow_id
-        return result
+        background_tasks.add_task(short_form_social_repurposing, topic_query, username, workflow_id)
+        return {"status": "Your content is being generated"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -164,7 +164,7 @@ async def get_top_content_repurposing(request_data: Dict, background_tasks: Back
         query = request_data.get("query")
         topic = request_data.get("topic")
         username = request_data.get("username")
-        workflow_id = request_data.get("workflow_id", "Legacy Generation Flow with Claude") #Added workflow_id with default value
+        workflow_id = request_data.get("workflow_id", "Legacy Generation Flow with Claude")
 
         if not query:
             raise HTTPException(status_code=400, detail="query is required")
@@ -174,7 +174,7 @@ async def get_top_content_repurposing(request_data: Dict, background_tasks: Back
             raise HTTPException(status_code=400, detail="username is required")
 
         # Add task to background
-        background_tasks.add_task(top_content_to_repurposing, query, topic, username, workflow_id) #Added workflow_id
+        background_tasks.add_task(top_content_to_repurposing, query, topic, username, workflow_id)
 
         # Return immediately
         return {"status": "Content is now being generated"}
@@ -254,4 +254,3 @@ async def get_multitemplate(request_data: Dict):
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
