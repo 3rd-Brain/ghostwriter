@@ -13,6 +13,7 @@ ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN")
 ASTRA_DB_APPLICATION_TOKEN_FOR_SOURCES = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_FOR_SOURCES")
+ASTRA_DB_APPLICATION_TOKEN_FOR_SHORTFORM_TEMPLATES = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_FOR_SHORTFORM_TEMPLATES")
 
 openai_client = OpenAI(api_key=OPENAI_API_KEY)
 client = anthropic.Client(api_key=ANTHROPIC_API_KEY)
@@ -324,8 +325,8 @@ def multitemplate_retriever(content_chunk: str) -> Dict:
     """
     if not OPENAI_API_KEY:
         raise Exception("OPENAI_API_KEY not configured")
-    if not ASTRA_DB_APPLICATION_TOKEN:
-        raise Exception("ASTRA_DB_APPLICATION_TOKEN not configured")
+    if not ASTRA_DB_APPLICATION_TOKEN_FOR_SHORTFORM_TEMPLATES:
+        raise Exception("ASTRA_DB_APPLICATION_TOKEN_FOR_SHORTFORM_TEMPLATES not configured")
 
     # Get template description from Claude
     response = client.messages.create(
@@ -347,7 +348,7 @@ def multitemplate_retriever(content_chunk: str) -> Dict:
     url = "https://42ac68c8-bfd9-4149-ab5c-a5212153b560-us-east-2.apps.astra.datastax.com/api/json/v1/default_keyspace/templates_shortform"
 
     headers = {
-        "Token": ASTRA_DB_APPLICATION_TOKEN,
+        "Token": ASTRA_DB_APPLICATION_TOKEN_FOR_SHORTFORM_TEMPLATES,
         "Content-Type": "application/json"
     }
 
@@ -525,8 +526,11 @@ def templatizer_short_form(template: str) -> Dict:
 
     # Upload vector and text to AstraDB
     url = "https://42ac68c8-bfd9-4149-ab5c-a5212153b560-us-east-2.apps.astra.datastax.com/api/json/v1/default_keyspace/templates_shortform"
+    if not ASTRA_DB_APPLICATION_TOKEN_FOR_SHORTFORM_TEMPLATES:
+        raise Exception("ASTRA_DB_APPLICATION_TOKEN_FOR_SHORTFORM_TEMPLATES not configured")
+
     headers = {
-        "Token": ASTRA_DB_APPLICATION_TOKEN,
+        "Token": ASTRA_DB_APPLICATION_TOKEN_FOR_SHORTFORM_TEMPLATES,
         "Content-Type": "application/json"
     }
     timestamp = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
