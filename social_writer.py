@@ -522,7 +522,7 @@ def top_content_to_repurposing(query: str, topic: str, brand: str, numberOfPosts
         # Iterate through posts and repurpose each one
         for post in top_posts:
             try:
-                result = short_form_social_repurposing(post, brand, workflow_id)
+                result = short_form_social_repurposing(post, brand, repurpose_count, workflow_id)
                 status_messages.append(f"Processed post: {post[:50]}...")
             except Exception as e:
                 status_messages.append(f"Failed to process post: {str(e)}")
