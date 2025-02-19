@@ -255,11 +255,12 @@ def top_content_retriever(query: str, topic: str) -> Dict:
         return metric_sorter(search_result, setup_result["metric_sort"])
     return search_result
 
-def multitemplate_retriever(content_chunk: str) -> Dict:
+def multitemplate_retriever(content_chunk: str, template_count_to_retrieve: int = 5) -> Dict:
     """
     Retrieve template documents based on content chunk using vector search
     Args:
         content_chunk: String containing the content to find templates for
+        template_count_to_retrieve: The number of templates to retrieve
     Returns:
         Dictionary containing template search results
     """
@@ -296,7 +297,7 @@ def multitemplate_retriever(content_chunk: str) -> Dict:
         "find": {
             "sort": {"$vector": vector},
             "options": {
-                "limit": 5
+                "limit": template_count_to_retrieve
             }
         }
     }
@@ -520,11 +521,11 @@ def top_content_to_repurposing(query: str, topic: str, brand: str, numberOfPosts
         # Iterate through posts and repurpose each one
         for post in top_posts:
             try:
-                result = short_form_social_repurposing(post, username, workflow_id)
+                result = short_form_social_repurposing(post, brand, workflow_id) #Corrected brand to username
                 status_messages.append(f"Processed post: {post[:50]}...")
             except Exception as e:
                 status_messages.append(f"Failed to process post: {str(e)}")
-                
+
     return {
         "status": "Completed repurposing of top posts",
         "details": status_messages
