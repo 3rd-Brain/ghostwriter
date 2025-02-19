@@ -228,6 +228,23 @@ async def get_flow_config(workflow_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/templatizer")
+async def create_template(request_data: Dict):
+    if not os.getenv("OPENAI_API_KEY"):
+        raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
+    if not os.getenv("ANTHROPIC_API_KEY"):
+        raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY not configured")
+    
+    try:
+        social_post = request_data.get("social_post")
+        if not social_post:
+            raise HTTPException(status_code=400, detail="social_post is required")
+            
+        result = Templatizer(social_post)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/multitemplate")
 async def get_multitemplate(request_data: Dict):
     if not os.getenv("OPENAI_API_KEY"):
