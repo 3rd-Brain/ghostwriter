@@ -21,13 +21,13 @@ async def upload_content(content_data: Dict):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/brand-voice/{username}")
-async def get_brand_voice(username: str):
+@app.get("/brand-voice/{brand}")
+async def get_brand_voice(brand: str):
     if not os.getenv("AIRTABLE_API_KEY"):
         raise HTTPException(status_code=500, detail="AIRTABLE_API_KEY not configured")
 
     try:
-        result = get_client_brand_voice(username)
+        result = get_client_brand_voice(brand)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -129,16 +129,16 @@ async def repurpose_content(request_data: Dict, background_tasks: BackgroundTask
 
     try:
         topic_query = request_data.get("topic_query")
-        username = request_data.get("username")
+        brand = request_data.get("brand")
         repurpose_count = request_data.get("repurpose_count", 1)
         workflow_id = request_data.get("workflow_id", "Legacy Generation Flow with Claude")
 
         if not topic_query:
             raise HTTPException(status_code=400, detail="topic_query is required")
-        if not username:
-            raise HTTPException(status_code=400, detail="username is required")
+        if not brand:
+            raise HTTPException(status_code=400, detail="brand is required")
 
-        background_tasks.add_task(short_form_social_repurposing, topic_query, username, repurpose_count, workflow_id)
+        background_tasks.add_task(short_form_social_repurposing, topic_query, brand, repurpose_count, workflow_id)
         return {"status": "Your content is being generated"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -153,20 +153,20 @@ async def get_top_content_repurposing(request_data: Dict, background_tasks: Back
     try:
         query = request_data.get("query")
         topic = request_data.get("topic")
-        username = request_data.get("username")
+        brand = request_data.get("brand")
         number_of_posts = request_data.get("number_of_posts", 5)
-        repurpose_count = request_data.get("repurpose_count", 1)
+        repurpose_count = request_data.get("repurpose_count", 5)
         workflow_id = request_data.get("workflow_id", "Legacy Generation Flow with Claude")
 
         if not query:
             raise HTTPException(status_code=400, detail="query is required")
         if not topic:
             raise HTTPException(status_code=400, detail="topic is required")
-        if not username:
-            raise HTTPException(status_code=400, detail="username is required")
+        if not brand:
+            raise HTTPException(status_code=400, detail="brand is required")
 
         # Add task to background
-        background_tasks.add_task(top_content_to_repurposing, query, topic, username, number_of_posts, repurpose_count, workflow_id)
+        background_tasks.add_task(top_content_to_repurposing, query, topic, brand, number_of_posts, repurpose_count, workflow_id)
 
         # Return immediately
         return {"status": "Content is now being generated"}
