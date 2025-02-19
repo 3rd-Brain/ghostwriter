@@ -503,7 +503,7 @@ def top_content_to_repurposing(query: str, topic: str, brand: str, numberOfPosts
         topic: String containing topic to search for (e.g. "Digital Operations")
         brand: String containing the brand for brand voice
         numberOfPostsToRepurpose: Number of top posts to repurpose (default: 5)
-        repurposeCount: Number of times to repurpose each post (default: 1)
+        repurposeCount: Number of times to repurpose each post (default: 5)
         workflow_id: String containing the workflow ID for generation
     Returns:
         Dictionary with status of repurposing process
@@ -517,15 +517,14 @@ def top_content_to_repurposing(query: str, topic: str, brand: str, numberOfPosts
     if results.get("data", {}).get("documents"):
         top_posts = [doc.get("content", "") for doc in results["data"]["documents"][:numberOfPostsToRepurpose]]
 
-        # Iterate through posts and repurpose each one multiple times
+        # Iterate through posts and repurpose each one
         for post in top_posts:
-            for i in range(repurposeCount):
-                try:
-                    result = short_form_social_repurposing(post, brand, workflow_id)
-                    status_messages.append(f"Processed post (attempt {i+1}): {post[:50]}...")
-                except Exception as e:
-                    status_messages.append(f"Failed to process post: {str(e)}")
-
+            try:
+                result = short_form_social_repurposing(post, username, workflow_id)
+                status_messages.append(f"Processed post: {post[:50]}...")
+            except Exception as e:
+                status_messages.append(f"Failed to process post: {str(e)}")
+                
     return {
         "status": "Completed repurposing of top posts",
         "details": status_messages
