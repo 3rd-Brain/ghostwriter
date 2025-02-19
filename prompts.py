@@ -233,4 +233,9 @@ This solves everything.
 - Must maintain authenticity despite being templated
 - Should not feel formulaic when filled with new content
 - Must respect platform-specific limitations (character counts, formatting)
-</CONSTRAINTS>"""
+- Under no circumstance shall you lengthen the template beyond the provided original content.
+</CONSTRAINTS>
+
+<OUTPUT>
+Just output the template by itself, without any additional text. This is important.
+</OUTPUT>"""
