@@ -434,7 +434,7 @@ def source_content_retriever(topic_query: str) -> str:
         print(f"Request Payload: {payload}")
         raise Exception(f"Failed to retrieve source content: {str(e)}")
 
-def templatizer_short_form(template: str) -> Dict:
+def template_context_and_uploader(template: str) -> Dict:
     """
     Process a template by generating a description with Claude and creating a vector embedding
     Args:
