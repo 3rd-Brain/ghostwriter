@@ -130,6 +130,7 @@ async def repurpose_content(request_data: Dict, background_tasks: BackgroundTask
     try:
         topic_query = request_data.get("topic_query")
         username = request_data.get("username")
+        repurpose_count = request_data.get("repurpose_count", 1)
         workflow_id = request_data.get("workflow_id", "Legacy Generation Flow with Claude")
 
         if not topic_query:
@@ -137,7 +138,7 @@ async def repurpose_content(request_data: Dict, background_tasks: BackgroundTask
         if not username:
             raise HTTPException(status_code=400, detail="username is required")
 
-        background_tasks.add_task(short_form_social_repurposing, topic_query, username, workflow_id)
+        background_tasks.add_task(short_form_social_repurposing, topic_query, username, repurpose_count, workflow_id)
         return {"status": "Your content is being generated"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -153,6 +154,8 @@ async def get_top_content_repurposing(request_data: Dict, background_tasks: Back
         query = request_data.get("query")
         topic = request_data.get("topic")
         username = request_data.get("username")
+        number_of_posts = request_data.get("number_of_posts", 5)
+        repurpose_count = request_data.get("repurpose_count", 1)
         workflow_id = request_data.get("workflow_id", "Legacy Generation Flow with Claude")
 
         if not query:
@@ -163,7 +166,7 @@ async def get_top_content_repurposing(request_data: Dict, background_tasks: Back
             raise HTTPException(status_code=400, detail="username is required")
 
         # Add task to background
-        background_tasks.add_task(top_content_to_repurposing, query, topic, username, workflow_id)
+        background_tasks.add_task(top_content_to_repurposing, query, topic, username, number_of_posts, repurpose_count, workflow_id)
 
         # Return immediately
         return {"status": "Content is now being generated"}
