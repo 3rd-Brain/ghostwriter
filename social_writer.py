@@ -309,12 +309,13 @@ def multitemplate_retriever(content_chunk: str, template_count_to_retrieve: int 
     except requests.exceptions.RequestException as e:
         raise Exception(f"Failed to retrieve templates: {str(e)}")
 
-def short_form_social_repurposing(topic_query: str, username: str, workflow_id: str = "Legacy Generation Flow with Claude") -> Dict:
+def short_form_social_repurposing(topic_query: str, username: str, repurpose_count: int = 1, workflow_id: str = "Legacy Generation Flow with Claude") -> Dict:
     """
     Repurpose content based on topic query and user's brand voice
     Args:
         topic_query: String containing the topic to search for
         username: String containing the username for brand voice
+        repurpose_count: Number of times to repurpose each topic/post (default: 1)
         workflow_id: String containing the workflow ID for generation
     Returns:
         Dictionary with status message
@@ -331,8 +332,8 @@ def short_form_social_repurposing(topic_query: str, username: str, workflow_id: 
 
     combined_chunks = "\n\n".join(content_chunks)
 
-    # Step 2: Get templates
-    template_results = multitemplate_retriever(combined_chunks)
+    # Step 2: Get templates based on repurpose count
+    template_results = multitemplate_retriever(combined_chunks, template_count_to_retrieve=repurpose_count)
 
     # Step 3: Get brand voice
     brand_voice = get_client_brand_voice(username)
@@ -342,7 +343,7 @@ def short_form_social_repurposing(topic_query: str, username: str, workflow_id: 
 
     # Step 4: Generate content for each template
     if template_results.get("data", {}).get("documents"):
-        templates = template_results["data"]["documents"][:5]  # Get first 5 templates
+        templates = template_results["data"]["documents"][:repurpose_count]  # Get templates based on repurpose count
 
         for template in templates:
             from social_dynamic_generation_flow import social_post_generation_with_json
