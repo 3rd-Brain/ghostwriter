@@ -497,6 +497,31 @@ def template_context_and_uploader(template: str) -> Dict:
         print(f"AstraDB upload failed: {str(e)}")
         raise Exception(f"Failed to upload to AstraDB: {str(e)}")
 
+def Templatizer(social_post: str) -> Dict:
+    """
+    Process a social post to create a reusable template
+    Args:
+        social_post: String containing the social post to templatize
+    Returns:
+        Dictionary with template and its vector embedding
+    """
+    print("\n=== Starting Templatization Process ===")
+    print(f"Input post: {social_post}")
+
+    # Generate template using Claude
+    response = client.messages.create(
+        model="claude-3-5-haiku-20241022",
+        system=Prompts.TEMPLATIZER_SHORT_FORM_PROMPT,
+        messages=[{"role": "user", "content": social_post}],
+        max_tokens=2048
+    )
+    template = response.content[0].text.strip()
+    print(f"\n=== Generated Template ===\n{template}")
+
+    # Process the template through template_context_and_uploader
+    result = template_context_and_uploader(template)
+    return result
+
 def top_content_to_repurposing(query: str, topic: str, brand: str, numberOfPostsToRepurpose: int = 5, repurpose_count: int = 1, workflow_id: str = "Legacy Generation Flow with Claude") -> Dict:
     """
     Get top posts and repurpose each one multiple times using short_form_social_repurposing
