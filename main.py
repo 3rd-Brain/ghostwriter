@@ -239,10 +239,11 @@ async def get_multitemplate(request_data: Dict):
 
     try:
         content_chunk = request_data.get("content_chunk")
+        template_count = request_data.get("template_count", 5)
         if not content_chunk:
             raise HTTPException(status_code=400, detail="content_chunk is required")
 
-        result = multitemplate_retriever(content_chunk)
+        result = multitemplate_retriever(content_chunk, template_count)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
