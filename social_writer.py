@@ -497,13 +497,13 @@ def template_context_and_uploader(template: str) -> Dict:
         print(f"AstraDB upload failed: {str(e)}")
         raise Exception(f"Failed to upload to AstraDB: {str(e)}")
 
-def Templatizer(social_post: str) -> Dict:
+def Templatizer(social_post: str) -> str:
     """
     Process a social post to create a reusable template
     Args:
         social_post: String containing the social post to templatize
     Returns:
-        Dictionary with template and its vector embedding
+        String containing the generated template
     """
     print("\n=== Starting Templatization Process ===")
     print(f"Input post: {social_post}")
@@ -517,10 +517,8 @@ def Templatizer(social_post: str) -> Dict:
     )
     template = response.content[0].text.strip()
     print(f"\n=== Generated Template ===\n{template}")
-
-    # Process the template through template_context_and_uploader
-    result = template_context_and_uploader(template)
-    return result
+    
+    return template
 
 def top_content_to_repurposing(query: str, topic: str, brand: str, numberOfPostsToRepurpose: int = 5, repurpose_count: int = 1, workflow_id: str = "Legacy Generation Flow with Claude") -> Dict:
     """
