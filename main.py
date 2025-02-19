@@ -240,8 +240,8 @@ async def create_template(request_data: Dict):
         if not social_post:
             raise HTTPException(status_code=400, detail="social_post is required")
             
-        result = Templatizer(social_post)
-        return result
+        template = Templatizer(social_post)
+        return {"template": template}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
