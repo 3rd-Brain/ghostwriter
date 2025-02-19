@@ -61,7 +61,7 @@ def generated_content_uploader(content_data: Dict) -> Dict:
         raise Exception(f"Failed to upload to Airtable: {str(e)}")
 
 
-def get_client_brand_voice(username: str) -> Dict:
+def get_client_brand_voice(brand: str) -> Dict:
     """
     Retrieve client brand voice information from Airtable
     """
@@ -69,8 +69,8 @@ def get_client_brand_voice(username: str) -> Dict:
     if not AIRTABLE_API_KEY:
         raise Exception("AIRTABLE_API_KEY not configured")
 
-    encoded_username = quote(username)
-    url = f"https://api.airtable.com/v0/appLz2zuN6ZFu4mYS/tblpQGTYUROOEYPrY?filterByFormula=%7BAccount+(User)%7D%3D'{encoded_username}'"
+    encoded_brand = quote(brand)
+    url = f"https://api.airtable.com/v0/appLz2zuN6ZFu4mYS/tblpQGTYUROOEYPrY?filterByFormula=%7BAccount+(User)%7D%3D'{encoded_brand}'"
 
     headers = {
         "Authorization": f"Bearer {AIRTABLE_API_KEY}",
@@ -83,12 +83,12 @@ def get_client_brand_voice(username: str) -> Dict:
         data = response.json()
 
         if not data.get("records"):
-            raise Exception(f"No brand voice found for username: {username}")
+            raise Exception(f"No brand voice found for brand: {brand}")
 
         # Extract specifically the Brand Voice field
         brand_voice = data["records"][0]["fields"].get("Brand Voice")
         if not brand_voice:
-            raise Exception(f"No brand voice found for username: {username}")
+            raise Exception(f"No brand voice found for brand: {brand}")
         return {"brand_voice": brand_voice}
 
     except requests.exceptions.RequestException as e:
@@ -309,13 +309,13 @@ def multitemplate_retriever(content_chunk: str, template_count_to_retrieve: int 
     except requests.exceptions.RequestException as e:
         raise Exception(f"Failed to retrieve templates: {str(e)}")
 
-def short_form_social_repurposing(topic_query: str, username: str, repurpose_count: int = 1, workflow_id: str = "Legacy Generation Flow with Claude") -> Dict:
+def short_form_social_repurposing(topic_query: str, brand: str, repurpose_count: int = 5, workflow_id: str = "Legacy Generation Flow with Claude") -> Dict:
     """
     Repurpose content based on topic query and user's brand voice
     Args:
         topic_query: String containing the topic to search for
-        username: String containing the username for brand voice
-        repurpose_count: Number of times to repurpose each topic/post (default: 1)
+        brand: String containing the brand for brand voice
+        repurpose_count: Number of times to repurpose each topic/post (default: 5)
         workflow_id: String containing the workflow ID for generation
     Returns:
         Dictionary with status message
@@ -336,7 +336,7 @@ def short_form_social_repurposing(topic_query: str, username: str, repurpose_cou
     template_results = multitemplate_retriever(combined_chunks, template_count_to_retrieve=repurpose_count)
 
     # Step 3: Get brand voice
-    brand_voice = get_client_brand_voice(username)
+    brand_voice = get_client_brand_voice(brand)
 
     # Return early with status message
     result = {"status": "Your content is being generated"}
@@ -522,7 +522,7 @@ def top_content_to_repurposing(query: str, topic: str, brand: str, numberOfPosts
         # Iterate through posts and repurpose each one
         for post in top_posts:
             try:
-                result = short_form_social_repurposing(post, brand, workflow_id) #Corrected brand to username
+                result = short_form_social_repurposing(post, brand, workflow_id)
                 status_messages.append(f"Processed post: {post[:50]}...")
             except Exception as e:
                 status_messages.append(f"Failed to process post: {str(e)}")
