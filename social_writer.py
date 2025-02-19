@@ -495,13 +495,15 @@ def templatizer_short_form(template: str) -> Dict:
         print(f"AstraDB upload failed: {str(e)}")
         raise Exception(f"Failed to upload to AstraDB: {str(e)}")
 
-def top_content_to_repurposing(query: str, topic: str, username: str, workflow_id: str = "Legacy Generation Flow with Claude") -> Dict:
+def top_content_to_repurposing(query: str, topic: str, brand: str, numberOfPostsToRepurpose: int = 5, repurposeCount: int = 1, workflow_id: str = "Legacy Generation Flow with Claude") -> Dict:
     """
-    Get top 5 posts and repurpose each one using short_form_social_repurposing
+    Get top posts and repurpose each one multiple times using short_form_social_repurposing
     Args:
         query: String for searching top content (e.g. "Repurpose my most high-performing tweets")
         topic: String containing topic to search for (e.g. "Digital Operations")
-        username: String containing the username for brand voice
+        brand: String containing the brand for brand voice
+        numberOfPostsToRepurpose: Number of top posts to repurpose (default: 5)
+        repurposeCount: Number of times to repurpose each post (default: 1)
         workflow_id: String containing the workflow ID for generation
     Returns:
         Dictionary with status of repurposing process
@@ -510,18 +512,19 @@ def top_content_to_repurposing(query: str, topic: str, username: str, workflow_i
     results = top_content_retriever(query, topic)
     print("Results from top_content_retriever:", results)
 
-    # Process top 5 posts
+    # Process posts
     status_messages = []
     if results.get("data", {}).get("documents"):
-        top_posts = [doc.get("content", "") for doc in results["data"]["documents"][:5]]
+        top_posts = [doc.get("content", "") for doc in results["data"]["documents"][:numberOfPostsToRepurpose]]
 
-        # Iterate through posts and repurpose each one
+        # Iterate through posts and repurpose each one multiple times
         for post in top_posts:
-            try:
-                result = short_form_social_repurposing(post, username, workflow_id)
-                status_messages.append(f"Processed post: {post[:50]}...")
-            except Exception as e:
-                status_messages.append(f"Failed to process post: {str(e)}")
+            for i in range(repurposeCount):
+                try:
+                    result = short_form_social_repurposing(post, brand, workflow_id)
+                    status_messages.append(f"Processed post (attempt {i+1}): {post[:50]}...")
+                except Exception as e:
+                    status_messages.append(f"Failed to process post: {str(e)}")
 
     return {
         "status": "Completed repurposing of top posts",
