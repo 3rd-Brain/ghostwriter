@@ -264,3 +264,38 @@ async def get_multitemplate(request_data: Dict):
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/repurpose-with-templates")
+async def repurpose_with_templates(request_data: Dict):
+    if not os.getenv("OPENAI_API_KEY"):
+        raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
+    if not os.getenv("ANTHROPIC_API_KEY"):
+        raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY not configured")
+
+    try:
+        # Required fields
+        content_chunks = request_data.get("content_chunks")
+        template_post = request_data.get("template_post")
+        brand = request_data.get("brand")
+        
+        if not all([content_chunks, template_post, brand]):
+            raise HTTPException(status_code=400, detail="content_chunks, template_post, and brand are required")
+
+        # Optional fields with defaults
+        workflow_id = request_data.get("workflow_id", "Legacy Generation Flow with Claude")
+        is_given_template_query = request_data.get("is_given_template_query", False)
+        number_of_posts_to_template = request_data.get("number_of_posts_to_template", 5)
+        post_topic_query = request_data.get("post_topic_query", "Digital Operations")
+
+        result = repurposer_using_posts_as_templates(
+            content_chunks=content_chunks,
+            template_post=template_post,
+            brand=brand,
+            workflow_id=workflow_id,
+            is_given_template_query=is_given_template_query,
+            number_of_posts_to_template=number_of_posts_to_template,
+            post_topic_query=post_topic_query
+        )
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
