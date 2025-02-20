@@ -504,7 +504,7 @@ def repurposer_using_posts_as_templates(
     workflow_id: str = "Legacy Generation Flow with Claude",
     is_given_template_query: bool = False,
     number_of_posts_to_template: int = 5,
-    post_topic_query: str = ""
+    post_topic_query: str = "Digital Operations"
 ) -> Dict:
     """
     Repurpose content using social posts as templates
@@ -515,7 +515,7 @@ def repurposer_using_posts_as_templates(
         workflow_id: String containing workflow ID for generation (default: Legacy Generation Flow with Claude)
         is_given_template_query: Boolean indicating if a template query is provided (default: False)
         number_of_posts_to_template: Number of top posts to use as templates (default: 5)
-        post_topic_query: String containing topic for top content search (default: "")
+        post_topic_query: String containing topic for top content search (default: "Digital Operations")
     Returns:
         Dictionary containing repurposing results
     """
