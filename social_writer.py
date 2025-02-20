@@ -497,6 +497,26 @@ def template_context_and_uploader(template: str) -> Dict:
         print(f"AstraDB upload failed: {str(e)}")
         raise Exception(f"Failed to upload to AstraDB: {str(e)}")
 
+def repurposer_using_tweets(
+    content_chunks: str,
+    template_post: str,
+    brand: str,
+    workflow_id: str = "Legacy Generation Flow with Claude",
+    is_given_template: bool = False
+) -> Dict:
+    """
+    Repurpose content using tweets and templates
+    Args:
+        content_chunks: String containing content to repurpose
+        template_post: String containing template to use
+        brand: String containing brand name
+        workflow_id: String containing workflow ID for generation (default: Legacy Generation Flow with Claude)
+        is_given_template: Boolean indicating if template is provided (default: False)
+    Returns:
+        Dictionary containing repurposing results
+    """
+    pass
+
 def Templatizer(social_post: str) -> str:
     """
     Process a social post to create a reusable template
