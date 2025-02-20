@@ -1,7 +1,7 @@
 from typing import Dict
 from fastapi import FastAPI, HTTPException, BackgroundTasks
-from social_writer import generated_content_uploader, get_client_brand_voice, vector_search_for_published_content, metric_sorter, top_content_sentiment_setup, source_content_retriever, multitemplate_retriever, short_form_social_repurposing, top_content_to_repurposing, template_context_and_uploader, Templatizer
-from social_dynamic_generation_flow import flow_config_retriever
+from social_writer import generated_content_uploader, get_client_brand_voice, vector_search_for_published_content, metric_sorter, top_content_sentiment_setup, source_content_retriever, multitemplate_retriever, short_form_social_repurposing, top_content_to_repurposing, template_context_and_uploader, Templatizer, repurposer_using_posts_as_templates
+from social_dynamic_generation_flow import flow_config_retriever, social_post_generation_with_json
 import os
 
 app = FastAPI()
