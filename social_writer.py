@@ -502,7 +502,9 @@ def repurposer_using_posts_as_templates(
     template_post: str,
     brand: str,
     workflow_id: str = "Legacy Generation Flow with Claude",
-    is_given_template_query: bool = False
+    is_given_template_query: bool = False,
+    number_of_posts_to_template: int = 5,
+    post_topic_query: str = ""
 ) -> Dict:
     """
     Repurpose content using social posts as templates
@@ -512,6 +514,8 @@ def repurposer_using_posts_as_templates(
         brand: String containing brand name
         workflow_id: String containing workflow ID for generation (default: Legacy Generation Flow with Claude)
         is_given_template_query: Boolean indicating if a template query is provided (default: False)
+        number_of_posts_to_template: Number of top posts to use as templates (default: 5)
+        post_topic_query: String containing topic for top content search (default: "")
     Returns:
         Dictionary containing repurposing results
     """
@@ -533,6 +537,23 @@ def repurposer_using_posts_as_templates(
         return {
             "status": "success",
             "generated_content": generated_content
+        }
+    else:
+        # Query-based template retrieval path
+        results = top_content_retriever(query=template_post, topic=post_topic_query)
+        
+        if not results.get("data", {}).get("documents"):
+            return {
+                "status": "error",
+                "message": "No templates found from the query"
+            }
+            
+        # Get top X posts based on number_of_posts_to_template
+        top_posts = [doc.get("content", "") for doc in results["data"]["documents"][:number_of_posts_to_template]]
+        
+        return {
+            "status": "success",
+            "top_posts": top_posts
         }
 
 def Templatizer(social_post: str) -> str:
