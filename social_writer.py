@@ -535,9 +535,18 @@ def repurposer_using_posts_as_templates(
             content_chunks=content_chunks
         )
         
+        # Upload to Airtable
+        content_data = {
+            "first_draft": generated_content,
+            "content_chunks": content_chunks,
+            "template": template_post
+        }
+        upload_result = generated_content_uploader(content_data)
+        
         return {
             "status": "success",
-            "generated_content": generated_content
+            "generated_content": generated_content,
+            "upload_result": upload_result
         }
     else:
         # Query-based template retrieval path
@@ -561,9 +570,18 @@ def repurposer_using_posts_as_templates(
                 template=post,
                 content_chunks=content_chunks
             )
+            # Upload to Airtable
+            content_data = {
+                "first_draft": generated_content,
+                "content_chunks": content_chunks,
+                "template": post
+            }
+            upload_result = generated_content_uploader(content_data)
+            
             generated_contents.append({
                 "template": post,
-                "generated_content": generated_content
+                "generated_content": generated_content,
+                "upload_result": upload_result
             })
         
         return {
