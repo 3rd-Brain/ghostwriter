@@ -8,6 +8,7 @@ import datetime
 from urllib.parse import quote
 from prompts import Prompts
 from openai import OpenAI
+from social_dynamic_generation_flow import social_post_generation_with_json
 
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
