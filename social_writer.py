@@ -551,9 +551,23 @@ def repurposer_using_posts_as_templates(
         # Get top X posts based on number_of_posts_to_template
         top_posts = [doc.get("content", "") for doc in results["data"]["documents"][:number_of_posts_to_template]]
         
+        # Generate content using each post as a template
+        generated_contents = []
+        for post in top_posts:
+            generated_content = social_post_generation_with_json(
+                workflow_id=workflow_id,
+                client_brief=brand_voice,
+                template=post,
+                content_chunks=content_chunks
+            )
+            generated_contents.append({
+                "template": post,
+                "generated_content": generated_content
+            })
+        
         return {
             "status": "success",
-            "top_posts": top_posts
+            "generated_contents": generated_contents
         }
 
 def Templatizer(social_post: str) -> str:
