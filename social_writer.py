@@ -515,7 +515,25 @@ def repurposer_using_posts_as_templates(
     Returns:
         Dictionary containing repurposing results
     """
-    pass
+    print("\n=== Starting Posts as Templates Repurposing Process ===")
+    
+    # Get brand voice
+    brand_voice_result = get_client_brand_voice(brand)
+    brand_voice = brand_voice_result["brand_voice"]
+    
+    if not is_given_template_query:
+        # Direct template usage path
+        generated_content = social_post_generation_with_json(
+            workflow_id=workflow_id,
+            client_brief=brand_voice,
+            template=template_post,
+            content_chunks=content_chunks
+        )
+        
+        return {
+            "status": "success",
+            "generated_content": generated_content
+        }
 
 def Templatizer(social_post: str) -> str:
     """
