@@ -200,7 +200,7 @@ async def generate_social_post(request_data: Dict):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/templatizer-short-form")
+@app.post("/template-context-and-uploader")
 async def create_template_embedding(request_data: Dict):
     if not os.getenv("OPENAI_API_KEY"):
         raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
