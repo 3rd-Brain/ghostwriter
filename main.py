@@ -7,13 +7,21 @@ import os
 
 app = FastAPI()
 
-# Configure CORS
+# Configure CORS with specific settings
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    allow_origin_regex=".*",
+    expose_headers=["*"]
+)
+
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+app.add_middleware(
+    TrustedHostMiddleware, 
+    allowed_hosts=["*"]
 )
 
 @app.get("/")
