@@ -13,16 +13,17 @@ app.add_middleware(
     allow_origins=["*"],
     allow_credentials=False,
     allow_methods=["*"],
-    allow_headers=["*", "X-Requested-With", "Origin", "Accept", "Referer"],
+    allow_headers=["*"],
     allow_origin_regex=None,
     expose_headers=["*"]
 )
 
-# Add middleware to handle referrer validation
 @app.middleware("http")
-async def check_referrer(request, call_next):
+async def add_cors_headers(request, call_next):
     response = await call_next(request)
     response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Headers"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "*"
     return response
 
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
