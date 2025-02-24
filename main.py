@@ -59,7 +59,7 @@ async def login_page(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
 @app.post("/login")
-async def login(response: Response, username: str = Form(...), password: str = Form(...)):
+async def login(request: Request, username: str = Form(...), password: str = Form(...)):
     if username in CREDENTIALS and CREDENTIALS[username]["password"] == password:
         access_token = create_access_token(
             data={"sub": username},
@@ -70,7 +70,7 @@ async def login(response: Response, username: str = Form(...), password: str = F
         return response
     return templates.TemplateResponse(
         "login.html",
-        {"request": Request, "error": "Invalid username or password"},
+        {"request": request, "error": "Access denied. Wrong credentials."},
         status_code=status.HTTP_401_UNAUTHORIZED
     )
 
