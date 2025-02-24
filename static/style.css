@@ -14,39 +14,38 @@ body {
     background-color: var(--white);
 }
 
-.header {
-    background-color: var(--purple);
-    padding: 1rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-nav {
+.main-container {
     display: flex;
-    gap: 1rem;
-    max-width: 1200px;
-    margin: 0 auto;
-    align-items: center;
+    margin: 2rem;
+    gap: 2rem;
+    align-items: flex-start;
 }
 
-.nav-item {
+.sidebar {
+    position: fixed;
+    width: 250px;
+    background-color: var(--purple);
+    padding: 1.5rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.sidebar-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
     color: var(--white);
     text-decoration: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    transition: background-color 0.3s;
+    border-radius: 8px;
+    transition: all 0.3s;
 }
 
-.nav-item:hover {
-    background-color: var(--deep-purple);
-}
-
-.home-icon {
-    padding: 0.5rem;
-}
-
-.home-icon .material-icons {
-    font-size: 24px;
-    color: var(--white);
+.sidebar-btn .material-icons {
+    font-size: 20px;
 }
 
 .dashboard-container {
@@ -112,11 +111,10 @@ button:hover {
     background-color: var(--purple);
 }
 
-.main-container {
-    display: flex;
-    margin: 2rem auto;
+.content-area {
+    margin-left: 300px;
+    flex: 1;
     max-width: 1200px;
-    gap: 2rem;
 }
 
 .sidebar {
