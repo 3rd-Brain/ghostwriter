@@ -100,8 +100,8 @@ async def dashboard(request: Request, current_user: str = Depends(get_current_us
         "username": current_user
     })
 
-@app.get("/generation", response_class=HTMLResponse)
-async def generation(request: Request, current_user: str = Depends(get_current_user)):
+@app.get("/generation/repurpose", response_class=HTMLResponse)
+async def generation_repurpose(request: Request, current_user: str = Depends(get_current_user)):
     return templates.TemplateResponse("generation.html", {
         "request": request,
         "username": current_user

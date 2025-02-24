@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Generation</title>
+    <title>Generation - Repurpose</title>
     <link rel="stylesheet" href="/static/style.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 </head>
@@ -15,7 +15,7 @@
                     Home
                 </a>
                 <div class="nav-item">
-                    <a href="/generation" class="sidebar-btn active">
+                    <a href="/generation/repurpose" class="sidebar-btn active">
                         <span class="material-icons">auto_awesome</span>
                         Generation
                     </a>
@@ -44,9 +44,30 @@
             </a>
         </div>
         <div class="content-area">
-            <h2>Content Generation</h2>
-            <div id="content-container">
-                <!-- Content will be dynamically loaded -->
+            <div class="content-card">
+                <h2>Content Generation</h2>
+                <div class="form-container">
+                    <h3>Repurpose a Piece</h3>
+                    <form id="repurposeForm" class="generation-form">
+                        <div class="form-group">
+                            <label for="topic">Topic/Content:</label>
+                            <textarea id="topic" name="topic" rows="6" class="form-control" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="brand">Brand:</label>
+                            <input type="text" id="brand" name="brand" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="repurposeCount">Repurpose Count:</label>
+                            <input type="number" id="repurposeCount" name="repurposeCount" class="form-control" value="5" min="1" max="10" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="workflowId">Workflow ID:</label>
+                            <input type="text" id="workflowId" name="workflowId" class="form-control" value="Legacy Generation Flow with Claude">
+                        </div>
+                        <button type="submit" class="submit-btn">Generate Content</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -55,27 +76,33 @@
             const generationBtn = document.querySelector('.sidebar-btn.active');
             const submenu = document.querySelector('.submenu');
             
-            // Toggle submenu on Generation button click
             generationBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 this.classList.toggle('clicked');
             });
 
-            // Handle submenu item clicks
-            document.querySelectorAll('.submenu-item').forEach(item => {
-                item.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    if (this.textContent === 'Repurpose a Piece') {
-                        document.querySelector('#content-container').innerHTML = `
-                            <h3>Repurpose a Piece</h3>
-                            <div class="form-group">
-                                <label for="content">Content to Repurpose:</label>
-                                <textarea id="content" rows="6" class="form-control"></textarea>
-                            </div>
-                            <button type="submit" class="submit-btn">Generate</button>
-                        `;
-                    }
-                });
+            document.getElementById('repurposeForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const formData = {
+                    topic_query: document.getElementById('topic').value,
+                    brand: document.getElementById('brand').value,
+                    repurpose_count: parseInt(document.getElementById('repurposeCount').value),
+                    workflow_id: document.getElementById('workflowId').value
+                };
+
+                try {
+                    const response = await fetch('/repurpose', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(formData)
+                    });
+                    const data = await response.json();
+                    alert(data.status);
+                } catch (error) {
+                    alert('Error generating content: ' + error.message);
+                }
             });
         });
     </script>
