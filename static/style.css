@@ -128,7 +128,8 @@ body {
     background-color: var(--purple);
 }
 
-.submenu-item:hover {
+.submenu-item:hover,
+.submenu-item.active {
     background-color: var(--yellow);
     color: var(--purple);
 }

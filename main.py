@@ -104,7 +104,16 @@ async def dashboard(request: Request, current_user: str = Depends(get_current_us
 async def generation_repurpose(request: Request, current_user: str = Depends(get_current_user)):
     return templates.TemplateResponse("generation.html", {
         "request": request,
-        "username": current_user
+        "username": current_user,
+        "page": "repurpose"
+    })
+
+@app.get("/generation/top-content", response_class=HTMLResponse)
+async def generation_top_content(request: Request, current_user: str = Depends(get_current_user)):
+    return templates.TemplateResponse("top_content.html", {
+        "request": request,
+        "username": current_user,
+        "page": "top-content"
     })
 
 @app.get("/logout")
