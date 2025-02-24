@@ -154,9 +154,13 @@ async def generated_content(request: Request, current_user: str = Depends(get_cu
                 "tag": fields.get("Tag", ""),
                 "date_created": fields.get("Created Time", "")
             })
-    return templates.TemplateResponse("generated_content.html", {
-        "request": request,
-        "username": current_user,
+        return templates.TemplateResponse("generated_content.html", {
+            "request": request,
+            "username": current_user,
+            "contents": contents
+        })
+    except requests.exceptions.RequestException as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch generated content: {str(e)}")
         "contents": contents
     })
 
