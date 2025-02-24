@@ -66,12 +66,12 @@
                         <tbody>
                             {% for content in contents %}
                             <tr>
-                                <td>{{ content.content_id }}</td>
-                                <td>{{ content.first_draft }}</td>
-                                <td>{{ content.source_chunk }}</td>
-                                <td>{{ content.template }}</td>
-                                <td>{{ content.tag }}</td>
-                                <td>{{ content.date_created }}</td>
+                                <td class="content-id">{{ content.content_id }}</td>
+                                <td class="first-draft">{{ content.first_draft }}</td>
+                                <td class="source-chunk" onclick="showPopup(this, 'Source Chunk')">{{ content.source_chunk }}</td>
+                                <td class="template" onclick="showPopup(this, 'Template')">{{ content.template }}</td>
+                                <td class="tag">{{ content.tag }}</td>
+                                <td class="created-time">{{ content.date_created.strftime('%m-%d-%Y, %I:%M %p') if content.date_created else '' }}</td>
                                 <td>
                                     <button class="action-btn edit">
                                         <span class="material-icons">edit</span>
@@ -88,7 +88,32 @@
             </div>
         </div>
     </div>
+    <div class="popup-overlay">
+        <div class="popup-content">
+            <span class="popup-close" onclick="closePopup()">&times;</span>
+            <h3 id="popup-title"></h3>
+            <p id="popup-text"></p>
+        </div>
+    </div>
     <script>
+        function showPopup(element, title) {
+            const text = element.innerText;
+            document.getElementById('popup-title').textContent = title;
+            document.getElementById('popup-text').textContent = text;
+            document.querySelector('.popup-overlay').style.display = 'block';
+        }
+
+        function closePopup() {
+            document.querySelector('.popup-overlay').style.display = 'none';
+        }
+
+        // Close popup when clicking outside
+        document.querySelector('.popup-overlay').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closePopup();
+            }
+        });
+
         document.addEventListener('DOMContentLoaded', function() {
             const generationBtn = document.querySelector('.nav-item .sidebar-btn');
             const submenu = document.querySelector('.submenu');
