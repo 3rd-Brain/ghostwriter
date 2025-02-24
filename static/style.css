@@ -114,9 +114,7 @@ body {
     transition: all 0.3s ease;
 }
 
-.nav-item .sidebar-btn.active + .submenu,
-.nav-item .sidebar-btn:hover + .submenu,
-.submenu:hover {
+.nav-item .sidebar-btn.clicked + .submenu {
     display: flex;
 }
 
@@ -200,6 +198,22 @@ button {
 
 button:hover {
     background-color: var(--deep-purple);
+}
+
+textarea.form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-top: 0.5rem;
+    font-size: 1rem;
+    resize: vertical;
+}
+
+.submit-btn {
+    margin-top: 1rem;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
 }
 
 .dashboard-container {

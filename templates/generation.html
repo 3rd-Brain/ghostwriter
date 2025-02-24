@@ -45,18 +45,39 @@
         </div>
         <div class="content-area">
             <h2>Content Generation</h2>
-            <div class="generation-options">
-                <a href="#" class="option-card">
-                    <span>Repurpose a Piece</span>
-                </a>
-                <a href="#" class="option-card">
-                    <span>Repurpose My Top Content</span>
-                </a>
-                <a href="#" class="option-card">
-                    <span>Repurpose Content Using Tweets as Templates</span>
-                </a>
+            <div id="content-container">
+                <!-- Content will be dynamically loaded -->
             </div>
         </div>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const generationBtn = document.querySelector('.sidebar-btn.active');
+            const submenu = document.querySelector('.submenu');
+            
+            // Toggle submenu on Generation button click
+            generationBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                this.classList.toggle('clicked');
+            });
+
+            // Handle submenu item clicks
+            document.querySelectorAll('.submenu-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    if (this.textContent === 'Repurpose a Piece') {
+                        document.querySelector('#content-container').innerHTML = `
+                            <h3>Repurpose a Piece</h3>
+                            <div class="form-group">
+                                <label for="content">Content to Repurpose:</label>
+                                <textarea id="content" rows="6" class="form-control"></textarea>
+                            </div>
+                            <button type="submit" class="submit-btn">Generate</button>
+                        `;
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>
