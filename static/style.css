@@ -106,10 +106,18 @@ body {
 
 .submenu {
     margin-left: 2.5rem;
-    display: flex;
+    display: none;
     flex-direction: column;
     gap: 0.5rem;
     padding-top: 0.5rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.nav-item .sidebar-btn.active + .submenu,
+.nav-item .sidebar-btn:hover + .submenu,
+.submenu:hover {
+    display: flex;
 }
 
 .submenu-item {
@@ -119,6 +127,7 @@ body {
     padding: 0.5rem;
     border-radius: 4px;
     transition: all 0.3s ease;
+    background-color: var(--purple);
 }
 
 .submenu-item:hover {
