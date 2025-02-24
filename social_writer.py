@@ -647,3 +647,48 @@ def top_content_to_repurposing(query: str, topic: str, brand: str, numberOfPosts
         "status": "Completed repurposing of top posts",
         "details": status_messages
     }
+
+
+def source_content_repurposer_using_posts_as_templates(
+    content_topic_query: str,
+    template_post: str,
+    brand: str,
+    workflow_id: str = "Legacy Generation Flow with Claude",
+    is_given_template_query: bool = False,
+    number_of_posts_to_template: int = 5,
+    post_topic_query: str = "Digital Operations"
+) -> Dict:
+    """
+    Repurpose source content using social posts as templates
+    Args:
+        content_topic_query: String containing topic to search for source content
+        template_post: String of a social post to inherit / String of a query to grab social posts
+        brand: String containing brand name
+        workflow_id: String containing workflow ID for generation (default: Legacy Generation Flow with Claude)
+        is_given_template_query: Boolean indicating if a template query is provided (default: False)
+        number_of_posts_to_template: Number of top posts to use as templates (default: 5)
+        post_topic_query: String containing topic for top content search (default: "Digital Operations")
+    Returns:
+        Dictionary containing repurposing results
+    """
+    # Get source content
+    source_results = source_content_retriever(content_topic_query)
+    
+    # Extract first three content chunks
+    content_chunks = []
+    if source_results.get("data", {}).get("documents"):
+        content_chunks = [doc["content"] for doc in source_results["data"]["documents"][:3]]
+    
+    # Combine chunks
+    combined_chunks = "\n\n".join(content_chunks)
+    
+    # Use existing repurposer with prepared content
+    return repurposer_using_posts_as_templates(
+        content_chunks=combined_chunks,
+        template_post=template_post,
+        brand=brand,
+        workflow_id=workflow_id,
+        is_given_template_query=is_given_template_query,
+        number_of_posts_to_template=number_of_posts_to_template,
+        post_topic_query=post_topic_query
+    )
