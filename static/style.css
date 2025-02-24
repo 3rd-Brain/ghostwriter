@@ -22,6 +22,7 @@ body {
 .sidebar {
     position: fixed;
     width: 250px;
+    height: calc(100vh - 4rem);
     background-color: var(--purple);
     padding: 1.5rem;
     border-radius: 16px;
@@ -29,6 +30,50 @@ body {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+}
+
+.sidebar-nav {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.user-profile {
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: var(--white);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    padding: 0.75rem;
+    margin-top: auto;
+}
+
+.user-profile:hover {
+    background-color: var(--yellow);
+    color: var(--purple);
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--deep-purple);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.user-info {
+    flex: 1;
+}
+
+.user-name {
+    font-weight: 500;
 }
 
 .sidebar-btn {

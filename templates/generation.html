@@ -9,13 +9,23 @@
 <body>
     <div class="main-container">
         <div class="sidebar">
-            <a href="/dashboard" class="sidebar-btn">
-                <span class="material-icons">home</span>
-                Home
+            <div class="sidebar-nav">
+                <a href="/dashboard" class="sidebar-btn">
+                    <span class="material-icons">home</span>
+                    Home
+                </a>
+                <a href="/generation" class="sidebar-btn active">Generation</a>
+                <a href="#" class="sidebar-btn">Search</a>
+                <a href="#" class="sidebar-btn">Create/Upload</a>
+            </div>
+            <a href="#" class="user-profile">
+                <div class="user-avatar">
+                    <span class="material-icons">person</span>
+                </div>
+                <div class="user-info">
+                    <div class="user-name">{{ username }}</div>
+                </div>
             </a>
-            <a href="/generation" class="sidebar-btn active">Generation</a>
-            <a href="#" class="sidebar-btn">Search</a>
-            <a href="#" class="sidebar-btn">Create/Upload</a>
         </div>
         <div class="content-area">
             <div class="dashboard-container">
