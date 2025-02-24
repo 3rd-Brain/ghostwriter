@@ -11,6 +11,10 @@ uvicorn = "0.23.2"
 anthropic = "^0.45.2"
 requests = "^2.32.3"
 openai = "^1.61.1"
+python-multipart = "^0.0.20"
+python-jose = {extras = ["cryptography"], version = "^3.4.0"}
+jinja2 = "^3.1.5"
+jose = "^1.0.0"
 
 [tool.pyright]
 # https://github.com/microsoft/pyright/blob/main/docs/configuration.md

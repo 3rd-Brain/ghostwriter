@@ -1,11 +1,110 @@
-from typing import Dict
-from fastapi import FastAPI, HTTPException, BackgroundTasks, Response
+from datetime import datetime, timedelta
+from typing import Optional
+from fastapi import FastAPI, HTTPException, Depends, Request, Response, status, Form
+from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.security import OAuth2PasswordBearer
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from jose import JWTError, jwt
 from fastapi.middleware.cors import CORSMiddleware
+import os
+from typing import Dict
 from social_writer import generated_content_uploader, get_client_brand_voice, vector_search_for_published_content, metric_sorter, top_content_sentiment_setup, source_content_retriever, multitemplate_retriever, short_form_social_repurposing, top_content_to_repurposing, template_context_and_uploader, Templatizer, repurposer_using_posts_as_templates
 from social_dynamic_generation_flow import flow_config_retriever, social_post_generation_with_json
-import os
 
+# App setup
 app = FastAPI()
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
+
+# Security configuration
+SECRET_KEY = "your-secret-key-keep-it-secret"  # In production, use a secure secret key
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+# Hardcoded credentials (in production, use a secure database)
+CREDENTIALS = {
+    "GOT3B": {
+        "password": "GOTBrain?"
+    }
+}
+
+# CORS configuration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Token creation
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+# Authentication routes
+@app.get("/", response_class=HTMLResponse)
+async def root(request: Request):
+    return RedirectResponse(url="/login")
+
+@app.get("/login", response_class=HTMLResponse)
+async def login_page(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
+
+@app.post("/login")
+async def login(response: Response, username: str = Form(...), password: str = Form(...)):
+    if username in CREDENTIALS and CREDENTIALS[username]["password"] == password:
+        access_token = create_access_token(
+            data={"sub": username},
+            expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        )
+        response = RedirectResponse(url="/dashboard", status_code=status.HTTP_302_FOUND)
+        response.set_cookie(key="access_token", value=access_token, httponly=True)
+        return response
+    return templates.TemplateResponse(
+        "login.html",
+        {"request": Request, "error": "Invalid username or password"},
+        status_code=status.HTTP_401_UNAUTHORIZED
+    )
+
+# Authentication dependency
+async def get_current_user(request: Request):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    token = request.cookies.get("access_token")
+    if not token:
+        raise credentials_exception
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+        return username
+    except JWTError:
+        raise credentials_exception
+
+@app.get("/dashboard", response_class=HTMLResponse)
+async def dashboard(request: Request, current_user: str = Depends(get_current_user)):
+    return templates.TemplateResponse("dashboard.html", {
+        "request": request,
+        "username": current_user
+    })
+
+@app.get("/logout")
+async def logout(response: Response):
+    response = RedirectResponse(url="/login")
+    response.delete_cookie("access_token")
+    return response
 
 # Configure CORS with specific settings
 app.add_middleware(
@@ -26,7 +125,7 @@ async def add_cors_headers(request, call_next):
         response.headers["Access-Control-Allow-Methods"] = "POST, GET, DELETE, PUT, OPTIONS"
         response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With"
         return response
-        
+
     response = await call_next(request)
     response.headers["Access-Control-Allow-Origin"] = "*"
     response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With"
@@ -267,12 +366,12 @@ async def create_template(request_data: Dict):
         raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
     if not os.getenv("ANTHROPIC_API_KEY"):
         raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY not configured")
-    
+
     try:
         social_post = request_data.get("social_post")
         if not social_post:
             raise HTTPException(status_code=400, detail="social_post is required")
-            
+
         template = Templatizer(social_post)
         return {"template": template}
     except Exception as e:
@@ -310,7 +409,7 @@ async def repurpose_with_templates(request_data: Dict):
         content_chunks = request_data.get("content_chunks")
         template_post = request_data.get("template_post")
         brand = request_data.get("brand")
-        
+
         if not all([content_chunks, template_post, brand]):
             raise HTTPException(status_code=400, detail="content_chunks, template_post, and brand are required")
 
@@ -332,3 +431,7 @@ async def repurpose_with_templates(request_data: Dict):
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8080)
