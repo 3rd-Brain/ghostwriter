@@ -317,7 +317,7 @@ textarea.form-control {
 }
 
 .form-container {
-    padding-top: 1rem;
+    padding: 0;
 }
 
 .form-container h3 {
