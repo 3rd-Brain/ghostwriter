@@ -103,6 +103,49 @@ body {
     margin-left: 290px;
     flex: 1;
     max-width: 1200px;
+    padding: 2rem;
+}
+
+.welcome-section {
+    margin-bottom: 2rem;
+}
+
+.welcome-section h2 {
+    font-size: 2.5rem;
+    color: var(--deep-purple);
+    margin-bottom: 1.5rem;
+}
+
+.generation-menu {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.menu-item {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    text-decoration: none;
+    color: var(--deep-purple);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.menu-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.menu-item h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1.25rem;
+}
+
+.menu-item p {
+    margin: 0;
+    color: #666;
+    font-size: 0.95rem;
 }
 
 /* Basic form and button styles */
