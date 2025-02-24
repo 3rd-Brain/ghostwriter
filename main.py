@@ -162,7 +162,7 @@ async def generated_content(request: Request, current_user: str = Depends(get_cu
     except requests.exceptions.RequestException as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch generated content: {str(e)}")
         "contents": contents
-    })
+    }
 
 @app.get("/logout")
 async def logout(response: Response):
