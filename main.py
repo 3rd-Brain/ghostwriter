@@ -116,6 +116,14 @@ async def generation_top_content(request: Request, current_user: str = Depends(g
         "page": "top-content"
     })
 
+@app.get("/generation/posts-templates", response_class=HTMLResponse)
+async def generation_posts_templates(request: Request, current_user: str = Depends(get_current_user)):
+    return templates.TemplateResponse("posts_templates.html", {
+        "request": request,
+        "username": current_user,
+        "page": "posts-templates"
+    })
+
 @app.get("/logout")
 async def logout(response: Response):
     response = RedirectResponse(url="/login")

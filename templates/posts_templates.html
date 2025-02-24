@@ -1,7 +1,8 @@
+
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Generation - Repurpose</title>
+    <title>Generation - Posts Templates</title>
     <link rel="stylesheet" href="/static/style.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 </head>
@@ -19,9 +20,9 @@
                         Generation
                     </a>
                     <div class="submenu">
-                        <a href="/generation/repurpose" class="submenu-item {% if page == 'repurpose' %}active{% endif %}">Repurpose a Piece</a>
-                        <a href="/generation/top-content" class="submenu-item {% if page == 'top-content' %}active{% endif %}">Repurpose Top Content</a>
-                        <a href="/generation/posts-templates" class="submenu-item">Repurpose Content Using Posts as Templates</a>
+                        <a href="/generation/repurpose" class="submenu-item">Repurpose a Piece</a>
+                        <a href="/generation/top-content" class="submenu-item">Repurpose Top Content</a>
+                        <a href="/generation/posts-templates" class="submenu-item active">Repurpose Content Using Posts as Templates</a>
                     </div>
                 </div>
                 <a href="#" class="sidebar-btn">
@@ -50,29 +51,45 @@
             <h2>Content Generation</h2>
             <div class="content-card">
                 <div class="form-container">
-                    <h3>Repurpose a Piece</h3>
-                    <form id="repurposeForm" class="generation-form">
+                    <h3>Repurpose Content Using Posts as Templates</h3>
+                    <form id="postsTemplatesForm" class="generation-form">
                         <div class="form-group">
-                            <label for="topic">Topic/Content:</label>
-                            <textarea id="topic" name="topic" rows="6" class="form-control" required></textarea>
+                            <label for="contentTopicQuery">Content Topic Query:</label>
+                            <textarea id="contentTopicQuery" name="contentTopicQuery" rows="4" class="form-control" required></textarea>
+                        </div>
+                        <div class="form-group template-group">
+                            <label for="templatePost">Template Post / Query:</label>
+                            <div class="template-input-group">
+                                <textarea id="templatePost" name="templatePost" rows="4" class="form-control" required></textarea>
+                                <div class="template-type">
+                                    <input type="checkbox" id="isQuery" name="isQuery">
+                                    <label for="isQuery">Is this a query to retrieve top posts?</label>
+                                </div>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label for="brand">Brand:</label>
                             <input type="text" id="brand" name="brand" class="form-control" required>
                         </div>
                         <div class="form-group">
-                            <label for="repurposeCount">Repurpose Count:</label>
-                            <input type="number" id="repurposeCount" name="repurposeCount" class="form-control" value="5" min="1" max="10" required>
-                        </div>
-                        <div class="form-group">
                             <label for="workflowId">Workflow ID:</label>
                             <input type="text" id="workflowId" name="workflowId" class="form-control" value="Legacy Generation Flow with Claude">
+                        </div>
+                        <div id="queryOptions" class="hidden">
+                            <div class="form-group">
+                                <label for="numberOfPosts">Number of Posts to Use as Templates:</label>
+                                <input type="number" id="numberOfPosts" name="numberOfPosts" class="form-control" value="5" min="1" max="10">
+                            </div>
+                            <div class="form-group">
+                                <label for="postTopicQuery">Topic to Query Your Top Posts:</label>
+                                <input type="text" id="postTopicQuery" name="postTopicQuery" class="form-control" value="Digital Operations">
+                            </div>
                         </div>
                     </form>
                 </div>
             </div>
             <div class="form-actions">
-                <button type="submit" form="repurposeForm" class="submit-btn">Generate Content</button>
+                <button type="submit" form="postsTemplatesForm" class="submit-btn">Generate Content</button>
                 <button type="button" class="reset-btn">Reset</button>
             </div>
         </div>
@@ -80,34 +97,47 @@
     <div class="notification" id="notification"></div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Get all Generation buttons (both in dashboard and generation pages)
             const generationBtn = document.querySelector('.nav-item .sidebar-btn');
             const submenu = document.querySelector('.submenu');
-
-            // Add click handler for submenu toggle
+            const isQueryCheckbox = document.getElementById('isQuery');
+            const queryOptions = document.getElementById('queryOptions');
+            
             generationBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 this.classList.toggle('clicked');
                 submenu.style.display = this.classList.contains('clicked') ? 'flex' : 'none';
             });
 
-            // If the Generation button is active (on generation pages), show submenu by default
             if (generationBtn.classList.contains('active')) {
                 generationBtn.classList.add('clicked');
                 submenu.style.display = 'flex';
             }
 
-            document.getElementById('repurposeForm').addEventListener('submit', async function(e) {
+            isQueryCheckbox.addEventListener('change', function() {
+                queryOptions.classList.toggle('hidden', !this.checked);
+                const queryFields = queryOptions.querySelectorAll('input');
+                queryFields.forEach(field => {
+                    field.required = this.checked;
+                });
+            });
+
+            document.getElementById('postsTemplatesForm').addEventListener('submit', async function(e) {
                 e.preventDefault();
                 const formData = {
-                    topic_query: document.getElementById('topic').value,
+                    content_topic_query: document.getElementById('contentTopicQuery').value,
+                    template_post: document.getElementById('templatePost').value,
                     brand: document.getElementById('brand').value,
-                    repurpose_count: parseInt(document.getElementById('repurposeCount').value),
-                    workflow_id: document.getElementById('workflowId').value
+                    workflow_id: document.getElementById('workflowId').value,
+                    is_given_template_query: document.getElementById('isQuery').checked
                 };
 
+                if (formData.is_given_template_query) {
+                    formData.number_of_posts_to_template = parseInt(document.getElementById('numberOfPosts').value);
+                    formData.post_topic_query = document.getElementById('postTopicQuery').value;
+                }
+
                 try {
-                    const response = await fetch('/repurpose', {
+                    const response = await fetch('/source-content-repurpose-with-templates', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -122,10 +152,8 @@
             });
 
             document.querySelector('.reset-btn').addEventListener('click', function() {
-                document.getElementById('topic').value = '';
-                document.getElementById('brand').value = '';
-                document.getElementById('repurposeCount').value = '5';
-                document.getElementById('workflowId').value = 'Legacy Generation Flow with Claude';
+                document.getElementById('postsTemplatesForm').reset();
+                queryOptions.classList.add('hidden');
             });
 
             function showNotification(message) {

@@ -365,3 +365,19 @@ textarea.form-control {
 .notification.show {
     transform: translateY(0);
 }
+
+.template-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.template-type {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.hidden {
+    display: none;
+}
