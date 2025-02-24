@@ -78,6 +78,7 @@
             </div>
         </div>
     </div>
+    <div class="notification" id="notification"></div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Get all Generation buttons (both in dashboard and generation pages)
@@ -115,9 +116,9 @@
                         body: JSON.stringify(formData)
                     });
                     const data = await response.json();
-                    alert(data.status);
+                    showNotification(data.status);
                 } catch (error) {
-                    alert('Error generating content: ' + error.message);
+                    showNotification('Error generating content: ' + error.message);
                 }
             });
 
@@ -127,6 +128,15 @@
                 document.getElementById('repurposeCount').value = '5';
                 document.getElementById('workflowId').value = 'Legacy Generation Flow with Claude';
             });
+
+            function showNotification(message) {
+                const notification = document.getElementById('notification');
+                notification.textContent = message;
+                notification.classList.add('show');
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
         });
     </script>
 </body>
