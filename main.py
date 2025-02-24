@@ -147,13 +147,20 @@ async def generated_content(request: Request, current_user: str = Depends(get_cu
         contents = []
         for record in data.get("records", []):
             fields = record.get("fields", {})
+            date_str = fields.get("Created Time", "")
+            try:
+                # Convert ISO format string to datetime object
+                date_obj = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+            except (ValueError, AttributeError):
+                date_obj = None
+            
             contents.append({
                 "content_id": fields.get("Content_ID", ""),
                 "first_draft": fields.get("First Draft", ""),
                 "source_chunk": fields.get("Source Chunk", ""),
                 "template": fields.get("Template", ""),
                 "tag": fields.get("Tag", ""),
-                "date_created": fields.get("Created Time", "")
+                "date_created": date_obj
             })
         return templates.TemplateResponse("generated_content.html", {
             "request": request,
