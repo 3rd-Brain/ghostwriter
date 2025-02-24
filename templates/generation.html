@@ -44,8 +44,8 @@
             </a>
         </div>
         <div class="content-area">
+            <h2>Content Generation</h2>
             <div class="content-card">
-                <h2>Content Generation</h2>
                 <div class="form-container">
                     <h3>Repurpose a Piece</h3>
                     <form id="repurposeForm" class="generation-form">
@@ -65,9 +65,12 @@
                             <label for="workflowId">Workflow ID:</label>
                             <input type="text" id="workflowId" name="workflowId" class="form-control" value="Legacy Generation Flow with Claude">
                         </div>
-                        <button type="submit" class="submit-btn">Generate Content</button>
                     </form>
                 </div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" form="repurposeForm" class="submit-btn">Generate Content</button>
+                <button type="button" class="reset-btn">Reset</button>
             </div>
         </div>
     </div>
@@ -103,6 +106,13 @@
                 } catch (error) {
                     alert('Error generating content: ' + error.message);
                 }
+            });
+
+            document.querySelector('.reset-btn').addEventListener('click', function() {
+                document.getElementById('topic').value = '';
+                document.getElementById('brand').value = '';
+                document.getElementById('repurposeCount').value = '5';
+                document.getElementById('workflowId').value = 'Legacy Generation Flow with Claude';
             });
         });
     </script>
