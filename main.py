@@ -9,7 +9,7 @@ from jose import JWTError, jwt
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from typing import Dict
-from social_writer import generated_content_uploader, get_client_brand_voice, vector_search_for_published_content, metric_sorter, top_content_sentiment_setup, source_content_retriever, multitemplate_retriever, short_form_social_repurposing, top_content_to_repurposing, template_context_and_uploader, Templatizer, repurposer_using_posts_as_templates
+from social_writer import generated_content_uploader, get_client_brand_voice, vector_search_for_published_content, metric_sorter, top_content_sentiment_setup, source_content_retriever, multitemplate_retriever, short_form_social_repurposing, top_content_to_repurposing, template_context_and_uploader, Templatizer, repurposer_using_posts_as_templates, source_content_repurposer_using_posts_as_templates
 from social_dynamic_generation_flow import flow_config_retriever, social_post_generation_with_json
 
 # App setup
@@ -445,6 +445,39 @@ async def repurpose_with_templates(request_data: Dict):
             post_topic_query=post_topic_query
         )
         return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/source-content-repurpose-with-templates")
+async def repurpose_source_content_with_templates(request_data: Dict, background_tasks: BackgroundTasks):
+    try:
+        # Required fields
+        content_topic_query = request_data.get("content_topic_query")
+        template_post = request_data.get("template_post")
+        brand = request_data.get("brand")
+
+        if not all([content_topic_query, template_post, brand]):
+            raise HTTPException(status_code=400, detail="content_topic_query, template_post, and brand are required")
+
+        # Optional fields with defaults
+        workflow_id = request_data.get("workflow_id", "Legacy Generation Flow with Claude")
+        is_given_template_query = request_data.get("is_given_template_query", False)
+        number_of_posts_to_template = request_data.get("number_of_posts_to_template", 5)
+        post_topic_query = request_data.get("post_topic_query", "Digital Operations")
+
+        # Add task to background
+        background_tasks.add_task(
+            source_content_repurposer_using_posts_as_templates,
+            content_topic_query=content_topic_query,
+            template_post=template_post,
+            brand=brand,
+            workflow_id=workflow_id,
+            is_given_template_query=is_given_template_query,
+            number_of_posts_to_template=number_of_posts_to_template,
+            post_topic_query=post_topic_query
+        )
+
+        return {"status": "Content is now being generated"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
