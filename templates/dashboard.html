@@ -4,8 +4,19 @@
 <head>
     <title>Dashboard</title>
     <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 </head>
 <body>
+    <div class="header">
+        <nav>
+            <a href="/dashboard" class="nav-item home-icon">
+                <span class="material-icons">home</span>
+            </a>
+            <a href="#" class="nav-item">Generation</a>
+            <a href="#" class="nav-item">Search</a>
+            <a href="#" class="nav-item">Create/Upload</a>
+        </nav>
+    </div>
     <div class="dashboard-container">
         <h2>Welcome, {{ username }}!</h2>
         <div class="content">
