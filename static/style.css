@@ -426,7 +426,7 @@ textarea.form-control {
 
 .content-table td.first-draft {
     width: 30%;
-    white-space: normal;
+    white-space: pre-wrap;
     word-wrap: break-word;
 }
 
