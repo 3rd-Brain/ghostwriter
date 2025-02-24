@@ -100,6 +100,13 @@ async def dashboard(request: Request, current_user: str = Depends(get_current_us
         "username": current_user
     })
 
+@app.get("/generation", response_class=HTMLResponse)
+async def generation(request: Request, current_user: str = Depends(get_current_user)):
+    return templates.TemplateResponse("generation.html", {
+        "request": request,
+        "username": current_user
+    })
+
 @app.get("/logout")
 async def logout(response: Response):
     response = RedirectResponse(url="/login")
