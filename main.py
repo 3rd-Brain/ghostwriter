@@ -126,24 +126,34 @@ async def generation_posts_templates(request: Request, current_user: str = Depen
 
 @app.get("/generated-content", response_class=HTMLResponse)
 async def generated_content(request: Request, current_user: str = Depends(get_current_user)):
-    # TODO: Fetch actual content from Airtable
-    # This is example data
-    contents = [
-        {
-            "content_id": "1",
-            "first_draft": "Sample content 1",
-            "template": "Template A",
-            "status": "Draft",
-            "date_created": "2024-02-13"
-        },
-        {
-            "content_id": "2",
-            "first_draft": "Sample content 2",
-            "template": "Template B",
-            "status": "Published",
-            "date_created": "2024-02-14"
-        }
-    ]
+    AIRTABLE_API_KEY = os.environ.get("AIRTABLE_API_KEY")
+    if not AIRTABLE_API_KEY:
+        raise HTTPException(status_code=500, detail="AIRTABLE_API_KEY not configured")
+
+    url = "https://api.airtable.com/v0/appLz2zuN6ZFu4mYS/tbliCJf9aeYkryU2W"
+    headers = {
+        "Authorization": f"Bearer {AIRTABLE_API_KEY}",
+    }
+    params = {
+        "view": "viwlEIVj2rgBVKVWj"
+    }
+
+    try:
+        response = requests.get(url, headers=headers, params=params)
+        response.raise_for_status()
+        data = response.json()
+        
+        contents = []
+        for record in data.get("records", []):
+            fields = record.get("fields", {})
+            contents.append({
+                "content_id": fields.get("Content_ID", ""),
+                "first_draft": fields.get("First Draft", ""),
+                "source_chunk": fields.get("Source Chunk", ""),
+                "template": fields.get("Template", ""),
+                "tag": fields.get("Tag", ""),
+                "date_created": fields.get("Created Time", "")
+            })
     return templates.TemplateResponse("generated_content.html", {
         "request": request,
         "username": current_user,

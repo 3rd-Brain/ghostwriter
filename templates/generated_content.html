@@ -56,9 +56,10 @@
                             <tr>
                                 <th>Content ID</th>
                                 <th>First Draft</th>
+                                <th>Source Chunk</th>
                                 <th>Template</th>
-                                <th>Status</th>
-                                <th>Date Created</th>
+                                <th>Tag</th>
+                                <th>Created Time</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -67,8 +68,9 @@
                             <tr>
                                 <td>{{ content.content_id }}</td>
                                 <td>{{ content.first_draft }}</td>
+                                <td>{{ content.source_chunk }}</td>
                                 <td>{{ content.template }}</td>
-                                <td>{{ content.status }}</td>
+                                <td>{{ content.tag }}</td>
                                 <td>{{ content.date_created }}</td>
                                 <td>
                                     <button class="action-btn edit">
