@@ -315,6 +315,14 @@ textarea.form-control {
     transform: translateY(-2px);
 }
 
+.form-container {
+    padding-top: 1rem;
+}
+
+.form-container h3 {
+    margin-top: 0;
+}
+
 .form-actions {
     display: flex;
     gap: 1rem;
@@ -324,13 +332,14 @@ textarea.form-control {
 .reset-btn {
     background-color: #6c757d;
     color: var(--white);
-    padding: 1rem 2rem;
+    padding: 0.75rem 2rem;
     border: none;
     border-radius: 8px;
     font-size: 1rem;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.3s ease;
+    min-width: 160px;
 }
 
 .reset-btn:hover {
