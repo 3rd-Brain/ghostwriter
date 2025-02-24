@@ -7,21 +7,22 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 </head>
 <body>
-    <div class="header">
-        <nav>
-            <a href="/dashboard" class="nav-item home-icon">
+    <div class="main-container">
+        <div class="sidebar">
+            <a href="/dashboard" class="sidebar-btn active">
                 <span class="material-icons">home</span>
+                Home
             </a>
-            <a href="/generation" class="nav-item">Generation</a>
-            <a href="#" class="nav-item">Search</a>
-            <a href="#" class="nav-item">Create/Upload</a>
-        </nav>
-    </div>
-    <div class="dashboard-container">
-        <h2>Welcome, {{ username }}!</h2>
-        <div class="content">
-            <p>You've successfully logged in.</p>
-            <a href="/logout" class="logout-btn">Logout</a>
+            <a href="/generation" class="sidebar-btn">Generation</a>
+            <a href="#" class="sidebar-btn">Search</a>
+            <a href="#" class="sidebar-btn">Create/Upload</a>
+        </div>
+        <div class="content-area">
+            <h2>Welcome, {{ username }}!</h2>
+            <div class="content">
+                <p>You've successfully logged in.</p>
+                <a href="/logout" class="logout-btn">Logout</a>
+            </div>
         </div>
     </div>
 </body>
