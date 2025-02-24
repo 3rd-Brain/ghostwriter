@@ -376,6 +376,18 @@ textarea.form-control {
     display: flex;
     align-items: center;
     gap: 8px;
+    margin-top: 4px;
+    padding-left: 2px;
+}
+
+.template-type input[type="checkbox"] {
+    width: auto;
+    margin-right: 8px;
+}
+
+.template-type label {
+    font-size: 0.9rem;
+    color: #666;
 }
 
 .hidden {
