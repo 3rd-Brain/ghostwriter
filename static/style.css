@@ -438,6 +438,8 @@ textarea.form-control {
 .content-table td.template {
     width: 15%;
     cursor: pointer;
+    white-space: pre-wrap;
+    word-wrap: break-word;
 }
 
 .content-table td.tag {
