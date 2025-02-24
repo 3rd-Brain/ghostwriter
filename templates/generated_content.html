@@ -1,0 +1,102 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generated Content</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+</head>
+<body>
+    <div class="main-container">
+        <div class="sidebar">
+            <div class="sidebar-nav">
+                <a href="/dashboard" class="sidebar-btn">
+                    <span class="material-icons">home</span>
+                    Home
+                </a>
+                <div class="nav-item">
+                    <a href="#" class="sidebar-btn">
+                        <span class="material-icons">auto_awesome</span>
+                        Generation
+                    </a>
+                    <div class="submenu">
+                        <a href="/generation/repurpose" class="submenu-item">Repurpose a Piece</a>
+                        <a href="/generation/top-content" class="submenu-item">Repurpose Top Content</a>
+                        <a href="/generation/posts-templates" class="submenu-item">Repurpose Content Using Posts as Templates</a>
+                    </div>
+                </div>
+                <a href="#" class="sidebar-btn">
+                    <span class="material-icons">search</span>
+                    Search
+                </a>
+                <a href="#" class="sidebar-btn">
+                    <span class="material-icons">upload</span>
+                    Create/Upload
+                </a>
+                <a href="/generated-content" class="sidebar-btn active">
+                    <span class="material-icons">article</span>
+                    Generated Content
+                </a>
+            </div>
+            <a href="#" class="user-profile">
+                <div class="user-avatar">
+                    <span class="material-icons">person</span>
+                </div>
+                <div class="user-info">
+                    <div class="user-name">{{ username }}</div>
+                </div>
+            </a>
+        </div>
+        <div class="content-area">
+            <h2>Generated Content</h2>
+            <div class="content-card">
+                <div class="table-container">
+                    <table class="content-table">
+                        <thead>
+                            <tr>
+                                <th>Content ID</th>
+                                <th>First Draft</th>
+                                <th>Template</th>
+                                <th>Status</th>
+                                <th>Date Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for content in contents %}
+                            <tr>
+                                <td>{{ content.content_id }}</td>
+                                <td>{{ content.first_draft }}</td>
+                                <td>{{ content.template }}</td>
+                                <td>{{ content.status }}</td>
+                                <td>{{ content.date_created }}</td>
+                                <td>
+                                    <button class="action-btn edit">
+                                        <span class="material-icons">edit</span>
+                                    </button>
+                                    <button class="action-btn delete">
+                                        <span class="material-icons">delete</span>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const generationBtn = document.querySelector('.nav-item .sidebar-btn');
+            const submenu = document.querySelector('.submenu');
+            
+            generationBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                this.classList.toggle('clicked');
+                submenu.style.display = this.classList.contains('clicked') ? 'flex' : 'none';
+            });
+        });
+    </script>
+</body>
+</html>

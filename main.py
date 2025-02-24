@@ -124,6 +124,32 @@ async def generation_posts_templates(request: Request, current_user: str = Depen
         "page": "posts-templates"
     })
 
+@app.get("/generated-content", response_class=HTMLResponse)
+async def generated_content(request: Request, current_user: str = Depends(get_current_user)):
+    # TODO: Fetch actual content from Airtable
+    # This is example data
+    contents = [
+        {
+            "content_id": "1",
+            "first_draft": "Sample content 1",
+            "template": "Template A",
+            "status": "Draft",
+            "date_created": "2024-02-13"
+        },
+        {
+            "content_id": "2",
+            "first_draft": "Sample content 2",
+            "template": "Template B",
+            "status": "Published",
+            "date_created": "2024-02-14"
+        }
+    ]
+    return templates.TemplateResponse("generated_content.html", {
+        "request": request,
+        "username": current_user,
+        "contents": contents
+    })
+
 @app.get("/logout")
 async def logout(response: Response):
     response = RedirectResponse(url="/login")
