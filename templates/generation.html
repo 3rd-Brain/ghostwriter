@@ -76,13 +76,22 @@
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const generationBtn = document.querySelector('.sidebar-btn.active');
+            // Get all Generation buttons (both in dashboard and generation pages)
+            const generationBtn = document.querySelector('.nav-item .sidebar-btn');
             const submenu = document.querySelector('.submenu');
             
+            // Add click handler for submenu toggle
             generationBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 this.classList.toggle('clicked');
+                submenu.style.display = this.classList.contains('clicked') ? 'flex' : 'none';
             });
+
+            // If the Generation button is active (on generation pages), show submenu by default
+            if (generationBtn.classList.contains('active')) {
+                generationBtn.classList.add('clicked');
+                submenu.style.display = 'flex';
+            }
 
             document.getElementById('repurposeForm').addEventListener('submit', async function(e) {
                 e.preventDefault();
