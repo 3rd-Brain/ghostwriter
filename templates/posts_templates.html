@@ -130,9 +130,16 @@
                 }
             });
 
-            if (generationBtn.classList.contains('active')) {
-                generationBtn.classList.add('clicked');
-                submenu.style.display = 'flex';
+            // Show submenu of active nav item initially
+            const activeNavItem = document.querySelector('.nav-item .active');
+            if (activeNavItem) {
+                const parentNavItem = activeNavItem.closest('.nav-item');
+                const parentBtn = parentNavItem.querySelector('.sidebar-btn');
+                const parentSubmenu = parentNavItem.querySelector('.submenu');
+                if (parentBtn && parentSubmenu) {
+                    parentBtn.classList.add('clicked');
+                    parentSubmenu.style.display = 'flex';
+                }
             }
 
             isQueryCheckbox.addEventListener('change', function() {

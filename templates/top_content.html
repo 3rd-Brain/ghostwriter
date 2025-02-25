@@ -25,10 +25,18 @@
                         <a href="/generation/posts-templates" class="submenu-item">Repurpose Content Using Posts as Templates</a>
                     </div>
                 </div>
-                <a href="#" class="sidebar-btn">
-                    <span class="material-icons">search</span>
-                    Search
-                </a>
+                <div class="nav-item">
+                    <a href="#" class="sidebar-btn">
+                        <span class="material-icons">search</span>
+                        Search
+                    </a>
+                    <div class="submenu">
+                        <a href="/search/published" class="submenu-item">My Top Published Content</a>
+                        <a href="/search/brand-voices" class="submenu-item">Brand Voices</a>
+                        <a href="/search/source-content" class="submenu-item">Source Content</a>
+                        <a href="/search/templates" class="submenu-item">Templates</a>
+                    </div>
+                </div>
                 <div class="nav-item">
                     <a href="#" class="sidebar-btn">
                         <span class="material-icons">upload</span>
@@ -112,9 +120,16 @@
                 }
             });
 
-            if (generationBtn.classList.contains('active')) {
-                generationBtn.classList.add('clicked');
-                submenu.style.display = 'flex';
+            // Show submenu of active nav item initially
+            const activeNavItem = document.querySelector('.nav-item .active');
+            if (activeNavItem) {
+                const parentNavItem = activeNavItem.closest('.nav-item');
+                const parentBtn = parentNavItem.querySelector('.sidebar-btn');
+                const parentSubmenu = parentNavItem.querySelector('.submenu');
+                if (parentBtn && parentSubmenu) {
+                    parentBtn.classList.add('clicked');
+                    parentSubmenu.style.display = 'flex';
+                }
             }
 
             document.getElementById('topContentForm').addEventListener('submit', async function(e) {
