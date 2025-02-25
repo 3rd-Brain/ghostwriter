@@ -172,7 +172,7 @@ async def generated_content(request: Request, current_user: str = Depends(get_cu
         response = requests.get(url, headers=headers, params=params)
         response.raise_for_status()
         data = response.json()
-        
+
         contents = []
         for record in data.get("records", []):
             fields = record.get("fields", {})
@@ -182,7 +182,7 @@ async def generated_content(request: Request, current_user: str = Depends(get_cu
                 date_obj = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
             except (ValueError, AttributeError):
                 date_obj = None
-            
+
             contents.append({
                 "content_id": fields.get("Content_ID", ""),
                 "first_draft": fields.get("First Draft", ""),
@@ -274,34 +274,27 @@ async def create_generation_flow(request_data: Dict):
     """Save generation flow configuration to Airtable"""
     if not os.getenv("AIRTABLE_API_KEY"):
         raise HTTPException(status_code=500, detail="AIRTABLE_API_KEY not configured")
-        
+
     url = "https://api.airtable.com/v0/appLz2zuN6ZFu4mYS/workflow"
     headers = {
         "Authorization": f"Bearer {os.getenv('AIRTABLE_API_KEY')}",
         "Content-Type": "application/json"
     }
-    
+
     payload = {
         "records": [{
             "fields": {
                 "workflow_id": request_data["workflowId"],
                 "Workflow Type": request_data["workflowType"],
-                "Description": request_data["description"],
+                "Short Description": request_data["description"],
                 "JSON Payload": json.dumps({
-                    "steps": [{
-                        "Step_name": step["Step_name"],
-                        "Model": step["Model"],
-                        "System_prompt": step["System_prompt"],
-                        "Max_tokens": step["Max_tokens"],
-                        "Order": step["Order"],
-                        "Temperature": step["Temperature"],
-                        "Message": step["Message"]
-                    } for step in request_data["steps"]]
-                })
+                    "steps": request_data["steps"]
+                }),
+                "workflow tag": request_data["workflowId"]
             }
         }]
     }
-    
+
     try:
         response = requests.post(url, headers=headers, json=payload)
         response.raise_for_status()
