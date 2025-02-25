@@ -118,8 +118,11 @@
                     row.innerHTML = `
                         <td>${doc.content}</td>
                         <td>
-                            Impressions: ${(doc.metadata.weighted_impression_ratio || 0).toFixed(2)}
-Likes: ${(doc.metadata.weighted_like_ratio || 0).toFixed(2)}
+Impression Ratio: ${(doc.metadata.weighted_impression_ratio || 0).toFixed(2)}
+Like Ratio: ${(doc.metadata.weighted_like_ratio || 0).toFixed(2)}
+Bookmark Ratio: ${(doc.metadata.weighted_bookmark_ratio || 0).toFixed(2)}
+Retweet Ratio: ${(doc.metadata.weighted_retweet_ratio || 0).toFixed(2)}
+Reply Ratio: ${(doc.metadata.weighted_reply_ratio || 0).toFixed(2)}
 Total Weight: ${(doc.metadata.total_weight_metric || 0).toFixed(2)}
                         </td>
                         <td>${new Date(doc.metadata.published_date).toLocaleDateString()}</td>
