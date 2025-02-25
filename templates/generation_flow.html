@@ -288,17 +288,17 @@
             if (steps.length > 1) {
                 steps.splice(stepIndex, 1);
                 document.querySelector(`.step-form[data-step="${stepIndex}"]`).remove();
-                
+
                 // Renumber remaining steps
                 document.querySelectorAll('.step-form').forEach((step, idx) => {
                     step.setAttribute('data-step', idx);
                 });
-                
+
                 // Adjust current step index if needed
                 if (currentStepIndex >= steps.length) {
                     currentStepIndex = steps.length - 1;
                 }
-                
+
                 updateStepVisibility();
             }
         }
@@ -345,6 +345,8 @@
                     }))
                 }))
             };
+
+            console.log(JSON.stringify(formData, null, 2));
 
             try {
                 const response = await fetch('/api/generation-flow', {
