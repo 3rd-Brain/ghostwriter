@@ -23,7 +23,8 @@ body {
 .sidebar {
     position: fixed;
     width: 250px;
-    height: calc(100vh - 8rem);
+    height: calc(100vh - 4rem);
+    margin: 2rem 0;
     background-color: var(--purple);
     padding: 1.5rem;
     border-radius: 16px;
