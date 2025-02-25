@@ -298,6 +298,8 @@ async def create_generation_flow(request_data: Dict):
         }]
     }
 
+    print("Payload being sent to Airtable:", json.dumps(payload, indent=2))
+
     try:
         response = requests.post(url, headers=headers, json=payload)
         response.raise_for_status()
