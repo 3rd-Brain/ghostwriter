@@ -287,7 +287,17 @@ async def create_generation_flow(request_data: Dict):
                 "workflow_id": request_data["workflowId"],
                 "Workflow Type": request_data["workflowType"],
                 "Description": request_data["description"],
-                "JSON Payload": json.dumps({"steps": request_data["steps"]})
+                "JSON Payload": json.dumps({
+                    "steps": [{
+                        "Step_name": step["Step_name"],
+                        "Model": step["Model"],
+                        "System_prompt": step["System_prompt"],
+                        "Max_tokens": step["Max_tokens"],
+                        "Order": step["Order"],
+                        "Temperature": step["Temperature"],
+                        "Message": step["Message"]
+                    } for step in request_data["steps"]]
+                })
             }
         }]
     }
