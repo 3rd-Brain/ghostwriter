@@ -295,8 +295,7 @@ async def create_generation_flow(request_data: Dict):
                 "workflow_id": request_data["workflowId"],
                 "Workflow Type": request_data["workflowType"].title(),
                 "Short Description": request_data["description"],
-                "JSON Payload": formatted_steps_json,
-                "workflow tag": request_data["workflowId"]
+                "JSON Payload": formatted_steps_json
             }
         }]
     }
