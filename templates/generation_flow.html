@@ -103,6 +103,22 @@
                     </div>
                 </div>
 
+                <!-- Variables Info -->
+                <div class="form-section" style="background: #f8f9fa; border-left: 4px solid #0097fb; margin-bottom: 1rem;">
+                    <h3 style="margin-top: 0; color: #2d3748;">Available Variables</h3>
+                    <p style="margin-bottom: 0.5rem; color: #4a5568;">Use these variables in your system prompts or message content to customize the generation:</p>
+                    <div style="display: grid; grid-template-columns: auto 1fr; gap: 0.5rem 1rem; margin-top: 1rem;">
+                        <code style="color: #805ad5;">{template}</code>
+                        <span>Template structure for content generation</span>
+                        <code style="color: #805ad5;">{content_chunks}</code>
+                        <span>Source content for generation</span>
+                        <code style="color: #805ad5;">{prev_ai_output}</code>
+                        <span>Output from the previous step</span>
+                        <code style="color: #805ad5;">{client_brief}</code>
+                        <span>Brand voice guidelines</span>
+                    </div>
+                </div>
+
                 <!-- Steps Container -->
                 <div id="stepsContainer">
                     <!-- Steps will be added here dynamically -->
