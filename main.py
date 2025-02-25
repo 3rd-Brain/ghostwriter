@@ -281,15 +281,18 @@ async def create_generation_flow(request_data: Dict):
         "Content-Type": "application/json"
     }
 
+    # First prepare the steps JSON with proper escaping
+    steps_json = json.dumps({
+        "steps": request_data["steps"]
+    }, ensure_ascii=False)
+
     payload = {
         "records": [{
             "fields": {
                 "workflow_id": request_data["workflowId"],
                 "Workflow Type": request_data["workflowType"],
                 "Short Description": request_data["description"],
-                "JSON Payload": json.dumps({
-                    "steps": request_data["steps"]
-                }),
+                "JSON Payload": steps_json,
                 "workflow tag": request_data["workflowId"]
             }
         }]
