@@ -286,13 +286,16 @@ async def create_generation_flow(request_data: Dict):
         "steps": request_data["steps"]
     }, ensure_ascii=False)
 
+    # Format JSON payload with proper indentation
+    formatted_steps_json = json.dumps(json.loads(steps_json), indent=2)
+    
     payload = {
         "records": [{
             "fields": {
                 "workflow_id": request_data["workflowId"],
-                "Workflow Type": request_data["workflowType"],
+                "Workflow Type": request_data["workflowType"].title(),
                 "Short Description": request_data["description"],
-                "JSON Payload": steps_json,
+                "JSON Payload": formatted_steps_json,
                 "workflow tag": request_data["workflowId"]
             }
         }]
