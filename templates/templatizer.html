@@ -8,11 +8,161 @@
 </head>
 <body>
     <div class="main-container">
-        <!-- Include the same sidebar as dashboard -->
+        <div class="sidebar">
+            <div class="nav-item">
+                <a href="/dashboard" class="sidebar-btn">
+                    <span class="material-icons">dashboard</span>
+                    Dashboard
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="#" class="sidebar-btn">
+                    <span class="material-icons">add_circle</span>
+                    Create/Upload
+                </a>
+                <div class="submenu">
+                    <a href="/create/brand-voice">Brand Voice</a>
+                    <a href="/create/source-content">Upload New Source Content</a>
+                    <a href="/create/templatizer" class="active">Templatizer</a>
+                    <a href="/create/generation-flow">Create New Generation Flow</a>
+                </div>
+            </div>
+            <div class="nav-item">
+                <a href="/generation/repurpose" class="sidebar-btn">
+                    <span class="material-icons">auto_awesome</span>
+                    Generation
+                </a>
+                <div class="submenu">
+                    <a href="/generation/repurpose">Repurpose</a>
+                    <a href="/generation/top-content">From Top Content</a>
+                    <a href="/generation/posts-templates">From Posts as Templates</a>
+                </div>
+            </div>
+            <div class="nav-item">
+                <a href="/generated-content" class="sidebar-btn">
+                    <span class="material-icons">content_paste</span>
+                    Generated Content
+                </a>
+            </div>
+        </div>
+
         <div class="content-area">
             <h2>Templatizer</h2>
-            <p>Coming soon...</p>
+            
+            <!-- Form Section -->
+            <div class="card">
+                <h3>Create Template</h3>
+                <div class="form-group">
+                    <label for="socialPost">Social Post:</label>
+                    <textarea id="socialPost" rows="5" placeholder="Enter the social post you want to create a template from"></textarea>
+                </div>
+                <button onclick="generateTemplate()" class="primary-button">Generate Template</button>
+            </div>
+
+            <!-- Template Result Section -->
+            <div class="card" id="resultCard" style="display: none;">
+                <h3>Generated Template</h3>
+                <div class="result-content">
+                    <pre id="templateResult"></pre>
+                    <button onclick="uploadTemplate()" class="secondary-button">Upload Template</button>
+                </div>
+            </div>
+
+            <!-- Notification -->
+            <div class="notification" id="notification"></div>
         </div>
     </div>
+
+    <script>
+        // Initialize sidebar functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const navItems = document.querySelectorAll('.nav-item');
+            
+            navItems.forEach(navItem => {
+                const btn = navItem.querySelector('.sidebar-btn');
+                const submenu = navItem.querySelector('.submenu');
+                
+                if (btn && submenu) {
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        this.classList.toggle('clicked');
+                        submenu.style.display = this.classList.contains('clicked') ? 'flex' : 'none';
+                    });
+                }
+            });
+        });
+
+        function showNotification(message, isError = false) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${isError ? 'error' : 'success'}`;
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        async function generateTemplate() {
+            const socialPost = document.getElementById('socialPost').value;
+            if (!socialPost) {
+                showNotification('Please enter a social post', true);
+                return;
+            }
+
+            try {
+                const response = await fetch('/templatizer', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        social_post: socialPost
+                    })
+                });
+
+                const data = await response.json();
+                if (data.template) {
+                    document.getElementById('resultCard').style.display = 'block';
+                    document.getElementById('templateResult').textContent = data.template;
+                    showNotification('Template generated successfully');
+                } else {
+                    showNotification('Failed to generate template', true);
+                }
+            } catch (error) {
+                showNotification('Error generating template', true);
+                console.error('Error:', error);
+            }
+        }
+
+        async function uploadTemplate() {
+            const template = document.getElementById('templateResult').textContent;
+            if (!template) {
+                showNotification('No template to upload', true);
+                return;
+            }
+
+            try {
+                const response = await fetch('/template-context-and-uploader', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        template: template
+                    })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    showNotification('Template uploaded successfully');
+                } else {
+                    showNotification('Failed to upload template', true);
+                }
+            } catch (error) {
+                showNotification('Error uploading template', true);
+                console.error('Error:', error);
+            }
+        }
+    </script>
 </body>
 </html>
