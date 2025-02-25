@@ -9,62 +9,76 @@
 <body>
     <div class="main-container">
         <div class="sidebar">
-            <div class="nav-item">
+            <div class="sidebar-nav">
                 <a href="/dashboard" class="sidebar-btn">
-                    <span class="material-icons">dashboard</span>
-                    Dashboard
+                    <span class="material-icons">home</span>
+                    Home
                 </a>
-            </div>
-            <div class="nav-item">
+                <div class="nav-item">
+                    <a href="#" class="sidebar-btn">
+                        <span class="material-icons">auto_awesome</span>
+                        Generation
+                    </a>
+                    <div class="submenu">
+                        <a href="/generation/repurpose" class="submenu-item">Generate New Content</a>
+                        <a href="/generation/top-content" class="submenu-item">Repurpose Top Content</a>
+                        <a href="/generation/posts-templates" class="submenu-item">Repurpose Content Using Posts as Templates</a>
+                    </div>
+                </div>
                 <a href="#" class="sidebar-btn">
-                    <span class="material-icons">add_circle</span>
-                    Create/Upload
+                    <span class="material-icons">search</span>
+                    Search
                 </a>
-                <div class="submenu">
-                    <a href="/create/brand-voice">Brand Voice</a>
-                    <a href="/create/source-content">Upload New Source Content</a>
-                    <a href="/create/templatizer" class="active">Templatizer</a>
-                    <a href="/create/generation-flow">Create New Generation Flow</a>
+                <div class="nav-item">
+                    <a href="#" class="sidebar-btn clicked">
+                        <span class="material-icons">upload</span>
+                        Create/Upload
+                    </a>
+                    <div class="submenu" style="display: flex;">
+                        <a href="/create/brand-voice" class="submenu-item">Create Brand Voice</a>
+                        <a href="/create/source-content" class="submenu-item">Upload New Source Content</a>
+                        <a href="/create/templatizer" class="submenu-item active">Templatizer</a>
+                        <a href="/create/generation-flow" class="submenu-item">Create New Generation Flow</a>
+                    </div>
                 </div>
-            </div>
-            <div class="nav-item">
-                <a href="/generation/repurpose" class="sidebar-btn">
-                    <span class="material-icons">auto_awesome</span>
-                    Generation
-                </a>
-                <div class="submenu">
-                    <a href="/generation/repurpose">Repurpose</a>
-                    <a href="/generation/top-content">From Top Content</a>
-                    <a href="/generation/posts-templates">From Posts as Templates</a>
-                </div>
-            </div>
-            <div class="nav-item">
                 <a href="/generated-content" class="sidebar-btn">
-                    <span class="material-icons">content_paste</span>
+                    <span class="material-icons">article</span>
                     Generated Content
                 </a>
             </div>
+            <a href="#" class="user-profile">
+                <div class="user-avatar">
+                    <span class="material-icons">person</span>
+                </div>
+                <div class="user-info">
+                    <div class="user-name">{{ username }}</div>
+                </div>
+            </a>
         </div>
 
         <div class="content-area">
             <h2>Templatizer</h2>
             
             <!-- Form Section -->
-            <div class="card">
+            <div class="content-card">
                 <h3>Create Template</h3>
-                <div class="form-group">
-                    <label for="socialPost">Social Post:</label>
-                    <textarea id="socialPost" rows="5" placeholder="Enter the social post you want to create a template from"></textarea>
+                <div class="form-container">
+                    <form class="generation-form">
+                        <div class="form-group">
+                            <label for="socialPost">Social Post You Want to Create a Template Out Of:</label>
+                            <textarea id="socialPost" class="form-control" rows="5" placeholder="Enter the social post you want to create a template from"></textarea>
+                        </div>
+                        <button type="button" onclick="generateTemplate()" class="submit-btn">Generate Template</button>
+                    </form>
                 </div>
-                <button onclick="generateTemplate()" class="primary-button">Generate Template</button>
             </div>
 
             <!-- Template Result Section -->
-            <div class="card" id="resultCard" style="display: none;">
+            <div class="content-card" id="resultCard" style="display: none; margin-top: 2rem;">
                 <h3>Generated Template</h3>
-                <div class="result-content">
-                    <pre id="templateResult"></pre>
-                    <button onclick="uploadTemplate()" class="secondary-button">Upload Template</button>
+                <div class="result-content" style="display: flex; gap: 1rem; align-items: flex-start;">
+                    <pre id="templateResult" style="flex: 1; background: #f5f5f5; padding: 1rem; border-radius: 8px; white-space: pre-wrap;"></pre>
+                    <button onclick="uploadTemplate()" class="submit-btn">Upload Template</button>
                 </div>
             </div>
 
@@ -74,7 +88,6 @@
     </div>
 
     <script>
-        // Initialize sidebar functionality
         document.addEventListener('DOMContentLoaded', function() {
             const navItems = document.querySelectorAll('.nav-item');
             
