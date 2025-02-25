@@ -125,6 +125,34 @@ async def generation_posts_templates(request: Request, current_user: str = Depen
         "page": "posts-templates"
     })
 
+@app.get("/create/brand-voice", response_class=HTMLResponse)
+async def create_brand_voice(request: Request, current_user: str = Depends(get_current_user)):
+    return templates.TemplateResponse("brand_voice.html", {
+        "request": request,
+        "username": current_user
+    })
+
+@app.get("/create/source-content", response_class=HTMLResponse)
+async def create_source_content(request: Request, current_user: str = Depends(get_current_user)):
+    return templates.TemplateResponse("source_content.html", {
+        "request": request,
+        "username": current_user
+    })
+
+@app.get("/create/templatizer", response_class=HTMLResponse)
+async def create_templatizer(request: Request, current_user: str = Depends(get_current_user)):
+    return templates.TemplateResponse("templatizer.html", {
+        "request": request,
+        "username": current_user
+    })
+
+@app.get("/create/generation-flow", response_class=HTMLResponse)
+async def create_generation_flow(request: Request, current_user: str = Depends(get_current_user)):
+    return templates.TemplateResponse("generation_flow.html", {
+        "request": request,
+        "username": current_user
+    })
+
 @app.get("/generated-content", response_class=HTMLResponse)
 async def generated_content(request: Request, current_user: str = Depends(get_current_user)):
     AIRTABLE_API_KEY = os.environ.get("AIRTABLE_API_KEY")
