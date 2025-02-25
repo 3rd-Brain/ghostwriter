@@ -27,10 +27,18 @@
             border-radius: 8px;
         }
         .step-navigation {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
+            display: flex;
+            justify-content: space-between;
             margin: 20px 0;
+        }
+        .step-navigation .left-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+        .step-navigation .right-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
         }
         .message-actions {
             display: flex;
@@ -103,8 +111,12 @@
                 <!-- Step Navigation -->
                 <div class="steps-counter">Step <span id="currentStep">1</span> of <span id="totalSteps">1</span></div>
                 <div class="step-navigation">
-                    <button type="button" id="prevStep" class="submit-btn" style="display: none;">Previous Step</button>
-                    <button type="button" id="nextStep" class="submit-btn">Next Step</button>
+                    <div class="left-buttons">
+                        <button type="button" id="prevStep" class="submit-btn" style="visibility: hidden;">Previous Step</button>
+                    </div>
+                    <div class="right-buttons">
+                        <button type="button" id="nextStep" class="submit-btn">Next Step</button>
+                    </div>
                 </div>
 
                 <!-- Action Buttons -->
@@ -134,6 +146,9 @@
         function createStepForm(step, index) {
             return `
                 <div class="step-form" data-step="${index}">
+                    <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
+                        <button type="button" class="submit-btn" onclick="removeStep(${index})" ${steps.length === 1 ? 'disabled' : ''}>Remove Step</button>
+                    </div>
                     <div class="form-row">
                         <div class="form-group">
                             <label for="stepName${index}">Step Name:</label>
@@ -201,8 +216,13 @@
             document.getElementById('currentStep').textContent = currentStepIndex + 1;
             document.getElementById('totalSteps').textContent = steps.length;
 
-            document.getElementById('prevStep').style.display = currentStepIndex > 0 ? 'block' : 'none';
-            document.getElementById('nextStep').style.display = currentStepIndex < steps.length - 1 ? 'block' : 'none';
+            document.getElementById('prevStep').style.visibility = currentStepIndex > 0 ? 'visible' : 'hidden';
+            document.getElementById('nextStep').style.visibility = currentStepIndex < steps.length - 1 ? 'visible' : 'hidden';
+
+            // Update remove step buttons
+            document.querySelectorAll('.step-form button[onclick^="removeStep"]').forEach(btn => {
+                btn.disabled = steps.length === 1;
+            });
         }
 
         function addStep() {
@@ -245,6 +265,25 @@
                     `#messagesContainer${stepIndex} .message-form[data-message="${messageIndex}"]`
                 );
                 messageElement.remove();
+            }
+        }
+
+        function removeStep(stepIndex) {
+            if (steps.length > 1) {
+                steps.splice(stepIndex, 1);
+                document.querySelector(`.step-form[data-step="${stepIndex}"]`).remove();
+                
+                // Renumber remaining steps
+                document.querySelectorAll('.step-form').forEach((step, idx) => {
+                    step.setAttribute('data-step', idx);
+                });
+                
+                // Adjust current step index if needed
+                if (currentStepIndex >= steps.length) {
+                    currentStepIndex = steps.length - 1;
+                }
+                
+                updateStepVisibility();
             }
         }
 
