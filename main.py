@@ -165,15 +165,18 @@ async def generated_content(request: Request, page: int = 1, current_user: str =
                 "date_created": date_obj
             })
         # Calculate pagination
+        total_items = len(contents)
         start_idx = (page - 1) * ITEMS_PER_PAGE
         end_idx = start_idx + ITEMS_PER_PAGE
         paginated_contents = contents[start_idx:end_idx]
+        total_pages = (total_items + ITEMS_PER_PAGE - 1) // ITEMS_PER_PAGE
         
         return templates.TemplateResponse("generated_content.html", {
             "request": request,
             "username": current_user,
-            "contents": contents,  # Keep full list for total pages calculation
+            "contents": paginated_contents,  # Send only paginated content
             "current_page": page,
+            "total_pages": total_pages,
             "displayed_contents": paginated_contents
         })
     except requests.exceptions.RequestException as e:

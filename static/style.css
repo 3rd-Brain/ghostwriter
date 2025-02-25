@@ -84,7 +84,7 @@ body {
 }
 
 .profile-submenu {
-    display: none;
+    display: none !important;
     margin-left: 0;
     background-color: var(--deep-purple);
     border-radius: 8px;
