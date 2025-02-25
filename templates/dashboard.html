@@ -65,13 +65,19 @@
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const generationBtn = document.querySelector('.nav-item .sidebar-btn');
-            const submenu = document.querySelector('.submenu');
-
-            generationBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                this.classList.toggle('clicked');
-                submenu.style.display = this.classList.contains('clicked') ? 'flex' : 'none';
+            const navItems = document.querySelectorAll('.nav-item');
+            
+            navItems.forEach(navItem => {
+                const btn = navItem.querySelector('.sidebar-btn');
+                const submenu = navItem.querySelector('.submenu');
+                
+                if (btn && submenu) {
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        this.classList.toggle('clicked');
+                        submenu.style.display = this.classList.contains('clicked') ? 'flex' : 'none';
+                    });
+                }
             });
         });
     </script>
