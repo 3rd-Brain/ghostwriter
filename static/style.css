@@ -330,6 +330,51 @@ textarea.form-control {
     margin-top: 2rem;
 }
 
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 40px;
+    gap: 24px;
+    padding: 16px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.page-btn {
+    padding: 10px 20px;
+    border: 2px solid var(--purple);
+    background-color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--purple);
+    transition: all 0.3s ease;
+}
+
+.page-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    border-color: #ddd;
+    color: #666;
+}
+
+.page-btn:hover:not(:disabled) {
+    background-color: var(--purple);
+    color: white;
+}
+
+#pageInfo {
+    font-size: 15px;
+    color: var(--deep-purple);
+    font-weight: 500;
+    padding: 10px 20px;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+}
+
 .reset-btn {
     background-color: var(--white);
     color: var(--purple);
