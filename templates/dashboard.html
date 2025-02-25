@@ -75,29 +75,19 @@
         </div>
     </div>
     <script>
-        function toggleProfileMenu() {
-            const submenu = document.getElementById('profileSubmenu');
-            submenu.style.display = submenu.style.display === 'flex' ? 'none' : 'flex';
-        }
-
         document.addEventListener('DOMContentLoaded', function() {
             const generationBtn = document.querySelector('.nav-item .sidebar-btn');
             const submenu = document.querySelector('.submenu');
 
-            generationBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                this.classList.toggle('clicked');
-                submenu.style.display = this.classList.contains('clicked') ? 'flex' : 'none';
-            });
-
-            // Close profile menu when clicking outside
-            document.addEventListener('click', function(e) {
-                const profileNav = document.querySelector('.profile-nav');
-                const profileSubmenu = document.getElementById('profileSubmenu');
-                if (!profileNav.contains(e.target)) {
-                    profileSubmenu.style.display = 'none';
-                }
-            });
+            if (generationBtn) {
+                generationBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    this.classList.toggle('clicked');
+                    if (submenu) {
+                        submenu.style.display = this.classList.contains('clicked') ? 'flex' : 'none';
+                    }
+                });
+            }
         });
     </script>
 </body>
