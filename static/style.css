@@ -79,33 +79,49 @@ body {
     font-weight: 500;
 }
 
-.profile-section {
+.bottom-nav {
     margin-top: auto;
     display: flex;
-    align-items: center;
+    flex-direction: column;
     gap: 0.5rem;
-    padding: 0.75rem;
 }
 
-.logout-button {
+.nav-button {
     display: flex;
     align-items: center;
-    justify-content: center;
-    background-color: var(--deep-purple);
+    gap: 1rem;
+    padding: 0.75rem;
     color: var(--white);
-    border-radius: 50%;
-    width: 32px;
-    height: 32px;
+    background: none;
+    border: none;
+    width: 100%;
     transition: all 0.3s ease;
+    border-radius: 8px;
+    cursor: pointer;
 }
 
-.logout-button:hover {
+.nav-button:hover {
     background-color: var(--yellow);
     color: var(--purple);
 }
 
-.logout-button .material-icons {
-    font-size: 18px;
+.nav-button .user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--deep-purple);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-button .button-info {
+    flex: 1;
+    text-align: left;
+}
+
+.nav-button .button-name {
+    font-weight: 500;
 }
 
 .sidebar-btn {
