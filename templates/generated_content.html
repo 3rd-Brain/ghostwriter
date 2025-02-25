@@ -84,6 +84,17 @@
                             {% endfor %}
                         </tbody>
                     </table>
+                    <div class="pagination">
+                        {% set total_pages = (contents|length / 20)|round(0, 'ceil')|int %}
+                        {% if total_pages > 1 %}
+                            {% for page in range(1, total_pages + 1) %}
+                                <button class="page-btn {% if loop.index == current_page %}active{% endif %}" 
+                                        onclick="changePage({{ loop.index }})">
+                                    {{ loop.index }}
+                                </button>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
@@ -124,6 +135,10 @@
                 submenu.style.display = this.classList.contains('clicked') ? 'flex' : 'none';
             });
         });
+
+        function changePage(page) {
+            window.location.href = `/generated-content?page=${page}`;
+        }
     </script>
 </body>
 </html>

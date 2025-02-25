@@ -126,10 +126,12 @@ async def generation_posts_templates(request: Request, current_user: str = Depen
     })
 
 @app.get("/generated-content", response_class=HTMLResponse)
-async def generated_content(request: Request, current_user: str = Depends(get_current_user)):
+async def generated_content(request: Request, page: int = 1, current_user: str = Depends(get_current_user)):
     AIRTABLE_API_KEY = os.environ.get("AIRTABLE_API_KEY")
     if not AIRTABLE_API_KEY:
         raise HTTPException(status_code=500, detail="AIRTABLE_API_KEY not configured")
+    
+    ITEMS_PER_PAGE = 20
 
     url = "https://api.airtable.com/v0/appLz2zuN6ZFu4mYS/tbliCJf9aeYkryU2W"
     headers = {
@@ -162,10 +164,17 @@ async def generated_content(request: Request, current_user: str = Depends(get_cu
                 "tag": fields.get("Tag", ""),
                 "date_created": date_obj
             })
+        # Calculate pagination
+        start_idx = (page - 1) * ITEMS_PER_PAGE
+        end_idx = start_idx + ITEMS_PER_PAGE
+        paginated_contents = contents[start_idx:end_idx]
+        
         return templates.TemplateResponse("generated_content.html", {
             "request": request,
             "username": current_user,
-            "contents": contents
+            "contents": contents,  # Keep full list for total pages calculation
+            "current_page": page,
+            "displayed_contents": paginated_contents
         })
     except requests.exceptions.RequestException as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch generated content: {str(e)}")

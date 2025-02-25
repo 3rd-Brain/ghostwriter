@@ -37,14 +37,22 @@
                     Generated Content
                 </a>
             </div>
-            <a href="#" class="user-profile">
-                <div class="user-avatar">
-                    <span class="material-icons">person</span>
+            <div class="nav-item profile-nav">
+                <a href="#" class="user-profile">
+                    <div class="user-avatar">
+                        <span class="material-icons">person</span>
+                    </div>
+                    <div class="user-info">
+                        <div class="user-name">{{ username }}</div>
+                    </div>
+                </a>
+                <div class="profile-submenu">
+                    <a href="/logout" class="submenu-item">
+                        <span class="material-icons">logout</span>
+                        Logout
+                    </a>
                 </div>
-                <div class="user-info">
-                    <div class="user-name">{{ username }}</div>
-                </div>
-            </a>
+            </div>
         </div>
         <div class="content-area">
             <div class="welcome-section">
