@@ -46,18 +46,31 @@
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Generation submenu toggle
             const generationBtn = document.querySelector('.nav-item .sidebar-btn');
             const submenu = document.querySelector('.submenu');
 
-            if (generationBtn) {
+            if (generationBtn && submenu) {
                 generationBtn.addEventListener('click', function(e) {
                     e.preventDefault();
                     this.classList.toggle('clicked');
-                    if (submenu) {
-                        submenu.style.display = this.classList.contains('clicked') ? 'flex' : 'none';
-                    }
+                    submenu.style.display = this.classList.contains('clicked') ? 'flex' : 'none';
                 });
             }
+
+            // Set active states based on current page
+            const currentPath = window.location.pathname;
+            const allLinks = document.querySelectorAll('.sidebar-btn, .submenu-item');
+            
+            allLinks.forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                    if (link.closest('.submenu')) {
+                        link.closest('.nav-item').querySelector('.sidebar-btn').classList.add('clicked');
+                        link.closest('.submenu').style.display = 'flex';
+                    }
+                }
+            });
         });
     </script>
 </body>
