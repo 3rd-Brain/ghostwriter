@@ -44,14 +44,17 @@
         .results-table .metrics-col {
             width: 30%;
             max-width: 0;
-            white-space: pre;
-            font-family: monospace;
+            white-space: pre-wrap;
+            font-family: inherit;
         }
         .results-table .date-col {
             width: 10%;
         }
         .content-card {
             padding: 1.5rem;
+        }
+        .search-container {
+            gap: 2rem;
         }
         .popup-overlay {
             display: none;
@@ -165,7 +168,7 @@ Reply Ratio:     ${(doc.metadata.weighted_reply_ratio || 0).toFixed(2)}
 Total Weight:    ${(doc.metadata.total_weight_metric || 0).toFixed(2)}`;
                     
                     row.innerHTML = `
-                        <td class="content-col" onclick="showPopup(this, 'Content')">${doc.content}</td>
+                        <td class="content-col" onclick="showPopup(this, 'Content')">${doc.content.replace(/\n/g, '<br>')}</td>
                         <td class="metrics-col" onclick="showPopup(this, 'Metrics')">${metricsText}</td>
                         <td class="date-col">${new Date(doc.metadata.published_date).toLocaleDateString()}</td>
                     `;
