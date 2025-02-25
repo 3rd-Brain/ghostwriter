@@ -38,15 +38,15 @@
                 </a>
             </div>
             <div class="nav-item profile-nav">
-                <a href="#" class="user-profile">
+                <button class="user-profile" onclick="toggleProfileMenu()">
                     <div class="user-avatar">
                         <span class="material-icons">person</span>
                     </div>
                     <div class="user-info">
                         <div class="user-name">{{ username }}</div>
                     </div>
-                </a>
-                <div class="profile-submenu">
+                </button>
+                <div class="profile-submenu" id="profileSubmenu">
                     <a href="/logout" class="submenu-item">
                         <span class="material-icons">logout</span>
                         Logout
@@ -57,13 +57,15 @@
         <div class="content-area">
             <div class="welcome-section">
                 <h2>Welcome Back, {{ username }}</h2>
-                <div class="content">
-                    <a href="/logout" class="logout-btn">Logout</a>
-                </div>
             </div>
         </div>
     </div>
     <script>
+        function toggleProfileMenu() {
+            const submenu = document.getElementById('profileSubmenu');
+            submenu.style.display = submenu.style.display === 'flex' ? 'none' : 'flex';
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             const generationBtn = document.querySelector('.nav-item .sidebar-btn');
             const submenu = document.querySelector('.submenu');
@@ -72,6 +74,15 @@
                 e.preventDefault();
                 this.classList.toggle('clicked');
                 submenu.style.display = this.classList.contains('clicked') ? 'flex' : 'none';
+            });
+
+            // Close profile menu when clicking outside
+            document.addEventListener('click', function(e) {
+                const profileNav = document.querySelector('.profile-nav');
+                const profileSubmenu = document.getElementById('profileSubmenu');
+                if (!profileNav.contains(e.target)) {
+                    profileSubmenu.style.display = 'none';
+                }
             });
         });
     </script>
