@@ -37,39 +37,33 @@
                     Generated Content
                 </a>
             </div>
+            <a href="#" class="user-profile">
+                <div class="user-avatar">
+                    <span class="material-icons">person</span>
+                </div>
+                <div class="user-info">
+                    <div class="user-name">{{ username }}</div>
+                </div>
+            </a>
         </div>
         <div class="content-area">
             <div class="welcome-section">
                 <h2>Welcome Back, {{ username }}</h2>
+                <div class="content">
+                    <a href="/logout" class="logout-btn">Logout</a>
+                </div>
             </div>
         </div>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Generation submenu toggle
             const generationBtn = document.querySelector('.nav-item .sidebar-btn');
             const submenu = document.querySelector('.submenu');
 
-            if (generationBtn && submenu) {
-                generationBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    this.classList.toggle('clicked');
-                    submenu.style.display = this.classList.contains('clicked') ? 'flex' : 'none';
-                });
-            }
-
-            // Set active states based on current page
-            const currentPath = window.location.pathname;
-            const allLinks = document.querySelectorAll('.sidebar-btn, .submenu-item');
-            
-            allLinks.forEach(link => {
-                if (link.getAttribute('href') === currentPath) {
-                    link.classList.add('active');
-                    if (link.closest('.submenu')) {
-                        link.closest('.nav-item').querySelector('.sidebar-btn').classList.add('clicked');
-                        link.closest('.submenu').style.display = 'flex';
-                    }
-                }
+            generationBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                this.classList.toggle('clicked');
+                submenu.style.display = this.classList.contains('clicked') ? 'flex' : 'none';
             });
         });
     </script>

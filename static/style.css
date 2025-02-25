@@ -15,16 +15,14 @@ body {
 
 .main-container {
     display: flex;
-    padding: 2rem 2rem 4rem;
+    padding: 2rem;
     gap: 2rem;
-    min-height: calc(100vh - 6rem);
 }
 
 .sidebar {
     position: fixed;
     width: 250px;
     height: calc(100vh - 4rem);
-    margin: 2rem 0;
     background-color: var(--purple);
     padding: 1.5rem;
     border-radius: 16px;
@@ -42,17 +40,17 @@ body {
 }
 
 .user-profile {
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
     align-items: center;
     gap: 1rem;
     color: var(--white);
-    background: none;
-    border: none;
-    width: 100%;
+    text-decoration: none;
     transition: all 0.3s ease;
     border-radius: 8px;
-    padding: 0.5rem;
-    cursor: pointer;
+    padding: 0.75rem;
+    margin-top: auto;
 }
 
 .user-profile:hover {
@@ -76,46 +74,6 @@ body {
 
 .user-name {
     font-weight: 500;
-}
-
-.nav-item {
-    display: flex;
-    flex-direction: column;
-}
-
-.user-profile {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    color: var(--white);
-    background: none;
-    border: none;
-    width: 100%;
-    transition: all 0.3s ease;
-    border-radius: 8px;
-    padding: 0.75rem 1rem;
-    cursor: pointer;
-    text-decoration: none;
-    font-family: Arial, sans-serif;
-    font-size: 0.95rem;
-    margin-bottom: 0.25rem;
-}
-
-.user-profile:hover {
-    background-color: var(--yellow);
-    color: var(--purple);
-}
-
-.user-profile .material-icons {
-    font-size: 20px;
-}
-
-.user-info {
-    flex: 1;
-}
-
-.sidebar .nav-item:last-child .user-profile {
-    margin-bottom: 0;
 }
 
 .sidebar-btn {
@@ -370,34 +328,6 @@ textarea.form-control {
     display: flex;
     gap: 1rem;
     margin-top: 2rem;
-}
-
-.pagination {
-    display: flex;
-    justify-content: center;
-    gap: 0.5rem;
-    margin: 2rem 0;
-    padding: 1rem;
-}
-
-.page-btn {
-    padding: 0.5rem 1rem;
-    border: 1px solid var(--purple);
-    background: none;
-    border-radius: 4px;
-    cursor: pointer;
-    color: var(--purple);
-}
-
-.page-btn.active {
-    background-color: var(--purple);
-    color: var(--white);
-}
-
-.page-btn:hover:not(.active) {
-    background-color: var(--purple);
-    color: var(--white);
-    opacity: 0.8;
 }
 
 .reset-btn {

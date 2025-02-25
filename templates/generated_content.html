@@ -38,22 +38,14 @@
                     Generated Content
                 </a>
             </div>
-            <div class="nav-item profile-nav">
-                <button class="user-profile">
-                    <div class="user-avatar">
-                        <span class="material-icons">person</span>
-                    </div>
-                    <div class="user-info">
-                        <div class="user-name">{{ username }}</div>
-                    </div>
-                </button>
-                <div class="profile-submenu">
-                    <a href="/logout" class="submenu-item">
-                        <span class="material-icons">logout</span>
-                        Logout
-                    </a>
+            <a href="#" class="user-profile">
+                <div class="user-avatar">
+                    <span class="material-icons">person</span>
                 </div>
-            </div>
+                <div class="user-info">
+                    <div class="user-name">{{ username }}</div>
+                </div>
+            </a>
         </div>
         <div class="content-area">
             <h2>Generated Content</h2>
@@ -94,17 +86,6 @@
                     </table>
                 </div>
             </div>
-            <div class="pagination">
-                {% set pages = total_pages %}
-                {% if total_pages > 1 %}
-                    {% for page in range(1, total_pages + 1) %}
-                        <button class="page-btn {% if loop.index == current_page %}active{% endif %}" 
-                                onclick="changePage({{ loop.index }})">
-                            {{ loop.index }}
-                        </button>
-                    {% endfor %}
-                {% endif %}
-            </div>
         </div>
     </div>
     <div class="popup-overlay">
@@ -143,10 +124,6 @@
                 submenu.style.display = this.classList.contains('clicked') ? 'flex' : 'none';
             });
         });
-
-        function changePage(page) {
-            window.location.href = `/generated-content?page=${page}`;
-        }
     </script>
 </body>
 </html>
