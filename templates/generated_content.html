@@ -86,6 +86,11 @@
                     </table>
                 </div>
             </div>
+            <div class="pagination">
+                <button id="prevPage" class="page-btn">&lt; Previous</button>
+                <span id="pageInfo"></span>
+                <button id="nextPage" class="page-btn">Next &gt;</button>
+            </div>
         </div>
     </div>
     <div class="popup-overlay">
@@ -96,6 +101,42 @@
         </div>
     </div>
     <script>
+        // Pagination logic
+        const itemsPerPage = 20;
+        let currentPage = 1;
+        const tableRows = document.querySelectorAll('.content-table tbody tr');
+        const totalPages = Math.ceil(tableRows.length / itemsPerPage);
+
+        function showPage(page) {
+            const start = (page - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+
+            tableRows.forEach((row, index) => {
+                row.style.display = (index >= start && index < end) ? '' : 'none';
+            });
+
+            document.getElementById('pageInfo').textContent = `Page ${page} of ${totalPages}`;
+            document.getElementById('prevPage').disabled = page === 1;
+            document.getElementById('nextPage').disabled = page === totalPages;
+        }
+
+        document.getElementById('prevPage').addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                showPage(currentPage);
+            }
+        });
+
+        document.getElementById('nextPage').addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                showPage(currentPage);
+            }
+        });
+
+        // Initialize first page
+        showPage(1);
+
         function showPopup(element, title) {
             const text = element.innerText;
             document.getElementById('popup-title').textContent = title;
