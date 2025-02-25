@@ -85,8 +85,6 @@ body {
 }
 
 .user-profile {
-    padding-top: 1rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
     align-items: center;
     gap: 1rem;
@@ -96,10 +94,11 @@ body {
     width: 100%;
     transition: all 0.3s ease;
     border-radius: 8px;
-    padding: 0.75rem;
-    margin-top: auto;
+    padding: 0.6rem;
     cursor: pointer;
     text-decoration: none;
+    font-family: Arial, sans-serif;
+    font-size: 1rem;
 }
 
 .user-profile:hover {
