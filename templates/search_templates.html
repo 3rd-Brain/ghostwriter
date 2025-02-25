@@ -1,0 +1,38 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search Templates</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+</head>
+<body>
+    <div class="main-container">
+        {% include 'search_sidebar.html' %}
+        <div class="content-area">
+            <h2>Templates</h2>
+            <div class="content-card">
+                <div class="form-container">
+                    <form class="generation-form">
+                        <div class="form-group">
+                            <label for="templateSearch">Search Templates:</label>
+                            <input type="text" id="templateSearch" class="form-control" placeholder="Enter search terms">
+                        </div>
+                        <button type="button" onclick="searchTemplates()" class="submit-btn">Search</button>
+                    </form>
+                </div>
+            </div>
+            <div id="templateResults" class="content-card" style="margin-top: 2rem; display: none;">
+                <h3>Template Results</h3>
+                <div id="templateSearchResults"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        async function searchTemplates() {
+            const query = document.getElementById('templateSearch').value;
+            // Implementation pending
+        }
+    </script>
+</body>
+</html>

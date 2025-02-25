@@ -198,6 +198,34 @@ async def generated_content(request: Request, current_user: str = Depends(get_cu
     except requests.exceptions.RequestException as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch generated content: {str(e)}")
 
+@app.get("/search/published")
+async def search_published(request: Request, current_user: str = Depends(get_current_user)):
+    return templates.TemplateResponse("search_published.html", {
+        "request": request,
+        "username": current_user
+    })
+
+@app.get("/search/brand-voices")
+async def search_brand_voices(request: Request, current_user: str = Depends(get_current_user)):
+    return templates.TemplateResponse("search_brand_voices.html", {
+        "request": request,
+        "username": current_user
+    })
+
+@app.get("/search/source-content")
+async def search_source_content(request: Request, current_user: str = Depends(get_current_user)):
+    return templates.TemplateResponse("search_source_content.html", {
+        "request": request,
+        "username": current_user
+    })
+
+@app.get("/search/templates")
+async def search_templates(request: Request, current_user: str = Depends(get_current_user)):
+    return templates.TemplateResponse("search_templates.html", {
+        "request": request,
+        "username": current_user
+    })
+
 @app.get("/logout")
 async def logout(response: Response):
     response = RedirectResponse(url="/login")

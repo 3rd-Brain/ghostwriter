@@ -1,0 +1,39 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search Published Content</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+</head>
+<body>
+    <div class="main-container">
+        {% include 'search_sidebar.html' %}
+        <div class="content-area">
+            <h2>My Top Published Content</h2>
+            <div class="content-card">
+                <div class="form-container">
+                    <form class="generation-form">
+                        <div class="form-group">
+                            <label for="searchQuery">Search Query:</label>
+                            <input type="text" id="searchQuery" class="form-control" placeholder="Enter search terms">
+                        </div>
+                        <button type="button" onclick="searchContent()" class="submit-btn">Search</button>
+                    </form>
+                </div>
+            </div>
+            <div id="results" class="content-card" style="margin-top: 2rem; display: none;">
+                <h3>Search Results</h3>
+                <div id="searchResults"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Search functionality will be implemented here
+        async function searchContent() {
+            const query = document.getElementById('searchQuery').value;
+            // Implementation pending
+        }
+    </script>
+</body>
+</html>
