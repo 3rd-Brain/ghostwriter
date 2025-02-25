@@ -23,8 +23,7 @@ body {
 .sidebar {
     position: fixed;
     width: 250px;
-    height: calc(100vh - 4rem);
-    margin-bottom: 2rem;
+    height: calc(100vh - 8rem);
     background-color: var(--purple);
     padding: 1.5rem;
     border-radius: 16px;
@@ -32,7 +31,6 @@ body {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-    max-height: calc(100vh - 4rem);
 }
 
 .sidebar-nav {
