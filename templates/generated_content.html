@@ -84,17 +84,17 @@
                             {% endfor %}
                         </tbody>
                     </table>
-                    <div class="pagination">
-                        {% set pages = total_pages %}
-                        {% if total_pages > 1 %}
-                            {% for page in range(1, total_pages + 1) %}
-                                <button class="page-btn {% if loop.index == current_page %}active{% endif %}" 
-                                        onclick="changePage({{ loop.index }})">
-                                    {{ loop.index }}
-                                </button>
-                            {% endfor %}
-                        {% endif %}
-                    </div>
+                </div>
+                <div class="pagination">
+                    {% set pages = total_pages %}
+                    {% if total_pages > 1 %}
+                        {% for page in range(1, total_pages + 1) %}
+                            <button class="page-btn {% if loop.index == current_page %}active{% endif %}" 
+                                    onclick="changePage({{ loop.index }})">
+                                {{ loop.index }}
+                            </button>
+                        {% endfor %}
+                    {% endif %}
                 </div>
             </div>
         </div>

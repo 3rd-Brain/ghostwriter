@@ -84,7 +84,7 @@ body {
 }
 
 .profile-submenu {
-    display: none !important;
+    display: none;
     margin-left: 0;
     background-color: var(--deep-purple);
     border-radius: 8px;
@@ -92,7 +92,7 @@ body {
 }
 
 .profile-nav:hover .profile-submenu {
-    display: flex;
+    display: flex !important;
     flex-direction: column;
 }
 
