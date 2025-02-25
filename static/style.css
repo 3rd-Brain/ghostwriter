@@ -366,6 +366,7 @@ textarea.form-control {
     justify-content: center;
     gap: 0.5rem;
     margin-top: 2rem;
+    padding: 1rem;
 }
 
 .page-btn {
