@@ -9,27 +9,40 @@
         .search-container {
             display: flex;
             gap: 1rem;
-            align-items: flex-end;
+            align-items: flex-start;
         }
         .search-container .form-group {
             flex: 1;
             margin: 0;
         }
         .search-container button {
-            margin: 0;
+            margin-top: 1.5rem;
         }
         .results-table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 1rem;
+            table-layout: fixed;
         }
         .results-table th, .results-table td {
             padding: 0.75rem;
             text-align: left;
             border-bottom: 1px solid #ddd;
+            vertical-align: top;
         }
         .results-table th {
             background-color: #f5f5f5;
+        }
+        .results-table .content-col {
+            width: 60%;
+            white-space: pre-wrap;
+        }
+        .results-table .metrics-col {
+            width: 30%;
+            white-space: pre-line;
+        }
+        .results-table .date-col {
+            width: 10%;
         }
         .content-card {
             padding: 1.5rem;
@@ -59,9 +72,9 @@
                 <table class="results-table">
                     <thead>
                         <tr>
-                            <th>Content</th>
-                            <th>Metrics</th>
-                            <th>Date</th>
+                            <th class="content-col">Content</th>
+                            <th class="metrics-col">Metrics</th>
+                            <th class="date-col">Date</th>
                         </tr>
                     </thead>
                     <tbody id="searchResults">
@@ -105,9 +118,9 @@
                     row.innerHTML = `
                         <td>${doc.content}</td>
                         <td>
-                            Impressions: ${(doc.metadata.weighted_impression_ratio || 0).toFixed(2)}<br>
-                            Likes: ${(doc.metadata.weighted_like_ratio || 0).toFixed(2)}<br>
-                            Total Weight: ${(doc.metadata.total_weight_metric || 0).toFixed(2)}
+                            Impressions: ${(doc.metadata.weighted_impression_ratio || 0).toFixed(2)}
+Likes: ${(doc.metadata.weighted_like_ratio || 0).toFixed(2)}
+Total Weight: ${(doc.metadata.total_weight_metric || 0).toFixed(2)}
                         </td>
                         <td>${new Date(doc.metadata.published_date).toLocaleDateString()}</td>
                     `;
