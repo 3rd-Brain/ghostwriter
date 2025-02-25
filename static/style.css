@@ -15,8 +15,9 @@ body {
 
 .main-container {
     display: flex;
-    padding: 2rem;
+    padding: 2rem 2rem 4rem;
     gap: 2rem;
+    min-height: calc(100vh - 6rem);
 }
 
 .sidebar {
