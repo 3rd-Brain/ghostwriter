@@ -129,6 +129,35 @@
         </div>
     </div>
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const navItems = document.querySelectorAll('.nav-item');
+            
+            navItems.forEach(navItem => {
+                const btn = navItem.querySelector('.sidebar-btn');
+                const submenu = navItem.querySelector('.submenu');
+                
+                if (btn && submenu) {
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        this.classList.toggle('clicked');
+                        submenu.style.display = this.classList.contains('clicked') ? 'flex' : 'none';
+                    });
+                }
+            });
+
+            // Show submenu of active nav item initially
+            const activeNavItem = document.querySelector('.nav-item .active');
+            if (activeNavItem) {
+                const parentNavItem = activeNavItem.closest('.nav-item');
+                const parentBtn = parentNavItem.querySelector('.sidebar-btn');
+                const parentSubmenu = parentNavItem.querySelector('.submenu');
+                if (parentBtn && parentSubmenu) {
+                    parentBtn.classList.add('clicked');
+                    parentSubmenu.style.display = 'flex';
+                }
+            }
+        });
+
         async function searchContent(event) {
             if (event) event.preventDefault();
             const query = document.getElementById('searchQuery').value || "What are my top posts of the week?";
