@@ -268,6 +268,36 @@ app.add_middleware(
 def read_root():
     return {"Hello": "World"}
 
+@app.post("/api/generation-flow")
+async def create_generation_flow(request_data: Dict):
+    """Save generation flow configuration to Airtable"""
+    if not os.getenv("AIRTABLE_API_KEY"):
+        raise HTTPException(status_code=500, detail="AIRTABLE_API_KEY not configured")
+        
+    url = "https://api.airtable.com/v0/appLz2zuN6ZFu4mYS/workflow"
+    headers = {
+        "Authorization": f"Bearer {os.getenv('AIRTABLE_API_KEY')}",
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "records": [{
+            "fields": {
+                "workflow_id": request_data["workflowId"],
+                "Workflow Type": request_data["workflowType"],
+                "Description": request_data["description"],
+                "JSON Payload": json.dumps({"steps": request_data["steps"]})
+            }
+        }]
+    }
+    
+    try:
+        response = requests.post(url, headers=headers, json=payload)
+        response.raise_for_status()
+        return {"status": "Generation flow saved successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/upload-content")
 async def upload_content(content_data: Dict):
     if not os.getenv("AIRTABLE_API_KEY"):
