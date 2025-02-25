@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -28,8 +27,9 @@
             border-radius: 8px;
         }
         .step-navigation {
-            display: flex;
-            justify-content: space-between;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
             margin: 20px 0;
         }
         .message-actions {
@@ -197,10 +197,10 @@
             document.querySelectorAll('.step-form').forEach((step, index) => {
                 step.style.display = index === currentStepIndex ? 'block' : 'none';
             });
-            
+
             document.getElementById('currentStep').textContent = currentStepIndex + 1;
             document.getElementById('totalSteps').textContent = steps.length;
-            
+
             document.getElementById('prevStep').style.display = currentStepIndex > 0 ? 'block' : 'none';
             document.getElementById('nextStep').style.display = currentStepIndex < steps.length - 1 ? 'block' : 'none';
         }
@@ -219,7 +219,7 @@
                 }]
             };
             steps.push(newStep);
-            
+
             const stepsContainer = document.getElementById('stepsContainer');
             stepsContainer.insertAdjacentHTML('beforeend', createStepForm(newStep, steps.length - 1));
             updateStepVisibility();
@@ -231,7 +231,7 @@
                 content: ''
             };
             steps[stepIndex].messages.push(newMessage);
-            
+
             const messagesContainer = document.getElementById(`messagesContainer${stepIndex}`);
             messagesContainer.insertAdjacentHTML('beforeend', 
                 createMessageForm(stepIndex, steps[stepIndex].messages.length - 1, newMessage)
@@ -254,7 +254,7 @@
 
         // Event Listeners
         document.getElementById('addStep').addEventListener('click', addStep);
-        
+
         document.getElementById('prevStep').addEventListener('click', () => {
             if (currentStepIndex > 0) {
                 currentStepIndex--;
@@ -271,7 +271,7 @@
 
         document.getElementById('generationFlowForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             // Collect all form data
             const formData = {
                 workflowId: document.getElementById('workflowId').value,
