@@ -1,0 +1,61 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="main-container">
+        {% include 'search_sidebar.html' %}
+        <div class="content-area">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+    <div class="notification" id="notification"></div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const navItems = document.querySelectorAll('.nav-item');
+            
+            navItems.forEach(navItem => {
+                const btn = navItem.querySelector('.sidebar-btn');
+                const submenu = navItem.querySelector('.submenu');
+                
+                if (btn && submenu) {
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        this.classList.toggle('clicked');
+                        submenu.style.display = this.classList.contains('clicked') ? 'flex' : 'none';
+                    });
+                }
+            });
+
+            // Show submenu of active nav item initially
+            const activeNavItem = document.querySelector('.nav-item .active');
+            if (activeNavItem) {
+                const parentNavItem = activeNavItem.closest('.nav-item');
+                const parentBtn = parentNavItem.querySelector('.sidebar-btn');
+                const parentSubmenu = parentNavItem.querySelector('.submenu');
+                if (parentBtn && parentSubmenu) {
+                    parentBtn.classList.add('clicked');
+                    parentSubmenu.style.display = 'flex';
+                }
+            }
+        });
+
+        function showNotification(message, isError = false) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${isError ? 'error' : 'success'}`;
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,123 +1,71 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Generation - Repurpose</title>
-    <link rel="stylesheet" href="/static/style.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-</head>
-<body>
-    <div class="main-container">
-        {% include 'search_sidebar.html' %}
-        <div class="content-area">
-            <h2>Content Generation</h2>
-            <div class="content-card medium">
-                <div class="content-card-header">
-                    <h3>Repurpose a Piece</h3>
-                </div>
-                <div class="content-card-body">
-                    <form id="repurposeForm" class="generation-form">
-                        <div class="form-group">
-                            <label for="topic">Topic/Content:</label>
-                            <textarea id="topic" name="topic" rows="6" class="form-control" required></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label for="brand">Brand:</label>
-                            <input type="text" id="brand" name="brand" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="repurposeCount">Repurpose Count:</label>
-                            <input type="number" id="repurposeCount" name="repurposeCount" class="form-control" value="5" min="1" max="10" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="workflowId">Workflow ID:</label>
-                            <input type="text" id="workflowId" name="workflowId" class="form-control" value="Legacy Generation Flow with Claude">
-                        </div>
-                    </form>
-                </div>
-            <div class="content-card-footer">
-                        <button type="submit" form="repurposeForm" class="submit-btn">Generate Content</button>
-                        <button type="button" class="reset-btn">Reset</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+{% extends "base.html" %}
+
+{% block title %}Generation - Repurpose{% endblock %}
+
+{% block content %}
+<h2>Content Generation</h2>
+<div class="content-card medium">
+    <div class="content-card-header">
+        <h3>Repurpose a Piece</h3>
     </div>
-    <div class="notification" id="notification"></div>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Get all Generation buttons (both in dashboard and generation pages)
-            const generationBtn = document.querySelector('.nav-item .sidebar-btn');
-            const submenu = document.querySelector('.submenu');
+    <div class="content-card-body">
+        <form id="repurposeForm" class="generation-form">
+            <div class="form-group">
+                <label for="topic">Topic/Content:</label>
+                <textarea id="topic" name="topic" rows="6" class="form-control" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="brand">Brand:</label>
+                <input type="text" id="brand" name="brand" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="repurposeCount">Repurpose Count:</label>
+                <input type="number" id="repurposeCount" name="repurposeCount" class="form-control" value="5" min="1" max="10" required>
+            </div>
+            <div class="form-group">
+                <label for="workflowId">Workflow ID:</label>
+                <input type="text" id="workflowId" name="workflowId" class="form-control" value="Legacy Generation Flow with Claude">
+            </div>
+        </form>
+    </div>
+    <div class="content-card-footer">
+        <button type="submit" form="repurposeForm" class="submit-btn">Generate Content</button>
+        <button type="button" class="reset-btn">Reset</button>
+    </div>
+</div>
+{% endblock %}
 
-            // Add click handler for submenu toggle
-            generationBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                this.classList.toggle('clicked');
-                submenu.style.display = this.classList.contains('clicked') ? 'flex' : 'none';
+{% block extra_js %}
+<script>
+    document.getElementById('repurposeForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const formData = {
+            topic_query: document.getElementById('topic').value,
+            brand: document.getElementById('brand').value,
+            repurpose_count: parseInt(document.getElementById('repurposeCount').value),
+            workflow_id: document.getElementById('workflowId').value
+        };
+
+        try {
+            const response = await fetch('/repurpose', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
             });
+            const data = await response.json();
+            showNotification(data.status);
+        } catch (error) {
+            showNotification('Error generating content: ' + error.message, true);
+        }
+    });
 
-            // If the Generation button is active (on generation pages), show submenu by default
-            if (generationBtn.classList.contains('active')) {
-                generationBtn.classList.add('clicked');
-                submenu.style.display = 'flex';
-            }
-
-            document.getElementById('repurposeForm').addEventListener('submit', async function(e) {
-                e.preventDefault();
-                const formData = {
-                    topic_query: document.getElementById('topic').value,
-                    brand: document.getElementById('brand').value,
-                    repurpose_count: parseInt(document.getElementById('repurposeCount').value),
-                    workflow_id: document.getElementById('workflowId').value
-                };
-
-                try {
-                    const response = await fetch('/repurpose', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(formData)
-                    });
-                    const data = await response.json();
-                    showNotification(data.status);
-                } catch (error) {
-                    showNotification('Error generating content: ' + error.message);
-                }
-            });
-
-            document.querySelector('.reset-btn').addEventListener('click', function() {
-                document.getElementById('topic').value = '';
-                document.getElementById('brand').value = '';
-                document.getElementById('repurposeCount').value = '5';
-                document.getElementById('workflowId').value = 'Legacy Generation Flow with Claude';
-            });
-
-            function showNotification(message) {
-                const notification = document.getElementById('notification');
-                notification.textContent = message;
-                notification.classList.add('show');
-                setTimeout(() => {
-                    notification.classList.remove('show');
-                }, 3000);
-            }
-
-
-            const navItems = document.querySelectorAll('.nav-item');
-
-            navItems.forEach(navItem => {
-                const btn = navItem.querySelector('.sidebar-btn');
-                const submenu = navItem.querySelector('.submenu');
-
-                if (btn && submenu) {
-                    btn.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        this.classList.toggle('clicked');
-                        submenu.style.display = this.classList.contains('clicked') ? 'flex' : 'none';
-                    });
-                }
-            });
-        });
-    </script>
-</body>
-</html>
+    document.querySelector('.reset-btn').addEventListener('click', function() {
+        document.getElementById('topic').value = '';
+        document.getElementById('brand').value = '';
+        document.getElementById('repurposeCount').value = '5';
+        document.getElementById('workflowId').value = 'Legacy Generation Flow with Claude';
+    });
+</script>
+{% endblock %}
