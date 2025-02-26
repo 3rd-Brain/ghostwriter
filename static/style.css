@@ -255,11 +255,46 @@ textarea.form-control {
     background-color: var(--purple);
 }
 
+/* Reusable content card styles */
 .content-card {
     background-color: var(--white);
     border-radius: 16px;
     padding: 2rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: fit-content;
+    min-width: 300px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.content-card.wide {
+    width: 100%;
+}
+
+.content-card.medium {
+    width: 60%;
+}
+
+.content-card-header {
+    margin-bottom: 1.5rem;
+}
+
+.content-card-header h3 {
+    color: var(--deep-purple);
+    margin: 0;
+}
+
+.content-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.content-card-footer {
+    margin-top: 2rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-start;
 }
 
 .form-container {
