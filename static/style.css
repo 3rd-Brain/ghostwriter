@@ -231,9 +231,12 @@ textarea.form-control {
     padding: 2rem;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    margin: 2rem auto;
     max-width: 400px;
     width: 90%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 .error {
