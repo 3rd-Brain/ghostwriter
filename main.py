@@ -108,6 +108,7 @@ async def generation_repurpose(request: Request, current_user: str = Depends(get
     return templates.TemplateResponse("generation.html", {
         "request": request,
         "username": current_user,
+        "current_page": "generation_repurpose",
         "page": "repurpose"
     })
 
