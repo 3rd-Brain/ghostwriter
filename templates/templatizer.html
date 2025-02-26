@@ -8,61 +8,7 @@
 </head>
 <body>
     <div class="main-container">
-        <div class="sidebar">
-            <div class="sidebar-nav">
-                <a href="/dashboard" class="sidebar-btn">
-                    <span class="material-icons">home</span>
-                    Home
-                </a>
-                <div class="nav-item">
-                    <a href="#" class="sidebar-btn">
-                        <span class="material-icons">auto_awesome</span>
-                        Generation
-                    </a>
-                    <div class="submenu">
-                        <a href="/generation/repurpose" class="submenu-item">Generate New Content</a>
-                        <a href="/generation/top-content" class="submenu-item">Repurpose Top Content</a>
-                        <a href="/generation/posts-templates" class="submenu-item">Repurpose Content Using Posts as Templates</a>
-                    </div>
-                </div>
-                <div class="nav-item">
-                    <a href="#" class="sidebar-btn">
-                        <span class="material-icons">search</span>
-                        Search
-                    </a>
-                    <div class="submenu">
-                        <a href="/search/published" class="submenu-item">My Top Published Content</a>
-                        <a href="/search/brand-voices" class="submenu-item">Brand Voices</a>
-                        <a href="/search/source-content" class="submenu-item">Source Content</a>
-                        <a href="/search/templates" class="submenu-item">Templates</a>
-                    </div>
-                </div>
-                <div class="nav-item">
-                    <a href="#" class="sidebar-btn clicked">
-                        <span class="material-icons">upload</span>
-                        Create/Upload
-                    </a>
-                    <div class="submenu" style="display: flex;">
-                        <a href="/create/brand-voice" class="submenu-item">Create Brand Voice</a>
-                        <a href="/create/source-content" class="submenu-item">Upload New Source Content</a>
-                        <a href="/create/templatizer" class="submenu-item active">Templatizer</a>
-                        <a href="/create/generation-flow" class="submenu-item">Create New Generation Flow</a>
-                    </div>
-                </div>
-                <a href="/generated-content" class="sidebar-btn">
-                    <span class="material-icons">article</span>
-                    Generated Content
-                </a>
-            </div>
-            <a href="#" class="user-profile">
-                <div class="user-avatar">
-                    <span class="material-icons">person</span>
-                </div>
-                <div class="user-info">
-                    <div class="user-name">{{ username }}</div>
-                </div>
-            </a>
-        </div>
+        {% include 'search_sidebar.html' %}
 
         <div class="content-area">
             <h2>Templatizer</h2>
