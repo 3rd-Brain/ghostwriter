@@ -99,7 +99,8 @@ async def get_current_user(request: Request):
 async def dashboard(request: Request, current_user: str = Depends(get_current_user)):
     return templates.TemplateResponse("dashboard.html", {
         "request": request,
-        "username": current_user
+        "username": current_user,
+        "current_page": "dashboard"
     })
 
 @app.get("/generation/repurpose", response_class=HTMLResponse)

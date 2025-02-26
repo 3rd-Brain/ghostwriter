@@ -1,46 +1,46 @@
 
 <div class="sidebar">
     <div class="sidebar-nav">
-        <a href="/dashboard" class="sidebar-btn">
+        <a href="/dashboard" class="sidebar-btn {% if current_page == 'dashboard' %}active{% endif %}">
             <span class="material-icons">home</span>
             Home
         </a>
         <div class="nav-item">
-            <a href="#" class="sidebar-btn">
+            <a href="#" class="sidebar-btn {% if current_page.startswith('generation') %}active{% endif %}">
                 <span class="material-icons">auto_awesome</span>
                 Generation
             </a>
             <div class="submenu">
-                <a href="/generation/repurpose" class="submenu-item">Generate New Content</a>
-                <a href="/generation/top-content" class="submenu-item">Repurpose Top Content</a>
-                <a href="/generation/posts-templates" class="submenu-item">Repurpose Content Using Posts as Templates</a>
+                <a href="/generation/repurpose" class="submenu-item {% if current_page == 'generation_repurpose' %}active{% endif %}">Generate New Content</a>
+                <a href="/generation/top-content" class="submenu-item {% if current_page == 'generation_top_content' %}active{% endif %}">Repurpose Top Content</a>
+                <a href="/generation/posts-templates" class="submenu-item {% if current_page == 'generation_posts_templates' %}active{% endif %}">Repurpose Content Using Posts as Templates</a>
             </div>
         </div>
         <div class="nav-item">
-            <a href="#" class="sidebar-btn clicked">
+            <a href="#" class="sidebar-btn {% if current_page.startswith('search') %}active{% endif %}">
                 <span class="material-icons">search</span>
                 Search
             </a>
-            <div class="submenu" style="display: flex;">
-                <a href="/search/published" class="submenu-item">My Top Published Content</a>
-                <a href="/search/brand-voices" class="submenu-item">Brand Voices</a>
-                <a href="/search/source-content" class="submenu-item">Source Content</a>
-                <a href="/search/templates" class="submenu-item">Templates</a>
+            <div class="submenu">
+                <a href="/search/published" class="submenu-item {% if current_page == 'search_published' %}active{% endif %}">My Top Published Content</a>
+                <a href="/search/brand-voices" class="submenu-item {% if current_page == 'search_brand_voices' %}active{% endif %}">Brand Voices</a>
+                <a href="/search/source-content" class="submenu-item {% if current_page == 'search_source_content' %}active{% endif %}">Source Content</a>
+                <a href="/search/templates" class="submenu-item {% if current_page == 'search_templates' %}active{% endif %}">Templates</a>
             </div>
         </div>
         <div class="nav-item">
-            <a href="#" class="sidebar-btn">
+            <a href="#" class="sidebar-btn {% if current_page.startswith('create') %}active{% endif %}">
                 <span class="material-icons">upload</span>
                 Create/Upload
             </a>
             <div class="submenu">
-                <a href="/create/brand-voice" class="submenu-item">Create Brand Voice</a>
-                <a href="/create/source-content" class="submenu-item">Upload New Source Content</a>
-                <a href="/create/templatizer" class="submenu-item">Templatizer</a>
-                <a href="/create/generation-flow" class="submenu-item">Create New Generation Flow</a>
+                <a href="/create/brand-voice" class="submenu-item {% if current_page == 'create_brand_voice' %}active{% endif %}">Create Brand Voice</a>
+                <a href="/create/source-content" class="submenu-item {% if current_page == 'create_source_content' %}active{% endif %}">Upload New Source Content</a>
+                <a href="/create/templatizer" class="submenu-item {% if current_page == 'create_templatizer' %}active{% endif %}">Templatizer</a>
+                <a href="/create/generation-flow" class="submenu-item {% if current_page == 'create_generation_flow' %}active{% endif %}">Create New Generation Flow</a>
             </div>
         </div>
-        <a href="/generated-content" class="sidebar-btn">
+        <a href="/generated-content" class="sidebar-btn {% if current_page == 'generated_content' %}active{% endif %}">
             <span class="material-icons">article</span>
             Generated Content
         </a>
