@@ -117,6 +117,7 @@ async def generation_top_content(request: Request, current_user: str = Depends(g
     return templates.TemplateResponse("top_content.html", {
         "request": request,
         "username": current_user,
+        "current_page": "generation_top_content",
         "page": "top-content"
     })
 
@@ -125,6 +126,7 @@ async def generation_posts_templates(request: Request, current_user: str = Depen
     return templates.TemplateResponse("posts_templates.html", {
         "request": request,
         "username": current_user,
+        "current_page": "generation_posts_templates",
         "page": "posts-templates"
     })
 
@@ -132,28 +134,32 @@ async def generation_posts_templates(request: Request, current_user: str = Depen
 async def create_brand_voice(request: Request, current_user: str = Depends(get_current_user)):
     return templates.TemplateResponse("brand_voice.html", {
         "request": request,
-        "username": current_user
+        "username": current_user,
+        "current_page": "create_brand_voice"
     })
 
 @app.get("/create/source-content", response_class=HTMLResponse)
 async def create_source_content(request: Request, current_user: str = Depends(get_current_user)):
     return templates.TemplateResponse("source_content.html", {
         "request": request,
-        "username": current_user
+        "username": current_user,
+        "current_page": "create_source_content"
     })
 
 @app.get("/create/templatizer", response_class=HTMLResponse)
 async def create_templatizer(request: Request, current_user: str = Depends(get_current_user)):
     return templates.TemplateResponse("templatizer.html", {
         "request": request,
-        "username": current_user
+        "username": current_user,
+        "current_page": "create_templatizer"
     })
 
 @app.get("/create/generation-flow", response_class=HTMLResponse)
 async def create_generation_flow(request: Request, current_user: str = Depends(get_current_user)):
     return templates.TemplateResponse("generation_flow.html", {
         "request": request,
-        "username": current_user
+        "username": current_user,
+        "current_page": "create_generation_flow"
     })
 
 @app.get("/generated-content", response_class=HTMLResponse)
@@ -196,37 +202,42 @@ async def generated_content(request: Request, current_user: str = Depends(get_cu
         return templates.TemplateResponse("generated_content.html", {
             "request": request,
             "username": current_user,
+            "current_page": "generated_content",
             "contents": contents
         })
     except requests.exceptions.RequestException as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch generated content: {str(e)}")
 
-@app.get("/search/published")
+@app.get("/search/published", response_class=HTMLResponse)
 async def search_published(request: Request, current_user: str = Depends(get_current_user)):
     return templates.TemplateResponse("search_published.html", {
         "request": request,
-        "username": current_user
+        "username": current_user,
+        "current_page": "search_published"
     })
 
-@app.get("/search/brand-voices")
+@app.get("/search/brand-voices", response_class=HTMLResponse)
 async def search_brand_voices(request: Request, current_user: str = Depends(get_current_user)):
     return templates.TemplateResponse("search_brand_voices.html", {
         "request": request,
-        "username": current_user
+        "username": current_user,
+        "current_page": "search_brand_voices"
     })
 
-@app.get("/search/source-content")
+@app.get("/search/source-content", response_class=HTMLResponse)
 async def search_source_content(request: Request, current_user: str = Depends(get_current_user)):
     return templates.TemplateResponse("search_source_content.html", {
         "request": request,
-        "username": current_user
+        "username": current_user,
+        "current_page": "search_source_content"
     })
 
-@app.get("/search/templates")
+@app.get("/search/templates", response_class=HTMLResponse)
 async def search_templates(request: Request, current_user: str = Depends(get_current_user)):
     return templates.TemplateResponse("search_templates.html", {
         "request": request,
-        "username": current_user
+        "username": current_user,
+        "current_page": "search_templates"
     })
 
 @app.get("/logout")
@@ -290,7 +301,7 @@ async def create_generation_flow(request_data: Dict):
 
     # Format JSON payload with proper indentation
     formatted_steps_json = json.dumps(json.loads(steps_json), indent=2)
-    
+
     payload = {
         "fields": {
             "workflow_id": request_data["workflowId"],
