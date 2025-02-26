@@ -275,7 +275,7 @@ async def create_generation_flow(request_data: Dict):
     if not os.getenv("AIRTABLE_API_KEY"):
         raise HTTPException(status_code=500, detail="AIRTABLE_API_KEY not configured")
 
-    url = "https://api.airtable.com/v0/appLz2zuN6ZFu4mYS/workflow"
+    url = "https://api.airtable.com/v0/appLz2zuN6ZFu4mYS/tblXFcCbZsmGYebZt"
     headers = {
         "Authorization": f"Bearer {os.getenv('AIRTABLE_API_KEY')}",
         "Content-Type": "application/json"
@@ -294,8 +294,7 @@ async def create_generation_flow(request_data: Dict):
             "workflow_id": request_data["workflowId"],
             "Workflow Type": request_data["workflowType"].title(),
             "Short Description": request_data["description"],
-            "JSON Payload": formatted_steps_json,
-            "workflow tag": request_data["workflowId"]
+            "JSON Payload": formatted_steps_json
         }
     }
 
