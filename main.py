@@ -26,7 +26,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 # Hardcoded credentials (in production, use a secure database)
 CREDENTIALS = {
-    "GOT3B": {
+    "GentOfTech": {
         "password": "GOTBrain?"
     }
 }
