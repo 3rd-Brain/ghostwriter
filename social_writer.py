@@ -74,8 +74,11 @@ def get_client_brand_voice(brand: str) -> Dict:
     if not ASTRA_DB_APPLICATION_TOKEN_GHOSWRITER:
         raise Exception("ASTRA_DB_APPLICATION_TOKEN_GHOSWRITER not configured")
 
-    # Use username for the URL path, not the brand
-    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/GentOfTech/brand"
+    # Get the current user's username from the environment
+    CURRENT_USERNAME = os.environ.get("CURRENT_USERNAME", "GentOfTech")  # Default to GentOfTech if not set
+    
+    # Use the current user's username for the URL path
+    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/{CURRENT_USERNAME}/brand"
     
     headers = {
         "Token": ASTRA_DB_APPLICATION_TOKEN_GHOSWRITER,

@@ -63,6 +63,9 @@ async def login_page(request: Request):
 @app.post("/login")
 async def login(request: Request, username: str = Form(...), password: str = Form(...)):
     if username in CREDENTIALS and CREDENTIALS[username]["password"] == password:
+        # Set the username as an environment variable
+        os.environ["CURRENT_USERNAME"] = username
+        
         access_token = create_access_token(
             data={"sub": username},
             expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -70,6 +73,7 @@ async def login(request: Request, username: str = Form(...), password: str = For
         response = RedirectResponse(url="/dashboard", status_code=status.HTTP_302_FOUND)
         response.set_cookie(key="access_token", value=access_token, httponly=True)
         return response
+</old_str>
     return templates.TemplateResponse(
         "login.html",
         {"request": request, "error": "Access denied. Wrong credentials."},
@@ -242,6 +246,10 @@ async def search_templates(request: Request, current_user: str = Depends(get_cur
 
 @app.get("/logout")
 async def logout(response: Response):
+    # Clear the username environment variable on logout
+    if "CURRENT_USERNAME" in os.environ:
+        del os.environ["CURRENT_USERNAME"]
+        
     response = RedirectResponse(url="/login")
     response.delete_cookie("access_token")
     return response
