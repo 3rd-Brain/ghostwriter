@@ -69,6 +69,11 @@ def get_client_brand_voice(brand: str) -> Dict:
     ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
     ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
     
+    print(f"\n=== Debug: Brand Voice Request Started ===")
+    print(f"Brand: {brand}")
+    print(f"ASTRA_DB_API_ENDPOINT configured: {'Yes' if ASTRA_DB_API_ENDPOINT else 'No'}")
+    print(f"ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER configured: {'Yes' if ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER else 'No'}")
+    
     if not ASTRA_DB_API_ENDPOINT:
         raise Exception("ASTRA_DB_API_ENDPOINT not configured")
     if not ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER:
@@ -76,9 +81,11 @@ def get_client_brand_voice(brand: str) -> Dict:
 
     # Get the current user's username from the environment
     CURRENT_USERNAME = os.environ.get("CURRENT_USERNAME", "GentOfTech")  # Default to GentOfTech if not set
+    print(f"Current username: {CURRENT_USERNAME}")
     
     # Use the current user's username for the URL path
     url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/{CURRENT_USERNAME}/brand"
+    print(f"Request URL: {url}")
     
     headers = {
         "Token": ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
@@ -90,22 +97,36 @@ def get_client_brand_voice(brand: str) -> Dict:
             "filter": {"Brand": brand}
         }
     }
+    print(f"Request payload: {json.dumps(payload, indent=2)}")
 
     try:
+        print(f"Sending request to AstraDB...")
         response = requests.post(url, headers=headers, json=payload)
+        print(f"Response status code: {response.status_code}")
+        print(f"Response headers: {response.headers}")
+        print(f"Response body: {response.text}")
+        
         response.raise_for_status()
         data = response.json()
+        print(f"Parsed JSON data: {json.dumps(data, indent=2)}")
         
         if not data:
+            print("No data returned from AstraDB")
             raise Exception(f"No brand voice found for brand: {brand}")
             
         # Extract specifically the Brand_Voice field
         brand_voice = data.get("Brand_Voice")
+        print(f"Brand_Voice from response: {brand_voice}")
+        
         if not brand_voice:
+            print("Brand_Voice field not found in response data")
             raise Exception(f"No brand voice found for brand: {brand}")
+            
+        print(f"=== Debug: Brand Voice Request Completed Successfully ===\n")
         return {"brand_voice": brand_voice}
         
     except requests.exceptions.RequestException as e:
+        print(f"Request exception: {str(e)}")
         raise Exception(f"Failed to retrieve brand voice from AstraDB: {str(e)}")
 
 def vector_search_for_published_content(metadata_filter: Dict, text_to_vectorize: str) -> Dict:

@@ -345,9 +345,13 @@ async def get_brand_voice(brand: str):
         raise HTTPException(status_code=500, detail="AIRTABLE_API_KEY not configured")
 
     try:
+        # Print debugging information before calling get_client_brand_voice
+        print(f"\n=== Debug: Calling get_client_brand_voice for brand: {brand} ===")
         result = get_client_brand_voice(brand)
+        print(f"=== Debug: API Response: {result} ===\n")
         return result
     except Exception as e:
+        print(f"\n=== Debug: Error in get_brand_voice: {str(e)} ===\n")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/vector-search")
