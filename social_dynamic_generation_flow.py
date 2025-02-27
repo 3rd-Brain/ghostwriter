@@ -153,6 +153,57 @@ def flow_config_retriever(workflow_id: str) -> dict:
                 raise Exception(f"No JSON Payload found for workflow_id: {workflow_id}")
                 
             # Handle double-encoded JSON - the payload seems to be a JSON string within a JSON string
+
+def workflow_delete(workflow_id: str) -> dict:
+    """
+    Delete a workflow configuration from AstraDB based on workflow ID
+    Args:
+        workflow_id: String containing the workflow identifier to delete
+    Returns:
+        Dictionary containing the deletion result
+    """
+    ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+    ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+    
+    print(f"\n=== Debug: Workflow Deletion Started ===")
+    print(f"Workflow ID to delete: {workflow_id}")
+    
+    if not ASTRA_DB_API_ENDPOINT:
+        raise Exception("ASTRA_DB_API_ENDPOINT not configured")
+    if not ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER:
+        raise Exception("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
+
+    # Get the current user's username from the environment
+    CURRENT_USERNAME = os.environ.get("CURRENT_USERNAME", "GentOfTech")  # Default to GentOfTech if not set
+    
+    # Use the current user's username for the URL path
+    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/{CURRENT_USERNAME}/workflows"
+    
+    headers = {
+        "Token": ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "deleteOne": {
+            "filter": {"Workflow_ID": workflow_id}
+        }
+    }
+
+    try:
+        print(f"Sending delete request to AstraDB...")
+        response = requests.post(url, headers=headers, json=payload)
+        response.raise_for_status()
+        result = response.json()
+        
+        print(f"Delete response: {json.dumps(result, indent=2)}")
+        print(f"=== Debug: Workflow Deletion Completed ===\n")
+        
+        return result
+    except requests.exceptions.RequestException as e:
+        print(f"Request exception: {str(e)}")
+        raise Exception(f"Failed to delete workflow from AstraDB: {str(e)}")
+
             try:
                 # First, try direct parsing
                 flow_config = json.loads(json_payload)

@@ -658,3 +658,23 @@ async def repurpose_source_content_with_templates(request_data: Dict, background
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8080)
+
+@app.delete("/api/generation-flow/{workflow_id}")
+async def delete_generation_flow(workflow_id: str):
+    """Delete a generation flow configuration from AstraDB"""
+    if not os.getenv("ASTRA_DB_API_ENDPOINT"):
+        raise HTTPException(status_code=500, detail="ASTRA_DB_API_ENDPOINT not configured")
+    if not os.getenv("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER"):
+        raise HTTPException(status_code=500, detail="ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
+
+    try:
+        from social_dynamic_generation_flow import workflow_delete
+        result = workflow_delete(workflow_id)
+        
+        # Check if deletion was successful
+        if result.get("data", {}).get("deletedCount", 0) > 0:
+            return {"status": "success", "message": f"Workflow '{workflow_id}' deleted successfully"}
+        else:
+            return {"status": "warning", "message": f"Workflow '{workflow_id}' not found or already deleted"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
