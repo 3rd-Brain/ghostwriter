@@ -1,0 +1,16 @@
+Parsed JSON data: {
+  "data": {
+    "document": {
+      "_id": "c1e83769-a628-4565-a837-69a6280565d1",
+      "Workflow_ID": "Legacy Generation Flow with Claude",
+      "Workflow_Type": "Short Form Social",
+      "Short_Description": "Short_Form_Content_1",
+      "Description": "",
+      "JSON_Payload": "\"{\"steps\":[{\"Step_name\":\"initial_generation\",\"Model\":\"claude-3-5-sonnet-20241022\",\"System_prompt\":\"\\nYou are Crateor, an expert ghostwriter who specializes in writing short-form digital media content...\"},{\"Step_name\":\"voice_brand_edit\",\"Model\":\"claude-3-5-haiku-20241022\",\"System_prompt\":\"\\nYou are Crateor, an expert ghostwriter who specializes in writing short-form digital media content...\"},{\"Step_name\":\"content_length_trimmer\",\"Model\":\"claude-3-5-sonnet-20241022\",\"System_prompt\":\"Follow the provided instructions.\",\"Max_tokens\":4096,\"Order\":3,\"Temperature\":1,\"Message\":[{\"role\":\"user\",\"content\":\"ACTION: Your goal is to cut down the provided CONTENT under 280 characters...\"}]},{\"Step_name\":\"cringe_edit\",\"Model\":\"claude-3-5-haiku-20241022\",\"System_prompt\":\"\\nYou are Crateor, an expert ghostwriter who specializes in writing short-form digital media content...\"}]}\"",
+      "Sample_Output": "",
+      "Workflow_Tag": "Legacy Generation Flow with Claude"
+    }
+  }
+}
+JSON_Payload from response: "{"steps":[{"Step_name":"initial_generation","Model":"claude-3-5-sonnet-20241022","System_prompt":"\nYou are Crateor, an expert ghostwriter who specializes in writing short-form digital media content..."},{"Step_name":"voice_brand_edit","Model":"claude-3-5-haiku-20241022","System_prompt":"\nYou are Crateor, an expert ghostwriter who specializes in writing short-form digital media content..."},{"Step_name":"content_length_trimmer","Model":"claude-3-5-sonnet-20241022","System_prompt":"Follow the provided instructions.","Max_tokens":4096,"Order":3,"Temperature":1,"Message":[{"role":"user","content":"ACTION: Your goal is to cut down the provided CONTENT under 280 characters..."}]},{"Step_name":"cringe_edit","Model":"claude-3-5-haiku-20241022","System_prompt":"\nYou are Crateor, an expert ghostwriter who specializes in writing short-form digital media content..."}]}"
+Error parsing JSON: Extra data: line 1 column 4 (char 3)
