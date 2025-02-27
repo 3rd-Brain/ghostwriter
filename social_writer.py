@@ -113,14 +113,20 @@ def get_client_brand_voice(brand: str) -> Dict:
         if not data:
             print("No data returned from AstraDB")
             raise Exception(f"No brand voice found for brand: {brand}")
-            
-        # Extract specifically the Brand_Voice field
-        brand_voice = data.get("Brand_Voice")
-        print(f"Brand_Voice from response: {brand_voice}")
         
-        if not brand_voice:
-            print("Brand_Voice field not found in response data")
-            raise Exception(f"No brand voice found for brand: {brand}")
+        # The response should have a 'data' field that contains the document
+        if 'data' in data and 'document' in data['data']:
+            document = data['data']['document']
+            brand_voice = document.get("Brand_Voice")
+            print(f"Brand_Voice from response: {brand_voice}")
+            
+            if not brand_voice:
+                print("Brand_Voice field not found in document data")
+                raise Exception(f"No brand voice found for brand: {brand}")
+        else:
+            print("Expected data structure not found in response")
+            print(f"Available keys in response: {list(data.keys())}")
+            raise Exception(f"Data structure missing expected fields for brand: {brand}")
             
         print(f"=== Debug: Brand Voice Request Completed Successfully ===\n")
         return {"brand_voice": brand_voice}
