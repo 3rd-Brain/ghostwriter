@@ -153,6 +153,33 @@ def flow_config_retriever(workflow_id: str) -> dict:
                 raise Exception(f"No JSON Payload found for workflow_id: {workflow_id}")
                 
             # Handle double-encoded JSON - the payload seems to be a JSON string within a JSON string
+            try:
+                # First, try direct parsing
+                flow_config = json.loads(json_payload)
+            except json.JSONDecodeError as e:
+                print(f"First parsing attempt failed: {str(e)}")
+                # If that fails, try to remove the outer quotes and parse again
+                if json_payload.startswith('"') and json_payload.endswith('"'):
+                    # Remove the outer quotes and unescape inner quotes
+                    unescaped_payload = json_payload[1:-1].replace('\\"', '"')
+                    print(f"Attempting to parse unescaped payload: {unescaped_payload[:100]}...")
+                    flow_config = json.loads(unescaped_payload)
+                else:
+                    raise
+            
+            print(f"=== Debug: Flow Config Retrieval Completed Successfully ===\n")
+            return flow_config
+        else:
+            print("Expected data structure not found in response")
+            print(f"Available keys in response: {list(data.keys())}")
+            raise Exception(f"Data structure missing expected fields for workflow_id: {workflow_id}")
+            
+    except json.JSONDecodeError as e:
+        print(f"Error parsing JSON: {str(e)}")
+        raise Exception(f"Invalid JSON in response payload: {str(e)}")
+    except requests.exceptions.RequestException as e:
+        print(f"Request exception: {str(e)}")
+        raise Exception(f"Failed to retrieve flow configuration from AstraDB: {str(e)}")
 
 def workflow_delete(workflow_id: str) -> dict:
     """
@@ -203,32 +230,3 @@ def workflow_delete(workflow_id: str) -> dict:
     except requests.exceptions.RequestException as e:
         print(f"Request exception: {str(e)}")
         raise Exception(f"Failed to delete workflow from AstraDB: {str(e)}")
-
-            try:
-                # First, try direct parsing
-                flow_config = json.loads(json_payload)
-            except json.JSONDecodeError as e:
-                print(f"First parsing attempt failed: {str(e)}")
-                # If that fails, try to remove the outer quotes and parse again
-                if json_payload.startswith('"') and json_payload.endswith('"'):
-                    # Remove the outer quotes and unescape inner quotes
-                    unescaped_payload = json_payload[1:-1].replace('\\"', '"')
-                    print(f"Attempting to parse unescaped payload: {unescaped_payload[:100]}...")
-                    flow_config = json.loads(unescaped_payload)
-                else:
-                    raise
-            
-            print(f"=== Debug: Flow Config Retrieval Completed Successfully ===\n")
-            return flow_config
-        else:
-            print("Expected data structure not found in response")
-            print(f"Available keys in response: {list(data.keys())}")
-            raise Exception(f"Data structure missing expected fields for workflow_id: {workflow_id}")
-            
-    except json.JSONDecodeError as e:
-        print(f"Error parsing JSON: {str(e)}")
-        raise Exception(f"Invalid JSON in response payload: {str(e)}")
-    except requests.exceptions.RequestException as e:
-        print(f"Request exception: {str(e)}")
-        raise Exception(f"Failed to retrieve flow configuration from AstraDB: {str(e)}")
-import json
