@@ -152,8 +152,21 @@ def flow_config_retriever(workflow_id: str) -> dict:
                 print("JSON_Payload field not found in document data")
                 raise Exception(f"No JSON Payload found for workflow_id: {workflow_id}")
                 
-            # Parse the JSON payload
-            flow_config = json.loads(json_payload)
+            # Handle double-encoded JSON - the payload seems to be a JSON string within a JSON string
+            try:
+                # First, try direct parsing
+                flow_config = json.loads(json_payload)
+            except json.JSONDecodeError as e:
+                print(f"First parsing attempt failed: {str(e)}")
+                # If that fails, try to remove the outer quotes and parse again
+                if json_payload.startswith('"') and json_payload.endswith('"'):
+                    # Remove the outer quotes and unescape inner quotes
+                    unescaped_payload = json_payload[1:-1].replace('\\"', '"')
+                    print(f"Attempting to parse unescaped payload: {unescaped_payload[:100]}...")
+                    flow_config = json.loads(unescaped_payload)
+                else:
+                    raise
+            
             print(f"=== Debug: Flow Config Retrieval Completed Successfully ===\n")
             return flow_config
         else:
