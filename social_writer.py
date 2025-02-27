@@ -64,37 +64,45 @@ def generated_content_uploader(content_data: Dict) -> Dict:
 
 def get_client_brand_voice(brand: str) -> Dict:
     """
-    Retrieve client brand voice information from Airtable
+    Retrieve client brand voice information from AstraDB
     """
-    AIRTABLE_API_KEY = os.environ.get("AIRTABLE_API_KEY")
-    if not AIRTABLE_API_KEY:
-        raise Exception("AIRTABLE_API_KEY not configured")
+    ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+    ASTRA_DB_APPLICATION_TOKEN_GHOSWRITER = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSWRITER")
+    
+    if not ASTRA_DB_API_ENDPOINT:
+        raise Exception("ASTRA_DB_API_ENDPOINT not configured")
+    if not ASTRA_DB_APPLICATION_TOKEN_GHOSWRITER:
+        raise Exception("ASTRA_DB_APPLICATION_TOKEN_GHOSWRITER not configured")
 
-    encoded_brand = quote(brand)
-    url = f"https://api.airtable.com/v0/appLz2zuN6ZFu4mYS/tblpQGTYUROOEYPrY?filterByFormula=%7BAccount+(User)%7D%3D'{encoded_brand}'"
-
+    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/default_keyspace/brand"
+    
     headers = {
-        "Authorization": f"Bearer {AIRTABLE_API_KEY}",
+        "Token": ASTRA_DB_APPLICATION_TOKEN_GHOSWRITER,
         "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "findOne": {
+            "filter": {"Brand": brand}
+        }
     }
 
     try:
-        response = requests.get(url, headers=headers)
+        response = requests.post(url, headers=headers, json=payload)
         response.raise_for_status()
         data = response.json()
-
-        if not data.get("records"):
+        
+        if not data:
             raise Exception(f"No brand voice found for brand: {brand}")
-
-        # Extract specifically the Brand Voice field
-        brand_voice = data["records"][0]["fields"].get("Brand Voice")
+            
+        # Extract specifically the Brand_Voice field
+        brand_voice = data.get("Brand_Voice")
         if not brand_voice:
             raise Exception(f"No brand voice found for brand: {brand}")
         return {"brand_voice": brand_voice}
-
+        
     except requests.exceptions.RequestException as e:
-        raise Exception(
-            f"Failed to retrieve brand voice from Airtable: {str(e)}")
+        raise Exception(f"Failed to retrieve brand voice from AstraDB: {str(e)}")
 
 def vector_search_for_published_content(metadata_filter: Dict, text_to_vectorize: str) -> Dict:
     """
