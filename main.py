@@ -541,8 +541,10 @@ async def create_template_embedding(request_data: Dict):
 
 @app.get("/flow-config/{workflow_id}")
 async def get_flow_config(workflow_id: str):
-    if not os.getenv("AIRTABLE_API_KEY"):
-        raise HTTPException(status_code=500, detail="AIRTABLE_API_KEY not configured")
+    if not os.getenv("ASTRA_DB_API_ENDPOINT"):
+        raise HTTPException(status_code=500, detail="ASTRA_DB_API_ENDPOINT not configured")
+    if not os.getenv("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER"):
+        raise HTTPException(status_code=500, detail="ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
 
     try:
         result = flow_config_retriever(workflow_id)
