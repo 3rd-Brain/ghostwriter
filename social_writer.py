@@ -24,7 +24,9 @@ def generated_content_uploader(content_data: Dict) -> Dict:
     Upload generated content to AstraDB
     """
     ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
-    ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN")
+    ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+
+    print(f"\n=== Debug: Generated Content Uploader Started ===")
     
     if not ASTRA_DB_API_ENDPOINT:
         raise Exception("ASTRA_DB_API_ENDPOINT not configured")
@@ -50,7 +52,6 @@ def generated_content_uploader(content_data: Dict) -> Dict:
     timestamp = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
     
     document = {
-        "Content_ID": str(uuid.uuid4()),
         "First_Draft": content,
         "Source_Chunk": content_chunks,
         "Template": template,
