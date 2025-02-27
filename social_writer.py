@@ -21,45 +21,85 @@ client = anthropic.Client(api_key=ANTHROPIC_API_KEY)
 
 def generated_content_uploader(content_data: Dict) -> Dict:
     """
-    Upload generated content to Airtable
+    Upload generated content to AstraDB
     """
-    AIRTABLE_API_KEY = os.environ.get("AIRTABLE_API_KEY")
-    AIRTABLE_BASE_ID = "appLz2zuN6ZFu4mYS"
-    AIRTABLE_TABLE_NAME = "Generated Content"
-
+    ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+    ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN")
+    
+    if not ASTRA_DB_API_ENDPOINT:
+        raise Exception("ASTRA_DB_API_ENDPOINT not configured")
+    if not ASTRA_DB_APPLICATION_TOKEN:
+        raise Exception("ASTRA_DB_APPLICATION_TOKEN not configured")
+        
+    # Get the current user's username from the environment
+    CURRENT_USERNAME = os.environ.get("CURRENT_USERNAME", "GentOfTech")  # Default to GentOfTech if not set
+    
     content = content_data.get("first_draft", "")
     content_chunks = content_data.get("content_chunks", "")
     template = content_data.get("template", "")
-
+    
+    # Use the current user's username for the URL path
+    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/{CURRENT_USERNAME}/generated_content"
+    
     headers = {
-        "Authorization": f"Bearer {AIRTABLE_API_KEY}",
+        "Token": ASTRA_DB_APPLICATION_TOKEN,
         "Content-Type": "application/json"
     }
-
+    
+    # Create a timestamp for the created time
+    timestamp = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+    
+    document = {
+        "Content_ID": str(uuid.uuid4()),
+        "First_Draft": content,
+        "Source_Chunk": content_chunks,
+        "Template": template,
+        "Current_Draft": "",
+        "Tag": "Legacy Generation Flow with Claude",
+        "Content_Format": "Short_Form_Social",
+        "Status": "Draft",
+        "Content_Author": "AI_Generated",
+        "Approval_Date": "",
+        "Publish_Date": "",
+        "Post_ID": "",
+        "Post_Channel": "",
+        "Likes": "",
+        "Shares": "",
+        "Quotes": "",
+        "Bookmarks": "",
+        "Replies": "",
+        "Impressions": "",
+        "Created_Time": timestamp,
+        "Weighted_Impressions": "",
+        "Weighted_Replies": "",
+        "Weighted_Bookmarks": "",
+        "Weighted_Shares": "",
+        "Weighted_Likes": "",
+        "Followers": "",
+        "Score": ""
+    }
+    
     payload = {
-        "records": [{
-            "fields": {
-                "Content_ID": str(uuid.uuid4()),
-                "First Draft": content,
-                "Tag": "Legacy Generation Flow with Claude",
-                "Content Format": "Short Form Social",
-                "Status": "Draft",
-                "Source Chunk": content_chunks,
-                "Template": template,
-                "Counter": 1,
-                "Content Author": "AI Generated"
-            }
-        }]
+        "insertOne": {
+            "document": document
+        }
     }
 
-    url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE_NAME}"
-
+    print(f"\n=== Debug: Content Upload Started ===")
+    print(f"URL: {url}")
+    print(f"Payload (truncated): {str(payload)[:200]}...")
+    
     try:
         response = requests.post(url, headers=headers, json=payload)
+        print(f"Response status code: {response.status_code}")
+        print(f"Response text: {response.text}")
         response.raise_for_status()
-        return response.json()
+        result = response.json()
+        print(f"=== Debug: Content Upload Completed ===\n")
+        return result
     except requests.exceptions.RequestException as e:
-        raise Exception(f"Failed to upload to Airtable: {str(e)}")
+        print(f"Upload error: {str(e)}")
+        raise Exception(f"Failed to upload to AstraDB: {str(e)}")
 
 
 def get_client_brand_voice(brand: str) -> Dict:
