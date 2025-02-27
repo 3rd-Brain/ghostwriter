@@ -67,12 +67,12 @@ def get_client_brand_voice(brand: str) -> Dict:
     Retrieve client brand voice information from AstraDB
     """
     ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
-    ASTRA_DB_APPLICATION_TOKEN_GHOSWRITER = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSWRITER")
+    ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
     
     if not ASTRA_DB_API_ENDPOINT:
         raise Exception("ASTRA_DB_API_ENDPOINT not configured")
-    if not ASTRA_DB_APPLICATION_TOKEN_GHOSWRITER:
-        raise Exception("ASTRA_DB_APPLICATION_TOKEN_GHOSWRITER not configured")
+    if not ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER:
+        raise Exception("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
 
     # Get the current user's username from the environment
     CURRENT_USERNAME = os.environ.get("CURRENT_USERNAME", "GentOfTech")  # Default to GentOfTech if not set
@@ -81,7 +81,7 @@ def get_client_brand_voice(brand: str) -> Dict:
     url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/{CURRENT_USERNAME}/brand"
     
     headers = {
-        "Token": ASTRA_DB_APPLICATION_TOKEN_GHOSWRITER,
+        "Token": ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
         "Content-Type": "application/json"
     }
     

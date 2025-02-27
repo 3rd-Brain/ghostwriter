@@ -73,7 +73,7 @@ async def login(request: Request, username: str = Form(...), password: str = For
         response = RedirectResponse(url="/dashboard", status_code=status.HTTP_302_FOUND)
         response.set_cookie(key="access_token", value=access_token, httponly=True)
         return response
-</old_str>
+
     return templates.TemplateResponse(
         "login.html",
         {"request": request, "error": "Access denied. Wrong credentials."},
