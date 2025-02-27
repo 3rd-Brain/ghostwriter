@@ -548,8 +548,10 @@ async def get_flow_config(workflow_id: str):
 
     try:
         result = flow_config_retriever(workflow_id)
-        return result
+        # Ensure response is JSON serializable
+        return {"workflow_id": workflow_id, "flow_config": result}
     except Exception as e:
+        print(f"Error retrieving flow config: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/templatizer")

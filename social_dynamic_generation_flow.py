@@ -154,12 +154,16 @@ def flow_config_retriever(workflow_id: str) -> dict:
                 
             # Handle double-encoded JSON - the payload seems to be a JSON string within a JSON string
             try:
-                # First, try direct parsing
-                flow_config = json.loads(json_payload)
+                # Check if the payload is already a dictionary
+                if isinstance(json_payload, dict):
+                    flow_config = json_payload
+                else:
+                    # Otherwise, try to parse it as JSON
+                    flow_config = json.loads(json_payload)
             except json.JSONDecodeError as e:
                 print(f"First parsing attempt failed: {str(e)}")
                 # If that fails, try to remove the outer quotes and parse again
-                if json_payload.startswith('"') and json_payload.endswith('"'):
+                if isinstance(json_payload, str) and json_payload.startswith('"') and json_payload.endswith('"'):
                     # Remove the outer quotes and unescape inner quotes
                     unescaped_payload = json_payload[1:-1].replace('\\"', '"')
                     print(f"Attempting to parse unescaped payload: {unescaped_payload[:100]}...")
