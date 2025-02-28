@@ -14,5 +14,9 @@ deploymentTarget = "cloudrun"
 REPLIT_DISABLE_PACKAGE_LAYER = "1"
 
 [[ports]]
+localPort = 8000
+externalPort = 8000
+
+[[ports]]
 localPort = 8080
 externalPort = 80
