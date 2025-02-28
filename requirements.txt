@@ -20,7 +20,6 @@ MarkupSafe==3.0.2
 openai==1.61.1
 pyasn1==0.4.8
 pycparser==2.22
-pycrypto==2.6.1
 pycryptodome==3.20.0
 pydantic==2.4.2
 pydantic_core==2.10.1
