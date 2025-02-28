@@ -25,10 +25,7 @@ pycryptodome = "^3.20.0"
 version = "^3.20.0"
 optional = false
 
-# Explicitly avoid the old pycrypto
-[tool.poetry.group.main.dependencies.pycrypto]
-optional = true
-version = "^0.0.0"
+# No need to specify pycrypto
 
 [tool.pyright]
 # https://github.com/microsoft/pyright/blob/main/docs/configuration.md
