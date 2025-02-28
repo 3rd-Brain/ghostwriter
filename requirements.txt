@@ -313,7 +313,7 @@ jiter==0.8.2 ; python_full_version >= "3.10.0" and python_version < "3.12" \
     --hash=sha256:fc5adda618205bd4678b146612ce44c3cbfdee9697951f2c0ffdef1f26d72b63 \
     --hash=sha256:fc9043259ee430ecd71d178fccabd8c332a3bf1e81e50cae43cc2b28d19e4cb7 \
     --hash=sha256:ffd9fee7d0775ebaba131f7ca2e2d83839a62ad65e8e02fe2bd8fc975cedeb9e
-jose==1.0.0 ; python_full_version >= "3.10.0" and python_version < "3.12" \
+python-jose[cryptography]==3.4.0 ; python_full_version >= "3.10.0" and python_version < "3.12" \
     --hash=sha256:8436c3617cd94e1ba97828fbb1ce27c129f66c78fb855b4bb47e122b5f345fba
 markupsafe==3.0.2 ; python_full_version >= "3.10.0" and python_version < "3.12" \
     --hash=sha256:0bff5e0ae4ef2e1ae4fdf2dfd5b76c75e5c2fa4132d05fc1b0dabcd20c7e28c4 \
@@ -386,7 +386,7 @@ pyasn1==0.4.8 ; python_full_version >= "3.10.0" and python_version < "3.12" \
 pycparser==2.22 ; python_full_version >= "3.10.0" and python_version < "3.12" and platform_python_implementation != "PyPy" \
     --hash=sha256:491c8be9c040f5390f5bf44a5b07752bd07f56edf992381b05c701439eec10f6 \
     --hash=sha256:c3702b6d3dd8c7abc1afa565d7e63d53a1d0bd86cdc24edd75470f4de499cfcc
-pycrypto==2.6.1 ; python_full_version >= "3.10.0" and python_version < "3.12" \
+pycryptodome==3.20.0 ; python_full_version >= "3.10.0" and python_version < "3.12" \
     --hash=sha256:f2ce1e989b272cfcb677616763e0a2e7ec659effa67a88aa92b3a65528f60a3c
 pydantic-core==2.10.1 ; python_full_version >= "3.10.0" and python_version < "3.12" \
     --hash=sha256:042462d8d6ba707fd3ce9649e7bf268633a41018d6a998fb5fbacb7e928a183e \
