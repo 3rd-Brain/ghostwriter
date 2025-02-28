@@ -254,13 +254,13 @@ async def logout(response: Response):
     response.delete_cookie("access_token")
     return response
 
-# Configure CORS with specific settings
+# Configure CORS with enhanced settings for referrer issues
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=False,
+    allow_credentials=True,  # Changed to True to allow credentials
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["*", "Referer", "Origin", "X-Requested-With"],
     allow_origin_regex=None,
     expose_headers=["*"]
 )
@@ -271,20 +271,31 @@ async def add_cors_headers(request, call_next):
         response = Response()
         response.headers["Access-Control-Allow-Origin"] = "*"
         response.headers["Access-Control-Allow-Methods"] = "POST, GET, DELETE, PUT, OPTIONS"
-        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With, Referer, Origin"
+        response.headers["Access-Control-Allow-Credentials"] = "true"
         return response
 
     response = await call_next(request)
     response.headers["Access-Control-Allow-Origin"] = "*"
-    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With, Referer, Origin"
     response.headers["Access-Control-Allow-Methods"] = "POST, GET, DELETE, PUT, OPTIONS"
+    response.headers["Access-Control-Allow-Credentials"] = "true"
+    
+    # Disable referrer policy restrictions
+    response.headers["Referrer-Policy"] = "no-referrer-when-downgrade"
     return response
 
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
-app.add_middleware(
-    TrustedHostMiddleware, 
-    allowed_hosts=["*"]
-)
+from starlette.middleware.base import BaseHTTPMiddleware
+
+class ReferrerPolicyMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        response = await call_next(request)
+        response.headers["Referrer-Policy"] = "no-referrer-when-downgrade"
+        return response
+
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=["*"])
+app.add_middleware(ReferrerPolicyMiddleware)
 
 @app.get("/")
 def read_root():
