@@ -52,11 +52,11 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     return encoded_jwt
 
 # Authentication routes
-@app.get("/", response_class=HTMLResponse)
+@app.get("/", response_class=HTMLResponse, include_in_schema=False)
 async def root(request: Request):
     return RedirectResponse(url="/login")
 
-@app.get("/login", response_class=HTMLResponse)
+@app.get("/login", response_class=HTMLResponse, include_in_schema=False)
 async def login_page(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
@@ -99,7 +99,7 @@ async def get_current_user(request: Request):
     except JWTError:
         raise credentials_exception
 
-@app.get("/dashboard", response_class=HTMLResponse)
+@app.get("/dashboard", response_class=HTMLResponse, include_in_schema=False)
 async def dashboard(request: Request, current_user: str = Depends(get_current_user)):
     return templates.TemplateResponse("dashboard.html", {
         "request": request,
@@ -107,7 +107,7 @@ async def dashboard(request: Request, current_user: str = Depends(get_current_us
         "current_page": "dashboard"
     })
 
-@app.get("/generation/repurpose", response_class=HTMLResponse)
+@app.get("/generation/repurpose", response_class=HTMLResponse, include_in_schema=False)
 async def generation_repurpose(request: Request, current_user: str = Depends(get_current_user)):
     return templates.TemplateResponse("generation.html", {
         "request": request,
@@ -116,7 +116,7 @@ async def generation_repurpose(request: Request, current_user: str = Depends(get
         "page": "repurpose"
     })
 
-@app.get("/generation/top-content", response_class=HTMLResponse)
+@app.get("/generation/top-content", response_class=HTMLResponse, include_in_schema=False)
 async def generation_top_content(request: Request, current_user: str = Depends(get_current_user)):
     return templates.TemplateResponse("top_content.html", {
         "request": request,
@@ -125,7 +125,7 @@ async def generation_top_content(request: Request, current_user: str = Depends(g
         "page": "top-content"
     })
 
-@app.get("/generation/posts-templates", response_class=HTMLResponse)
+@app.get("/generation/posts-templates", response_class=HTMLResponse, include_in_schema=False)
 async def generation_posts_templates(request: Request, current_user: str = Depends(get_current_user)):
     return templates.TemplateResponse("posts_templates.html", {
         "request": request,
@@ -134,7 +134,7 @@ async def generation_posts_templates(request: Request, current_user: str = Depen
         "page": "posts-templates"
     })
 
-@app.get("/create/brand-voice", response_class=HTMLResponse)
+@app.get("/create/brand-voice", response_class=HTMLResponse, include_in_schema=False)
 async def create_brand_voice(request: Request, current_user: str = Depends(get_current_user)):
     return templates.TemplateResponse("brand_voice.html", {
         "request": request,
@@ -142,7 +142,7 @@ async def create_brand_voice(request: Request, current_user: str = Depends(get_c
         "current_page": "create_brand_voice"
     })
 
-@app.get("/create/source-content", response_class=HTMLResponse)
+@app.get("/create/source-content", response_class=HTMLResponse, include_in_schema=False)
 async def create_source_content(request: Request, current_user: str = Depends(get_current_user)):
     return templates.TemplateResponse("source_content.html", {
         "request": request,
@@ -150,7 +150,7 @@ async def create_source_content(request: Request, current_user: str = Depends(ge
         "current_page": "create_source_content"
     })
 
-@app.get("/create/templatizer", response_class=HTMLResponse)
+@app.get("/create/templatizer", response_class=HTMLResponse, include_in_schema=False)
 async def create_templatizer(request: Request, current_user: str = Depends(get_current_user)):
     return templates.TemplateResponse("templatizer.html", {
         "request": request,
@@ -158,7 +158,7 @@ async def create_templatizer(request: Request, current_user: str = Depends(get_c
         "current_page": "create_templatizer"
     })
 
-@app.get("/create/generation-flow", response_class=HTMLResponse)
+@app.get("/create/generation-flow", response_class=HTMLResponse, include_in_schema=False)
 async def create_generation_flow(request: Request, current_user: str = Depends(get_current_user)):
     return templates.TemplateResponse("generation_flow.html", {
         "request": request,
@@ -166,7 +166,7 @@ async def create_generation_flow(request: Request, current_user: str = Depends(g
         "current_page": "create_generation_flow"
     })
 
-@app.get("/generated-content", response_class=HTMLResponse)
+@app.get("/generated-content", response_class=HTMLResponse, include_in_schema=False)
 async def generated_content(request: Request, current_user: str = Depends(get_current_user)):
     AIRTABLE_API_KEY = os.environ.get("AIRTABLE_API_KEY")
     if not AIRTABLE_API_KEY:
@@ -212,7 +212,7 @@ async def generated_content(request: Request, current_user: str = Depends(get_cu
     except requests.exceptions.RequestException as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch generated content: {str(e)}")
 
-@app.get("/search/published", response_class=HTMLResponse)
+@app.get("/search/published", response_class=HTMLResponse, include_in_schema=False)
 async def search_published(request: Request, current_user: str = Depends(get_current_user)):
     return templates.TemplateResponse("search_published.html", {
         "request": request,
@@ -220,7 +220,7 @@ async def search_published(request: Request, current_user: str = Depends(get_cur
         "current_page": "search_published"
     })
 
-@app.get("/search/brand-voices", response_class=HTMLResponse)
+@app.get("/search/brand-voices", response_class=HTMLResponse, include_in_schema=False)
 async def search_brand_voices(request: Request, current_user: str = Depends(get_current_user)):
     return templates.TemplateResponse("search_brand_voices.html", {
         "request": request,
@@ -228,7 +228,7 @@ async def search_brand_voices(request: Request, current_user: str = Depends(get_
         "current_page": "search_brand_voices"
     })
 
-@app.get("/search/source-content", response_class=HTMLResponse)
+@app.get("/search/source-content", response_class=HTMLResponse, include_in_schema=False)
 async def search_source_content(request: Request, current_user: str = Depends(get_current_user)):
     return templates.TemplateResponse("search_source_content.html", {
         "request": request,
@@ -236,7 +236,7 @@ async def search_source_content(request: Request, current_user: str = Depends(ge
         "current_page": "search_source_content"
     })
 
-@app.get("/search/templates", response_class=HTMLResponse)
+@app.get("/search/templates", response_class=HTMLResponse, include_in_schema=False)
 async def search_templates(request: Request, current_user: str = Depends(get_current_user)):
     return templates.TemplateResponse("search_templates.html", {
         "request": request,
@@ -244,7 +244,7 @@ async def search_templates(request: Request, current_user: str = Depends(get_cur
         "current_page": "search_templates"
     })
 
-@app.get("/logout")
+@app.get("/logout", include_in_schema=False)
 async def logout(response: Response):
     # Clear the username environment variable on logout
     if "CURRENT_USERNAME" in os.environ:
@@ -297,7 +297,7 @@ class ReferrerPolicyMiddleware(BaseHTTPMiddleware):
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=["*"])
 app.add_middleware(ReferrerPolicyMiddleware)
 
-@app.get("/")
+@app.get("/", include_in_schema=False)
 def read_root():
     return {"Hello": "World"}
 
