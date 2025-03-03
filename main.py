@@ -13,6 +13,7 @@ import os
 from typing import Dict
 from social_writer import generated_content_uploader, get_client_brand_voice, vector_search_for_published_content, metric_sorter, top_content_sentiment_setup, source_content_retriever, multitemplate_retriever, short_form_social_repurposing, top_content_to_repurposing, template_context_and_uploader, Templatizer, repurposer_using_posts_as_templates, source_content_repurposer_using_posts_as_templates
 from social_dynamic_generation_flow import flow_config_retriever, social_post_generation_with_json
+import schemas
 
 # App setup
 app = FastAPI()
@@ -350,8 +351,13 @@ async def upload_content(content_data: Dict):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/brand-voice/{brand}")
+@app.get("/brand-voice/{brand}", response_model=Dict)
 async def get_brand_voice(brand: str):
+    """
+    Get the brand voice details for a specific brand.
+    
+    This endpoint retrieves the brand voice configuration from Airtable.
+    """
     if not os.getenv("AIRTABLE_API_KEY"):
         raise HTTPException(status_code=500, detail="AIRTABLE_API_KEY not configured")
 
@@ -365,42 +371,44 @@ async def get_brand_voice(brand: str):
         print(f"\n=== Debug: Error in get_brand_voice: {str(e)} ===\n")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/vector-search")
-async def vector_search(request_data: Dict):
+@app.post("/vector-search", response_model=Dict)
+async def vector_search(request_data: schemas.VectorSearchRequest):
+    """
+    Search for similar content using vector search.
+    
+    This endpoint uses OpenAI embeddings to search for similar content based on the provided text.
+    """
     if not os.getenv("OPENAI_API_KEY"):
         raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
     if not os.getenv("ASTRA_DB_APPLICATION_TOKEN"):
         raise HTTPException(status_code=500, detail="ASTRA_DB_APPLICATION_TOKEN not configured")
 
     try:
-        metadata_filter = request_data.get("metadata_filter", {})
-        text_to_vectorize = request_data.get("text_to_vectorize")
-
-        if not text_to_vectorize:
-            raise HTTPException(status_code=400, detail="text_to_vectorize is required")
+        metadata_filter = request_data.metadata_filter
+        text_to_vectorize = request_data.text_to_vectorize
 
         result = vector_search_for_published_content(metadata_filter, text_to_vectorize)
 
         # If sort_metric is provided, sort the results
-        sort_metric = request_data.get("sort_metric")
-        if sort_metric:
-            result = metric_sorter(result, sort_metric)
+        if request_data.sort_metric:
+            result = metric_sorter(result, request_data.sort_metric)
 
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/sentiment-setup")
-async def setup_sentiment(request_data: Dict):
+@app.post("/sentiment-setup", response_model=Dict)
+async def setup_sentiment(request_data: schemas.SentimentSetupRequest):
+    """
+    Set up sentiment analysis configuration based on a query.
+    
+    This endpoint generates filter and sorting configurations for content sentiment analysis.
+    """
     if not os.getenv("OPENAI_API_KEY"):
         raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
 
     try:
-        query = request_data.get("query")
-        if not query:
-            raise HTTPException(status_code=400, detail="query is required")
-
-        result = top_content_sentiment_setup(query)
+        result = top_content_sentiment_setup(request_data.query)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -412,22 +420,20 @@ def top_content_retriever(query: str, topic: str) -> Dict:
         results = metric_sorter(results, setup_result["metric_sort"])
     return results
 
-@app.post("/top-content")
-async def get_top_content(request_data: Dict):
+@app.post("/top-content", response_model=Dict)
+async def get_top_content(request_data: schemas.TopContentRequest):
+    """
+    Retrieve top performing content based on a query and topic.
+    
+    This endpoint combines sentiment setup and vector search to find optimal content.
+    """
     if not os.getenv("OPENAI_API_KEY"):
         raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
     if not os.getenv("ASTRA_DB_APPLICATION_TOKEN"):
         raise HTTPException(status_code=500, detail="ASTRA_DB_APPLICATION_TOKEN not configured")
 
     try:
-        query = request_data.get("query")
-        topic = request_data.get("topic")
-        if not query:
-            raise HTTPException(status_code=400, detail="query is required")
-        if not topic:
-            raise HTTPException(status_code=400, detail="topic is required")
-
-        result = top_content_retriever(query, topic)
+        result = top_content_retriever(request_data.query, request_data.topic)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -449,8 +455,13 @@ async def get_source_content(request_data: Dict):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/repurpose")
-async def repurpose_content(request_data: Dict, background_tasks: BackgroundTasks):
+@app.post("/repurpose", response_model=schemas.SuccessResponse)
+async def repurpose_content(request_data: schemas.RepurposeRequest, background_tasks: BackgroundTasks):
+    """
+    Repurpose content based on a topic query for a specific brand.
+    
+    This endpoint generates new content based on source content and brand voice.
+    """
     if not os.getenv("OPENAI_API_KEY"):
         raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
     if not os.getenv("ASTRA_DB_APPLICATION_TOKEN"):
@@ -461,18 +472,14 @@ async def repurpose_content(request_data: Dict, background_tasks: BackgroundTask
         raise HTTPException(status_code=500, detail="AIRTABLE_API_KEY not configured")
 
     try:
-        topic_query = request_data.get("topic_query")
-        brand = request_data.get("brand")
-        repurpose_count = request_data.get("repurpose_count", 1)
-        workflow_id = request_data.get("workflow_id", "Legacy Generation Flow with Claude")
-
-        if not topic_query:
-            raise HTTPException(status_code=400, detail="topic_query is required")
-        if not brand:
-            raise HTTPException(status_code=400, detail="brand is required")
-
-        background_tasks.add_task(short_form_social_repurposing, topic_query, brand, repurpose_count, workflow_id)
-        return {"status": "Your content is being generated"}
+        background_tasks.add_task(
+            short_form_social_repurposing, 
+            request_data.topic_query, 
+            request_data.brand, 
+            request_data.repurpose_count, 
+            request_data.workflow_id
+        )
+        return {"status": "success", "message": "Your content is being generated"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -506,28 +513,23 @@ async def get_top_content_repurposing(request_data: Dict, background_tasks: Back
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/social-post-generation")
-async def generate_social_post(request_data: Dict):
+@app.post("/social-post-generation", response_model=schemas.SocialPostGenerationResponse)
+async def generate_social_post(request_data: schemas.SocialPostGenerationRequest):
+    """
+    Generate a social media post using a specified workflow.
+    
+    This endpoint creates social media content based on template, brand voice, and content chunks.
+    """
     if not os.getenv("ANTHROPIC_API_KEY"):
         raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY not configured")
 
     try:
-        workflow_id = request_data.get("workflow_id")
-        client_brief = request_data.get("client_brief")
-        template = request_data.get("template")
-        content_chunks = request_data.get("content_chunks")
-        brand_voice = request_data.get("brand_voice", "")
-
-        if not all([workflow_id, client_brief, template, content_chunks]):
-            raise HTTPException(status_code=400, detail="Missing required fields")
-
-        from social_dynamic_generation_flow import social_post_generation_with_json
         result = social_post_generation_with_json(
-            workflow_id=workflow_id,
-            client_brief=client_brief,
-            template=template,
-            content_chunks=content_chunks,
-            brand_voice=brand_voice
+            workflow_id=request_data.workflow_id,
+            client_brief=request_data.client_brief,
+            template=request_data.template,
+            content_chunks=request_data.content_chunks,
+            brand_voice=request_data.brand_voice
         )
         return {"generated_content": result}
     except Exception as e:
