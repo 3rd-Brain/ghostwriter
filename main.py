@@ -302,9 +302,13 @@ app.add_middleware(ReferrerPolicyMiddleware)
 def read_root():
     return {"Hello": "World"}
 
-@app.post("/api/generation-flow")
-async def create_generation_flow(request_data: Dict):
-    """Save generation flow configuration to Airtable"""
+@app.post("/api/generation-flow", response_model=schemas.SuccessResponse)
+async def create_generation_flow(request_data: schemas.GenerationFlowRequest):
+    """
+    Save generation flow configuration to Airtable
+    
+    This endpoint stores workflow configuration for content generation.
+    """
     if not os.getenv("AIRTABLE_API_KEY"):
         raise HTTPException(status_code=500, detail="AIRTABLE_API_KEY not configured")
 
@@ -316,7 +320,7 @@ async def create_generation_flow(request_data: Dict):
 
     # First prepare the steps JSON with proper escaping
     steps_json = json.dumps({
-        "steps": request_data["steps"]
+        "steps": request_data.steps
     }, ensure_ascii=False)
 
     # Format JSON payload with proper indentation
@@ -324,9 +328,9 @@ async def create_generation_flow(request_data: Dict):
 
     payload = {
         "fields": {
-            "workflow_id": request_data["workflowId"],
-            "Workflow Type": request_data["workflowType"].title(),
-            "Short Description": request_data["description"],
+            "workflow_id": request_data.workflowId,
+            "Workflow Type": request_data.workflowType.title(),
+            "Short Description": request_data.description,
             "JSON Payload": formatted_steps_json
         }
     }
@@ -336,17 +340,24 @@ async def create_generation_flow(request_data: Dict):
     try:
         response = requests.post(url, headers=headers, json=payload)
         response.raise_for_status()
-        return {"status": "Generation flow saved successfully"}
+        return {"status": "success", "message": "Generation flow saved successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/upload-content")
-async def upload_content(content_data: Dict):
+@app.post("/upload-content", response_model=Dict)
+async def upload_content(content_data: schemas.ContentUploadRequest):
+    """
+    Upload generated content to AstraDB
+    
+    This endpoint stores generated content and associated metadata.
+    """
     if not os.getenv("AIRTABLE_API_KEY"):
         raise HTTPException(status_code=500, detail="AIRTABLE_API_KEY not configured")
 
     try:
-        result = generated_content_uploader(content_data)
+        # Convert Pydantic model to dict for the uploader function
+        content_dict = content_data.dict()
+        result = generated_content_uploader(content_dict)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -438,19 +449,20 @@ async def get_top_content(request_data: schemas.TopContentRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/source-content")
-async def get_source_content(request_data: Dict):
+@app.post("/source-content", response_model=Dict)
+async def get_source_content(request_data: schemas.SourceContentRequest):
+    """
+    Retrieve source content based on a topic query
+    
+    This endpoint searches for relevant source content from a knowledge base.
+    """
     if not os.getenv("OPENAI_API_KEY"):
         raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
     if not os.getenv("ASTRA_DB_APPLICATION_TOKEN"):
         raise HTTPException(status_code=500, detail="ASTRA_DB_APPLICATION_TOKEN not configured")
 
     try:
-        topic_query = request_data.get("topic_query")
-        if not topic_query:
-            raise HTTPException(status_code=400, detail="topic_query is required")
-
-        result = source_content_retriever(topic_query)
+        result = source_content_retriever(request_data.topic_query)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -483,33 +495,32 @@ async def repurpose_content(request_data: schemas.RepurposeRequest, background_t
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/top-content-repurposing")
-async def get_top_content_repurposing(request_data: Dict, background_tasks: BackgroundTasks):
+@app.post("/top-content-repurposing", response_model=schemas.SuccessResponse)
+async def get_top_content_repurposing(request_data: schemas.TopContentRepurposingRequest, background_tasks: BackgroundTasks):
+    """
+    Repurpose top performing content
+    
+    This endpoint identifies top content based on metrics and creates new variations.
+    """
     if not os.getenv("OPENAI_API_KEY"):
         raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
     if not os.getenv("ASTRA_DB_APPLICATION_TOKEN"):
         raise HTTPException(status_code=500, detail="ASTRA_DB_APPLICATION_TOKEN not configured")
 
     try:
-        query = request_data.get("query")
-        topic = request_data.get("topic")
-        brand = request_data.get("brand")
-        number_of_posts = request_data.get("number_of_posts", 5)
-        repurpose_count = request_data.get("repurpose_count", 5)
-        workflow_id = request_data.get("workflow_id", "Legacy Generation Flow with Claude")
-
-        if not query:
-            raise HTTPException(status_code=400, detail="query is required")
-        if not topic:
-            raise HTTPException(status_code=400, detail="topic is required")
-        if not brand:
-            raise HTTPException(status_code=400, detail="brand is required")
-
         # Add task to background
-        background_tasks.add_task(top_content_to_repurposing, query, topic, brand, number_of_posts, repurpose_count, workflow_id)
+        background_tasks.add_task(
+            top_content_to_repurposing, 
+            request_data.query, 
+            request_data.topic, 
+            request_data.brand, 
+            request_data.number_of_posts, 
+            request_data.repurpose_count, 
+            request_data.workflow_id
+        )
 
         # Return immediately
-        return {"status": "Content is now being generated"}
+        return {"status": "success", "message": "Content is now being generated"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -535,19 +546,20 @@ async def generate_social_post(request_data: schemas.SocialPostGenerationRequest
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/template-context-and-uploader")
-async def create_template_embedding(request_data: Dict):
+@app.post("/template-context-and-uploader", response_model=Dict)
+async def create_template_embedding(request_data: schemas.TemplateContextRequest):
+    """
+    Process a template by generating a description and creating a vector embedding
+    
+    This endpoint analyzes templates and stores them with embeddings for retrieval.
+    """
     if not os.getenv("OPENAI_API_KEY"):
         raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
     if not os.getenv("ANTHROPIC_API_KEY"):
         raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY not configured")
 
     try:
-        template = request_data.get("template")
-        if not template:
-            raise HTTPException(status_code=400, detail="template is required")
-
-        result = template_context_and_uploader(template)
+        result = template_context_and_uploader(request_data.template)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -567,25 +579,31 @@ async def get_flow_config(workflow_id: str):
         print(f"Error retrieving flow config: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/templatizer")
-async def create_template(request_data: Dict):
+@app.post("/templatizer", response_model=schemas.TemplatizerResponse)
+async def create_template(request_data: schemas.TemplatizerRequest):
+    """
+    Convert a social post into a reusable template
+    
+    This endpoint extracts the structure from a social post to create a template.
+    """
     if not os.getenv("OPENAI_API_KEY"):
         raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
     if not os.getenv("ANTHROPIC_API_KEY"):
         raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY not configured")
 
     try:
-        social_post = request_data.get("social_post")
-        if not social_post:
-            raise HTTPException(status_code=400, detail="social_post is required")
-
-        template = Templatizer(social_post)
+        template = Templatizer(request_data.social_post)
         return {"template": template}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/multitemplate")
-async def get_multitemplate(request_data: Dict):
+@app.post("/multitemplate", response_model=Dict)
+async def get_multitemplate(request_data: schemas.MultitemplateRequest):
+    """
+    Retrieve multiple templates based on content chunk
+    
+    This endpoint finds suitable templates for a given content piece.
+    """
     if not os.getenv("OPENAI_API_KEY"):
         raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
     if not os.getenv("ASTRA_DB_APPLICATION_TOKEN"):
@@ -594,81 +612,61 @@ async def get_multitemplate(request_data: Dict):
         raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY not configured")
 
     try:
-        content_chunk = request_data.get("content_chunk")
-        template_count = request_data.get("template_count", 5)
-        if not content_chunk:
-            raise HTTPException(status_code=400, detail="content_chunk is required")
-
-        result = multitemplate_retriever(content_chunk, template_count)
+        result = multitemplate_retriever(request_data.content_chunk, request_data.template_count)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/repurpose-with-templates")
-async def repurpose_with_templates(request_data: Dict):
+@app.post("/repurpose-with-templates", response_model=Dict)
+async def repurpose_with_templates(request_data: schemas.RepurposeWithTemplatesRequest):
+    """
+    Repurpose content using social posts as templates
+    
+    This endpoint generates new content using existing post structures.
+    """
     if not os.getenv("OPENAI_API_KEY"):
         raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
     if not os.getenv("ANTHROPIC_API_KEY"):
         raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY not configured")
 
     try:
-        # Required fields
-        content_chunks = request_data.get("content_chunks")
-        template_post = request_data.get("template_post")
-        brand = request_data.get("brand")
-
-        if not all([content_chunks, template_post, brand]):
-            raise HTTPException(status_code=400, detail="content_chunks, template_post, and brand are required")
-
-        # Optional fields with defaults
-        workflow_id = request_data.get("workflow_id", "Legacy Generation Flow with Claude")
-        is_given_template_query = request_data.get("is_given_template_query", False)
-        number_of_posts_to_template = request_data.get("number_of_posts_to_template", 5)
-        post_topic_query = request_data.get("post_topic_query", "Digital Operations")
-
         result = repurposer_using_posts_as_templates(
-            content_chunks=content_chunks,
-            template_post=template_post,
-            brand=brand,
-            workflow_id=workflow_id,
-            is_given_template_query=is_given_template_query,
-            number_of_posts_to_template=number_of_posts_to_template,
-            post_topic_query=post_topic_query
+            content_chunks=request_data.content_chunks,
+            template_post=request_data.template_post,
+            brand=request_data.brand,
+            workflow_id=request_data.workflow_id,
+            is_given_template_query=request_data.is_given_template_query,
+            number_of_posts_to_template=request_data.number_of_posts_to_template,
+            post_topic_query=request_data.post_topic_query
         )
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/source-content-repurpose-with-templates")
-async def repurpose_source_content_with_templates(request_data: Dict, background_tasks: BackgroundTasks):
+@app.post("/source-content-repurpose-with-templates", response_model=schemas.SuccessResponse)
+async def repurpose_source_content_with_templates(
+    request_data: schemas.SourceContentRepurposeWithTemplatesRequest, 
+    background_tasks: BackgroundTasks
+):
+    """
+    Repurpose source content using social posts as templates
+    
+    This endpoint retrieves source content and generates new content using existing post structures.
+    """
     try:
-        # Required fields
-        content_topic_query = request_data.get("content_topic_query")
-        template_post = request_data.get("template_post")
-        brand = request_data.get("brand")
-
-        if not all([content_topic_query, template_post, brand]):
-            raise HTTPException(status_code=400, detail="content_topic_query, template_post, and brand are required")
-
-        # Optional fields with defaults
-        workflow_id = request_data.get("workflow_id", "Legacy Generation Flow with Claude")
-        is_given_template_query = request_data.get("is_given_template_query", False)
-        number_of_posts_to_template = request_data.get("number_of_posts_to_template", 5)
-        post_topic_query = request_data.get("post_topic_query", "Digital Operations")
-
         # Add task to background
         background_tasks.add_task(
             source_content_repurposer_using_posts_as_templates,
-            content_topic_query=content_topic_query,
-            template_post=template_post,
-            brand=brand,
-            workflow_id=workflow_id,
-            is_given_template_query=is_given_template_query,
-            number_of_posts_to_template=number_of_posts_to_template,
-            post_topic_query=post_topic_query
+            content_topic_query=request_data.content_topic_query,
+            template_post=request_data.template_post,
+            brand=request_data.brand,
+            workflow_id=request_data.workflow_id,
+            is_given_template_query=request_data.is_given_template_query,
+            number_of_posts_to_template=request_data.number_of_posts_to_template,
+            post_topic_query=request_data.post_topic_query
         )
 
-        return {"status": "Content is now being generated"}
+        return {"status": "success", "message": "Content is now being generated"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
