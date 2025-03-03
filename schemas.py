@@ -103,12 +103,16 @@ class SourceContentRepurposeWithTemplatesRequest(BaseModel):
     post_topic_query: str = Field("Digital Operations", description="Topic query for posts")
 
 # Generation Flow schemas
+class MessageItem(BaseModel):
+    role: str = Field(..., description="Role of the message sender (e.g., 'system', 'user', 'assistant')")
+    content: str = Field(..., description="Content of the message")
+
 class GenerationStep(BaseModel):
     Order: int = Field(..., description="Step order in the workflow")
     Step_name: str = Field(..., description="Name of the step")
     Model: str = Field(..., description="AI model to use")
     System_prompt: str = Field(..., description="System prompt for the model")
-    Message: List[Dict[str, str]] = Field(..., description="Message objects with role and content")
+    Message: List[MessageItem] = Field(..., description="Message objects with role and content")
     Max_tokens: int = Field(..., description="Maximum tokens for generation")
     Temperature: float = Field(..., description="Temperature for generation")
 
