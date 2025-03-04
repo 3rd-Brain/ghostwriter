@@ -318,9 +318,18 @@ def read_root():
 @app.post("/api/generation-flow", response_model=schemas.SuccessResponse, tags=["Generation Flows"])
 async def create_generation_flow(request_data: schemas.GenerationFlowRequest):
     """
-    Save generation flow configuration to Airtable
+    **Create or update a content generation workflow**
 
-    This endpoint stores workflow configuration for content generation.
+    This endpoint stores a custom workflow configuration that defines how content is generated.
+
+    ## When to use
+    Use this endpoint when you need to:
+    * **Define a new workflow** with custom generation steps
+    * Create a **reusable process** for content creation
+    * Set up **specific AI models** and prompts for each step
+    * Define **multi-stage generation** with different parameters
+
+    *Once created, workflows can be referenced by ID in content generation endpoints.*
     """
     if not os.getenv("AIRTABLE_API_KEY"):
         raise HTTPException(status_code=500, detail="AIRTABLE_API_KEY not configured")
@@ -586,9 +595,18 @@ async def generate_social_post(request_data: schemas.SocialPostGenerationRequest
 @app.post("/template-context-and-uploader", response_model=Dict, tags=["Template Management"])
 async def create_template_embedding(request_data: schemas.TemplateContextRequest):
     """
-    Process a template by generating a description and creating a vector embedding
+    **Process and index a template for future retrieval**
 
-    This endpoint analyzes templates and stores them with embeddings for retrieval.
+    This endpoint analyzes a template, generates a semantic description, and creates a vector embedding for efficient searching.
+
+    ## When to use
+    Use this endpoint when you need to:
+    * **Add a new template** to your template library
+    * Make a template **searchable** by its semantic content
+    * **Index** a template before using it in content generation
+    * Enable **automatic template matching** for future content
+
+    *This is a prerequisite step before templates can be used with the `/multitemplate` endpoint.*
     """
     if not os.getenv("OPENAI_API_KEY"):
         raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
@@ -613,8 +631,9 @@ async def get_flow_config(workflow_id: str):
     * **Get details of an existing workflow** before execution
     * View the steps, models, and prompts in a workflow
     * Verify workflow configuration before content generation
+    * Clone an existing workflow as a starting point for a new one
 
-    *This is useful for inspecting workflows before using them in content generation endpoints.*
+    *This endpoint is typically used before running content generation to ensure the workflow is configured correctly.*
     """
     if not os.getenv("ASTRA_DB_API_ENDPOINT"):
         raise HTTPException(status_code=500, detail="ASTRA_DB_API_ENDPOINT not configured")
@@ -632,9 +651,18 @@ async def get_flow_config(workflow_id: str):
 @app.post("/templatizer", response_model=schemas.TemplatizerResponse, tags=["Template Management"])
 async def create_template(request_data: schemas.TemplatizerRequest):
     """
-    Convert a social post into a reusable template
+    **Convert an existing social post into a reusable template**
 
-    This endpoint extracts the structure from a social post to create a template.
+    This endpoint analyzes a successful social post and extracts its structure to create a template for future content.
+
+    ## When to use
+    Use this endpoint when you need to:
+    * **Extract the structure** from a high-performing post
+    * Create a **reusable template** from existing content
+    * **Standardize content formats** across your social media
+    * Leverage the structure of successful posts for new content
+
+    *After creating a template, use `/template-context-and-uploader` to index it for future retrieval.*
     """
     if not os.getenv("OPENAI_API_KEY"):
         raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
@@ -650,9 +678,18 @@ async def create_template(request_data: schemas.TemplatizerRequest):
 @app.post("/multitemplate", response_model=Dict, tags=["Template Management"])
 async def get_multitemplate(request_data: schemas.MultitemplateRequest):
     """
-    Retrieve multiple templates based on content chunk
+    **Find templates that match specific content**
 
-    This endpoint finds suitable templates for a given content piece.
+    This endpoint uses semantic search to identify templates best suited for a particular content chunk.
+
+    ## When to use
+    Use this endpoint when you need to:
+    * **Find appropriate templates** for specific content
+    * Get **multiple formatting options** for a content piece
+    * **Automatically match** content with compatible templates
+    * Enhance content presentation with optimized formatting
+
+    *This endpoint requires templates to be previously processed with `/template-context-and-uploader`.*
     """
     if not os.getenv("OPENAI_API_KEY"):
         raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
@@ -745,7 +782,20 @@ if __name__ == "__main__":
 
 @app.delete("/api/generation-flow/{workflow_id}", tags=["Generation Flows"])
 async def delete_generation_flow(workflow_id: str):
-    """Delete a generation flow configuration from AstraDB"""
+    """
+    **Delete a generation workflow configuration**
+
+    This endpoint permanently removes a workflow configuration from the database.
+
+    ## When to use
+    Use this endpoint when you need to:
+    * **Remove obsolete workflows** that are no longer needed
+    * **Clean up** your workflow library
+    * **Delete test workflows** after development
+    * Remove workflows that have been replaced with newer versions
+
+    *This action cannot be undone, and workflows in use by other processes will cause errors if deleted.*
+    """
     if not os.getenv("ASTRA_DB_API_ENDPOINT"):
         raise HTTPException(status_code=500, detail="ASTRA_DB_API_ENDPOINT not configured")
     if not os.getenv("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER"):
