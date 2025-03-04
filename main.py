@@ -331,42 +331,61 @@ async def create_generation_flow(request_data: schemas.GenerationFlowRequest):
 
     *Once created, workflows can be referenced by ID in content generation endpoints.*
     """
-    if not os.getenv("AIRTABLE_API_KEY"):
-        raise HTTPException(status_code=500, detail="AIRTABLE_API_KEY not configured")
-
-    url = "https://api.airtable.com/v0/appLz2zuN6ZFu4mYS/tblXFcCbZsmGYebZt"
+    ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+    ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+    
+    if not ASTRA_DB_API_ENDPOINT:
+        raise HTTPException(status_code=500, detail="ASTRA_DB_API_ENDPOINT not configured")
+    if not ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER:
+        raise HTTPException(status_code=500, detail="ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
+    
+    # Get the current user's username from the environment
+    CURRENT_USERNAME = os.environ.get("CURRENT_USERNAME", "GentOfTech")  # Default to GentOfTech if not set
+    
+    # Use the current user's username for the URL path
+    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/{CURRENT_USERNAME}/workflows"
+    
     headers = {
-        "Authorization": f"Bearer {os.getenv('AIRTABLE_API_KEY')}",
+        "Token": ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
         "Content-Type": "application/json"
     }
 
     # Convert the Pydantic model objects to dictionaries first
     steps_dict = [step.dict() for step in request_data.steps]
     
-    # Then prepare the steps JSON with proper escaping
-    steps_json = json.dumps({
+    # Prepare the payload according to AstraDB format
+    json_payload = {
         "steps": steps_dict
-    }, ensure_ascii=False)
-
-    # Format JSON payload with proper indentation
-    formatted_steps_json = json.dumps(json.loads(steps_json), indent=2)
-
+    }
+    
+    # Create the document object
+    document = {
+        "Workflow_ID": request_data.workflowId,
+        "Workflow_Type": request_data.workflowType.title(),
+        "Short_Description": f"{request_data.workflowType.title()}_Content",
+        "Description": request_data.description,
+        "JSON_Payload": json_payload,
+        "Sample_Output": "",
+        "Workflow_Tag": request_data.workflowId
+    }
+    
+    # Create the final AstraDB payload
     payload = {
-        "fields": {
-            "workflow_id": request_data.workflowId,
-            "Workflow Type": request_data.workflowType.title(),
-            "Short Description": request_data.description,
-            "JSON Payload": formatted_steps_json
+        "insertOne": {
+            "document": document
         }
     }
-
-    print("Payload being sent to Airtable:", json.dumps(payload, indent=2))
+    
+    print("Payload being sent to AstraDB:", json.dumps(payload, indent=2))
 
     try:
         response = requests.post(url, headers=headers, json=payload)
+        print(f"Response status code: {response.status_code}")
+        print(f"Response text: {response.text}")
         response.raise_for_status()
-        return {"status": "success", "message": "Generation flow saved successfully"}
+        return {"status": "success", "message": "Generation flow saved successfully in AstraDB"}
     except Exception as e:
+        print(f"Error details: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/upload-content", response_model=Dict, tags=["Content Management"])
