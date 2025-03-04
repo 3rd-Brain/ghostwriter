@@ -16,7 +16,18 @@ from social_dynamic_generation_flow import flow_config_retriever, social_post_ge
 import schemas
 
 # App setup
-app = FastAPI()
+app = FastAPI(
+    title="Content Generation API",
+    description="API for generating and managing social media content",
+    version="1.0.0",
+    openapi_tags=[
+        {"name": "Generation Flow", "description": "Workflow configuration endpoints"},
+        {"name": "Content", "description": "Content creation and retrieval endpoints"},
+        {"name": "Templates", "description": "Template management endpoints"},
+        {"name": "Repurposing", "description": "Content repurposing endpoints"},
+        {"name": "Utility", "description": "Utility endpoints"}
+    ]
+)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
@@ -302,7 +313,7 @@ app.add_middleware(ReferrerPolicyMiddleware)
 def read_root():
     return {"Hello": "World"}
 
-@app.post("/api/generation-flow", response_model=schemas.SuccessResponse)
+@app.post("/api/generation-flow", response_model=schemas.SuccessResponse, tags=["Generation Flow"])
 async def create_generation_flow(request_data: schemas.GenerationFlowRequest):
     """
     Save generation flow configuration to Airtable
@@ -344,7 +355,7 @@ async def create_generation_flow(request_data: schemas.GenerationFlowRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/upload-content", response_model=Dict)
+@app.post("/upload-content", response_model=Dict, tags=["Content"])
 async def upload_content(content_data: schemas.ContentUploadRequest):
     """
     Upload generated content to AstraDB
@@ -449,7 +460,7 @@ async def get_top_content(request_data: schemas.TopContentRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/source-content", response_model=Dict)
+@app.post("/source-content", response_model=Dict, tags=["Content"])
 async def get_source_content(request_data: schemas.SourceContentRequest):
     """
     Retrieve source content based on a topic query
@@ -495,7 +506,7 @@ async def repurpose_content(request_data: schemas.RepurposeRequest, background_t
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/top-content-repurposing", response_model=schemas.SuccessResponse)
+@app.post("/top-content-repurposing", response_model=schemas.SuccessResponse, tags=["Repurposing"])
 async def get_top_content_repurposing(request_data: schemas.TopContentRepurposingRequest, background_tasks: BackgroundTasks):
     """
     Repurpose top performing content
@@ -546,7 +557,7 @@ async def generate_social_post(request_data: schemas.SocialPostGenerationRequest
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/template-context-and-uploader", response_model=Dict)
+@app.post("/template-context-and-uploader", response_model=Dict, tags=["Templates"])
 async def create_template_embedding(request_data: schemas.TemplateContextRequest):
     """
     Process a template by generating a description and creating a vector embedding
@@ -579,7 +590,7 @@ async def get_flow_config(workflow_id: str):
         print(f"Error retrieving flow config: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/templatizer", response_model=schemas.TemplatizerResponse)
+@app.post("/templatizer", response_model=schemas.TemplatizerResponse, tags=["Templates"])
 async def create_template(request_data: schemas.TemplatizerRequest):
     """
     Convert a social post into a reusable template
@@ -597,7 +608,7 @@ async def create_template(request_data: schemas.TemplatizerRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/multitemplate", response_model=Dict)
+@app.post("/multitemplate", response_model=Dict, tags=["Templates"])
 async def get_multitemplate(request_data: schemas.MultitemplateRequest):
     """
     Retrieve multiple templates based on content chunk
@@ -617,7 +628,7 @@ async def get_multitemplate(request_data: schemas.MultitemplateRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/repurpose-with-templates", response_model=Dict)
+@app.post("/repurpose-with-templates", response_model=Dict, tags=["Repurposing"])
 async def repurpose_with_templates(request_data: schemas.RepurposeWithTemplatesRequest):
     """
     Repurpose content using social posts as templates
@@ -643,7 +654,7 @@ async def repurpose_with_templates(request_data: schemas.RepurposeWithTemplatesR
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/source-content-repurpose-with-templates", response_model=schemas.SuccessResponse)
+@app.post("/source-content-repurpose-with-templates", response_model=schemas.SuccessResponse, tags=["Repurposing"])
 async def repurpose_source_content_with_templates(
     request_data: schemas.SourceContentRepurposeWithTemplatesRequest, 
     background_tasks: BackgroundTasks
