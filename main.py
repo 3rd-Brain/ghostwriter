@@ -724,7 +724,7 @@ async def repurpose_source_content_with_templates(
     """
     try:
         # Add task to background
-                background_tasks.add_task(
+        background_tasks.add_task(
             source_content_repurposer_using_posts_as_templates,
             content_topic_query=request_data.content_topic_query,
             template_post=request_data.template_post,
