@@ -17,7 +17,7 @@ import schemas
 
 # App setup
 app = FastAPI(
-    title="Content Generation API",
+    title="Ghostwriter API",
     description="API for generating and managing social media content",
     version="1.0.0",
     openapi_tags=[
@@ -483,9 +483,17 @@ async def get_source_content(request_data: schemas.SourceContentRequest):
 @app.post("/repurpose", response_model=schemas.SuccessResponse, tags=["Generation"])
 async def repurpose_content(request_data: schemas.RepurposeRequest, background_tasks: BackgroundTasks):
     """
-    Repurpose content based on a topic query for a specific brand.
+    **Repurpose content based on a topic query for a specific brand.**
     
     This endpoint generates new content based on source content and brand voice.
+    
+    ## When to use
+    Use this endpoint when you need to:
+    * Generate content from scratch based on a topic
+    * Create multiple content pieces at once without templates
+    * Need simple content generation directly from source material
+    
+    *This endpoint runs in the background and doesn't provide immediate results.*
     """
     if not os.getenv("OPENAI_API_KEY"):
         raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
@@ -511,9 +519,17 @@ async def repurpose_content(request_data: schemas.RepurposeRequest, background_t
 @app.post("/top-content-repurposing", response_model=schemas.SuccessResponse, tags=["Generation"])
 async def get_top_content_repurposing(request_data: schemas.TopContentRepurposingRequest, background_tasks: BackgroundTasks):
     """
-    Repurpose top performing content
+    **Repurpose top performing content**
     
     This endpoint identifies top content based on metrics and creates new variations.
+    
+    ## When to use
+    Use this endpoint when you need to:
+    * Create content based on your **best performing** existing posts
+    * Leverage performance metrics to guide content generation
+    * Create variations of successful content patterns
+    
+    *This performs an automatic selection of high-performing content before repurposing.*
     """
     if not os.getenv("OPENAI_API_KEY"):
         raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
@@ -540,9 +556,17 @@ async def get_top_content_repurposing(request_data: schemas.TopContentRepurposin
 @app.post("/social-post-generation", response_model=schemas.SocialPostGenerationResponse, tags=["Generation"])
 async def generate_social_post(request_data: schemas.SocialPostGenerationRequest):
     """
-    Generate a social media post using a specified workflow.
+    **Generate a social media post using a specified workflow.**
     
     This endpoint creates social media content based on template, brand voice, and content chunks.
+    
+    ## When to use
+    Use this endpoint when you need to:
+    * Generate a **single post** with immediate response
+    * Have complete control over the workflow, template, and content
+    * Need to see results immediately rather than in the background
+    
+    *Unlike other generation endpoints, this returns the content immediately.*
     """
     if not os.getenv("ANTHROPIC_API_KEY"):
         raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY not configured")
@@ -633,9 +657,18 @@ async def get_multitemplate(request_data: schemas.MultitemplateRequest):
 @app.post("/repurpose-with-templates", response_model=Dict, tags=["Generation"])
 async def repurpose_with_templates(request_data: schemas.RepurposeWithTemplatesRequest):
     """
-    Repurpose content using social posts as templates
+    **Repurpose content using social posts as templates**
     
     This endpoint generates new content using existing post structures.
+    
+    ## When to use
+    Use this endpoint when you need to:
+    * Create content based on **specific templates** you provide
+    * Maintain consistent formatting across content pieces
+    * Apply a successful post structure to new content
+    * Get immediate results rather than background processing
+    
+    *Unlike `/source-content-repurpose-with-templates`, this requires you to provide content chunks.*
     """
     if not os.getenv("OPENAI_API_KEY"):
         raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
@@ -662,9 +695,19 @@ async def repurpose_source_content_with_templates(
     background_tasks: BackgroundTasks
 ):
     """
-    Repurpose source content using social posts as templates
+    **Repurpose source content using social posts as templates**
     
     This endpoint retrieves source content and generates new content using existing post structures.
+    
+    ## When to use
+    Use this endpoint when you need to:
+    * Create content from **source knowledge** using specific templates
+    * Combine template structure with fresh source content
+    * Process multiple pieces of content in the background
+    * Don't have specific content chunks prepared
+    
+    *This endpoint automatically retrieves relevant source content based on your topic query,
+    then applies templates to create multiple posts in the background.*
     """
     try:
         # Add task to background
