@@ -340,9 +340,12 @@ async def create_generation_flow(request_data: schemas.GenerationFlowRequest):
         "Content-Type": "application/json"
     }
 
-    # First prepare the steps JSON with proper escaping
+    # Convert the Pydantic model objects to dictionaries first
+    steps_dict = [step.dict() for step in request_data.steps]
+    
+    # Then prepare the steps JSON with proper escaping
     steps_json = json.dumps({
-        "steps": request_data.steps
+        "steps": steps_dict
     }, ensure_ascii=False)
 
     # Format JSON payload with proper indentation
