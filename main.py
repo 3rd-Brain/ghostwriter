@@ -79,7 +79,7 @@ async def login(request: Request, username: str = Form(...), password: str = For
     if username in CREDENTIALS and CREDENTIALS[username]["password"] == password:
         # Set the username as an environment variable
         os.environ["CURRENT_USERNAME"] = username
-        
+
         access_token = create_access_token(
             data={"sub": username},
             expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -263,7 +263,7 @@ async def logout(response: Response):
     # Clear the username environment variable on logout
     if "CURRENT_USERNAME" in os.environ:
         del os.environ["CURRENT_USERNAME"]
-        
+
     response = RedirectResponse(url="/login")
     response.delete_cookie("access_token")
     return response
@@ -294,7 +294,7 @@ async def add_cors_headers(request, call_next):
     response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With, Referer, Origin"
     response.headers["Access-Control-Allow-Methods"] = "POST, GET, DELETE, PUT, OPTIONS"
     response.headers["Access-Control-Allow-Credentials"] = "true"
-    
+
     # Disable referrer policy restrictions
     response.headers["Referrer-Policy"] = "no-referrer-when-downgrade"
     return response
@@ -319,7 +319,7 @@ def read_root():
 async def create_generation_flow(request_data: schemas.GenerationFlowRequest):
     """
     Save generation flow configuration to Airtable
-    
+
     This endpoint stores workflow configuration for content generation.
     """
     if not os.getenv("AIRTABLE_API_KEY"):
@@ -361,7 +361,7 @@ async def create_generation_flow(request_data: schemas.GenerationFlowRequest):
 async def upload_content(content_data: schemas.ContentUploadRequest):
     """
     Upload generated content to AstraDB
-    
+
     This endpoint stores generated content and associated metadata.
     """
     if not os.getenv("AIRTABLE_API_KEY"):
@@ -379,7 +379,7 @@ async def upload_content(content_data: schemas.ContentUploadRequest):
 async def get_brand_voice(brand: str):
     """
     Get the brand voice details for a specific brand.
-    
+
     This endpoint retrieves the brand voice configuration from Airtable.
     """
     if not os.getenv("AIRTABLE_API_KEY"):
@@ -399,7 +399,7 @@ async def get_brand_voice(brand: str):
 async def vector_search(request_data: schemas.VectorSearchRequest):
     """
     Search for similar content using vector search.
-    
+
     This endpoint uses OpenAI embeddings to search for similar content based on the provided text.
     """
     if not os.getenv("OPENAI_API_KEY"):
@@ -425,7 +425,7 @@ async def vector_search(request_data: schemas.VectorSearchRequest):
 async def setup_sentiment(request_data: schemas.SentimentSetupRequest):
     """
     Set up sentiment analysis configuration based on a query.
-    
+
     This endpoint generates filter and sorting configurations for content sentiment analysis.
     """
     if not os.getenv("OPENAI_API_KEY"):
@@ -448,7 +448,7 @@ def top_content_retriever(query: str, topic: str) -> Dict:
 async def get_top_content(request_data: schemas.TopContentRequest):
     """
     Retrieve top performing content based on a query and topic.
-    
+
     This endpoint combines sentiment setup and vector search to find optimal content.
     """
     if not os.getenv("OPENAI_API_KEY"):
@@ -466,7 +466,7 @@ async def get_top_content(request_data: schemas.TopContentRequest):
 async def get_source_content(request_data: schemas.SourceContentRequest):
     """
     Retrieve source content based on a topic query
-    
+
     This endpoint searches for relevant source content from a knowledge base.
     """
     if not os.getenv("OPENAI_API_KEY"):
@@ -484,15 +484,15 @@ async def get_source_content(request_data: schemas.SourceContentRequest):
 async def repurpose_content(request_data: schemas.RepurposeRequest, background_tasks: BackgroundTasks):
     """
     **Repurpose content based on a topic query for a specific brand.**
-    
+
     This endpoint generates new content based on source content and brand voice.
-    
+
     ## When to use
     Use this endpoint when you need to:
     * Generate content from scratch based on a topic
     * Create multiple content pieces at once without templates
     * Need simple content generation directly from source material
-    
+
     *This endpoint runs in the background and doesn't provide immediate results.*
     """
     if not os.getenv("OPENAI_API_KEY"):
@@ -520,15 +520,15 @@ async def repurpose_content(request_data: schemas.RepurposeRequest, background_t
 async def get_top_content_repurposing(request_data: schemas.TopContentRepurposingRequest, background_tasks: BackgroundTasks):
     """
     **Repurpose top performing content**
-    
+
     This endpoint identifies top content based on metrics and creates new variations.
-    
+
     ## When to use
     Use this endpoint when you need to:
     * Create content based on your **best performing** existing posts
     * Leverage performance metrics to guide content generation
     * Create variations of successful content patterns
-    
+
     *This performs an automatic selection of high-performing content before repurposing.*
     """
     if not os.getenv("OPENAI_API_KEY"):
@@ -557,15 +557,15 @@ async def get_top_content_repurposing(request_data: schemas.TopContentRepurposin
 async def generate_social_post(request_data: schemas.SocialPostGenerationRequest):
     """
     **Generate a social media post using a specified workflow.**
-    
+
     This endpoint creates social media content based on template, brand voice, and content chunks.
-    
+
     ## When to use
     Use this endpoint when you need to:
     * Generate a **single post** with immediate response
     * Have complete control over the workflow, template, and content
     * Need to see results immediately rather than in the background
-    
+
     *Unlike other generation endpoints, this returns the content immediately.*
     """
     if not os.getenv("ANTHROPIC_API_KEY"):
@@ -587,7 +587,7 @@ async def generate_social_post(request_data: schemas.SocialPostGenerationRequest
 async def create_template_embedding(request_data: schemas.TemplateContextRequest):
     """
     Process a template by generating a description and creating a vector embedding
-    
+
     This endpoint analyzes templates and stores them with embeddings for retrieval.
     """
     if not os.getenv("OPENAI_API_KEY"):
@@ -603,6 +603,19 @@ async def create_template_embedding(request_data: schemas.TemplateContextRequest
 
 @app.get("/flow-config/{workflow_id}", tags=["Generation Flows"])
 async def get_flow_config(workflow_id: str):
+    """
+    **Retrieve a generation workflow configuration**
+
+    This endpoint fetches the complete configuration for a specific workflow by ID.
+
+    ## When to use
+    Use this endpoint when you need to:
+    * **Get details of an existing workflow** before execution
+    * View the steps, models, and prompts in a workflow
+    * Verify workflow configuration before content generation
+
+    *This is useful for inspecting workflows before using them in content generation endpoints.*
+    """
     if not os.getenv("ASTRA_DB_API_ENDPOINT"):
         raise HTTPException(status_code=500, detail="ASTRA_DB_API_ENDPOINT not configured")
     if not os.getenv("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER"):
@@ -620,7 +633,7 @@ async def get_flow_config(workflow_id: str):
 async def create_template(request_data: schemas.TemplatizerRequest):
     """
     Convert a social post into a reusable template
-    
+
     This endpoint extracts the structure from a social post to create a template.
     """
     if not os.getenv("OPENAI_API_KEY"):
@@ -638,7 +651,7 @@ async def create_template(request_data: schemas.TemplatizerRequest):
 async def get_multitemplate(request_data: schemas.MultitemplateRequest):
     """
     Retrieve multiple templates based on content chunk
-    
+
     This endpoint finds suitable templates for a given content piece.
     """
     if not os.getenv("OPENAI_API_KEY"):
@@ -658,16 +671,16 @@ async def get_multitemplate(request_data: schemas.MultitemplateRequest):
 async def repurpose_with_templates(request_data: schemas.RepurposeWithTemplatesRequest):
     """
     **Repurpose content using social posts as templates**
-    
+
     This endpoint generates new content using existing post structures.
-    
+
     ## When to use
     Use this endpoint when you need to:
     * Create content based on **specific templates** you provide
     * Maintain consistent formatting across content pieces
     * Apply a successful post structure to new content
     * Get immediate results rather than background processing
-    
+
     *Unlike `/source-content-repurpose-with-templates`, this requires you to provide content chunks.*
     """
     if not os.getenv("OPENAI_API_KEY"):
@@ -696,22 +709,22 @@ async def repurpose_source_content_with_templates(
 ):
     """
     **Repurpose source content using social posts as templates**
-    
+
     This endpoint retrieves source content and generates new content using existing post structures.
-    
+
     ## When to use
     Use this endpoint when you need to:
     * Create content from **source knowledge** using specific templates
     * Combine template structure with fresh source content
     * Process multiple pieces of content in the background
     * Don't have specific content chunks prepared
-    
+
     *This endpoint automatically retrieves relevant source content based on your topic query,
     then applies templates to create multiple posts in the background.*
     """
     try:
         # Add task to background
-        background_tasks.add_task(
+                background_tasks.add_task(
             source_content_repurposer_using_posts_as_templates,
             content_topic_query=request_data.content_topic_query,
             template_post=request_data.template_post,
@@ -741,7 +754,7 @@ async def delete_generation_flow(workflow_id: str):
     try:
         from social_dynamic_generation_flow import workflow_delete
         result = workflow_delete(workflow_id)
-        
+
         # Check if deletion was successful
         if result.get("data", {}).get("deletedCount", 0) > 0:
             return {"status": "success", "message": f"Workflow '{workflow_id}' deleted successfully"}
