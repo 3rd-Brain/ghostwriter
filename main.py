@@ -369,9 +369,18 @@ async def create_generation_flow(request_data: schemas.GenerationFlowRequest):
 @app.post("/upload-content", response_model=Dict, tags=["Content Management"])
 async def upload_content(content_data: schemas.ContentUploadRequest):
     """
-    Upload generated content to AstraDB
-
-    This endpoint stores generated content and associated metadata.
+    **Upload generated content to the content database**
+    
+    This endpoint stores content that has been generated along with its metadata for future reference and retrieval.
+    
+    ## When to use
+    Use this endpoint when you need to:
+    * **Store newly generated content** after creation
+    * **Preserve the relationship** between content and its source material
+    * **Track templates** used for specific content pieces
+    * Build a **searchable knowledge base** of content for later reference
+    
+    *This endpoint should be called after content generation to ensure all content is properly archived.*
     """
     if not os.getenv("AIRTABLE_API_KEY"):
         raise HTTPException(status_code=500, detail="AIRTABLE_API_KEY not configured")
@@ -387,9 +396,18 @@ async def upload_content(content_data: schemas.ContentUploadRequest):
 @app.get("/brand-voice/{brand}", response_model=Dict, tags=["Brand Management"])
 async def get_brand_voice(brand: str):
     """
-    Get the brand voice details for a specific brand.
-
-    This endpoint retrieves the brand voice configuration from Airtable.
+    **Retrieve brand voice and tone guidelines**
+    
+    This endpoint fetches the complete brand voice profile, including tone, style, and communication guidelines for a specific brand.
+    
+    ## When to use
+    Use this endpoint when you need to:
+    * **Apply consistent branding** to generated content
+    * Access **tone and style guidelines** for content creation
+    * Ensure content reflects the **brand personality**
+    * Incorporate brand-specific **terminology and phrasing**
+    
+    *This endpoint should be called before content generation to ensure all content adheres to brand guidelines.*
     """
     if not os.getenv("AIRTABLE_API_KEY"):
         raise HTTPException(status_code=500, detail="AIRTABLE_API_KEY not configured")
@@ -456,9 +474,18 @@ def top_content_retriever(query: str, topic: str) -> Dict:
 @app.post("/top-content", response_model=Dict, tags=["Content Management"])
 async def get_top_content(request_data: schemas.TopContentRequest):
     """
-    Retrieve top performing content based on a query and topic.
-
-    This endpoint combines sentiment setup and vector search to find optimal content.
+    **Retrieve top-performing content based on performance metrics**
+    
+    This endpoint identifies your best content by combining semantic search with performance metric analysis.
+    
+    ## When to use
+    Use this endpoint when you need to:
+    * **Identify successful content patterns** for future creation
+    * **Find high-engagement posts** on specific topics
+    * **Analyze what works** for your specific audience
+    * **Select content for repurposing** based on proven performance
+    
+    *Unlike `/source-content` which finds reference material, this endpoint specifically targets content with strong performance metrics.*
     """
     if not os.getenv("OPENAI_API_KEY"):
         raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
@@ -474,9 +501,18 @@ async def get_top_content(request_data: schemas.TopContentRequest):
 @app.post("/source-content", response_model=Dict, tags=["Content Management"])
 async def get_source_content(request_data: schemas.SourceContentRequest):
     """
-    Retrieve source content based on a topic query
-
-    This endpoint searches for relevant source content from a knowledge base.
+    **Retrieve relevant source content from the knowledge base**
+    
+    This endpoint performs semantic search to find the most relevant source material based on a topic query.
+    
+    ## When to use
+    Use this endpoint when you need to:
+    * **Find reference material** for content creation
+    * **Research specific topics** in your knowledge base
+    * **Gather source material** before content generation
+    * Access **foundational content** without knowing exact document names
+    
+    *This endpoint is typically called before content generation to provide source material for the AI models.*
     """
     if not os.getenv("OPENAI_API_KEY"):
         raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
