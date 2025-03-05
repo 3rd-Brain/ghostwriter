@@ -1,137 +1,99 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Templatizer</title>
-    <link rel="stylesheet" href="/static/style.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-</head>
-<body>
-    <div class="main-container">
-        {% include 'search_sidebar.html' %}
+{% extends "base.html" %}
 
-        <div class="content-area">
-            <h2>Create Template</h2>
+{% block title %}Templatizer{% endblock %}
 
-            <!-- Form Section -->
-            <div class="content-card wide">
-                <div class="form-container">
-                    <form class="generation-form">
-                        <div class="form-group">
-                            <label for="socialPost">Social Post You Want to Create a Template Out Of:</label>
-                            <textarea id="socialPost" class="form-control" rows="5" placeholder="Enter the social post you want to create a template from"></textarea>
-                        </div>
-                        <button type="button" onclick="generateTemplate()" class="submit-btn">Generate Template</button>
-                    </form>
-                    <div id="formResult" class="hidden">
-                        <h3>Template Created!</h3>
-                        <pre id="resultJson"></pre>
-                    </div>
-                </div>
+{% block content %}
+<h2>Create Template</h2>
+
+<!-- Form Section -->
+<div class="content-card wide">
+    <div class="form-container">
+        <form class="generation-form">
+            <div class="form-group">
+                <label for="socialPost">Social Post You Want to Create a Template Out Of:</label>
+                <textarea id="socialPost" class="form-control" rows="5" placeholder="Enter the social post you want to create a template from"></textarea>
             </div>
-
-            <!-- Template Result Section -->
-            <div class="content-card" id="resultCard" style="display: none; margin-top: 2rem;">
-                <h3>Generated Template</h3>
-                <div class="result-content" style="display: flex; gap: 1rem; align-items: flex-start;">
-                    <pre id="templateResult" style="flex: 1; background: #f5f5f5; padding: 1rem; border-radius: 8px; white-space: pre-wrap;"></pre>
-                    <button onclick="uploadTemplate()" class="submit-btn">Upload Template</button>
-                </div>
-            </div>
-
-            <!-- Notification -->
-            <div class="notification" id="notification"></div>
+            <button type="button" onclick="generateTemplate()" class="submit-btn">Generate Template</button>
+        </form>
+        <div id="formResult" class="hidden">
+            <h3>Template Created!</h3>
+            <pre id="resultJson"></pre>
         </div>
     </div>
+</div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const navItems = document.querySelectorAll('.nav-item');
+<!-- Template Result Section -->
+<div class="content-card" id="resultCard" style="display: none; margin-top: 2rem;">
+    <h3>Generated Template</h3>
+    <div class="result-content" style="display: flex; gap: 1rem; align-items: flex-start;">
+        <pre id="templateResult" style="flex: 1; background: #f5f5f5; padding: 1rem; border-radius: 8px; white-space: pre-wrap;"></pre>
+        <button onclick="uploadTemplate()" class="submit-btn">Upload Template</button>
+    </div>
+</div>
+{% endblock %}
 
-            navItems.forEach(navItem => {
-                const btn = navItem.querySelector('.sidebar-btn');
-                const submenu = navItem.querySelector('.submenu');
+{% block extra_js %}
+<script>
+    async function generateTemplate() {
+        const socialPost = document.getElementById('socialPost').value;
+        if (!socialPost) {
+            showNotification('Please enter a social post', true);
+            return;
+        }
 
-                if (btn && submenu) {
-                    btn.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        this.classList.toggle('clicked');
-                        submenu.style.display = this.classList.contains('clicked') ? 'flex' : 'none';
-                    });
-                }
+        try {
+            const response = await fetch('/templatizer', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    social_post: socialPost
+                })
             });
-        });
 
-        function showNotification(message, isError = false) {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.className = `notification ${isError ? 'error' : 'success'}`;
-            notification.classList.add('show');
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
+            const data = await response.json();
+            if (data.template) {
+                document.getElementById('resultCard').style.display = 'block';
+                document.getElementById('templateResult').textContent = data.template;
+                showNotification('Template generated successfully');
+            } else {
+                showNotification('Failed to generate template', true);
+            }
+        } catch (error) {
+            showNotification('Error generating template', true);
+            console.error('Error:', error);
+        }
+    }
+
+    async function uploadTemplate() {
+        const template = document.getElementById('templateResult').textContent;
+        if (!template) {
+            showNotification('No template to upload', true);
+            return;
         }
 
-        async function generateTemplate() {
-            const socialPost = document.getElementById('socialPost').value;
-            if (!socialPost) {
-                showNotification('Please enter a social post', true);
-                return;
-            }
+        try {
+            const response = await fetch('/template-context-and-uploader', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    template: template
+                })
+            });
 
-            try {
-                const response = await fetch('/templatizer', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        social_post: socialPost
-                    })
-                });
-
-                const data = await response.json();
-                if (data.template) {
-                    document.getElementById('resultCard').style.display = 'block';
-                    document.getElementById('templateResult').textContent = data.template;
-                    showNotification('Template generated successfully');
-                } else {
-                    showNotification('Failed to generate template', true);
-                }
-            } catch (error) {
-                showNotification('Error generating template', true);
-                console.error('Error:', error);
+            const data = await response.json();
+            if (response.ok) {
+                showNotification('Template uploaded successfully');
+            } else {
+                showNotification('Failed to upload template', true);
             }
+        } catch (error) {
+            showNotification('Error uploading template', true);
+            console.error('Error:', error);
         }
-
-        async function uploadTemplate() {
-            const template = document.getElementById('templateResult').textContent;
-            if (!template) {
-                showNotification('No template to upload', true);
-                return;
-            }
-
-            try {
-                const response = await fetch('/template-context-and-uploader', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        template: template
-                    })
-                });
-
-                const data = await response.json();
-                if (response.ok) {
-                    showNotification('Template uploaded successfully');
-                } else {
-                    showNotification('Failed to upload template', true);
-                }
-            } catch (error) {
-                showNotification('Error uploading template', true);
-                console.error('Error:', error);
-            }
-        }
-    </script>
-</body>
-</html>
+    }
+</script>
+{% endblock %}
