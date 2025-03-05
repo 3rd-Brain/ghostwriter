@@ -98,48 +98,73 @@
                 row.style.display = (index >= start && index < end) ? '' : 'none';
             });
 
-            document.getElementById('pageInfo').textContent = `Page ${page} of ${totalPages}`;
-            document.getElementById('prevPage').disabled = page === 1;
-            document.getElementById('nextPage').disabled = page === totalPages;
+            const pageInfo = document.getElementById('pageInfo');
+            if (pageInfo) {
+                pageInfo.textContent = `Page ${page} of ${totalPages || 1}`;
+            }
+            
+            const prevPageBtn = document.getElementById('prevPage');
+            const nextPageBtn = document.getElementById('nextPage');
+            
+            if (prevPageBtn) prevPageBtn.disabled = page === 1;
+            if (nextPageBtn) nextPageBtn.disabled = page === totalPages || totalPages === 0;
         }
 
-        document.getElementById('prevPage').addEventListener('click', () => {
-            if (currentPage > 1) {
-                currentPage--;
-                showPage(currentPage);
-            }
-        });
-
-        document.getElementById('nextPage').addEventListener('click', () => {
-            if (currentPage < totalPages) {
-                currentPage++;
-                showPage(currentPage);
-            }
-        });
+        // Add event listeners for pagination only if elements exist
+        const prevPageBtn = document.getElementById('prevPage');
+        const nextPageBtn = document.getElementById('nextPage');
+        
+        if (prevPageBtn) {
+            prevPageBtn.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    showPage(currentPage);
+                }
+            });
+        }
+        
+        if (nextPageBtn) {
+            nextPageBtn.addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    showPage(currentPage);
+                }
+            });
+        }
 
         // Initialize first page
         showPage(1);
 
         function showPopup(element, title) {
             const text = element.innerText;
-            document.getElementById('popup-title').textContent = title;
-            document.getElementById('popup-text').textContent = text;
-            document.querySelector('.popup-overlay').style.display = 'block';
+            const popupTitle = document.getElementById('popup-title');
+            const popupText = document.getElementById('popup-text');
+            const popupOverlay = document.querySelector('.popup-overlay');
+            
+            if (popupTitle) popupTitle.textContent = title;
+            if (popupText) popupText.textContent = text;
+            if (popupOverlay) popupOverlay.style.display = 'block';
         }
 
         function closePopup() {
-            document.querySelector('.popup-overlay').style.display = 'none';
+            const popupOverlay = document.querySelector('.popup-overlay');
+            if (popupOverlay) popupOverlay.style.display = 'none';
         }
 
         // Close popup when clicking outside
-        document.querySelector('.popup-overlay').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closePopup();
-            }
-        });
+        const popupOverlay = document.querySelector('.popup-overlay');
+        if (popupOverlay) {
+            popupOverlay.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closePopup();
+                }
+            });
+        }
 
         // Delete content functionality
         function deleteContent(contentId) {
+            console.log('Deleting content with ID:', contentId);
+            
             // Show loading indicator or disable the button
             const loadingIndicator = document.createElement('div');
             loadingIndicator.className = 'loading-indicator';
@@ -161,10 +186,14 @@
             .then(data => {
                 console.log('Delete response:', data);
                 
-                // Remove the row from the table
-                const rowToRemove = document.querySelector(`.content-id:contains("${contentId}")`).closest('tr');
-                if (rowToRemove) {
-                    rowToRemove.remove();
+                // Find and remove the row with the matching content ID
+                const rows = document.querySelectorAll('.content-table tbody tr');
+                for (const row of rows) {
+                    const idCell = row.querySelector('.content-id');
+                    if (idCell && idCell.textContent.trim() === contentId) {
+                        row.remove();
+                        break;
+                    }
                 }
                 
                 // Show success notification
@@ -194,11 +223,18 @@
             const overlay = document.getElementById('delete-confirmation-overlay');
             const confirmButton = document.getElementById('confirm-delete-btn');
             
+            if (!overlay || !confirmButton) {
+                console.error('Delete confirmation elements not found');
+                // Fallback to direct deletion if dialog elements are missing
+                deleteContent(contentId);
+                return;
+            }
+            
             // Set up the confirm button to delete with the specific contentId
             confirmButton.onclick = function() {
                 // Check if "don't ask again" is checked
-                const dontAskAgain = document.getElementById('dont-ask-again').checked;
-                if (dontAskAgain) {
+                const dontAskAgainCheckbox = document.getElementById('dont-ask-again');
+                if (dontAskAgainCheckbox && dontAskAgainCheckbox.checked) {
                     localStorage.setItem('skipDeleteConfirmation', 'true');
                     skipConfirmation = true;
                 }
@@ -216,25 +252,28 @@
 
         function closeDeleteConfirmation() {
             const overlay = document.getElementById('delete-confirmation-overlay');
+            if (!overlay) return;
+            
             overlay.style.display = 'none';
             
             // Reset the checkbox
-            document.getElementById('dont-ask-again').checked = false;
+            const dontAskAgainCheckbox = document.getElementById('dont-ask-again');
+            if (dontAskAgainCheckbox) dontAskAgainCheckbox.checked = false;
         }
 
         // Close confirmation dialog when clicking outside
-        document.getElementById('delete-confirmation-overlay').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeDeleteConfirmation();
-            }
-        });
-
-        // Helper method to find elements containing text (for finding rows by content ID)
-        jQuery.expr[':'].contains = function(a, i, m) {
-            return jQuery(a).text().toUpperCase().indexOf(m[3].toUpperCase()) >= 0;
-        };
+        const deleteConfirmationOverlay = document.getElementById('delete-confirmation-overlay');
+        if (deleteConfirmationOverlay) {
+            deleteConfirmationOverlay.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeDeleteConfirmation();
+                }
+            });
+        }
 
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM content loaded, setting up event handlers');
+            
             // Setup navigation
             const navItems = document.querySelectorAll('.nav-item');
             navItems.forEach(navItem => {
@@ -251,11 +290,28 @@
             });
             
             // Setup delete buttons
-            document.querySelectorAll('.action-btn.delete').forEach(button => {
-                button.addEventListener('click', function() {
+            const deleteButtons = document.querySelectorAll('.action-btn.delete');
+            console.log('Found delete buttons:', deleteButtons.length);
+            
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    console.log('Delete button clicked');
+                    
                     // Get the content ID from the row
                     const row = this.closest('tr');
-                    const contentId = row.querySelector('.content-id').textContent.trim();
+                    if (!row) {
+                        console.error('Could not find parent row');
+                        return;
+                    }
+                    
+                    const contentIdCell = row.querySelector('.content-id');
+                    if (!contentIdCell) {
+                        console.error('Could not find content ID cell');
+                        return;
+                    }
+                    
+                    const contentId = contentIdCell.textContent.trim();
+                    console.log('Content ID found:', contentId);
                     
                     // Show delete confirmation
                     showDeleteConfirmation(contentId);
