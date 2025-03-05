@@ -325,21 +325,44 @@ textarea.form-control {
     justify-content: flex-start;
 }
 
+/* Standardized Form Styles */
 .form-container {
     margin-top: 1.5rem;
+    padding: 0;
 }
 
-.generation-form {
+.form-container h3 {
+    margin-top: 0;
+}
+
+.generation-form, 
+.standard-form {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-    max-width: 600px;
+    max-width: 800px;
+}
+
+.form-section {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
 }
 
 .form-group {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    min-width: 0;
 }
 
 .form-group label {
@@ -348,17 +371,24 @@ textarea.form-control {
 }
 
 .form-control {
+    width: 100%;
     padding: 0.75rem;
     border: 2px solid #e0e0e0;
     border-radius: 8px;
     font-size: 1rem;
     transition: all 0.3s ease;
+    box-sizing: border-box;
 }
 
 .form-control:focus {
     border-color: var(--purple);
     outline: none;
     box-shadow: 0 0 0 3px rgba(67, 22, 112, 0.1);
+}
+
+textarea.form-control {
+    min-height: 100px;
+    resize: vertical;
 }
 
 .submit-btn {
@@ -379,18 +409,44 @@ textarea.form-control {
     transform: translateY(-2px);
 }
 
-.form-container {
-    padding: 0;
+.step-form {
+    background: white;
+    padding: 2rem;
+    margin: 20px 0;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-.form-container h3 {
-    margin-top: 0;
+.action-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin: 20px 0;
 }
 
 .form-actions {
     display: flex;
     gap: 1rem;
     margin-top: 2rem;
+}
+
+.form-info {
+    background: #f8f9fa; 
+    border-left: 4px solid var(--purple); 
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-info h3 {
+    margin-top: 0;
+    color: #2d3748;
+}
+
+.form-info code {
+    color: var(--purple);
+    font-family: monospace;
+    background: #f1f1f1;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
 }
 
 
