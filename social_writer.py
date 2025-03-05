@@ -800,9 +800,12 @@ def get_latest_generated_content(username: str) -> Dict:
         "Content-Type": "application/json"
     }
     
-    # Create the query payload to sort by Created_Time in descending order (-1)
+    # Create the query payload with filter for AI_Generated content and sort by Created_Time in descending order (-1)
     payload = {
         "find": {
+            "filter": {
+                "Content_Author": "AI_Generated"
+            },
             "sort": {
                 "Created_Time": -1  # -1 for descending order (newest first)
             }
