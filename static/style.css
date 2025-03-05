@@ -139,6 +139,20 @@ body {
     flex: 1;
     width: calc(100% - 290px);
     padding: 2rem;
+    box-sizing: border-box;
+    max-width: 100%;
+}
+
+@media (max-width: 1200px) {
+    .content-area {
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 992px) {
+    .content-area {
+        padding: 1rem;
+    }
 }
 
 .welcome-section {
@@ -272,6 +286,9 @@ textarea.form-control {
 
 .content-card.wide {
     width: 100%;
+    max-width: calc(100% - 2rem);
+    margin: 0 auto;
+    box-sizing: border-box;
 }
 
 .content-card.medium {
@@ -417,7 +434,7 @@ textarea.form-control {
     margin-top: 20px;
     max-height: 70vh;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .content-table {
@@ -426,6 +443,7 @@ textarea.form-control {
     background: white;
     border-radius: 8px;
     overflow: hidden;
+    table-layout: fixed;
 }
 
 .content-table th,
@@ -433,8 +451,6 @@ textarea.form-control {
     padding: 12px 15px;
     text-align: left;
     border-bottom: 1px solid #eee;
-    max-width: 0;
-    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -449,11 +465,14 @@ textarea.form-control {
     width: 30%;
     white-space: pre-wrap;
     word-wrap: break-word;
+    max-height: 100px;
 }
 
 .content-table td.source-chunk {
     width: 15%;
     cursor: pointer;
+    white-space: normal;
+    word-wrap: break-word;
 }
 
 .content-table td.template {
@@ -464,19 +483,20 @@ textarea.form-control {
 }
 
 .content-table td.tag {
-    width: 10%;
+    width: 8%;
     white-space: normal;
     word-wrap: break-word;
 }
 
 .content-table td.created-time {
-    width: 10%;
+    width: 12%;
     white-space: normal;
     word-wrap: break-word;
 }
 
 .content-table td:last-child {
     width: 10%;
+    text-align: center;
 }
 
 .popup-overlay {
