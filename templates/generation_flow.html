@@ -1,182 +1,372 @@
-{% extends "base.html" %}
-
-{% block title %}Create Generation Flow{% endblock %}
-
-{% block content %}
-<h2>Create New Generation Flow</h2>
-<div class="content-card wide">
-    <div class="form-container">
-        <form class="generation-form">
-            <div class="form-group">
-                <label for="workflowId">Workflow ID:</label>
-                <input type="text" id="workflowId" class="form-control" placeholder="Enter a unique identifier">
-            </div>
-            <div class="form-group">
-                <label for="workflowType">Workflow Type:</label>
-                <select id="workflowType" class="form-control">
-                    <option value="social">Social Media</option>
-                    <option value="email">Email</option>
-                    <option value="blog">Blog</option>
-                    <option value="custom">Custom</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="workflowDescription">Description:</label>
-                <textarea id="workflowDescription" class="form-control" rows="3" placeholder="Describe what this workflow does"></textarea>
-            </div>
-
-            <div id="stepsContainer">
-                <h3>Workflow Steps</h3>
-                <div class="workflow-step" data-step="1">
-                    <h4>Step 1</h4>
-                    <div class="form-group">
-                        <label>Step Name:</label>
-                        <input type="text" class="step-name form-control" placeholder="e.g., Initial Generation">
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Generation Flow</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <style>
+        .form-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        .step-form {
+            background: white;
+            padding: 2rem;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .message-form {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+        }
+        .step-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+        .step-navigation .left-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+        .step-navigation .right-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+        .message-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .form-group {
+            min-width: 0;
+        }
+        .form-control {
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .action-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+        textarea {
+            min-height: 100px;
+            width: 100%;
+        }
+        .steps-counter {
+            text-align: center;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        {% include 'search_sidebar.html' %}
+        <div class="content-area">
+            <h2>Create New Generation Flow</h2>
+            <form id="generationFlowForm">
+                <!-- Initial Flow Details -->
+                <div class="form-section">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="workflowId">Workflow ID:</label>
+                            <input type="text" id="workflowId" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="workflowType">Workflow Type:</label>
+                            <select id="workflowType" class="form-control" required>
+                                <option value="short_form_social">Short Form Social</option>
+                                <option value="atomic_essay">Atomic Essay</option>
+                                <option value="mid_form_social">Mid Form Social</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="form-group">
-                        <label>Model:</label>
-                        <select class="step-model form-control">
-                            <option value="claude-3-5-sonnet-20240229">Claude 3.5 Sonnet</option>
-                            <option value="claude-3-opus-20240229">Claude 3 Opus</option>
-                            <option value="claude-3-haiku-20240307">Claude 3 Haiku</option>
-                        </select>
+                        <label for="description">Description:</label>
+                        <textarea id="description" class="form-control" required></textarea>
                     </div>
-                    <div class="form-group">
-                        <label>System Prompt:</label>
-                        <textarea class="step-system-prompt form-control" rows="5" placeholder="Instructions for the AI"></textarea>
+                </div>
+
+                <!-- Variables Info -->
+                <div class="form-section" style="background: #f8f9fa; border-left: 4px solid #431670; margin-bottom: 1rem;">
+                    <h3 style="margin-top: 0; color: #2d3748;">Available Variables</h3>
+                    <p style="margin-bottom: 0.5rem; color: #4a5568;">Use these variables in your system prompts or message content to customize the generation:</p>
+                    <div style="display: grid; grid-template-columns: auto 1fr; gap: 0.5rem 1rem; margin-top: 1rem;">
+                        <code style="color: #805ad5;">{template}</code>
+                        <span>Template structure for content generation</span>
+                        <code style="color: #805ad5;">{content_chunks}</code>
+                        <span>Source content for generation</span>
+                        <code style="color: #805ad5;">{prev_ai_output}</code>
+                        <span>Output from the previous step</span>
+                        <code style="color: #805ad5;">{client_brief}</code>
+                        <span>Brand voice guidelines</span>
                     </div>
-                    <div class="form-group">
-                        <label>User Message:</label>
-                        <textarea class="step-user-message form-control" rows="5" placeholder="Use {template}, {content_chunks}, {brand_voice}, and {prev_ai_output} as variables"></textarea>
+                </div>
+
+                <!-- Steps Container -->
+                <div id="stepsContainer">
+                    <!-- Steps will be added here dynamically -->
+                </div>
+
+                <!-- Step Navigation -->
+                <div class="steps-counter">Step <span id="currentStep">1</span> of <span id="totalSteps">1</span></div>
+                <div class="step-navigation">
+                    <div class="left-buttons">
+                        <button type="button" id="prevStep" class="submit-btn" style="visibility: hidden;">Previous Step</button>
+                    </div>
+                    <div class="right-buttons">
+                        <button type="button" id="nextStep" class="submit-btn">Next Step</button>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button type="button" id="addStep" class="submit-btn">Add New Step</button>
+                    <button type="submit" class="submit-btn">Save Generation Flow</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentStepIndex = 0;
+        let steps = [{
+            stepName: '',
+            model: 'claude-3-5-sonnet-20241022',
+            systemPrompt: '',
+            maxTokens: 4096,
+            order: 1,
+            temperature: 0.8,
+            messages: [{
+                role: 'user',
+                content: ''
+            }]
+        }];
+
+        function createStepForm(step, index) {
+            return `
+                <div class="step-form" data-step="${index}">
+                    <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
+                        <button type="button" class="submit-btn" onclick="removeStep(${index})" ${steps.length === 1 ? 'disabled' : ''}>Remove Step</button>
                     </div>
                     <div class="form-row">
-                        <div class="form-col">
-                            <label>Temperature:</label>
-                            <input type="number" class="step-temperature form-control" value="0.7" min="0" max="1" step="0.1">
+                        <div class="form-group">
+                            <label for="stepName${index}">Step Name:</label>
+                            <input type="text" id="stepName${index}" class="form-control" value="${step.stepName}" required>
                         </div>
-                        <div class="form-col">
-                            <label>Max Tokens:</label>
-                            <input type="number" class="step-max-tokens form-control" value="1000" min="100" max="4000">
+                        <div class="form-group">
+                            <label for="model${index}">Model:</label>
+                            <input type="text" id="model${index}" class="form-control" value="${step.model}" required>
                         </div>
                     </div>
+                    <div class="form-group">
+                        <label for="systemPrompt${index}">System Prompt:</label>
+                        <textarea id="systemPrompt${index}" class="form-control" required>${step.systemPrompt}</textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="maxTokens${index}">Max Tokens:</label>
+                            <input type="number" id="maxTokens${index}" class="form-control" value="${step.maxTokens}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="order${index}">Order:</label>
+                            <input type="number" id="order${index}" class="form-control" value="${step.order}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="temperature${index}">Temperature:</label>
+                            <input type="number" id="temperature${index}" class="form-control" value="${step.temperature}" step="0.1" min="0" max="1" required>
+                        </div>
+                    </div>
+                    <div id="messagesContainer${index}">
+                        ${step.messages.map((msg, msgIndex) => createMessageForm(index, msgIndex, msg)).join('')}
+                    </div>
+                    <button type="button" class="submit-btn" onclick="addMessage(${index})">Add Message</button>
                 </div>
-            </div>
-
-            <div class="form-group action-buttons">
-                <button type="button" onclick="addStep()" class="secondary-btn">Add Step</button>
-                <button type="button" onclick="saveWorkflow()" class="submit-btn">Save Workflow</button>
-            </div>
-        </form>
-    </div>
-</div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    let stepCount = 1;
-
-    function addStep() {
-        stepCount++;
-        const newStep = document.createElement('div');
-        newStep.className = 'workflow-step';
-        newStep.dataset.step = stepCount;
-
-        newStep.innerHTML = `
-            <h4>Step ${stepCount}</h4>
-            <div class="form-group">
-                <label>Step Name:</label>
-                <input type="text" class="step-name form-control" placeholder="e.g., Refinement">
-            </div>
-            <div class="form-group">
-                <label>Model:</label>
-                <select class="step-model form-control">
-                    <option value="claude-3-5-sonnet-20240229">Claude 3.5 Sonnet</option>
-                    <option value="claude-3-opus-20240229">Claude 3 Opus</option>
-                    <option value="claude-3-haiku-20240307">Claude 3 Haiku</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>System Prompt:</label>
-                <textarea class="step-system-prompt form-control" rows="5" placeholder="Instructions for the AI"></textarea>
-            </div>
-            <div class="form-group">
-                <label>User Message:</label>
-                <textarea class="step-user-message form-control" rows="5" placeholder="Use {template}, {content_chunks}, {brand_voice}, and {prev_ai_output} as variables"></textarea>
-            </div>
-            <div class="form-row">
-                <div class="form-col">
-                    <label>Temperature:</label>
-                    <input type="number" class="step-temperature form-control" value="0.7" min="0" max="1" step="0.1">
-                </div>
-                <div class="form-col">
-                    <label>Max Tokens:</label>
-                    <input type="number" class="step-max-tokens form-control" value="1000" min="100" max="4000">
-                </div>
-            </div>
-            <button type="button" onclick="removeStep(${stepCount})" class="remove-btn">Remove Step</button>
-        `;
-
-        document.getElementById('stepsContainer').appendChild(newStep);
-    }
-
-    function removeStep(stepNum) {
-        const stepToRemove = document.querySelector(`.workflow-step[data-step="${stepNum}"]`);
-        if (stepToRemove) {
-            stepToRemove.remove();
-        }
-    }
-
-    async function saveWorkflow() {
-        // Build the workflow configuration from form values
-        const workflowId = document.getElementById('workflowId').value;
-        const workflowType = document.getElementById('workflowType').value;
-        const description = document.getElementById('workflowDescription').value;
-        const stepsData = [];
-
-        const steps = document.querySelectorAll('.workflow-step');
-        steps.forEach(step => {
-            const stepName = step.querySelector('.step-name').value;
-            const model = step.querySelector('.step-model').value;
-            const systemPrompt = step.querySelector('.step-system-prompt').value;
-            const userMessage = step.querySelector('.step-user-message').value;
-            const temperature = parseFloat(step.querySelector('.step-temperature').value);
-            const maxTokens = parseInt(step.querySelector('.step-max-tokens').value);
-            stepsData.push({stepName, model, systemPrompt, userMessage, temperature, maxTokens});
-        });
-
-
-        if (!workflowId || !workflowType || !description || stepsData.length ===0) {
-            alert('Please fill out all required fields');
-            return;
+            `;
         }
 
-        const formData = {
-            workflowId,
-            workflowType,
-            description,
-            steps: stepsData
-        };
+        function createMessageForm(stepIndex, messageIndex, message) {
+            return `
+                <div class="message-form" data-message="${messageIndex}">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="messageRole${stepIndex}_${messageIndex}">Role:</label>
+                            <select id="messageRole${stepIndex}_${messageIndex}" class="form-control" required>
+                                <option value="user" ${message.role === 'user' ? 'selected' : ''}>User</option>
+                                <option value="assistant" ${message.role === 'assistant' ? 'selected' : ''}>Assistant</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="messageContent${stepIndex}_${messageIndex}">Content:</label>
+                        <textarea id="messageContent${stepIndex}_${messageIndex}" class="form-control" required>${message.content}</textarea>
+                    </div>
+                    <div class="message-actions">
+                        <button type="button" class="submit-btn" onclick="removeMessage(${stepIndex}, ${messageIndex})">Remove Message</button>
+                    </div>
+                </div>
+            `;
+        }
 
-        console.log(JSON.stringify(formData, null, 2));
-
-        try {
-            const response = await fetch('/api/generation-flow', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(formData)
+        function updateStepVisibility() {
+            document.querySelectorAll('.step-form').forEach((step, index) => {
+                step.style.display = index === currentStepIndex ? 'block' : 'none';
             });
 
-            if (response.ok) {
-                alert('Workflow saved successfully!');
-            } else {
-                alert('Failed to save workflow. Status: ' + response.status);
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('An error occurred while saving the workflow.');
+            document.getElementById('currentStep').textContent = currentStepIndex + 1;
+            document.getElementById('totalSteps').textContent = steps.length;
+
+            document.getElementById('prevStep').style.visibility = currentStepIndex > 0 ? 'visible' : 'hidden';
+            document.getElementById('nextStep').style.visibility = currentStepIndex < steps.length - 1 ? 'visible' : 'hidden';
+
+            // Update remove step buttons
+            document.querySelectorAll('.step-form button[onclick^="removeStep"]').forEach(btn => {
+                btn.disabled = steps.length === 1;
+            });
         }
-    }
-</script>
-{% endblock %}
+
+        function addStep() {
+            const newStep = {
+                stepName: '',
+                model: 'claude-3-5-sonnet-20241022',
+                systemPrompt: '',
+                maxTokens: 4096,
+                order: steps.length + 1,
+                temperature: 0.8,
+                messages: [{
+                    role: 'user',
+                    content: ''
+                }]
+            };
+            steps.push(newStep);
+
+            const stepsContainer = document.getElementById('stepsContainer');
+            stepsContainer.insertAdjacentHTML('beforeend', createStepForm(newStep, steps.length - 1));
+            updateStepVisibility();
+        }
+
+        function addMessage(stepIndex) {
+            const newMessage = {
+                role: 'user',
+                content: ''
+            };
+            steps[stepIndex].messages.push(newMessage);
+
+            const messagesContainer = document.getElementById(`messagesContainer${stepIndex}`);
+            messagesContainer.insertAdjacentHTML('beforeend', 
+                createMessageForm(stepIndex, steps[stepIndex].messages.length - 1, newMessage)
+            );
+        }
+
+        function removeMessage(stepIndex, messageIndex) {
+            if (steps[stepIndex].messages.length > 1) {
+                steps[stepIndex].messages.splice(messageIndex, 1);
+                const messageElement = document.querySelector(
+                    `#messagesContainer${stepIndex} .message-form[data-message="${messageIndex}"]`
+                );
+                messageElement.remove();
+            }
+        }
+
+        function removeStep(stepIndex) {
+            if (steps.length > 1) {
+                steps.splice(stepIndex, 1);
+                document.querySelector(`.step-form[data-step="${stepIndex}"]`).remove();
+
+                // Renumber remaining steps
+                document.querySelectorAll('.step-form').forEach((step, idx) => {
+                    step.setAttribute('data-step', idx);
+                });
+
+                // Adjust current step index if needed
+                if (currentStepIndex >= steps.length) {
+                    currentStepIndex = steps.length - 1;
+                }
+
+                updateStepVisibility();
+            }
+        }
+
+        // Initialize the first step
+        document.getElementById('stepsContainer').innerHTML = createStepForm(steps[0], 0);
+        updateStepVisibility();
+
+        // Event Listeners
+        document.getElementById('addStep').addEventListener('click', addStep);
+
+        document.getElementById('prevStep').addEventListener('click', () => {
+            if (currentStepIndex > 0) {
+                currentStepIndex--;
+                updateStepVisibility();
+            }
+        });
+
+        document.getElementById('nextStep').addEventListener('click', () => {
+            if (currentStepIndex < steps.length - 1) {
+                currentStepIndex++;
+                updateStepVisibility();
+            }
+        });
+
+        document.getElementById('generationFlowForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Collect all form data
+            const formData = {
+                workflowId: document.getElementById('workflowId').value,
+                workflowType: document.getElementById('workflowType').value,
+                description: document.getElementById('description').value,
+                steps: steps.map((step, index) => ({
+                    Step_name: document.getElementById(`stepName${index}`).value,
+                    Model: document.getElementById(`model${index}`).value,
+                    System_prompt: document.getElementById(`systemPrompt${index}`).value,
+                    Max_tokens: parseInt(document.getElementById(`maxTokens${index}`).value),
+                    Order: parseInt(document.getElementById(`order${index}`).value),
+                    Temperature: parseFloat(document.getElementById(`temperature${index}`).value),
+                    Message: Array.from(document.getElementById(`messagesContainer${index}`).children).map((msgElem, msgIndex) => ({
+                        role: document.getElementById(`messageRole${index}_${msgIndex}`).value,
+                        content: document.getElementById(`messageContent${index}_${msgIndex}`).value
+                    }))
+                }))
+            };
+
+            console.log(JSON.stringify(formData, null, 2));
+
+            try {
+                const response = await fetch('/api/generation-flow', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    alert('Generation flow saved successfully!');
+                } else {
+                    alert('Failed to save generation flow');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error saving generation flow');
+            }
+        });
+    </script>
+</body>
+</html>
