@@ -182,48 +182,43 @@ async def create_generation_flow(request: Request, current_user: str = Depends(g
 
 @app.get("/generated-content", response_class=HTMLResponse, include_in_schema=False)
 async def generated_content(request: Request, current_user: str = Depends(get_current_user)):
-    AIRTABLE_API_KEY = os.environ.get("AIRTABLE_API_KEY")
-    if not AIRTABLE_API_KEY:
-        raise HTTPException(status_code=500, detail="AIRTABLE_API_KEY not configured")
-
-    url = "https://api.airtable.com/v0/appLz2zuN6ZFu4mYS/tbliCJf9aeYkryU2W"
-    headers = {
-        "Authorization": f"Bearer {AIRTABLE_API_KEY}",
-    }
-    params = {
-        "view": "viwlEIVj2rgBVKVWj"
-    }
-
+    from social_writer import get_latest_generated_content
+    
     try:
-        response = requests.get(url, headers=headers, params=params)
-        response.raise_for_status()
-        data = response.json()
-
+        # Use the current user's username from the authentication
+        username = current_user
+        
+        # Fetch the latest content from AstraDB
+        result = get_latest_generated_content(username)
+        documents = result.get("data", {}).get("documents", [])
+        
         contents = []
-        for record in data.get("records", []):
-            fields = record.get("fields", {})
-            date_str = fields.get("Created Time", "")
+        for doc in documents:
+            # Parse the date from string format to datetime object
+            date_str = doc.get("Created_Time", "")
             try:
-                # Convert ISO format string to datetime object
-                date_obj = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+                # Convert string to datetime object
+                date_obj = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S UTC") if date_str else None
             except (ValueError, AttributeError):
                 date_obj = None
-
+            
             contents.append({
-                "content_id": fields.get("Content_ID", ""),
-                "first_draft": fields.get("First Draft", ""),
-                "source_chunk": fields.get("Source Chunk", ""),
-                "template": fields.get("Template", ""),
-                "tag": fields.get("Tag", ""),
+                "content_id": doc.get("_id", ""),
+                "first_draft": doc.get("First_Draft", ""),
+                "source_chunk": doc.get("Source_Chunk", ""),
+                "template": doc.get("Template", ""),
+                "tag": doc.get("Tag", ""),
                 "date_created": date_obj
             })
+            
         return templates.TemplateResponse("generated_content.html", {
             "request": request,
             "username": current_user,
             "current_page": "generated_content",
             "contents": contents
         })
-    except requests.exceptions.RequestException as e:
+    except Exception as e:
+        print(f"Error fetching latest content: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to fetch generated content: {str(e)}")
 
 @app.get("/search/published", response_class=HTMLResponse, include_in_schema=False)
