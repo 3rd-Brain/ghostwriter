@@ -772,3 +772,62 @@ def source_content_repurposer_using_posts_as_templates(
         number_of_posts_to_template=number_of_posts_to_template,
         post_topic_query=post_topic_query
     )
+
+def get_latest_generated_content(username: str) -> Dict:
+    """
+    Retrieve the latest generated content for a user from AstraDB
+    Args:
+        username: String containing the username to retrieve content for
+    Returns:
+        Dictionary containing the retrieved content documents
+    """
+    ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+    ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+    
+    print(f"\n=== Debug: Latest Content Retrieval Started ===")
+    print(f"Username: {username}")
+    
+    if not ASTRA_DB_API_ENDPOINT:
+        raise Exception("ASTRA_DB_API_ENDPOINT not configured")
+    if not ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER:
+        raise Exception("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
+    
+    # Use the provided username for the URL path
+    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/{username}/generated_content"
+    
+    headers = {
+        "Token": ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
+        "Content-Type": "application/json"
+    }
+    
+    # Create the query payload to sort by Created_Time in descending order (-1)
+    payload = {
+        "find": {
+            "sort": {
+                "Created_Time": -1  # -1 for descending order (newest first)
+            }
+        }
+    }
+    
+    try:
+        print(f"Sending request to AstraDB...")
+        print(f"Request URL: {url}")
+        print(f"Request payload: {json.dumps(payload, indent=2)}")
+        
+        response = requests.post(url, headers=headers, json=payload)
+        print(f"Response status code: {response.status_code}")
+        
+        # Log truncated response for debugging
+        response_text = response.text
+        print(f"Response preview: {response_text[:200]}{'...' if len(response_text) > 200 else ''}")
+        
+        response.raise_for_status()
+        result = response.json()
+        
+        print(f"Found {len(result.get('data', {}).get('documents', []))} documents")
+        print(f"=== Debug: Latest Content Retrieval Completed ===\n")
+        
+        return result
+    except requests.exceptions.RequestException as e:
+        print(f"Request exception: {str(e)}")
+        raise Exception(f"Failed to retrieve latest content from AstraDB: {str(e)}")
