@@ -10,11 +10,10 @@
         {% include 'search_sidebar.html' %}
 
         <div class="content-area">
-            <h2>Templatizer</h2>
+            <h2>Create Template</h2>
 
             <!-- Form Section -->
-            <div class="content-card">
-                <h3>Create Template</h3>
+            <div class="content-card wide">
                 <div class="form-container">
                     <form class="generation-form">
                         <div class="form-group">
@@ -23,6 +22,10 @@
                         </div>
                         <button type="button" onclick="generateTemplate()" class="submit-btn">Generate Template</button>
                     </form>
+                    <div id="formResult" class="hidden">
+                        <h3>Template Created!</h3>
+                        <pre id="resultJson"></pre>
+                    </div>
                 </div>
             </div>
 
