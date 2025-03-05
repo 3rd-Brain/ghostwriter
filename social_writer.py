@@ -773,12 +773,11 @@ def source_content_repurposer_using_posts_as_templates(
         post_topic_query=post_topic_query
     )
 
-def get_latest_generated_content(username: str, limit: int = 100) -> Dict:
+def get_latest_generated_content(username: str) -> Dict:
     """
     Retrieve the latest generated content for a user from AstraDB
     Args:
         username: String containing the username to retrieve content for
-        limit: Maximum number of records to retrieve (default: 100)
     Returns:
         Dictionary containing the retrieved content documents
     """
@@ -787,7 +786,6 @@ def get_latest_generated_content(username: str, limit: int = 100) -> Dict:
     
     print(f"\n=== Debug: Latest Content Retrieval Started ===")
     print(f"Username: {username}")
-    print(f"Limit: {limit}")
     
     if not ASTRA_DB_API_ENDPOINT:
         raise Exception("ASTRA_DB_API_ENDPOINT not configured")
@@ -810,9 +808,6 @@ def get_latest_generated_content(username: str, limit: int = 100) -> Dict:
             },
             "sort": {
                 "Created_Time": -1  # -1 for descending order (newest first)
-            },
-            "options": {
-                "limit": limit  # Limit the number of records
             }
         }
     }

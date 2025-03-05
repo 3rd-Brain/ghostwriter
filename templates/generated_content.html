@@ -81,64 +81,59 @@
     </div>
 
     <script>
-        // Wait for DOM to be fully loaded
-        document.addEventListener('DOMContentLoaded', function() {
-            // Pagination logic
-            const itemsPerPage = 20;
-            let currentPage = 1;
-            const tableRows = document.querySelectorAll('.content-table tbody tr');
-            const totalPages = Math.ceil(tableRows.length / itemsPerPage);
-            
-            console.log(`Found ${tableRows.length} rows in the table`);
-            console.log(`Total pages: ${totalPages}`);
-            
-            // Store user preference for confirmation dialogs
-            let skipConfirmation = localStorage.getItem('skipDeleteConfirmation') === 'true';
+        // Pagination logic
+        const itemsPerPage = 20;
+        let currentPage = 1;
+        const tableRows = document.querySelectorAll('.content-table tbody tr');
+        const totalPages = Math.ceil(tableRows.length / itemsPerPage);
+        
+        // Store user preference for confirmation dialogs
+        let skipConfirmation = localStorage.getItem('skipDeleteConfirmation') === 'true';
 
-            function showPage(page) {
-                const start = (page - 1) * itemsPerPage;
-                const end = start + itemsPerPage;
+        function showPage(page) {
+            const start = (page - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
 
-                tableRows.forEach((row, index) => {
-                    row.style.display = (index >= start && index < end) ? '' : 'none';
-                });
+            tableRows.forEach((row, index) => {
+                row.style.display = (index >= start && index < end) ? '' : 'none';
+            });
 
-                const pageInfo = document.getElementById('pageInfo');
-                if (pageInfo) {
-                    pageInfo.textContent = `Page ${page} of ${totalPages || 1}`;
-                }
-                
-                const prevPageBtn = document.getElementById('prevPage');
-                const nextPageBtn = document.getElementById('nextPage');
-                
-                if (prevPageBtn) prevPageBtn.disabled = page === 1;
-                if (nextPageBtn) nextPageBtn.disabled = page === totalPages || totalPages === 0;
+            const pageInfo = document.getElementById('pageInfo');
+            if (pageInfo) {
+                pageInfo.textContent = `Page ${page} of ${totalPages || 1}`;
             }
-
-            // Add event listeners for pagination only if elements exist
+            
             const prevPageBtn = document.getElementById('prevPage');
             const nextPageBtn = document.getElementById('nextPage');
             
-            if (prevPageBtn) {
-                prevPageBtn.addEventListener('click', () => {
-                    if (currentPage > 1) {
-                        currentPage--;
-                        showPage(currentPage);
-                    }
-                });
-            }
-            
-            if (nextPageBtn) {
-                nextPageBtn.addEventListener('click', () => {
-                    if (currentPage < totalPages) {
-                        currentPage++;
-                        showPage(currentPage);
-                    }
-                });
-            }
+            if (prevPageBtn) prevPageBtn.disabled = page === 1;
+            if (nextPageBtn) nextPageBtn.disabled = page === totalPages || totalPages === 0;
+        }
 
-            // Initialize first page
-            showPage(1);
+        // Add event listeners for pagination only if elements exist
+        const prevPageBtn = document.getElementById('prevPage');
+        const nextPageBtn = document.getElementById('nextPage');
+        
+        if (prevPageBtn) {
+            prevPageBtn.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    showPage(currentPage);
+                }
+            });
+        }
+        
+        if (nextPageBtn) {
+            nextPageBtn.addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    showPage(currentPage);
+                }
+            });
+        }
+
+        // Initialize first page
+        showPage(1);
 
         function showPopup(element, title) {
             const text = element.innerText;

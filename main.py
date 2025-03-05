@@ -188,14 +188,9 @@ async def generated_content(request: Request, current_user: str = Depends(get_cu
         # Use the current user's username from the authentication
         username = current_user
         
-        # Set a reasonable limit to avoid performance issues
-        limit = 100
-        
         # Fetch the latest content from AstraDB
-        result = get_latest_generated_content(username, limit)
+        result = get_latest_generated_content(username)
         documents = result.get("data", {}).get("documents", [])
-        
-        print(f"Retrieved {len(documents)} documents for user {username}")
         
         contents = []
         for doc in documents:
