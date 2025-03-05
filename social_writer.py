@@ -834,3 +834,63 @@ def get_latest_generated_content(username: str) -> Dict:
     except requests.exceptions.RequestException as e:
         print(f"Request exception: {str(e)}")
         raise Exception(f"Failed to retrieve latest content from AstraDB: {str(e)}")
+
+def delete_generated_content(username: str, content_id: str) -> Dict:
+    """
+    Delete a specific generated content document from AstraDB
+    Args:
+        username: String containing the username for the URL path
+        content_id: String containing the content ID to delete
+    Returns:
+        Dictionary containing the deletion result
+    """
+    ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+    ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+    
+    print(f"\n=== Debug: Content Deletion Started ===")
+    print(f"Username: {username}")
+    print(f"Content ID to delete: {content_id}")
+    
+    if not ASTRA_DB_API_ENDPOINT:
+        raise Exception("ASTRA_DB_API_ENDPOINT not configured")
+    if not ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER:
+        raise Exception("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
+    
+    # Use the provided username for the URL path
+    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/{username}/generated_content"
+    
+    headers = {
+        "Token": ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
+        "Content-Type": "application/json"
+    }
+    
+    # Create the delete payload
+    payload = {
+        "findOneAndDelete": {
+            "filter": {
+                "_id": content_id
+            }
+        }
+    }
+    
+    try:
+        print(f"Sending delete request to AstraDB...")
+        print(f"Request URL: {url}")
+        print(f"Request payload: {json.dumps(payload, indent=2)}")
+        
+        response = requests.post(url, headers=headers, json=payload)
+        print(f"Response status code: {response.status_code}")
+        
+        # Log truncated response for debugging
+        response_text = response.text
+        print(f"Response preview: {response_text[:200]}{'...' if len(response_text) > 200 else ''}")
+        
+        response.raise_for_status()
+        result = response.json()
+        
+        print(f"=== Debug: Content Deletion Completed ===\n")
+        
+        return result
+    except requests.exceptions.RequestException as e:
+        print(f"Request exception: {str(e)}")
+        raise Exception(f"Failed to delete content from AstraDB: {str(e)}")

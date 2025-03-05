@@ -895,3 +895,35 @@ async def get_latest_generated_content(current_user: str = Depends(get_current_u
     except Exception as e:
         print(f"Error fetching latest content: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/api/content/{content_id}", tags=["Content Management"])
+async def delete_content(content_id: str, current_user: str = Depends(get_current_user)):
+    """
+    **Delete a specific generated content entry**
+    
+    This endpoint permanently removes a generated content document from the database.
+    
+    ## When to use
+    Use this endpoint when you need to:
+    * Remove outdated or incorrect content
+    * Clean up your content repository
+    * Delete test content after development
+    
+    *This action cannot be undone, and content will be permanently removed.*
+    """
+    try:
+        from social_writer import delete_generated_content
+        
+        # Use the current user's username from the authentication
+        username = current_user
+        
+        result = delete_generated_content(username, content_id)
+        
+        # Check if deletion was successful
+        if result.get("data", {}).get("document"):
+            return {"status": "success", "message": f"Content '{content_id}' deleted successfully"}
+        else:
+            return {"status": "warning", "message": f"Content '{content_id}' not found or already deleted"}
+    except Exception as e:
+        print(f"Error deleting content: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
