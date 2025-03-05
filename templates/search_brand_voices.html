@@ -1,38 +1,35 @@
 
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Search Brand Voices</title>
-    <link rel="stylesheet" href="/static/style.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-</head>
-<body>
-    <div class="main-container">
-        {% include 'search_sidebar.html' %}
-        <div class="content-area">
-            <h2>Brand Voices</h2>
-            <div class="content-card">
-                <div class="form-container">
-                    <form class="generation-form">
-                        <div class="form-group">
-                            <label for="brandSearch">Search Brand:</label>
-                            <input type="text" id="brandSearch" class="form-control" placeholder="Enter brand name">
-                        </div>
-                        <button type="button" onclick="searchBrands()" class="submit-btn">Search</button>
-                    </form>
-                </div>
+{% extends "base.html" %}
+
+{% block title %}Search Brand Voices{% endblock %}
+
+{% block content %}
+<h2>Brand Voices</h2>
+<div class="content-card wide">
+    <div class="form-container">
+        <form class="generation-form">
+            <div class="form-group">
+                <label for="brandSearch">Search Brand:</label>
+                <input type="text" id="brandSearch" class="form-control" placeholder="Enter brand name">
             </div>
-            <div id="brandResults" class="content-card" style="margin-top: 2rem; display: none;">
-                <h3>Brand Voice Results</h3>
-                <div id="brandVoiceResults"></div>
-            </div>
-        </div>
+            <button type="button" onclick="searchBrands()" class="submit-btn">Search</button>
+        </form>
     </div>
-    <script>
-        async function searchBrands() {
-            const query = document.getElementById('brandSearch').value;
-            // Implementation pending
-        }
-    </script>
-</body>
-</html>
+</div>
+<div id="brandResults" class="content-card" style="margin-top: 2rem; display: none;">
+    <h3>Brand Voice Results</h3>
+    <div id="brandVoiceResults"></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    async function searchBrands() {
+        const query = document.getElementById('brandSearch').value;
+        // Implementation pending
+        
+        // Show results area (for demo)
+        document.getElementById('brandResults').style.display = 'block';
+    }
+</script>
+{% endblock %}
