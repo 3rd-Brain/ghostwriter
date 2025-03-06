@@ -481,7 +481,7 @@ async def setup_sentiment(request_data: schemas.SentimentSetupRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-def top_content_retriever(query: str, topic: str) -> Dict:
+def top_content_retriever(query: str, topic: str = "general") -> Dict:
     setup_result = top_content_sentiment_setup(query)
     results = vector_search_for_published_content(setup_result["filter"], topic)
     if setup_result.get("metric_sort"):

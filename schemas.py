@@ -24,7 +24,7 @@ class SentimentSetupRequest(BaseModel):
 # Top Content schemas
 class TopContentRequest(BaseModel):
     query: str = Field(..., description="Query for content selection")
-    topic: str = Field(..., description="Topic for content search")
+    topic: str = Field("general", description="Topic for content search")
 
 # Source Content schemas
 class SourceContentRequest(BaseModel):
