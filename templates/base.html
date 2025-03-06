@@ -1,12 +1,252 @@
-<!-- Import Lucide icons library -->
-<script src="https://unpkg.com/lucide@latest"></script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Ghostwriter API{% endblock %}</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    {% block extra_css %}{% endblock %}
+    <style>
+        .chatbox-container {
+            position: fixed;
+            top: 72px; /* Match the height of the header to avoid overlap */
+            right: 0;
+            bottom: 0;
+            width: 320px;
+            z-index: 100;
+            pointer-events: none; /* Allow scrolling through the container */
+        }
 
-<!-- ... rest of your HTML ... -->
+        .chatbox {
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            height: calc(100% - 16px);
+            margin: 8px;
+            display: flex;
+            flex-direction: column;
+            pointer-events: auto; /* Make the chatbox itself clickable */
+            border: 1px solid #e2e8f0;
+            overflow: hidden; /* Ensure inner content respects border radius */
+        }
 
-<i data-lucide="pencil"></i>
-<i data-lucide="file-text"></i>
-<i data-lucide="award"></i>
-<i data-lucide="user"></i>
-<i data-lucide="alert-circle"></i>
+        .chatbox-header {
+            padding: 16px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
 
-<!-- ... rest of your HTML ... -->
+        .chatbox-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .chatbox-messages {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            background-color: rgba(107, 53, 255, 0.02);
+        }
+
+        .chatbox-input {
+            padding: 12px;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+        }
+
+        .chatbox-input textarea {
+            flex: 1;
+            padding: 10px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            resize: none;
+            height: 40px;
+            background-color: #f8f9fa;
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        .chatbox-input textarea:focus {
+            outline: none;
+            border-color: #6b35ff;
+            box-shadow: 0 0 0 2px rgba(107, 53, 255, 0.1);
+        }
+
+        .chatbox-input .send-button {
+            background-color: #6b35ff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            margin-left: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            min-width: 40px; /* Prevent button from shrinking */
+            position: relative; /* Ensure button displays fully */
+            right: 0;
+        }
+
+        .content-header {
+            margin-right: 0; /* Ensure header extends full width */
+        }
+
+        .content-container {
+            margin-right: 320px; /* Add margin to prevent content overlap with chatbox */
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span class="logo-icon">GW</span>
+                    <span class="logo-text">Ghostwriter</span>
+                </div>
+                <button class="sidebar-toggle">
+                    <i class="material-icons">menu</i>
+                </button>
+            </div>
+
+            <div class="main-menu">
+                <h6 class="menu-category">MAIN MENU</h6>
+                <nav class="menu-items">
+                    <a href="/dashboard" class="menu-item {% if current_page == 'dashboard' %}active{% endif %}">
+                        <i class="material-icons">dashboard</i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="/generate-content" class="menu-item {% if current_page == 'generate_content' %}active{% endif %}">
+                        <i class="material-icons">create</i>
+                        <span>Generate Content</span>
+                    </a>
+                    <a href="/source-content" class="menu-item {% if current_page == 'source_content' %}active{% endif %}">
+                        <i class="material-icons">source</i>
+                        <span>Source Content Management</span>
+                    </a>
+                    <a href="/template-management" class="menu-item {% if current_page == 'template_management' %}active{% endif %}">
+                        <i class="material-icons">format_shapes</i>
+                        <span>Template Management</span>
+                    </a>
+                    <a href="/brand-management" class="menu-item {% if current_page == 'brand_management' %}active{% endif %}">
+                        <i class="material-icons">branding_watermark</i>
+                        <span>Brand Management</span>
+                    </a>
+                </nav>
+            </div>
+
+            <div class="other-menu">
+                <h6 class="menu-category">USER</h6>
+                <nav class="menu-items">
+                    <a href="/feedback" class="menu-item {% if current_page == 'feedback' %}active{% endif %}">
+                        <i class="material-icons">feedback</i>
+                        <span>Feedback</span>
+                    </a>
+                    <a href="/account" class="menu-item {% if current_page == 'account' %}active{% endif %}">
+                        <i class="material-icons">account_circle</i>
+                        <span>Account</span>
+                    </a>
+                    <a href="/create/generation-flow" class="menu-item {% if current_page == 'create_generation_flow' %}active{% endif %}">
+                        <i class="material-icons">settings</i>
+                        <span>Settings</span>
+                    </a>
+                </nav>
+            </div>
+
+            <div class="user-profile">
+                <div class="avatar">{{ username|first|upper }}</div>
+                <div class="user-info">
+                    <div class="username">{{ username }}</div>
+                    <a href="/logout" class="logout-link">Sign out</a>
+                </div>
+            </div>
+        </div>
+
+        <main class="main-content">
+            <header class="content-header">
+                <div></div>
+
+                <div class="header-actions">
+                    <button class="action-button">
+                        <i class="material-icons">notifications</i>
+                    </button>
+                </div>
+            </header>
+
+            <div class="content-container">
+                <div class="page-title">
+                    <h1>{% block page_title %}Dashboard{% endblock %}</h1>
+                    <p>{% block page_subtitle %}Track your sales and performance of your strategy{% endblock %}</p>
+                </div>
+
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+
+        </div>
+    
+    <div class="chatbox-container">
+        <div class="chatbox">
+            <div class="chatbox-header">
+                <h3>Ghostwriter Agent</h3>
+            </div>
+            <div class="chatbox-messages" id="chatbox-messages">
+                <!-- Messages will appear here -->
+            </div>
+            <div class="chatbox-input">
+                <textarea placeholder="Type your message here..."></textarea>
+                <button class="send-button">
+                    <i class="material-icons">send</i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Sidebar toggle functionality
+            const sidebarToggle = document.querySelector('.sidebar-toggle');
+            const appContainer = document.querySelector('.app-container');
+            const logo = document.querySelector('.logo');
+
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', function() {
+                    appContainer.classList.toggle('sidebar-collapsed');
+                });
+            }
+
+            // Logo click to expand sidebar when collapsed
+            if (logo) {
+                logo.addEventListener('click', function() {
+                    if (appContainer.classList.contains('sidebar-collapsed')) {
+                        appContainer.classList.remove('sidebar-collapsed');
+                    }
+                });
+            }
+
+            // Notification function
+            window.showNotification = function(message, isError = false) {
+                const notification = document.getElementById('notification');
+                notification.textContent = message;
+                notification.className = `notification ${isError ? 'error' : 'success'}`;
+                notification.classList.add('show');
+
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
