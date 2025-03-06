@@ -11,52 +11,89 @@
     <style>
         .chatbox-container {
             position: fixed;
-            top: 0;
+            top: 72px; /* Match the height of the header to avoid overlap */
             right: 0;
             bottom: 0;
-            width: 300px; /* Adjust width as needed */
-            background-color: #fff;
-            border-radius: 10px 0 0 10px; /* Rounded corner on left side */
-            overflow-y: auto; /* Enable scrolling if messages exceed height */
-            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
-            padding: 10px;
+            width: 320px;
+            z-index: 100;
+            pointer-events: none; /* Allow scrolling through the container */
         }
 
         .chatbox {
-            height: 100%;
+            background-color: #fff;
+            border-radius: 12px 0 0 0;
+            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+            height: calc(100% - 16px);
+            margin: 8px;
+            display: flex;
+            flex-direction: column;
+            pointer-events: auto; /* Make the chatbox itself clickable */
+            border: 1px solid #e2e8f0;
         }
 
         .chatbox-header {
-            background-color: #f0f0f0;
-            padding: 10px;
-            border-bottom: 1px solid #ccc;
+            padding: 16px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-radius: 12px 0 0 0;
+        }
+
+        .chatbox-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
         }
 
         .chatbox-messages {
-            padding: 10px;
-            height: calc(100% - 100px); /* Adjust height as needed to accommodate header and input */
+            flex: 1;
+            padding: 16px;
             overflow-y: auto;
+            background-color: rgba(107, 53, 255, 0.02);
         }
 
         .chatbox-input {
-            padding: 10px;
+            padding: 12px;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
         }
 
         .chatbox-input textarea {
-            width: calc(100% - 40px);
-            padding: 5px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            margin-right: 5px;
+            flex: 1;
+            padding: 10px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            resize: none;
+            height: 40px;
+            background-color: #f8f9fa;
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        .chatbox-input textarea:focus {
+            outline: none;
+            border-color: #6b35ff;
+            box-shadow: 0 0 0 2px rgba(107, 53, 255, 0.1);
         }
 
         .chatbox-input .send-button {
-            background-color: #4CAF50;
+            background-color: #6b35ff;
             color: white;
             border: none;
-            padding: 5px 10px;
-            border-radius: 5px;
+            border-radius: 8px;
+            margin-left: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
+            width: 40px;
+            height: 40px;
+        }
+
+        .main-content {
+            margin-right: 320px; /* Add margin to prevent content overlap with chatbox */
         }
     </style>
 </head>
@@ -143,20 +180,22 @@
             </div>
         </main>
 
-        <div class="chatbox-container">
-            <div class="chatbox">
-                <div class="chatbox-header">
-                    <h3>Ghostwriter Agent</h3>
-                </div>
-                <div class="chatbox-messages" id="chatbox-messages">
-                    <!-- Messages will appear here -->
-                </div>
-                <div class="chatbox-input">
-                    <textarea placeholder="Type your message here..."></textarea>
-                    <button class="send-button">
-                        <i class="material-icons">send</i>
-                    </button>
-                </div>
+        </div>
+    
+    <div class="chatbox-container">
+        <div class="chatbox">
+            <div class="chatbox-header">
+                <h3>Ghostwriter Agent</h3>
+                <i class="material-icons">chat</i>
+            </div>
+            <div class="chatbox-messages" id="chatbox-messages">
+                <!-- Messages will appear here -->
+            </div>
+            <div class="chatbox-input">
+                <textarea placeholder="Type your message here..."></textarea>
+                <button class="send-button">
+                    <i class="material-icons">send</i>
+                </button>
             </div>
         </div>
     </div>
