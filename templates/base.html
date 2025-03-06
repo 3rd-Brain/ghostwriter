@@ -80,9 +80,6 @@
                     <button class="action-button">
                         <i class="material-icons">notifications</i>
                     </button>
-                    <button class="action-button toggle-right-panel" id="toggle-right-panel">
-                        <i class="material-icons">chat</i>
-                    </button>
                 </div>
             </header>
             
@@ -97,7 +94,7 @@
         </main>
         
         <div class="right-panel">
-            <div class="chat-section">
+            <div class="panel-section chat-section">
                 <div class="panel-header">
                     <h3>Ghostwriter Assistant</h3>
                 </div>
@@ -114,7 +111,7 @@
                 </div>
             </div>
             
-            <div class="recent-content-section">
+            <div class="panel-section recent-content-section">
                 <div class="panel-header">
                     <h3>Recent Content</h3>
                 </div>
@@ -241,10 +238,9 @@
                             const preview = document.createElement('p');
                             preview.textContent = item.preview;
                             
-                            const date = document.createElement('small');
+                            const date = document.createElement('div');
                             date.textContent = item.date;
-                            date.style.color = 'var(--text-secondary)';
-                            date.style.fontSize = '11px';
+                            date.classList.add('time-ago');
                             
                             contentItem.appendChild(title);
                             contentItem.appendChild(preview);

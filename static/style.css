@@ -580,14 +580,24 @@ button, input, select, textarea {
     display: flex;
     flex-direction: column;
     border-left: 1px solid var(--border);
-    background-color: var(--surface);
+    background-color: var(--background);
     height: 100vh;
+    padding: var(--spacing-md);
+    gap: var(--spacing-md);
+    overflow-y: auto;
+}
+
+.panel-section {
+    background-color: var(--surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
 }
 
 .panel-header {
     padding: var(--spacing-md);
+    background-color: var(--surface);
     border-bottom: 1px solid var(--border);
-    background-color: var(--background);
 }
 
 .panel-header h3 {
@@ -601,8 +611,8 @@ button, input, select, textarea {
 .chat-section {
     display: flex;
     flex-direction: column;
-    height: 50vh;
-    overflow: hidden;
+    height: auto;
+    max-height: 48vh;
 }
 
 .chat-messages {
@@ -612,6 +622,7 @@ button, input, select, textarea {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-md);
+    max-height: 300px;
 }
 
 .message {
@@ -668,16 +679,15 @@ button, input, select, textarea {
 
 /* Recent content section */
 .recent-content-section {
-    flex: 1;
     display: flex;
     flex-direction: column;
-    border-top: 1px solid var(--border);
+    max-height: 48vh;
 }
 
 .recent-content-list {
-    flex: 1;
     overflow-y: auto;
     padding: var(--spacing-md);
+    max-height: 300px;
 }
 
 .content-item {
@@ -709,19 +719,24 @@ button, input, select, textarea {
     -webkit-box-orient: vertical;
 }
 
+.time-ago {
+    color: var(--text-secondary);
+    font-size: 11px;
+    margin-top: var(--spacing-xs);
+}
+
 .empty-state {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100%;
+    padding: var(--spacing-xl);
     color: var(--text-secondary);
     text-align: center;
-    padding: var(--spacing-xl);
 }
 
 .empty-state i {
-    font-size: 48px;
+    font-size: 24px;
     margin-bottom: var(--spacing-md);
     opacity: 0.5;
 }
