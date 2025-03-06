@@ -634,6 +634,26 @@ button, input, select, textarea {
     flex-direction: column;
     gap: var(--spacing-md);
     background-color: rgba(107, 53, 255, 0.03);
+    min-height: 200px;
+}
+
+.agent-messages .message {
+    max-width: 80%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    word-break: break-word;
+}
+
+.agent-messages .message.user {
+    align-self: flex-end;
+    background-color: rgba(107, 53, 255, 0.08);
+    color: var(--text-primary);
+}
+
+.agent-messages .message.assistant {
+    align-self: flex-start;
+    background-color: rgba(0, 0, 0, 0.05);
+    color: var(--text-primary);
 }
 
 .agent-input-container {
@@ -655,6 +675,8 @@ button, input, select, textarea {
     font-family: inherit;
     background-color: var(--background);
     transition: all 0.2s ease;
+    font-size: 14px;
+    line-height: 1.5;
 }
 
 .agent-input-container textarea:focus {

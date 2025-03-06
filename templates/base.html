@@ -140,52 +140,66 @@
                 });
             }
             
-            // Chat functionality
-            const chatInput = document.getElementById('chat-input');
-            const sendButton = document.getElementById('send-message');
-            const chatMessages = document.getElementById('chat-messages');
+            // Agent chat functionality
+            const agentInput = document.getElementById('agent-input');
+            const sendAgentButton = document.getElementById('send-agent-message');
+            const agentMessages = document.getElementById('agent-messages');
             
-            function addMessage(message, isUser) {
+            function addAgentMessage(message, isUser) {
                 const messageElement = document.createElement('div');
                 messageElement.classList.add('message');
                 messageElement.classList.add(isUser ? 'user' : 'assistant');
+                messageElement.style.padding = '10px';
+                messageElement.style.marginBottom = '8px';
+                messageElement.style.borderRadius = '8px';
+                
+                if (isUser) {
+                    messageElement.style.backgroundColor = 'rgba(107, 53, 255, 0.08)';
+                    messageElement.style.alignSelf = 'flex-end';
+                    messageElement.style.marginLeft = '20%';
+                } else {
+                    messageElement.style.backgroundColor = 'rgba(0, 0, 0, 0.05)';
+                    messageElement.style.alignSelf = 'flex-start';
+                    messageElement.style.marginRight = '20%';
+                }
                 
                 const paragraph = document.createElement('p');
                 paragraph.textContent = message;
+                paragraph.style.margin = '0';
                 
                 messageElement.appendChild(paragraph);
-                chatMessages.appendChild(messageElement);
+                agentMessages.appendChild(messageElement);
                 
                 // Scroll to bottom
-                chatMessages.scrollTop = chatMessages.scrollHeight;
+                agentMessages.scrollTop = agentMessages.scrollHeight;
             }
             
-            function handleSendMessage() {
-                const message = chatInput.value.trim();
+            function handleSendAgentMessage() {
+                const message = agentInput.value.trim();
                 if (message) {
                     // Add user message
-                    addMessage(message, true);
+                    addAgentMessage(message, true);
                     
                     // Clear input
-                    chatInput.value = '';
+                    agentInput.value = '';
                     
                     // Here you would normally send the message to your backend
                     // For now we'll simulate a response
                     setTimeout(() => {
-                        addMessage("I'm your Ghostwriter Assistant. This is a placeholder response. In a real implementation, I would connect to your AI backend to provide meaningful assistance with content generation.", false);
+                        addAgentMessage("I'm your Ghostwriter Agent. I can help you generate content, refine your brand voice, and assist with any other content creation needs.", false);
                     }, 1000);
                 }
             }
             
-            if (sendButton) {
-                sendButton.addEventListener('click', handleSendMessage);
+            if (sendAgentButton) {
+                sendAgentButton.addEventListener('click', handleSendAgentMessage);
             }
             
-            if (chatInput) {
-                chatInput.addEventListener('keypress', function(e) {
+            if (agentInput) {
+                agentInput.addEventListener('keypress', function(e) {
                     if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
-                        handleSendMessage();
+                        handleSendAgentMessage();
                     }
                 });
             }
