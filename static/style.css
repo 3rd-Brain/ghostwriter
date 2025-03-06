@@ -580,133 +580,117 @@ button, input, select, textarea {
     display: flex;
     flex-direction: column;
     border-left: 1px solid var(--border);
-    background-color: var(--background);
     height: 100vh;
-    padding: var(--spacing-md);
-    gap: var(--spacing-md);
-    overflow-y: auto;
+    overflow: hidden;
 }
 
 .panel-box {
     background-color: var(--surface);
+    margin: 12px;
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
-    flex: 1;
-    min-height: calc(50vh - var(--spacing-lg));
 }
 
-.top-box {
-    margin-bottom: var(--spacing-md);
-}
-
-.bottom-box {
-    margin-top: var(--spacing-md);
-}
-
-/* Ghostwriter Agent styles */
-.agent-box {
+.ghostwriter-box {
     display: flex;
     flex-direction: column;
-    height: 100%;
-    overflow: hidden;
+    height: 48%;
 }
 
+.analytics-box {
+    height: 48%;
+}
+
+/* Agent header */
 .agent-header {
-    padding: var(--spacing-md);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
     border-bottom: 1px solid var(--border);
-    background-color: var(--surface);
-    border-top-left-radius: var(--radius-lg);
-    border-top-right-radius: var(--radius-lg);
 }
 
 .agent-header h3 {
     font-size: 16px;
     font-weight: 600;
-    color: var(--text-primary);
     margin: 0;
 }
 
+/* Agent message area */
 .agent-messages {
     flex: 1;
     overflow-y: auto;
-    padding: var(--spacing-md);
+    padding: 16px;
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md);
-    background-color: rgba(107, 53, 255, 0.03);
-    min-height: 200px;
+    gap: 12px;
+    background-color: rgba(107, 53, 255, 0.02);
+    min-height: 180px;
 }
 
-.agent-messages .message {
+.message {
     max-width: 80%;
     padding: 10px 12px;
-    border-radius: 8px;
-    word-break: break-word;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.4;
 }
 
-.agent-messages .message.user {
+.message.user {
     align-self: flex-end;
     background-color: rgba(107, 53, 255, 0.08);
-    color: var(--text-primary);
+    color: #333;
+    margin-left: 20%;
 }
 
-.agent-messages .message.assistant {
+.message.assistant {
     align-self: flex-start;
-    background-color: rgba(0, 0, 0, 0.05);
-    color: var(--text-primary);
+    background-color: #f1f1f1;
+    color: #333;
+    margin-right: 20%;
 }
 
+/* Input area */
 .agent-input-container {
     display: flex;
-    padding: var(--spacing-sm);
+    padding: 12px;
     border-top: 1px solid var(--border);
-    background-color: var(--surface);
-    border-bottom-left-radius: var(--radius-lg);
-    border-bottom-right-radius: var(--radius-lg);
+    align-items: center;
 }
 
-.agent-input-container textarea {
+#agent-input {
     flex: 1;
-    padding: var(--spacing-sm) var(--spacing-md);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
+    padding: 10px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
     resize: none;
     height: 40px;
-    font-family: inherit;
-    background-color: var(--background);
-    transition: all 0.2s ease;
+    background-color: #f8f9fa;
     font-size: 14px;
-    line-height: 1.5;
 }
 
-.agent-input-container textarea:focus {
+#agent-input:focus {
     outline: none;
     border-color: var(--primary);
     box-shadow: 0 0 0 2px rgba(107, 53, 255, 0.1);
 }
 
-.send-button {
+#send-agent-message {
     background-color: var(--primary);
     color: white;
     border: none;
-    border-radius: var(--radius-md);
-    margin-left: var(--spacing-sm);
+    border-radius: 8px;
+    margin-left: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     width: 40px;
     height: 40px;
-    transition: all 0.2s ease;
 }
 
-.send-button:hover {
+#send-agent-message:hover {
     background-color: var(--primary-dark);
-    transform: translateY(-1px);
-}
-
-.send-button:active {
-    transform: translateY(0);
 }
 
 /* Responsive adjustments for right panel */
