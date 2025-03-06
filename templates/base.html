@@ -6,20 +6,20 @@
     <title>{% block title %}Ghostwriter API{% endblock %}</title>
     <link rel="stylesheet" href="/static/style.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
-    <!-- Import Lucide icons with correct paths -->
-    <script src="https://unpkg.com/lucide-static@0.477.0/icons/home.js"></script>
-    <script src="https://unpkg.com/lucide-static@0.477.0/icons/user.js"></script>
-    <script src="https://unpkg.com/lucide-static@0.477.0/icons/settings.js"></script>
+    <!-- Import Lucide icons with valid icon names -->
+    <script src="https://unpkg.com/lucide-static@0.477.0/icons/activity.js"></script>
+    <script src="https://unpkg.com/lucide-static@0.477.0/icons/arrow-big-up-dash.js"></script>
+    <script src="https://unpkg.com/lucide-static@0.477.0/icons/alert-circle.js"></script>
     <script src="https://unpkg.com/lucide-static@0.477.0/icons/file-text.js"></script>
-    <script src="https://unpkg.com/lucide-static@0.477.0/icons/template.js"></script>
-    <script src="https://unpkg.com/lucide-static@0.477.0/icons/badge.js"></script>
-    <script src="https://unpkg.com/lucide-static@0.477.0/icons/pen-tool.js"></script>
+    <script src="https://unpkg.com/lucide-static@0.477.0/icons/settings.js"></script>
     <script src="https://unpkg.com/lucide-static@0.477.0/icons/message-square.js"></script>
-    <script src="https://unpkg.com/lucide-static@0.477.0/icons/user-circle.js"></script>
-    <script src="https://unpkg.com/lucide-static@0.477.0/icons/bell.js"></script>
+    <script src="https://unpkg.com/lucide-static@0.477.0/icons/user.js"></script>
+    <script src="https://unpkg.com/lucide-static@0.477.0/icons/mail.js"></script>
     <script src="https://unpkg.com/lucide-static@0.477.0/icons/send.js"></script>
     <script src="https://unpkg.com/lucide-static@0.477.0/icons/menu.js"></script>
     <script src="https://unpkg.com/lucide-static@0.477.0/icons/info.js"></script>
+    <script src="https://unpkg.com/lucide-static@0.477.0/icons/home.js"></script>
+    <script src="https://unpkg.com/lucide-static@0.477.0/icons/pencil.js"></script>
     <!-- Include Lucide initialization script -->
     <script src="/static/lucide-init.js"></script>
     {% block extra_css %}{% endblock %}
@@ -140,7 +140,7 @@
                         <span>Dashboard</span>
                     </a>
                     <a href="/generate-content" class="menu-item {% if current_page == 'generate_content' %}active{% endif %}">
-                        <i data-lucide="pen-tool"></i>
+                        <i data-lucide="pencil"></i>
                         <span>Generate Content</span>
                     </a>
                     <a href="/source-content" class="menu-item {% if current_page == 'source_content' %}active{% endif %}">
@@ -148,11 +148,11 @@
                         <span>Source Content Management</span>
                     </a>
                     <a href="/template-management" class="menu-item {% if current_page == 'template_management' %}active{% endif %}">
-                        <i data-lucide="template"></i>
+                        <i data-lucide="activity"></i>
                         <span>Template Management</span>
                     </a>
                     <a href="/brand-management" class="menu-item {% if current_page == 'brand_management' %}active{% endif %}">
-                        <i data-lucide="badge"></i>
+                        <i data-lucide="arrow-big-up-dash"></i>
                         <span>Brand Management</span>
                     </a>
                 </nav>
@@ -166,7 +166,7 @@
                         <span>Feedback</span>
                     </a>
                     <a href="/account" class="menu-item {% if current_page == 'account' %}active{% endif %}">
-                        <i data-lucide="user-circle"></i>
+                        <i data-lucide="user"></i>
                         <span>Account</span>
                     </a>
                     <a href="/create/generation-flow" class="menu-item {% if current_page == 'create_generation_flow' %}active{% endif %}">
@@ -191,7 +191,7 @@
 
                 <div class="header-actions">
                     <button class="action-button">
-                        <i data-lucide="bell"></i>
+                        <i data-lucide="alert-circle"></i>
                     </button>
                 </div>
             </header>
