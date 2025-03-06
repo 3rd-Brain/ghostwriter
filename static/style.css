@@ -95,6 +95,7 @@ button, input, select, textarea {
     justify-content: space-between;
     border-bottom: 1px solid var(--border);
     margin-bottom: var(--spacing-sm);
+    height: 72px; /* Match content-header height for alignment */
 }
 
 .logo {
@@ -102,6 +103,7 @@ button, input, select, textarea {
     align-items: center;
     gap: var(--spacing-sm);
     font-weight: 600;
+    cursor: pointer;
 }
 
 .logo-icon {
@@ -603,7 +605,8 @@ button, input, select, textarea {
 .app-container.sidebar-collapsed .logo-text,
 .app-container.sidebar-collapsed .menu-category,
 .app-container.sidebar-collapsed .menu-item span,
-.app-container.sidebar-collapsed .user-info {
+.app-container.sidebar-collapsed .user-info,
+.app-container.sidebar-collapsed .sidebar-toggle {
     display: none;
 }
 

@@ -101,10 +101,20 @@
             // Sidebar toggle functionality
             const sidebarToggle = document.querySelector('.sidebar-toggle');
             const appContainer = document.querySelector('.app-container');
+            const logo = document.querySelector('.logo');
             
             if (sidebarToggle) {
                 sidebarToggle.addEventListener('click', function() {
                     appContainer.classList.toggle('sidebar-collapsed');
+                });
+            }
+            
+            // Logo click to expand sidebar when collapsed
+            if (logo) {
+                logo.addEventListener('click', function() {
+                    if (appContainer.classList.contains('sidebar-collapsed')) {
+                        appContainer.classList.remove('sidebar-collapsed');
+                    }
                 });
             }
             
