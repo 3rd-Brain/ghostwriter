@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generation - Posts Templates</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+</head>
+<body>
+    <div class="main-container">
+        {% include 'search_sidebar.html' %}
+        <div class="content-area">
+            <h2>Content Generation</h2>
+            <div class="content-card">
+                <div class="form-container">
+                    <h3>Repurpose Content Using Posts as Templates</h3>
+                    <form id="postsTemplatesForm" class="generation-form">
+                        <div class="form-group">
+                            <label for="contentTopicQuery">Content Topic Query:</label>
+                            <textarea id="contentTopicQuery" name="contentTopicQuery" rows="4" class="form-control" required></textarea>
+                        </div>
+                        <div class="form-group template-group">
+                            <label for="templatePost">Template Post / Query:</label>
+                            <div class="template-input-group">
+                                <textarea id="templatePost" name="templatePost" rows="4" class="form-control" required></textarea>
+                                <div class="template-type">
+                                    <input type="checkbox" id="isQuery" name="isQuery">
+                                    <label for="isQuery">Is this a query to retrieve top posts?</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="brand">Brand:</label>
+                            <input type="text" id="brand" name="brand" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="workflowId">Workflow ID:</label>
+                            <input type="text" id="workflowId" name="workflowId" class="form-control" value="Legacy Generation Flow with Claude">
+                        </div>
+                        <div id="queryOptions" class="hidden">
+                            <div class="form-group">
+                                <label for="numberOfPosts">Number of Posts to Use as Templates:</label>
+                                <input type="number" id="numberOfPosts" name="numberOfPosts" class="form-control" value="5" min="1" max="10">
+                            </div>
+                            <div class="form-group">
+                                <label for="postTopicQuery">Topic to Query Your Top Posts:</label>
+                                <input type="text" id="postTopicQuery" name="postTopicQuery" class="form-control" value="Digital Operations">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" form="postsTemplatesForm" class="submit-btn">Generate Content</button>
+                <button type="button" class="reset-btn">Reset</button>
+            </div>
+        </div>
+    </div>
+    <div class="notification" id="notification"></div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const navItems = document.querySelectorAll('.nav-item');
+            const isQueryCheckbox = document.getElementById('isQuery');
+            const queryOptions = document.getElementById('queryOptions');
+
+            navItems.forEach(navItem => {
+                const btn = navItem.querySelector('.sidebar-btn');
+                const submenu = navItem.querySelector('.submenu');
+
+                if (btn && submenu) {
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        this.classList.toggle('clicked');
+                        submenu.style.display = this.classList.contains('clicked') ? 'flex' : 'none';
+                    });
+                }
+            });
+
+            // Show submenu of active nav item initially
+            const activeNavItem = document.querySelector('.nav-item .active');
+            if (activeNavItem) {
+                const parentNavItem = activeNavItem.closest('.nav-item');
+                const parentBtn = parentNavItem.querySelector('.sidebar-btn');
+                const parentSubmenu = parentNavItem.querySelector('.submenu');
+                if (parentBtn && parentSubmenu) {
+                    parentBtn.classList.add('clicked');
+                    parentSubmenu.style.display = 'flex';
+                }
+            }
+
+            isQueryCheckbox.addEventListener('change', function() {
+                queryOptions.classList.toggle('hidden', !this.checked);
+                const queryFields = queryOptions.querySelectorAll('input');
+                queryFields.forEach(field => {
+                    field.required = this.checked;
+                });
+            });
+
+            document.getElementById('postsTemplatesForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const formData = {
+                    content_topic_query: document.getElementById('contentTopicQuery').value,
+                    template_post: document.getElementById('templatePost').value,
+                    brand: document.getElementById('brand').value,
+                    workflow_id: document.getElementById('workflowId').value,
+                    is_given_template_query: document.getElementById('isQuery').checked
+                };
+
+                if (formData.is_given_template_query) {
+                    formData.number_of_posts_to_template = parseInt(document.getElementById('numberOfPosts').value);
+                    formData.post_topic_query = document.getElementById('postTopicQuery').value;
+                }
+
+                try {
+                    const response = await fetch('/source-content-repurpose-with-templates', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(formData)
+                    });
+                    const data = await response.json();
+                    showNotification(data.status);
+                } catch (error) {
+                    showNotification('Error generating content: ' + error.message);
+                }
+            });
+
+            document.querySelector('.reset-btn').addEventListener('click', function() {
+                document.getElementById('postsTemplatesForm').reset();
+                queryOptions.classList.add('hidden');
+            });
+
+            function showNotification(message) {
+                const notification = document.getElementById('notification');
+                notification.textContent = message;
+                notification.classList.add('show');
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>

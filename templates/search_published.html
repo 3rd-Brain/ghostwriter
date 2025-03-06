@@ -1,0 +1,230 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search Published Content</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <style>
+        .search-container {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+        .search-container .form-group {
+            flex: 1;
+            margin: 0;
+        }
+        .search-container button {
+            margin-top: 1.5rem;
+        }
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            table-layout: fixed;
+        }
+        .results-table th, .results-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+            vertical-align: top;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .results-table th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+        }
+        .results-table .content-col {
+            width: 60%;
+            max-width: 0;
+            cursor: pointer;
+        }
+        .results-table .metrics-col {
+            width: 30%;
+            max-width: 0;
+            white-space: pre-wrap;
+            font-family: inherit;
+        }
+        .results-table .date-col {
+            width: 10%;
+        }
+        .content-card {
+            padding: 1.5rem;
+        }
+        .search-container {
+            gap: 2rem;
+        }
+        .popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+        .popup-content {
+            position: relative;
+            background: white;
+            width: 80%;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            border-radius: 8px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .popup-close {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            cursor: pointer;
+            font-size: 24px;
+        }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        {% include 'search_sidebar.html' %}
+        <div class="content-area">
+            <h2>My Top Published Content</h2>
+            <div class="content-card">
+                <div class="form-container">
+                    <form class="generation-form" onsubmit="searchContent(event)">
+                        <div class="search-container">
+                            <div class="form-group">
+                                <label for="searchQuery">Search Query:</label>
+                                <input type="text" id="searchQuery" class="form-control" placeholder="Enter search terms">
+                            </div>
+                            <button type="submit" class="submit-btn">Search</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div id="results" class="content-card" style="margin-top: 2rem;">
+                <h3 id="resultsTitle">Showing Results for: "Top posts of the week"</h3>
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th class="content-col">Content</th>
+                            <th class="metrics-col">Metrics</th>
+                            <th class="date-col">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="searchResults">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="popup-overlay">
+        <div class="popup-content">
+            <span class="popup-close" onclick="closePopup()">&times;</span>
+            <h3 id="popup-title"></h3>
+            <p id="popup-text"></p>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const navItems = document.querySelectorAll('.nav-item');
+            
+            navItems.forEach(navItem => {
+                const btn = navItem.querySelector('.sidebar-btn');
+                const submenu = navItem.querySelector('.submenu');
+                
+                if (btn && submenu) {
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        this.classList.toggle('clicked');
+                        submenu.style.display = this.classList.contains('clicked') ? 'flex' : 'none';
+                    });
+                }
+            });
+
+            // Show submenu of active nav item initially
+            const activeNavItem = document.querySelector('.nav-item .active');
+            if (activeNavItem) {
+                const parentNavItem = activeNavItem.closest('.nav-item');
+                const parentBtn = parentNavItem.querySelector('.sidebar-btn');
+                const parentSubmenu = parentNavItem.querySelector('.submenu');
+                if (parentBtn && parentSubmenu) {
+                    parentBtn.classList.add('clicked');
+                    parentSubmenu.style.display = 'flex';
+                }
+            }
+        });
+
+        async function searchContent(event) {
+            if (event) event.preventDefault();
+            const query = document.getElementById('searchQuery').value || "What are my top posts of the week?";
+            document.getElementById('resultsTitle').textContent = `Showing Results for: "${query}"`;
+            
+            try {
+                const response = await fetch('/top-content', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        query: query,
+                        topic: "General"
+                    })
+                });
+                
+                const data = await response.json();
+                displayResults(data);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function displayResults(data) {
+            const resultsContainer = document.getElementById('searchResults');
+            resultsContainer.innerHTML = '';
+            
+            if (data.data && data.data.documents) {
+                data.data.documents.forEach(doc => {
+                    const row = document.createElement('tr');
+                    const metricsText = `Impression Ratio: ${(doc.metadata.weighted_impression_ratio || 0).toFixed(2)}
+Like Ratio:      ${(doc.metadata.weighted_like_ratio || 0).toFixed(2)}
+Bookmark Ratio:  ${(doc.metadata.weighted_bookmark_ratio || 0).toFixed(2)}
+Retweet Ratio:   ${(doc.metadata.weighted_retweet_ratio || 0).toFixed(2)}
+Reply Ratio:     ${(doc.metadata.weighted_reply_ratio || 0).toFixed(2)}
+Total Weight:    ${(doc.metadata.total_weight_metric || 0).toFixed(2)}`;
+                    
+                    row.innerHTML = `
+                        <td class="content-col" onclick="showPopup(this, 'Content')">${doc.content.replace(/\n/g, '<br>')}</td>
+                        <td class="metrics-col" onclick="showPopup(this, 'Metrics')">${metricsText}</td>
+                        <td class="date-col">${new Date(doc.metadata.published_date).toLocaleDateString()}</td>
+                    `;
+                    resultsContainer.appendChild(row);
+                });
+            }
+        }
+
+        // Initial load
+        window.onload = () => searchContent();
+    function showPopup(element, title) {
+            const text = element.innerText;
+            document.getElementById('popup-title').textContent = title;
+            document.getElementById('popup-text').textContent = text;
+            document.querySelector('.popup-overlay').style.display = 'block';
+        }
+
+        function closePopup() {
+            document.querySelector('.popup-overlay').style.display = 'none';
+        }
+
+        // Close popup when clicking outside
+        document.querySelector('.popup-overlay').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closePopup();
+            }
+        });
+    </script>
+</body>
+</html>

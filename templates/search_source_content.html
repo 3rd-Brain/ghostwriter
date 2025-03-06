@@ -1,0 +1,32 @@
+
+{% extends "base.html" %}
+
+{% block title %}Search Source Content{% endblock %}
+
+{% block content %}
+<h2>Source Content</h2>
+<div class="content-card">
+    <div class="form-container">
+        <form class="generation-form">
+            <div class="form-group">
+                <label for="sourceSearch">Search Source Content:</label>
+                <input type="text" id="sourceSearch" class="form-control" placeholder="Enter search terms">
+            </div>
+            <button type="button" onclick="searchSources()" class="submit-btn">Search</button>
+        </form>
+    </div>
+</div>
+<div id="sourceResults" class="content-card" style="margin-top: 2rem; display: none;">
+    <h3>Source Content Results</h3>
+    <div id="sourceContentResults"></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    async function searchSources() {
+        const query = document.getElementById('sourceSearch').value;
+        // Implementation pending
+    }
+</script>
+{% endblock %}
