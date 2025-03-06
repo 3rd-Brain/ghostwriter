@@ -1,25 +1,47 @@
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Login</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Ghostwriter API</title>
     <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 </head>
-<body>
+<body style="background-color: var(--background);">
     <div class="login-container">
-        <h2>Login</h2>
+        <div class="login-logo">
+            <div style="width: 64px; height: 64px; background-color: var(--primary); color: white; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; margin: 0 auto; font-weight: 700; font-size: 24px;">
+                G
+            </div>
+        </div>
+        
+        <h1 class="login-title">Login to Ghostwriter</h1>
+        
         {% if error %}
-        <p class="error">{{ error }}</p>
+        <div style="background-color: rgba(245, 101, 101, 0.1); color: var(--error); padding: var(--spacing-md); border-radius: var(--radius-md); margin-bottom: var(--spacing-lg); text-align: center;">
+            {{ error }}
+        </div>
         {% endif %}
-        <form method="POST" action="/login">
+        
+        <form method="post" action="/login">
             <div class="form-group">
-                <input type="text" name="username" placeholder="Username" required>
+                <label for="username" class="form-label">Username</label>
+                <input type="text" id="username" name="username" class="form-control" required>
             </div>
+            
             <div class="form-group">
-                <input type="password" name="password" placeholder="Password" required>
+                <label for="password" class="form-label">Password</label>
+                <input type="password" id="password" name="password" class="form-control" required>
             </div>
-            <button type="submit">Login</button>
+            
+            <button type="submit" class="form-button" style="width: 100%; margin-top: var(--spacing-md);">Sign In</button>
         </form>
+        
+        <div style="text-align: center; margin-top: var(--spacing-lg); color: var(--text-secondary); font-size: 14px;">
+            Ghostwriter API © 2023
+        </div>
     </div>
 </body>
 </html>

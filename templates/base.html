@@ -1,60 +1,135 @@
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>{% block title %}{% endblock %}</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Ghostwriter API{% endblock %}</title>
     <link rel="stylesheet" href="/static/style.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <div class="main-container">
-        {% include 'search_sidebar.html' %}
-        <div class="content-area">
-            {% block content %}{% endblock %}
+    <div class="app-container">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span class="logo-icon">G</span>
+                    <span class="logo-text">Ghostwriter Inc.</span>
+                </div>
+                <button class="sidebar-toggle">
+                    <i class="material-icons">menu</i>
+                </button>
+            </div>
+            
+            <div class="main-menu">
+                <h6 class="menu-category">MAIN MENU</h6>
+                <nav class="menu-items">
+                    <a href="/dashboard" class="menu-item {% if current_page == 'dashboard' %}active{% endif %}">
+                        <i class="material-icons">dashboard</i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="/generation/repurpose" class="menu-item {% if current_page == 'generation_repurpose' %}active{% endif %}">
+                        <i class="material-icons">autorenew</i>
+                        <span>Content Generation</span>
+                    </a>
+                    <a href="/generated-content" class="menu-item {% if current_page == 'generated_content' %}active{% endif %}">
+                        <i class="material-icons">description</i>
+                        <span>Generated Content</span>
+                    </a>
+                    <a href="/create/brand-voice" class="menu-item {% if current_page == 'create_brand_voice' %}active{% endif %}">
+                        <i class="material-icons">record_voice_over</i>
+                        <span>Brand Voice</span>
+                    </a>
+                </nav>
+            </div>
+            
+            <div class="other-menu">
+                <h6 class="menu-category">OTHER</h6>
+                <nav class="menu-items">
+                    <a href="/search/published" class="menu-item {% if current_page == 'search_published' %}active{% endif %}">
+                        <i class="material-icons">search</i>
+                        <span>Search Published</span>
+                    </a>
+                    <a href="/search/templates" class="menu-item {% if current_page == 'search_templates' %}active{% endif %}">
+                        <i class="material-icons">format_shapes</i>
+                        <span>Templates</span>
+                    </a>
+                    <a href="/create/generation-flow" class="menu-item {% if current_page == 'create_generation_flow' %}active{% endif %}">
+                        <i class="material-icons">settings</i>
+                        <span>Settings</span>
+                    </a>
+                </nav>
+            </div>
+            
+            <div class="user-profile">
+                <div class="avatar">{{ username|first|upper }}</div>
+                <div class="user-info">
+                    <div class="username">{{ username }}</div>
+                    <a href="/logout" class="logout-link">Sign out</a>
+                </div>
+            </div>
         </div>
+        
+        <main class="main-content">
+            <header class="content-header">
+                <div class="search-container">
+                    <i class="material-icons search-icon">search</i>
+                    <input type="text" placeholder="Search..." class="search-input">
+                    <button class="filter-button">
+                        <i class="material-icons">filter_list</i>
+                    </button>
+                </div>
+                
+                <div class="header-actions">
+                    <button class="action-button">
+                        <i class="material-icons">notifications</i>
+                    </button>
+                    <button class="action-button add-widget-btn">
+                        <i class="material-icons">add</i>
+                        <span>Add Widget</span>
+                    </button>
+                </div>
+            </header>
+            
+            <div class="content-container">
+                <div class="page-title">
+                    <h1>{% block page_title %}Dashboard{% endblock %}</h1>
+                    <p>{% block page_subtitle %}Track your sales and performance of your strategy{% endblock %}</p>
+                </div>
+                
+                {% block content %}{% endblock %}
+            </div>
+        </main>
     </div>
+    
     <div class="notification" id="notification"></div>
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const navItems = document.querySelectorAll('.nav-item');
+            // Sidebar toggle functionality
+            const sidebarToggle = document.querySelector('.sidebar-toggle');
+            const appContainer = document.querySelector('.app-container');
             
-            navItems.forEach(navItem => {
-                const btn = navItem.querySelector('.sidebar-btn');
-                const submenu = navItem.querySelector('.submenu');
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', function() {
+                    appContainer.classList.toggle('sidebar-collapsed');
+                });
+            }
+            
+            // Notification function
+            window.showNotification = function(message, isError = false) {
+                const notification = document.getElementById('notification');
+                notification.textContent = message;
+                notification.className = `notification ${isError ? 'error' : 'success'}`;
+                notification.classList.add('show');
                 
-                if (btn && submenu) {
-                    btn.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        this.classList.toggle('clicked');
-                        submenu.style.display = this.classList.contains('clicked') ? 'flex' : 'none';
-                    });
-                }
-            });
-
-            // Show submenu of active nav item initially
-            const activeNavItem = document.querySelector('.nav-item .active');
-            if (activeNavItem) {
-                const parentNavItem = activeNavItem.closest('.nav-item');
-                const parentBtn = parentNavItem.querySelector('.sidebar-btn');
-                const parentSubmenu = parentNavItem.querySelector('.submenu');
-                if (parentBtn && parentSubmenu) {
-                    parentBtn.classList.add('clicked');
-                    parentSubmenu.style.display = 'flex';
-                }
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
             }
         });
-
-        function showNotification(message, isError = false) {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.className = `notification ${isError ? 'error' : 'success'}`;
-            notification.classList.add('show');
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
-        }
     </script>
     {% block extra_js %}{% endblock %}
 </body>

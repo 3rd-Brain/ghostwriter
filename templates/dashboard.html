@@ -1,93 +1,137 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Dashboard</title>
-    <link rel="stylesheet" href="/static/style.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-</head>
-<body>
-    <div class="main-container">
-        <div class="sidebar">
-            <div class="sidebar-nav">
-                <a href="/dashboard" class="sidebar-btn active">
-                    <span class="material-icons">home</span>
-                    Home
-                </a>
-                <div class="nav-item">
-                    <a href="#" class="sidebar-btn">
-                        <span class="material-icons">auto_awesome</span>
-                        Generation
-                    </a>
-                    <div class="submenu">
-                        <a href="/generation/repurpose" class="submenu-item">Generate New Content</a>
-                        <a href="/generation/top-content" class="submenu-item">Repurpose Top Content</a>
-                        <a href="/generation/posts-templates" class="submenu-item">Repurpose Content Using Posts as Templates</a>
-                    </div>
-                </div>
-                <div class="nav-item">
-                    <a href="#" class="sidebar-btn">
-                        <span class="material-icons">search</span>
-                        Search
-                    </a>
-                    <div class="submenu">
-                        <a href="/search/published" class="submenu-item">My Top Published Content</a>
-                        <a href="/search/brand-voices" class="submenu-item">Brand Voices</a>
-                        <a href="/search/source-content" class="submenu-item">Source Content</a>
-                        <a href="/search/templates" class="submenu-item">Templates</a>
-                    </div>
-                </div>
-                <div class="nav-item">
-                    <a href="#" class="sidebar-btn">
-                        <span class="material-icons">upload</span>
-                        Create/Upload
-                    </a>
-                    <div class="submenu">
-                        <a href="/create/brand-voice" class="submenu-item">Create Brand Voice</a>
-                        <a href="/create/source-content" class="submenu-item">Upload New Source Content</a>
-                        <a href="/create/templatizer" class="submenu-item">Templatizer</a>
-                        <a href="/create/generation-flow" class="submenu-item">Create New Generation Flow</a>
-                    </div>
-                </div>
-                <a href="/generated-content" class="sidebar-btn">
-                    <span class="material-icons">article</span>
-                    Generated Content
-                </a>
+
+{% extends "base.html" %}
+
+{% block title %}Dashboard | Ghostwriter API{% endblock %}
+
+{% block page_title %}Dashboard{% endblock %}
+{% block page_subtitle %}Track your content generation and performance{% endblock %}
+
+{% block content %}
+<div class="dashboard-grid">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <span>Content Overview</span>
+                <i class="material-icons info-icon">info_outline</i>
             </div>
-            <a href="#" class="user-profile">
-                <div class="user-avatar">
-                    <span class="material-icons">person</span>
-                </div>
-                <div class="user-info">
-                    <div class="user-name">{{ username }}</div>
-                </div>
-            </a>
+            <div class="card-dropdown">
+                <span>This month</span>
+                <i class="material-icons">expand_more</i>
+            </div>
         </div>
-        <div class="content-area">
-            <div class="welcome-section">
-                <h2>Welcome Back, {{ username }}</h2>
-                <div class="content">
-                    <a href="/logout" class="logout-btn">Logout</a>
+        <div class="metric-large">43,630</div>
+        <div class="metric-label">Total content pieces</div>
+        <div class="content-tags">
+            <span>Select by platform:</span>
+            <div class="tag-container">
+                <button class="tag active">Twitter</button>
+                <button class="tag">LinkedIn</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <span>Active Campaigns</span>
+                <i class="material-icons info-icon">info_outline</i>
+            </div>
+        </div>
+        <div class="metric-large">27,064</div>
+        <div class="metric-label">vs last month</div>
+        <div class="metric-change metric-positive">
+            <i class="material-icons">arrow_upward</i>
+            <span>12%</span>
+        </div>
+        <div class="see-details">
+            <a href="#">See Details <i class="material-icons">arrow_forward</i></a>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <span>Engagement Rate</span>
+                <i class="material-icons info-icon">info_outline</i>
+            </div>
+        </div>
+        <div class="metric-large">16,568</div>
+        <div class="metric-label">vs last month</div>
+        <div class="metric-change metric-positive">
+            <i class="material-icons">arrow_upward</i>
+            <span>7%</span>
+        </div>
+        <div class="see-details">
+            <a href="#">See Details <i class="material-icons">arrow_forward</i></a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">
+            <span>Analytics Overview</span>
+            <i class="material-icons info-icon">info_outline</i>
+        </div>
+        <div class="card-dropdown">
+            <span>This year</span>
+            <i class="material-icons">expand_more</i>
+        </div>
+    </div>
+    <div class="metric-data">
+        <div class="metric-negative">-$4,530</div>
+        <div class="metric-percentage">-0.6%</div>
+    </div>
+    <div class="chart-container">
+        <div class="placeholder-chart">
+            <!-- Placeholder for chart, would be replaced with actual chart library -->
+            <div style="background-color: rgba(255,107,53,0.1); height: 200px; width: 100%; border-radius: 8px; position: relative;">
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: var(--text-secondary);">
+                    Chart will be displayed here
                 </div>
             </div>
         </div>
     </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const navItems = document.querySelectorAll('.nav-item');
-            
-            navItems.forEach(navItem => {
-                const btn = navItem.querySelector('.sidebar-btn');
-                const submenu = navItem.querySelector('.submenu');
-                
-                if (btn && submenu) {
-                    btn.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        this.classList.toggle('clicked');
-                        submenu.style.display = this.classList.contains('clicked') ? 'flex' : 'none';
-                    });
-                }
-            });
-        });
-    </script>
-</body>
-</html>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">
+            <span>Top Content</span>
+            <i class="material-icons info-icon">info_outline</i>
+        </div>
+        <div class="see-details">
+            <a href="#">See Details <i class="material-icons">arrow_forward</i></a>
+        </div>
+    </div>
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Platform</th>
+                    <th>Engagement</th>
+                    <th>Revenue</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>10 Tips for Better Social Media</td>
+                    <td>Twitter</td>
+                    <td>527 interactions</td>
+                    <td>$1,890</td>
+                    <td><span class="status-badge status-in-stock">Published</span></td>
+                </tr>
+                <tr>
+                    <td>How to Boost Your Engagement</td>
+                    <td>LinkedIn</td>
+                    <td>340 interactions</td>
+                    <td>$2,589</td>
+                    <td><span class="status-badge status-out-of-stock">Draft</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
