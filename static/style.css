@@ -627,15 +627,15 @@ button, input, select, textarea {
     bottom: 0;
     width: 320px;
     z-index: 100;
-    padding: 16px;
     pointer-events: none; /* Allow scrolling through the container */
 }
 
 .chatbox {
     background-color: var(--surface);
-    border-radius: var(--radius-lg);
+    border-radius: 12px;
     box-shadow: var(--shadow-md);
-    height: 100%;
+    height: calc(100% - 16px);
+    margin: 8px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -704,6 +704,8 @@ button, input, select, textarea {
     cursor: pointer;
     width: 40px;
     height: 40px;
+    min-width: 40px; /* Prevent button from shrinking */
+    margin-right: 4px; /* Add margin to prevent button being cut off */
 }
 
 .send-button:hover {
