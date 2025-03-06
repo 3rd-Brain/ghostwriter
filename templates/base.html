@@ -21,14 +21,15 @@
 
         .chatbox {
             background-color: #fff;
-            border-radius: 12px 0 0 0;
-            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             height: calc(100% - 16px);
             margin: 8px;
             display: flex;
             flex-direction: column;
             pointer-events: auto; /* Make the chatbox itself clickable */
             border: 1px solid #e2e8f0;
+            overflow: hidden; /* Ensure inner content respects border radius */
         }
 
         .chatbox-header {
@@ -37,7 +38,6 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border-radius: 12px 0 0 0;
         }
 
         .chatbox-header h3 {
@@ -90,6 +90,9 @@
             cursor: pointer;
             width: 40px;
             height: 40px;
+            min-width: 40px; /* Prevent button from shrinking */
+            position: relative; /* Ensure button displays fully */
+            right: 0;
         }
 
         .content-header {
@@ -98,10 +101,6 @@
 
         .content-container {
             margin-right: 320px; /* Add margin to prevent content overlap with chatbox */
-        }
-        
-        .chatbox-input .send-button {
-            margin-right: 4px; /* Add margin to prevent send button being cut off */
         }
     </style>
 </head>
