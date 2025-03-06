@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,6 +8,57 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
     {% block extra_css %}{% endblock %}
+    <style>
+        .chatbox-container {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 300px; /* Adjust width as needed */
+            background-color: #fff;
+            border-radius: 10px 0 0 10px; /* Rounded corner on left side */
+            overflow-y: auto; /* Enable scrolling if messages exceed height */
+            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+            padding: 10px;
+        }
+
+        .chatbox {
+            height: 100%;
+        }
+
+        .chatbox-header {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .chatbox-messages {
+            padding: 10px;
+            height: calc(100% - 100px); /* Adjust height as needed to accommodate header and input */
+            overflow-y: auto;
+        }
+
+        .chatbox-input {
+            padding: 10px;
+        }
+
+        .chatbox-input textarea {
+            width: calc(100% - 40px);
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 5px;
+        }
+
+        .chatbox-input .send-button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
     <div class="app-container">
@@ -22,7 +72,7 @@
                     <i class="material-icons">menu</i>
                 </button>
             </div>
-            
+
             <div class="main-menu">
                 <h6 class="menu-category">MAIN MENU</h6>
                 <nav class="menu-items">
@@ -44,7 +94,7 @@
                     </a>
                 </nav>
             </div>
-            
+
             <div class="other-menu">
                 <h6 class="menu-category">OTHER</h6>
                 <nav class="menu-items">
@@ -62,7 +112,7 @@
                     </a>
                 </nav>
             </div>
-            
+
             <div class="user-profile">
                 <div class="avatar">{{ username|first|upper }}</div>
                 <div class="user-info">
@@ -71,44 +121,61 @@
                 </div>
             </div>
         </div>
-        
+
         <main class="main-content">
             <header class="content-header">
                 <div></div>
-                
+
                 <div class="header-actions">
                     <button class="action-button">
                         <i class="material-icons">notifications</i>
                     </button>
                 </div>
             </header>
-            
+
             <div class="content-container">
                 <div class="page-title">
                     <h1>{% block page_title %}Dashboard{% endblock %}</h1>
                     <p>{% block page_subtitle %}Track your sales and performance of your strategy{% endblock %}</p>
                 </div>
-                
+
                 {% block content %}{% endblock %}
             </div>
         </main>
+
+        <div class="chatbox-container">
+            <div class="chatbox">
+                <div class="chatbox-header">
+                    <h3>Ghostwriter Agent</h3>
+                </div>
+                <div class="chatbox-messages" id="chatbox-messages">
+                    <!-- Messages will appear here -->
+                </div>
+                <div class="chatbox-input">
+                    <textarea placeholder="Type your message here..."></textarea>
+                    <button class="send-button">
+                        <i class="material-icons">send</i>
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
-    
+
     <div class="notification" id="notification"></div>
-    
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Sidebar toggle functionality
             const sidebarToggle = document.querySelector('.sidebar-toggle');
             const appContainer = document.querySelector('.app-container');
             const logo = document.querySelector('.logo');
-            
+
             if (sidebarToggle) {
                 sidebarToggle.addEventListener('click', function() {
                     appContainer.classList.toggle('sidebar-collapsed');
                 });
             }
-            
+
             // Logo click to expand sidebar when collapsed
             if (logo) {
                 logo.addEventListener('click', function() {
@@ -117,14 +184,14 @@
                     }
                 });
             }
-            
+
             // Notification function
             window.showNotification = function(message, isError = false) {
                 const notification = document.getElementById('notification');
                 notification.textContent = message;
                 notification.className = `notification ${isError ? 'error' : 'success'}`;
                 notification.classList.add('show');
-                
+
                 setTimeout(() => {
                     notification.classList.remove('show');
                 }, 3000);
