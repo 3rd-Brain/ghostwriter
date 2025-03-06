@@ -94,6 +94,7 @@ button, input, select, textarea {
     align-items: center;
     justify-content: space-between;
     border-bottom: 1px solid var(--border);
+    margin-bottom: var(--spacing-sm);
 }
 
 .logo {
@@ -104,83 +105,109 @@ button, input, select, textarea {
 }
 
 .logo-icon {
-    width: 32px;
-    height: 32px;
-    background-color: var(--primary);
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
     color: white;
-    border-radius: var(--radius-sm);
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    font-size: 14px;
+}
+
+.logo-text {
+    font-size: 15px;
+    letter-spacing: -0.3px;
 }
 
 .sidebar-toggle {
     background: transparent;
     border: none;
-    color: var(--text-secondary);
+    color: var(--text-primary);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    transition: var(--transition-fast);
+}
+
+.sidebar-toggle:hover {
+    background-color: rgba(0,0,0,0.05);
 }
 
 .menu-category {
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
-    color: var(--text-secondary);
-    padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-sm);
+    color: var(--text-primary);
+    opacity: 0.7;
+    padding: var(--spacing-md) var(--spacing-lg) var(--spacing-xs);
     letter-spacing: 0.05em;
 }
 
 .menu-items {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xs);
+    gap: 2px;
 }
 
 .menu-item {
     display: flex;
     align-items: center;
-    padding: var(--spacing-md) var(--spacing-lg);
-    color: var(--text-secondary);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    color: #1a1a1a;
     gap: var(--spacing-md);
     border-radius: var(--radius-md);
     margin: 0 var(--spacing-sm);
     transition: var(--transition-fast);
+    font-size: 14px;
+}
+
+.menu-item i {
+    font-size: 18px;
+    opacity: 0.9;
 }
 
 .menu-item:hover {
     background-color: rgba(0, 0, 0, 0.04);
-    color: var(--text-primary);
 }
 
 .menu-item.active {
-    background-color: rgba(107, 53, 255, 0.1); /* Changed to purple */
-    color: var(--primary);
+    background-color: rgba(107, 53, 255, 0.08);
+    color: var(--primary-dark);
     font-weight: 500;
 }
 
 .user-profile {
     margin-top: auto;
-    padding: var(--spacing-lg);
+    padding: var(--spacing-md);
     border-top: 1px solid var(--border);
     display: flex;
     align-items: center;
     gap: var(--spacing-md);
+    position: sticky;
+    bottom: 0;
+    background-color: var(--surface);
 }
 
 .avatar {
-    width: 40px;
-    height: 40px;
-    background-color: var(--primary-light);
+    width: 34px;
+    height: 34px;
+    background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
     color: white;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 500;
+    font-size: 14px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .user-info {
@@ -191,12 +218,13 @@ button, input, select, textarea {
 
 .username {
     font-weight: 500;
-    color: var(--text-primary);
+    color: #1a1a1a;
+    font-size: 14px;
 }
 
 .logout-link {
-    color: var(--text-secondary);
-    font-size: 14px;
+    color: #444;
+    font-size: 13px;
 }
 
 .logout-link:hover {
