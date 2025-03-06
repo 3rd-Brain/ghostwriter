@@ -1,63 +1,55 @@
-
-/**
- * Lucide Icons initialization script
- * This script initializes Lucide icons on page load and provides an API to create icons dynamically
- */
-
-// Function to initialize all icons with the data-lucide attribute
-function initLucideIcons() {
-  if (typeof lucide !== 'undefined' && lucide.createIcons) {
-    lucide.createIcons({
-      attrs: {
-        stroke: 'currentColor',
-        strokeWidth: 2,
-        size: 24
-      }
-    });
-    console.log('Lucide icons initialized successfully');
-  } else {
-    console.warn('Lucide library not found or createIcons method not available');
-  }
-}
-
-// Initialize icons when the DOM is fully loaded
+// Wait for the DOM to be fully loaded before initializing icons
 document.addEventListener('DOMContentLoaded', function() {
   console.log('DOM loaded, initializing Lucide icons');
-  setTimeout(initLucideIcons, 100); // Small delay to ensure all icon scripts are loaded
+  initLucideIcons();
 });
 
-// Additional initialization for dynamic content
+// Also initialize when window is fully loaded to catch any dynamic changes
 window.addEventListener('load', function() {
   console.log('Window loaded, reinitializing Lucide icons');
   initLucideIcons();
 });
 
-// Function to create an icon dynamically
-window.createLucideIcon = function(iconName, options = {}) {
-  if (typeof lucide === 'undefined') {
-    console.error('Lucide library not found');
-    return null;
-  }
-  
-  const element = document.createElement('div');
-  element.setAttribute('data-lucide', iconName);
-  
-  // Apply the Lucide icon
-  lucide.createIcons({
-    selector: '[data-lucide="' + iconName + '"]',
-    attrs: {
-      stroke: options.stroke || 'currentColor',
-      strokeWidth: options.strokeWidth || 2,
-      width: options.size || 24,
-      height: options.size || 24
+// Function to initialize all icons with the data-lucide attribute
+function initLucideIcons() {
+  if (typeof lucide !== 'undefined' && lucide.createIcons) {
+    try {
+      lucide.createIcons();
+      console.log('Lucide icons initialized successfully');
+    } catch (error) {
+      console.error('Error initializing Lucide icons:', error);
     }
-  });
-  
+  } else {
+    console.warn('Lucide library not found or createIcons method not available');
+  }
+}
+
+// Function to create an icon dynamically if needed
+window.createLucideIcon = function(name, options = {}) {
+  if (typeof lucide === 'undefined' || !lucide.icons || !lucide.icons[name]) {
+    console.error(`Lucide icon "${name}" not found. Make sure the library is loaded.`);
+    return '';
+  }
+
+  const defaultOptions = {
+    stroke: 'currentColor',
+    strokeWidth: 2,
+    size: 24
+  };
+
+  const element = document.createElement('div');
+  const iconOptions = {...defaultOptions, ...options};
+
+  // Create the icon SVG
+  element.innerHTML = lucide.icons[name].toSvg(iconOptions);
+
   return element.innerHTML;
 };
 
-// Function to replace icon in an element
-window.replaceLucideIcon = function(element, iconName, options = {}) {
+// Function to replace an icon in an element
+window.replaceIconInElement = function(element, iconName, options = {}) {
+  if (!element) return;
+
   const iconSvg = window.createLucideIcon(iconName, options);
   if (iconSvg) {
     element.innerHTML = iconSvg;
