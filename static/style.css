@@ -172,8 +172,17 @@ button, input, select, textarea {
 }
 
 .menu-item i {
-    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     opacity: 0.9;
+    width: 24px;
+    height: 24px;
+}
+
+.menu-item i svg {
+    width: 18px;
+    height: 18px;
 }
 
 .menu-item:hover {

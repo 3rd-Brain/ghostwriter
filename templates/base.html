@@ -5,8 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Ghostwriter API{% endblock %}</title>
     <link rel="stylesheet" href="/static/style.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <script src="/node_modules/lucide-static/icons/home.js"></script>
+    <script src="/node_modules/lucide-static/icons/user.js"></script>
+    <script src="/node_modules/lucide-static/icons/settings.js"></script>
+    <script src="/node_modules/lucide-static/icons/file-text.js"></script>
+    <script src="/node_modules/lucide-static/icons/template.js"></script>
+    <script src="/node_modules/lucide-static/icons/badge.js"></script>
+    <script src="/node_modules/lucide-static/icons/pen-tool.js"></script>
+    <script src="/node_modules/lucide-static/icons/message-square.js"></script>
+    <script src="/node_modules/lucide-static/icons/user-circle.js"></script>
+    <script src="/node_modules/lucide-static/icons/bell.js"></script>
+    <script src="/node_modules/lucide-static/icons/send.js"></script>
+    <script src="/node_modules/lucide-static/icons/menu.js"></script>
     {% block extra_css %}{% endblock %}
     <style>
         .chatbox-container {
@@ -113,7 +124,7 @@
                     <span class="logo-text">Ghostwriter</span>
                 </div>
                 <button class="sidebar-toggle">
-                    <i class="material-icons">menu</i>
+                    <i data-lucide="menu"></i>
                 </button>
             </div>
 
@@ -121,23 +132,23 @@
                 <h6 class="menu-category">MAIN MENU</h6>
                 <nav class="menu-items">
                     <a href="/dashboard" class="menu-item {% if current_page == 'dashboard' %}active{% endif %}">
-                        <i class="material-icons">dashboard</i>
+                        <i data-lucide="home"></i>
                         <span>Dashboard</span>
                     </a>
                     <a href="/generate-content" class="menu-item {% if current_page == 'generate_content' %}active{% endif %}">
-                        <i class="material-icons">create</i>
+                        <i data-lucide="pen-tool"></i>
                         <span>Generate Content</span>
                     </a>
                     <a href="/source-content" class="menu-item {% if current_page == 'source_content' %}active{% endif %}">
-                        <i class="material-icons">source</i>
+                        <i data-lucide="file-text"></i>
                         <span>Source Content Management</span>
                     </a>
                     <a href="/template-management" class="menu-item {% if current_page == 'template_management' %}active{% endif %}">
-                        <i class="material-icons">format_shapes</i>
+                        <i data-lucide="template"></i>
                         <span>Template Management</span>
                     </a>
                     <a href="/brand-management" class="menu-item {% if current_page == 'brand_management' %}active{% endif %}">
-                        <i class="material-icons">branding_watermark</i>
+                        <i data-lucide="badge"></i>
                         <span>Brand Management</span>
                     </a>
                 </nav>
@@ -147,15 +158,15 @@
                 <h6 class="menu-category">USER</h6>
                 <nav class="menu-items">
                     <a href="/feedback" class="menu-item {% if current_page == 'feedback' %}active{% endif %}">
-                        <i class="material-icons">feedback</i>
+                        <i data-lucide="message-square"></i>
                         <span>Feedback</span>
                     </a>
                     <a href="/account" class="menu-item {% if current_page == 'account' %}active{% endif %}">
-                        <i class="material-icons">account_circle</i>
+                        <i data-lucide="user-circle"></i>
                         <span>Account</span>
                     </a>
                     <a href="/create/generation-flow" class="menu-item {% if current_page == 'create_generation_flow' %}active{% endif %}">
-                        <i class="material-icons">settings</i>
+                        <i data-lucide="settings"></i>
                         <span>Settings</span>
                     </a>
                 </nav>
@@ -176,7 +187,7 @@
 
                 <div class="header-actions">
                     <button class="action-button">
-                        <i class="material-icons">notifications</i>
+                        <i data-lucide="bell"></i>
                     </button>
                 </div>
             </header>
@@ -204,7 +215,7 @@
             <div class="chatbox-input">
                 <textarea placeholder="Type your message here..."></textarea>
                 <button class="send-button">
-                    <i class="material-icons">send</i>
+                    <i data-lucide="send"></i>
                 </button>
             </div>
         </div>
@@ -214,6 +225,18 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Lucide icons
+            document.querySelectorAll('[data-lucide]').forEach(function(icon) {
+                const iconName = icon.getAttribute('data-lucide');
+                if (window.lucide && window.lucide[iconName]) {
+                    icon.innerHTML = window.lucide[iconName].toSvg({
+                        stroke: 'currentColor',
+                        strokeWidth: 2,
+                        size: 24
+                    });
+                }
+            });
+            
             // Sidebar toggle functionality
             const sidebarToggle = document.querySelector('.sidebar-toggle');
             const appContainer = document.querySelector('.app-container');
