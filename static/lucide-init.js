@@ -14,12 +14,23 @@ function initLucideIcons() {
         strokeWidth: 2,
         size: 24
       });
+    } else {
+      console.warn(`Lucide icon "${iconName}" not found or not loaded.`);
     }
   });
 }
 
 // Initialize icons when the DOM is fully loaded
-document.addEventListener('DOMContentLoaded', initLucideIcons);
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('DOM loaded, initializing Lucide icons');
+  setTimeout(initLucideIcons, 100); // Small delay to ensure all icon scripts are loaded
+});
+
+// Additional initialization for dynamic content
+window.addEventListener('load', function() {
+  console.log('Window loaded, reinitializing Lucide icons');
+  initLucideIcons();
+});
 
 // Function to create an icon dynamically
 window.createLucideIcon = function(iconName, options = {}) {
@@ -44,3 +55,6 @@ window.replaceLucideIcon = function(element, iconName, options = {}) {
     element.innerHTML = iconSvg;
   }
 };
+
+// Function to reinitialize icons (call this after adding new elements to the DOM)
+window.reinitLucideIcons = initLucideIcons;
