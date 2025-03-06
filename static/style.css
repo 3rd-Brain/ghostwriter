@@ -68,13 +68,13 @@ button, input, select, textarea {
 /* Layout components */
 .app-container {
     display: grid;
-    grid-template-columns: 280px 1fr;
+    grid-template-columns: 280px 1fr 350px;
     min-height: 100vh;
     transition: var(--transition-normal);
 }
 
 .app-container.sidebar-collapsed {
-    grid-template-columns: 80px 1fr;
+    grid-template-columns: 80px 1fr 350px;
 }
 
 /* Sidebar styles */
@@ -574,6 +574,194 @@ button, input, select, textarea {
 @media (max-width: 768px) {
     .app-container {
         grid-template-columns: 0 1fr;
+
+/* Right panel styles */
+.right-panel {
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid var(--border);
+    background-color: var(--surface);
+    height: 100vh;
+}
+
+.panel-header {
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--border);
+    background-color: var(--background);
+}
+
+.panel-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+/* Chat section */
+.chat-section {
+    display: flex;
+    flex-direction: column;
+    height: 50vh;
+    overflow: hidden;
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.message {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-md);
+    max-width: 85%;
+}
+
+.message.user {
+    background-color: var(--primary-light);
+    color: white;
+    align-self: flex-end;
+}
+
+.message.assistant {
+    background-color: var(--background);
+    align-self: flex-start;
+}
+
+.chat-input-container {
+    display: flex;
+    padding: var(--spacing-sm);
+    border-top: 1px solid var(--border);
+    background-color: var(--surface);
+}
+
+.chat-input-container textarea {
+    flex: 1;
+    padding: var(--spacing-sm);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    resize: none;
+    height: 40px;
+    font-family: inherit;
+}
+
+.send-button {
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    margin-left: var(--spacing-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+}
+
+.send-button:hover {
+    background-color: var(--primary-dark);
+}
+
+/* Recent content section */
+.recent-content-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--border);
+}
+
+.recent-content-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--spacing-md);
+}
+
+.content-item {
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    background-color: var(--background);
+    margin-bottom: var(--spacing-md);
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.content-item:hover {
+    background-color: rgba(107, 53, 255, 0.08);
+}
+
+.content-item h4 {
+    font-size: 14px;
+    margin-bottom: var(--spacing-xs);
+    color: var(--text-primary);
+}
+
+.content-item p {
+    font-size: 12px;
+    color: var(--text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text-secondary);
+    text-align: center;
+    padding: var(--spacing-xl);
+}
+
+.empty-state i {
+    font-size: 48px;
+    margin-bottom: var(--spacing-md);
+    opacity: 0.5;
+}
+
+/* Responsive adjustments for right panel */
+@media (max-width: 1200px) {
+    .app-container {
+        grid-template-columns: 280px 1fr 0;
+    }
+    
+    .app-container.sidebar-collapsed {
+        grid-template-columns: 80px 1fr 0;
+    }
+    
+    .right-panel {
+        position: fixed;
+        right: -350px;
+        top: 0;
+        width: 350px;
+        z-index: 100;
+        transition: var(--transition-normal);
+    }
+    
+    .right-panel.open {
+        right: 0;
+    }
+    
+    .content-header {
+        padding-right: 60px;
+    }
+    
+    .toggle-right-panel {
+        display: block;
+        position: absolute;
+        right: var(--spacing-md);
+        top: 50%;
+        transform: translateY(-50%);
+    }
+}
+
     }
 
     .sidebar {

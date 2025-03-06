@@ -80,6 +80,9 @@
                     <button class="action-button">
                         <i class="material-icons">notifications</i>
                     </button>
+                    <button class="action-button toggle-right-panel" id="toggle-right-panel">
+                        <i class="material-icons">chat</i>
+                    </button>
                 </div>
             </header>
             
@@ -92,12 +95,45 @@
                 {% block content %}{% endblock %}
             </div>
         </main>
+        
+        <div class="right-panel">
+            <div class="chat-section">
+                <div class="panel-header">
+                    <h3>Ghostwriter Assistant</h3>
+                </div>
+                <div class="chat-messages" id="chat-messages">
+                    <div class="message assistant">
+                        <p>Hello! I'm your Ghostwriter Assistant. How can I help you with content generation today?</p>
+                    </div>
+                </div>
+                <div class="chat-input-container">
+                    <textarea id="chat-input" placeholder="Type your message here..."></textarea>
+                    <button id="send-message" class="send-button">
+                        <i class="material-icons">send</i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="recent-content-section">
+                <div class="panel-header">
+                    <h3>Recent Content</h3>
+                </div>
+                <div class="recent-content-list" id="recent-content-list">
+                    <div class="empty-state">
+                        <i class="material-icons">article</i>
+                        <p>Your recently generated content will appear here</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     
     <div class="notification" id="notification"></div>
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            console.log("DOM content loaded, setting up event handlers");
+            
             // Sidebar toggle functionality
             const sidebarToggle = document.querySelector('.sidebar-toggle');
             const appContainer = document.querySelector('.app-container');
@@ -117,6 +153,162 @@
                     }
                 });
             }
+            
+            // Chat functionality
+            const chatInput = document.getElementById('chat-input');
+            const sendButton = document.getElementById('send-message');
+            const chatMessages = document.getElementById('chat-messages');
+            
+            function addMessage(message, isUser) {
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message');
+                messageElement.classList.add(isUser ? 'user' : 'assistant');
+                
+                const paragraph = document.createElement('p');
+                paragraph.textContent = message;
+                
+                messageElement.appendChild(paragraph);
+                chatMessages.appendChild(messageElement);
+                
+                // Scroll to bottom
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            
+            function handleSendMessage() {
+                const message = chatInput.value.trim();
+                if (message) {
+                    // Add user message
+                    addMessage(message, true);
+                    
+                    // Clear input
+                    chatInput.value = '';
+                    
+                    // Here you would normally send the message to your backend
+                    // For now we'll simulate a response
+                    setTimeout(() => {
+                        addMessage("I'm your Ghostwriter Assistant. This is a placeholder response. In a real implementation, I would connect to your AI backend to provide meaningful assistance with content generation.", false);
+                    }, 1000);
+                }
+            }
+            
+            if (sendButton) {
+                sendButton.addEventListener('click', handleSendMessage);
+            }
+            
+            if (chatInput) {
+                chatInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendMessage();
+                    }
+                });
+            }
+            
+            // Fetch recent content (mock for now)
+            // In a real implementation, you would fetch this from your API
+            function fetchRecentContent() {
+                const recentContentList = document.getElementById('recent-content-list');
+                
+                // For now we'll just display placeholder content
+                // This would be replaced with actual API calls
+                if (recentContentList) {
+                    // Clear any existing content including the empty state
+                    recentContentList.innerHTML = '';
+                    
+                    // Check if there's actual content from your backend
+                    // For now we'll just show sample items
+                    const sampleItems = [
+                        {
+                            title: "Social Media Post: Tech Trends",
+                            preview: "The latest trends in AI are revolutionizing how businesses operate...",
+                            date: "2 hours ago"
+                        },
+                        {
+                            title: "LinkedIn Article: Leadership",
+                            preview: "Effective leadership in remote work environments requires...",
+                            date: "Yesterday"
+                        }
+                    ];
+                    
+                    if (sampleItems.length > 0) {
+                        sampleItems.forEach(item => {
+                            const contentItem = document.createElement('div');
+                            contentItem.classList.add('content-item');
+                            
+                            const title = document.createElement('h4');
+                            title.textContent = item.title;
+                            
+                            const preview = document.createElement('p');
+                            preview.textContent = item.preview;
+                            
+                            const date = document.createElement('small');
+                            date.textContent = item.date;
+                            date.style.color = 'var(--text-secondary)';
+                            date.style.fontSize = '11px';
+                            
+                            contentItem.appendChild(title);
+                            contentItem.appendChild(preview);
+                            contentItem.appendChild(date);
+                            
+                            contentItem.addEventListener('click', () => {
+                                // Handle click to view content
+                                window.showNotification("Content preview feature coming soon!");
+                            });
+                            
+                            recentContentList.appendChild(contentItem);
+                        });
+                    } else {
+                        // Show empty state
+                        const emptyState = document.createElement('div');
+                        emptyState.classList.add('empty-state');
+                        
+                        const icon = document.createElement('i');
+                        icon.classList.add('material-icons');
+                        icon.textContent = 'article';
+                        
+                        const text = document.createElement('p');
+                        text.textContent = 'Your recently generated content will appear here';
+                        
+                        emptyState.appendChild(icon);
+                        emptyState.appendChild(text);
+                        
+                        recentContentList.appendChild(emptyState);
+                    }
+                }
+            }
+            
+            // Initialize recent content
+            fetchRecentContent();
+            
+            // Find all delete buttons and add click handlers
+            const deleteButtons = document.querySelectorAll('.delete-content-button');
+            console.log("Found delete buttons:", deleteButtons.length);
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const contentId = button.getAttribute('data-content-id');
+                    if (confirm('Are you sure you want to delete this content?')) {
+                        try {
+                            const response = await fetch(`/api/content/${contentId}`, {
+                                method: 'DELETE'
+                            });
+                            
+                            const result = await response.json();
+                            if (result.status === 'success') {
+                                window.showNotification(result.message);
+                                // Remove the content from the list
+                                button.closest('.content-item').remove();
+                            } else {
+                                window.showNotification(result.message, true);
+                            }
+                        } catch (error) {
+                            window.showNotification('Error deleting content', true);
+                        }
+                    }
+                });
+            });
             
             // Notification function
             window.showNotification = function(message, isError = false) {
