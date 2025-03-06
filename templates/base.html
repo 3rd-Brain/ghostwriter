@@ -124,17 +124,21 @@
                         <i class="material-icons">dashboard</i>
                         <span>Dashboard</span>
                     </a>
-                    <a href="/generation/repurpose" class="menu-item {% if current_page == 'generation_repurpose' %}active{% endif %}">
-                        <i class="material-icons">autorenew</i>
-                        <span>Content Generation</span>
+                    <a href="/generate-content" class="menu-item {% if current_page == 'generate_content' %}active{% endif %}">
+                        <i class="material-icons">create</i>
+                        <span>Generate Content</span>
                     </a>
-                    <a href="/generated-content" class="menu-item {% if current_page == 'generated_content' %}active{% endif %}">
-                        <i class="material-icons">description</i>
-                        <span>Generated Content</span>
+                    <a href="/source-content" class="menu-item {% if current_page == 'source_content' %}active{% endif %}">
+                        <i class="material-icons">source</i>
+                        <span>Source Content Management</span>
                     </a>
-                    <a href="/create/brand-voice" class="menu-item {% if current_page == 'create_brand_voice' %}active{% endif %}">
-                        <i class="material-icons">record_voice_over</i>
-                        <span>Brand Voice</span>
+                    <a href="/template-management" class="menu-item {% if current_page == 'template_management' %}active{% endif %}">
+                        <i class="material-icons">format_shapes</i>
+                        <span>Template Management</span>
+                    </a>
+                    <a href="/brand-management" class="menu-item {% if current_page == 'brand_management' %}active{% endif %}">
+                        <i class="material-icons">branding_watermark</i>
+                        <span>Brand Management</span>
                     </a>
                 </nav>
             </div>
@@ -142,13 +146,13 @@
             <div class="other-menu">
                 <h6 class="menu-category">OTHER</h6>
                 <nav class="menu-items">
+                    <a href="/generated-content" class="menu-item {% if current_page == 'generated_content' %}active{% endif %}">
+                        <i class="material-icons">description</i>
+                        <span>Generated Content</span>
+                    </a>
                     <a href="/search/published" class="menu-item {% if current_page == 'search_published' %}active{% endif %}">
                         <i class="material-icons">search</i>
                         <span>Search Published</span>
-                    </a>
-                    <a href="/search/templates" class="menu-item {% if current_page == 'search_templates' %}active{% endif %}">
-                        <i class="material-icons">format_shapes</i>
-                        <span>Templates</span>
                     </a>
                     <a href="/create/generation-flow" class="menu-item {% if current_page == 'create_generation_flow' %}active{% endif %}">
                         <i class="material-icons">settings</i>
