@@ -1107,3 +1107,18 @@ textarea.form-control {
     font-size: 0.9rem;
     line-height: 1.5;
 }
+
+.template-variable {
+    color: var(--primary);
+    font-weight: 500;
+    font-family: 'Courier New', monospace;
+}
+
+.message-section-header {
+    font-weight: 600;
+    margin-top: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+    color: var(--primary);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: var(--spacing-xs);
+}
