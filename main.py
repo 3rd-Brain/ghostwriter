@@ -318,6 +318,14 @@ async def template_management(request: Request, current_user: str = Depends(get_
         "current_page": "template_management"
     })
 
+@app.get("/content-approval", response_class=HTMLResponse, include_in_schema=False)
+async def content_approval(request: Request, current_user: str = Depends(get_current_user)):
+    return templates.TemplateResponse("content_approval.html", {
+        "request": request,
+        "username": current_user,
+        "current_page": "content_approval"
+    })
+
 @app.get("/logout", include_in_schema=False)
 async def logout(response: Response):
     # Clear the username environment variable on logout

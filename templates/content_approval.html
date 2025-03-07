@@ -1,0 +1,480 @@
+
+{% extends "base.html" %}
+
+{% block title %}Content Approval | Ghostwriter API{% endblock %}
+
+{% block page_title %}Content Approval{% endblock %}
+{% block page_subtitle %}Review and approve generated content for publication{% endblock %}
+
+{% block extra_css %}
+<style>
+    .approval-table-container {
+        width: 100%;
+        overflow-x: auto;
+        margin-top: 1.5rem;
+        border-radius: 12px;
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .approval-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+    
+    .approval-table th {
+        padding: 12px 16px;
+        text-align: left;
+        background-color: #f8f9fa;
+        color: var(--text-secondary);
+        font-weight: 600;
+        border-bottom: 1px solid var(--border);
+        position: sticky;
+        top: 0;
+    }
+    
+    .approval-table td {
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--border);
+        vertical-align: top;
+    }
+    
+    .approval-table tbody tr:hover {
+        background-color: rgba(107, 53, 255, 0.04);
+    }
+    
+    .btn-small {
+        padding: 4px 8px;
+        font-size: 12px;
+        border-radius: 6px;
+        background-color: var(--surface);
+        border: 1px solid var(--border);
+        cursor: pointer;
+    }
+    
+    .btn-small:hover {
+        background-color: var(--primary-lightest);
+    }
+    
+    .status-badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+        display: inline-block;
+    }
+    
+    .status-draft {
+        background-color: #ffecb5;
+        color: #835d00;
+    }
+    
+    .status-approved {
+        background-color: #d1f7c4;
+        color: #2a6b00;
+    }
+    
+    .status-rejected {
+        background-color: #ffd2d2;
+        color: #7d0000;
+    }
+    
+    .status-published {
+        background-color: #c8e1ff;
+        color: #0046a6;
+    }
+    
+    .first-draft-cell {
+        max-width: 300px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .approval-actions {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 1rem;
+    }
+    
+    .approval-actions button {
+        padding: 8px 16px;
+        border-radius: 8px;
+        border: none;
+        font-weight: 500;
+        cursor: pointer;
+    }
+    
+    .btn-approve {
+        background-color: var(--primary);
+        color: white;
+    }
+    
+    .btn-reject {
+        background-color: #f44336;
+        color: white;
+    }
+    
+    .content-filters {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .filter-select {
+        padding: 8px 12px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background-color: var(--surface);
+        min-width: 150px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">
+            <span>Content Approval Dashboard</span>
+            <i data-lucide="info"></i>
+        </div>
+    </div>
+    <div class="card-content">
+        <div class="content-filters">
+            <div class="filter-group">
+                <label for="status-filter">Status:</label>
+                <select id="status-filter" class="filter-select">
+                    <option value="all">All</option>
+                    <option value="draft">Draft</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                    <option value="published">Published</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="date-range">Date Range:</label>
+                <select id="date-range" class="filter-select">
+                    <option value="all">All Time</option>
+                    <option value="today">Today</option>
+                    <option value="week">Last 7 Days</option>
+                    <option value="month">Last 30 Days</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="search-content">Search:</label>
+                <input type="text" id="search-content" placeholder="Search content..." class="filter-select">
+            </div>
+        </div>
+        
+        <div class="approval-actions">
+            <button class="btn-approve" id="approve-selected">Approve Selected</button>
+            <button class="btn-reject" id="reject-selected">Reject Selected</button>
+        </div>
+        
+        <div class="approval-table-container">
+            <table class="approval-table">
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" id="select-all"></th>
+                        <th>First Draft</th>
+                        <th>Status</th>
+                        <th>Source</th>
+                        <th>Template</th>
+                        <th>Tag</th>
+                        <th>Format</th>
+                        <th>Author</th>
+                        <th>Created</th>
+                        <th>Approved</th>
+                        <th>Published</th>
+                        <th>Post ID</th>
+                        <th>Channel</th>
+                        <th>Likes</th>
+                        <th>Shares</th>
+                        <th>Quotes</th>
+                        <th>Bookmarks</th>
+                        <th>Replies</th>
+                        <th>Impressions</th>
+                        <th>Weighted Impressions</th>
+                        <th>Weighted Replies</th>
+                        <th>Weighted Bookmarks</th>
+                        <th>Weighted Shares</th>
+                        <th>Weighted Likes</th>
+                        <th>Followers</th>
+                        <th>Score</th>
+                    </tr>
+                </thead>
+                <tbody id="approval-table-body">
+                    <!-- Table content will be populated via JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for viewing source chunk -->
+<div id="source-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Source Chunk</h2>
+            <span class="close" id="close-source-modal">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div id="source-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for viewing template -->
+<div id="template-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Template</h2>
+            <span class="close" id="close-template-modal">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div id="template-content"></div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Fetch content data
+    fetchContentData();
+    
+    // Set up event listeners
+    document.getElementById('select-all').addEventListener('change', toggleSelectAll);
+    document.getElementById('approve-selected').addEventListener('click', approveSelected);
+    document.getElementById('reject-selected').addEventListener('click', rejectSelected);
+    document.getElementById('status-filter').addEventListener('change', filterContent);
+    document.getElementById('date-range').addEventListener('change', filterContent);
+    document.getElementById('search-content').addEventListener('input', filterContent);
+    
+    // Modal close buttons
+    document.getElementById('close-source-modal').addEventListener('click', function() {
+        document.getElementById('source-modal').style.display = 'none';
+    });
+    document.getElementById('close-template-modal').addEventListener('click', function() {
+        document.getElementById('template-modal').style.display = 'none';
+    });
+    
+    // Close modals when clicking outside
+    window.addEventListener('click', function(event) {
+        if (event.target === document.getElementById('source-modal')) {
+            document.getElementById('source-modal').style.display = 'none';
+        }
+        if (event.target === document.getElementById('template-modal')) {
+            document.getElementById('template-modal').style.display = 'none';
+        }
+    });
+});
+
+function fetchContentData() {
+    // In a real implementation, this would be an API call
+    // For now, we'll use dummy data
+    const dummyData = [
+        {
+            id: 1,
+            first_draft: "AI tools are revolutionizing content creation, but the human touch remains essential for authentic connection.",
+            status: "draft",
+            source_chunk: "Studies show that while AI content tools can generate material quickly, human editors still play a crucial role in ensuring quality, brand alignment, and emotional resonance. The most effective content strategies combine AI efficiency with human creativity.",
+            template: "Here's the thing about {topic}: {key_insight}.\n\nBut don't forget: {human_element}.",
+            tag: "content_creation",
+            format: "Twitter",
+            author: "GentOfTech",
+            created_time: "2024-06-10 14:32:21",
+            approval_date: "",
+            publish_date: "",
+            post_id: "",
+            channel: "Twitter",
+            metrics: {
+                likes: 0,
+                shares: 0,
+                quotes: 0,
+                bookmarks: 0,
+                replies: 0,
+                impressions: 0,
+                weighted_impressions: 0,
+                weighted_replies: 0,
+                weighted_bookmarks: 0,
+                weighted_shares: 0,
+                weighted_likes: 0,
+                followers: 0,
+                score: 0
+            }
+        },
+        {
+            id: 2,
+            first_draft: "The best social media strategies aren't about posting more, but posting with more purpose.",
+            status: "approved",
+            source_chunk: "Research from leading marketing firms indicates that engagement rates increase by up to 40% when content is strategically planned rather than randomly posted. Quality and consistency trump quantity in almost all case studies across industries.",
+            template: "{counter_intuitive_insight} about {topic}.",
+            tag: "social_media",
+            format: "LinkedIn",
+            author: "GentOfTech",
+            created_time: "2024-06-09 10:15:33",
+            approval_date: "2024-06-10 09:22:18",
+            publish_date: "",
+            post_id: "",
+            channel: "LinkedIn",
+            metrics: {
+                likes: 0,
+                shares: 0,
+                quotes: 0,
+                bookmarks: 0,
+                replies: 0,
+                impressions: 0,
+                weighted_impressions: 0,
+                weighted_replies: 0,
+                weighted_bookmarks: 0,
+                weighted_shares: 0,
+                weighted_likes: 0,
+                followers: 0,
+                score: 0
+            }
+        },
+        {
+            id: 3,
+            first_draft: "Data doesn't lie, but it doesn't tell the whole truth either. Context matters.",
+            status: "published",
+            source_chunk: "Multiple studies from data science journals show that misinterpreted data leads to wrong business decisions in approximately 68% of cases. Contextual understanding, domain expertise, and proper framing are essential to derive meaningful insights from any dataset.",
+            template: "{provocative_statement}. {qualification}.",
+            tag: "data_science",
+            format: "Twitter",
+            author: "GentOfTech",
+            created_time: "2024-06-08 15:45:12",
+            approval_date: "2024-06-09 11:30:05",
+            publish_date: "2024-06-09 13:00:00",
+            post_id: "12345678",
+            channel: "Twitter",
+            metrics: {
+                likes: 152,
+                shares: 48,
+                quotes: 12,
+                bookmarks: 35,
+                replies: 22,
+                impressions: 3450,
+                weighted_impressions: 86.5,
+                weighted_replies: 44.0,
+                weighted_bookmarks: 35.0,
+                weighted_shares: 96.0,
+                weighted_likes: 76.0,
+                followers: 2500,
+                score: 87.3
+            }
+        }
+    ];
+    
+    renderContentTable(dummyData);
+}
+
+function renderContentTable(data) {
+    const tableBody = document.getElementById('approval-table-body');
+    tableBody.innerHTML = '';
+    
+    data.forEach(item => {
+        const row = document.createElement('tr');
+        
+        row.innerHTML = `
+            <td><input type="checkbox" class="content-checkbox" data-id="${item.id}"></td>
+            <td class="first-draft-cell" title="${item.first_draft}">${item.first_draft}</td>
+            <td><span class="status-badge status-${item.status}">${item.status.charAt(0).toUpperCase() + item.status.slice(1)}</span></td>
+            <td><button class="btn-small view-source" data-source="${encodeURIComponent(item.source_chunk)}">View</button></td>
+            <td><button class="btn-small view-template" data-template="${encodeURIComponent(item.template)}">View</button></td>
+            <td>${item.tag}</td>
+            <td>${item.format}</td>
+            <td>${item.author}</td>
+            <td>${item.created_time}</td>
+            <td>${item.approval_date}</td>
+            <td>${item.publish_date}</td>
+            <td>${item.post_id}</td>
+            <td>${item.channel}</td>
+            <td>${item.metrics.likes}</td>
+            <td>${item.metrics.shares}</td>
+            <td>${item.metrics.quotes}</td>
+            <td>${item.metrics.bookmarks}</td>
+            <td>${item.metrics.replies}</td>
+            <td>${item.metrics.impressions}</td>
+            <td>${item.metrics.weighted_impressions}</td>
+            <td>${item.metrics.weighted_replies}</td>
+            <td>${item.metrics.weighted_bookmarks}</td>
+            <td>${item.metrics.weighted_shares}</td>
+            <td>${item.metrics.weighted_likes}</td>
+            <td>${item.metrics.followers}</td>
+            <td>${item.metrics.score}</td>
+        `;
+        
+        tableBody.appendChild(row);
+    });
+    
+    // Add event listeners for view buttons
+    document.querySelectorAll('.view-source').forEach(button => {
+        button.addEventListener('click', function() {
+            const sourceContent = decodeURIComponent(this.getAttribute('data-source'));
+            document.getElementById('source-content').textContent = sourceContent;
+            document.getElementById('source-modal').style.display = 'block';
+        });
+    });
+    
+    document.querySelectorAll('.view-template').forEach(button => {
+        button.addEventListener('click', function() {
+            const templateContent = decodeURIComponent(this.getAttribute('data-template'));
+            document.getElementById('template-content').textContent = templateContent;
+            document.getElementById('template-modal').style.display = 'block';
+        });
+    });
+}
+
+function toggleSelectAll(e) {
+    const checkboxes = document.querySelectorAll('.content-checkbox');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = e.target.checked;
+    });
+}
+
+function approveSelected() {
+    const selectedItems = getSelectedItems();
+    if (selectedItems.length === 0) {
+        showNotification('No items selected', true);
+        return;
+    }
+    
+    // In a real implementation, this would make an API call
+    showNotification(`${selectedItems.length} items approved`);
+    fetchContentData(); // Refresh the table
+}
+
+function rejectSelected() {
+    const selectedItems = getSelectedItems();
+    if (selectedItems.length === 0) {
+        showNotification('No items selected', true);
+        return;
+    }
+    
+    // In a real implementation, this would make an API call
+    showNotification(`${selectedItems.length} items rejected`);
+    fetchContentData(); // Refresh the table
+}
+
+function getSelectedItems() {
+    const checkboxes = document.querySelectorAll('.content-checkbox:checked');
+    return Array.from(checkboxes).map(checkbox => checkbox.getAttribute('data-id'));
+}
+
+function filterContent() {
+    // In a real implementation, this would filter the content based on selected criteria
+    fetchContentData(); // For now, just refresh with all data
+}
+</script>
+{% endblock %}
