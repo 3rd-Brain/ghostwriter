@@ -74,25 +74,7 @@
                         </tr>
                     </thead>
                     <tbody id="workflows-table-body">
-                        <!-- Placeholder rows - will be populated from API -->
-                        <tr>
-                            <td>default-social-flow</td>
-                            <td>Social</td>
-                            <td>Default workflow for social media posts</td>
-                            <td><button class="form-button form-button-small">Click to see Generation Flow</button></td>
-                        </tr>
-                        <tr>
-                            <td>blog-content-flow</td>
-                            <td>Blog</td>
-                            <td>Optimized for long-form blog articles</td>
-                            <td><button class="form-button form-button-small">Click to see Generation Flow</button></td>
-                        </tr>
-                        <tr>
-                            <td>email-marketing-flow</td>
-                            <td>Email</td>
-                            <td>Email marketing campaign generator</td>
-                            <td><button class="form-button form-button-small">Click to see Generation Flow</button></td>
-                        </tr>
+                        <!-- Will be populated from API on page load -->
                     </tbody>
                 </table>
             </div>
@@ -207,7 +189,94 @@
 
 {% block extra_js %}
 <script>
+    // Store workflows data globally so we can access it when clicking on "Generation Flow" buttons
+    let workflowsData = [];
+
+    // Function to fetch workflows and populate the table
+    function fetchWorkflows() {
+        fetch('/api/workflows')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success' && data.workflows) {
+                    workflowsData = data.workflows;
+                    populateWorkflowsTable(data.workflows);
+                } else {
+                    console.error('Failed to fetch workflows:', data);
+                    window.showNotification('Failed to load workflows', true);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching workflows:', error);
+                window.showNotification('Error loading workflows', true);
+            });
+    }
+
+    // Function to populate the workflows table
+    function populateWorkflowsTable(workflows) {
+        const tableBody = document.getElementById('workflows-table-body');
+        tableBody.innerHTML = ''; // Clear existing rows
+        
+        if (workflows.length === 0) {
+            // Display a message if no workflows
+            const row = document.createElement('tr');
+            const cell = document.createElement('td');
+            cell.colSpan = 4;
+            cell.textContent = 'No workflows found';
+            cell.style.textAlign = 'center';
+            row.appendChild(cell);
+            tableBody.appendChild(row);
+            return;
+        }
+        
+        // Add a row for each workflow
+        workflows.forEach((workflow, index) => {
+            const row = document.createElement('tr');
+            
+            // Workflow ID
+            const idCell = document.createElement('td');
+            idCell.textContent = workflow.Workflow_ID || 'N/A';
+            row.appendChild(idCell);
+            
+            // Workflow Type
+            const typeCell = document.createElement('td');
+            typeCell.textContent = workflow.Workflow_Type || 'N/A';
+            row.appendChild(typeCell);
+            
+            // Description
+            const descCell = document.createElement('td');
+            descCell.textContent = workflow.Description || workflow.Short_Description || 'N/A';
+            row.appendChild(descCell);
+            
+            // Generation Flow button
+            const flowCell = document.createElement('td');
+            const flowButton = document.createElement('button');
+            flowButton.className = 'form-button form-button-small';
+            flowButton.textContent = 'Click to see Generation Flow';
+            flowButton.dataset.index = index; // Store index to access data later
+            flowButton.addEventListener('click', function() {
+                // We'll implement this function later to show the JSON payload
+                showGenerationFlow(workflow.JSON_Payload);
+            });
+            flowCell.appendChild(flowButton);
+            row.appendChild(flowCell);
+            
+            tableBody.appendChild(row);
+        });
+    }
+    
+    // Function to display the generation flow JSON
+    function showGenerationFlow(jsonPayload) {
+        console.log('Generation Flow:', jsonPayload);
+        // For now, just log to console - we'll implement proper display later
+        alert('Generation Flow data logged to console');
+        
+        // TODO: Implement a modal or expandable section to display the JSON payload nicely
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
+        // Fetch workflows when the page loads
+        fetchWorkflows();
+        
         // Create New Posts modal
         const createPostsModal = document.getElementById('create-posts-modal');
         const openCreatePostsBtn = document.getElementById('open-create-posts-modal');
