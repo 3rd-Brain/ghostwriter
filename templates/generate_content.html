@@ -451,14 +451,14 @@
                         .replace(/</g, '&lt;')
                         .replace(/>/g, '&gt;');
                     
-                    // Process special template tags
+                    // Process special template tags - only style variables, remove section headers
                     messageContent = messageContent
                         // Format template variables
                         .replace(/\{([^}]+)\}/g, '<span class="template-variable">{$1}</span>')
-                        // Format <template> tags
-                        .replace(/&lt;template&gt;/g, '<div class="message-section-header">Template:</div>')
-                        // Format <content_chunks> tags
-                        .replace(/&lt;content_chunks&gt;/g, '<div class="message-section-header">Content Chunks:</div>');
+                        // Remove template tags without adding headers
+                        .replace(/&lt;template&gt;/g, '')
+                        // Remove content_chunks tags without adding headers
+                        .replace(/&lt;content_chunks&gt;/g, '');
 
                     messageEl.innerHTML = `
                         <div class="message-role">${msg.role || 'Unknown Role'}</div>
