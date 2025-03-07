@@ -1,3 +1,4 @@
+
 {% extends "base.html" %}
 
 {% block title %}Template Management | Ghostwriter API{% endblock %}
@@ -11,12 +12,15 @@
     <!-- Left section -->
     <div class="template-management-section">
         <!-- Content card for the Templatizer feature -->
-        <div class="content-card">
+        <div class="card">
             <div class="card-header">
-                <h2>Templatizer</h2>
-                <p class="text-secondary">Convert existing social posts into reusable templates</p>
+                <div class="card-title">
+                    <span>Templatizer</span>
+                    <i data-lucide="info"></i>
+                </div>
             </div>
             <div class="card-content">
+                <p class="text-secondary">Convert existing social posts into reusable templates</p>
                 <!-- Form elements will be added here later -->
             </div>
         </div>
@@ -25,12 +29,15 @@
     <!-- Right section -->
     <div class="template-management-section">
         <!-- Content card for template uploads -->
-        <div class="content-card">
+        <div class="card">
             <div class="card-header">
-                <h2>Upload Template</h2>
-                <p class="text-secondary">Add a new template to your template library</p>
+                <div class="card-title">
+                    <span>Upload Template</span>
+                    <i data-lucide="info"></i>
+                </div>
             </div>
             <div class="card-content">
+                <p class="text-secondary">Add a new template to your template library</p>
                 <!-- Form elements will be added here later -->
             </div>
         </div>
@@ -40,12 +47,15 @@
 <!-- Bottom section spanning full width -->
 <div class="template-management-full-width">
     <!-- Content card for template listing -->
-    <div class="content-card">
+    <div class="card">
         <div class="card-header">
-            <h2>Your Templates</h2>
-            <p class="text-secondary">View and manage your saved templates</p>
+            <div class="card-title">
+                <span>Your Templates</span>
+                <i data-lucide="info"></i>
+            </div>
         </div>
         <div class="card-content">
+            <p class="text-secondary">View and manage your saved templates</p>
             <!-- Template listing will be added here later -->
         </div>
     </div>
