@@ -7,7 +7,7 @@
 {% block page_subtitle %}Create and manage content templates{% endblock %}
 
 {% block content %}
-<!-- Main layout with two cards side by side in a single row -->
+<!-- Main layout with three cards side by side in a single row -->
 <div class="dashboard-grid">
     <!-- Templatizer card -->
     <div class="card">
@@ -34,6 +34,29 @@
         <div class="card-content">
             <p class="text-secondary">Add a new template to your template library</p>
             <!-- Form elements will be added here later -->
+        </div>
+    </div>
+    
+    <!-- Template Counts card -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <span>Template Counts</span>
+                <i data-lucide="info"></i>
+            </div>
+        </div>
+        <div class="card-content">
+            <p class="text-secondary">Overview of your template library</p>
+            <div class="template-stats">
+                <div class="stat-item">
+                    <div class="metric-large">0</div>
+                    <div class="metric-label">Total Templates</div>
+                </div>
+                <div class="stat-item">
+                    <div class="metric-large">0</div>
+                    <div class="metric-label">Recently Added</div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

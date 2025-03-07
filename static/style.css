@@ -799,3 +799,16 @@ button, input, select, textarea {
 .card-content {
     flex: 1;
 }
+
+.template-stats {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-lg);
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    padding: var(--spacing-sm) 0;
+}
