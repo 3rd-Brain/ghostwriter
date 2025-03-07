@@ -7,5 +7,55 @@
 {% block page_subtitle %}Create and manage content templates{% endblock %}
 
 {% block content %}
-<!-- Content will be added later -->
+<div class="form-container-grid">
+    <!-- Templatizer Container -->
+    <div class="content-card">
+        <div class="card-header">
+            <h2>Templatizer</h2>
+            <p class="text-secondary">Convert existing social posts into reusable templates</p>
+        </div>
+        <div class="card-content">
+            <form id="templatizerForm">
+                <div class="form-group">
+                    <label for="socialPost">Paste social post to convert:</label>
+                    <textarea 
+                        id="socialPost" 
+                        class="form-control fixed-height" 
+                        rows="8" 
+                        placeholder="Paste your social post here to convert it into a template..."
+                    ></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Create Template</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Template Upload Container -->
+    <div class="content-card">
+        <div class="card-header">
+            <h2>Upload Template</h2>
+            <p class="text-secondary">Add a new template to your template library</p>
+        </div>
+        <div class="card-content">
+            <form id="templateUploadForm">
+                <div class="form-group">
+                    <label for="templateContent">Template content:</label>
+                    <textarea 
+                        id="templateContent" 
+                        class="form-control fixed-height" 
+                        rows="8" 
+                        placeholder="Enter your template with placeholders like [placeholder]..."
+                    ></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Upload Template</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Template listing section can be added here later -->
 {% endblock %}
