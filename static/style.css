@@ -750,11 +750,13 @@ button, input, select, textarea {
     grid-template-columns: 1fr 1fr;
     gap: 24px;
     margin-bottom: 24px;
+    width: 100%; /* Ensure full width of content area */
 }
 
 .template-management-section {
     display: flex;
     flex-direction: column;
+    width: 100%; /* Ensure each section takes full width */
 }
 
 .template-management-full-width {
