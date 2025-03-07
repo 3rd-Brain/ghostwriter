@@ -264,13 +264,209 @@
         });
     }
     
-    // Function to display the generation flow JSON
+    // Function to create the workflow modal if it doesn't exist
+    function createWorkflowModal() {
+        if (document.getElementById('workflow-modal')) {
+            return;
+        }
+        
+        // Create the modal container
+        const modal = document.createElement('div');
+        modal.id = 'workflow-modal';
+        modal.className = 'workflow-modal';
+        
+        // Create modal content
+        modal.innerHTML = `
+            <div class="workflow-modal-content">
+                <div class="workflow-modal-header">
+                    <h2>Generation Flow</h2>
+                    <span class="close" id="close-workflow-modal">&times;</span>
+                </div>
+                <div class="workflow-modal-body">
+                    <div class="workflow-steps-sidebar" id="workflow-steps-sidebar">
+                        <!-- Step items will be added here -->
+                    </div>
+                    <div class="workflow-detail-area" id="workflow-detail-area">
+                        <!-- Step details will be added here -->
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Add event listener to close button
+        document.getElementById('close-workflow-modal').addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+        
+        // Close when clicking outside of the modal content
+        modal.addEventListener('click', function(event) {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    }
+    
+    // Function to display the generation flow in a modal
     function showGenerationFlow(jsonPayload) {
         console.log('Generation Flow:', jsonPayload);
-        // For now, just log to console - we'll implement proper display later
-        alert('Generation Flow data logged to console');
         
-        // TODO: Implement a modal or expandable section to display the JSON payload nicely
+        // Create the modal if it doesn't exist
+        createWorkflowModal();
+        
+        const modal = document.getElementById('workflow-modal');
+        const sidebarEl = document.getElementById('workflow-steps-sidebar');
+        const detailAreaEl = document.getElementById('workflow-detail-area');
+        
+        // Clear previous content
+        sidebarEl.innerHTML = '';
+        detailAreaEl.innerHTML = '';
+        
+        if (!jsonPayload || !jsonPayload.steps || !Array.isArray(jsonPayload.steps)) {
+            detailAreaEl.innerHTML = '<div class="error-message">Invalid workflow data</div>';
+            modal.style.display = 'block';
+            return;
+        }
+        
+        // Sort steps by order
+        const steps = [...jsonPayload.steps].sort((a, b) => a.Order - b.Order);
+        
+        // Populate steps sidebar
+        steps.forEach((step, index) => {
+            const stepItem = document.createElement('div');
+            stepItem.className = 'workflow-step-item';
+            stepItem.dataset.stepIndex = index;
+            
+            stepItem.innerHTML = `
+                <div class="workflow-step-name">${step.Step_name || 'Unnamed Step'}</div>
+                <div class="workflow-step-order">Step ${step.Order || index + 1}</div>
+            `;
+            
+            stepItem.addEventListener('click', function() {
+                // Remove active class from all step items
+                document.querySelectorAll('.workflow-step-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                
+                // Add active class to clicked step item
+                stepItem.classList.add('active');
+                
+                // Show step details
+                showStepDetails(step, index);
+            });
+            
+            sidebarEl.appendChild(stepItem);
+        });
+        
+        // Function to show step details
+        function showStepDetails(step, index) {
+            // Clear previous details
+            detailAreaEl.innerHTML = '';
+            
+            // Create detail elements
+            const detailEl = document.createElement('div');
+            detailEl.className = 'workflow-step-detail active';
+            detailEl.id = `step-detail-${index}`;
+            
+            // Add step name
+            const nameGroup = document.createElement('div');
+            nameGroup.className = 'workflow-detail-group';
+            nameGroup.innerHTML = `
+                <div class="workflow-detail-label">Step Name</div>
+                <div class="workflow-detail-value">${step.Step_name || 'Unnamed Step'}</div>
+            `;
+            detailEl.appendChild(nameGroup);
+            
+            // Add step order
+            const orderGroup = document.createElement('div');
+            orderGroup.className = 'workflow-detail-group';
+            orderGroup.innerHTML = `
+                <div class="workflow-detail-label">Order</div>
+                <div class="workflow-detail-value">${step.Order || index + 1}</div>
+            `;
+            detailEl.appendChild(orderGroup);
+            
+            // Add model
+            if (step.Model) {
+                const modelGroup = document.createElement('div');
+                modelGroup.className = 'workflow-detail-group';
+                modelGroup.innerHTML = `
+                    <div class="workflow-detail-label">Model</div>
+                    <div class="workflow-detail-value">${step.Model}</div>
+                `;
+                detailEl.appendChild(modelGroup);
+            }
+            
+            // Add temperature if it exists
+            if (step.Temperature !== undefined) {
+                const tempGroup = document.createElement('div');
+                tempGroup.className = 'workflow-detail-group';
+                tempGroup.innerHTML = `
+                    <div class="workflow-detail-label">Temperature</div>
+                    <div class="workflow-detail-value">${step.Temperature}</div>
+                `;
+                detailEl.appendChild(tempGroup);
+            }
+            
+            // Add max tokens if it exists
+            if (step.Max_tokens !== undefined) {
+                const tokensGroup = document.createElement('div');
+                tokensGroup.className = 'workflow-detail-group';
+                tokensGroup.innerHTML = `
+                    <div class="workflow-detail-label">Max Tokens</div>
+                    <div class="workflow-detail-value">${step.Max_tokens}</div>
+                `;
+                detailEl.appendChild(tokensGroup);
+            }
+            
+            // Add system prompt if it exists
+            if (step.System_prompt) {
+                const systemGroup = document.createElement('div');
+                systemGroup.className = 'workflow-detail-group';
+                systemGroup.innerHTML = `
+                    <div class="workflow-detail-label">System Prompt</div>
+                    <div class="workflow-detail-value">${step.System_prompt}</div>
+                `;
+                detailEl.appendChild(systemGroup);
+            }
+            
+            // Add messages if they exist
+            if (step.Message && Array.isArray(step.Message) && step.Message.length > 0) {
+                const messagesGroup = document.createElement('div');
+                messagesGroup.className = 'workflow-detail-group';
+                messagesGroup.innerHTML = `
+                    <div class="workflow-detail-label">Messages</div>
+                `;
+                
+                step.Message.forEach((msg, msgIndex) => {
+                    const messageEl = document.createElement('div');
+                    messageEl.className = 'message-container';
+                    messageEl.innerHTML = `
+                        <div class="message-role">${msg.role || 'Unknown Role'}</div>
+                        <div class="message-content">${msg.content || ''}</div>
+                    `;
+                    messagesGroup.appendChild(messageEl);
+                });
+                
+                detailEl.appendChild(messagesGroup);
+            }
+            
+            // Append the detail element to the detail area
+            detailAreaEl.appendChild(detailEl);
+        }
+        
+        // Show the first step by default
+        if (steps.length > 0) {
+            const firstStepItem = sidebarEl.querySelector('.workflow-step-item');
+            if (firstStepItem) {
+                firstStepItem.classList.add('active');
+                showStepDetails(steps[0], 0);
+            }
+        }
+        
+        // Show the modal
+        modal.style.display = 'block';
     }
 
     document.addEventListener('DOMContentLoaded', function() {
