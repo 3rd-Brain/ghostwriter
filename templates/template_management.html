@@ -7,39 +7,33 @@
 {% block page_subtitle %}Create and manage content templates{% endblock %}
 
 {% block content %}
-<!-- Main layout container with two sections side by side -->
-<div class="template-management-layout">
-    <!-- Left section -->
-    <div class="template-management-section">
-        <!-- Content card for the Templatizer feature -->
-        <div class="card">
-            <div class="card-header">
-                <div class="card-title">
-                    <span>Templatizer</span>
-                    <i data-lucide="info"></i>
-                </div>
+<!-- Main layout with two cards side by side -->
+<div class="dashboard-grid">
+    <!-- Templatizer card -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <span>Templatizer</span>
+                <i data-lucide="info"></i>
             </div>
-            <div class="card-content">
-                <p class="text-secondary">Convert existing social posts into reusable templates</p>
-                <!-- Form elements will be added here later -->
-            </div>
+        </div>
+        <div class="card-content">
+            <p class="text-secondary">Convert existing social posts into reusable templates</p>
+            <!-- Form elements will be added here later -->
         </div>
     </div>
 
-    <!-- Right section -->
-    <div class="template-management-section">
-        <!-- Content card for template uploads -->
-        <div class="card">
-            <div class="card-header">
-                <div class="card-title">
-                    <span>Upload Template</span>
-                    <i data-lucide="info"></i>
-                </div>
+    <!-- Upload Template card -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <span>Upload Template</span>
+                <i data-lucide="info"></i>
             </div>
-            <div class="card-content">
-                <p class="text-secondary">Add a new template to your template library</p>
-                <!-- Form elements will be added here later -->
-            </div>
+        </div>
+        <div class="card-content">
+            <p class="text-secondary">Add a new template to your template library</p>
+            <!-- Form elements will be added here later -->
         </div>
     </div>
 </div>
