@@ -804,20 +804,6 @@ textarea.form-control {
 
 .card-content {
     flex: 1;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    padding-bottom: 60px; /* Add space for the button */
-}
-
-.button-container {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    display: flex;
-    justify-content: flex-end;
-    padding-bottom: var(--spacing-md);
-    padding-right: var(--spacing-md);
 }
 
 .template-stats {
