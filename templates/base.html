@@ -10,6 +10,51 @@
     <script src="/static/lucide-init.js" defer></script>
     {% block extra_css %}{% endblock %}
     <style>
+        /* Fixed sidebar styles */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 280px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+        
+        .main-menu, .other-menu {
+            overflow-y: auto;
+        }
+        
+        .user-profile {
+            position: sticky;
+            bottom: 0;
+            background-color: white;
+            z-index: 10;
+            margin-top: auto;
+        }
+        
+        .main-content {
+            margin-left: 280px;
+            width: calc(100% - 280px);
+        }
+        
+        /* Make sure the app container doesn't apply grid anymore since we're using fixed positioning */
+        .app-container {
+            display: block;
+        }
+        
+        /* Collapsed sidebar adjustments */
+        .app-container.sidebar-collapsed .sidebar {
+            width: 80px;
+        }
+        
+        .app-container.sidebar-collapsed .main-content {
+            margin-left: 80px;
+            width: calc(100% - 80px);
+        }
+
         .chatbox-container {
             position: fixed;
             top: 72px; /* Match the height of the header to avoid overlap */
@@ -97,11 +142,22 @@
         }
 
         .content-header {
-            margin-right: 0; /* Ensure header extends full width */
+            position: fixed;
+            top: 0;
+            left: 280px;
+            right: 0;
+            z-index: 90;
+            background-color: white;
+        }
+        
+        .app-container.sidebar-collapsed .content-header {
+            left: 80px;
         }
 
         .content-container {
             margin-right: 320px; /* Add margin to prevent content overlap with chatbox */
+            margin-top: 72px; /* Add margin to account for fixed header */
+            padding-bottom: 20px; /* Add some padding at the bottom */
         }
     </style>
 </head>
