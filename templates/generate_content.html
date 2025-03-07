@@ -446,19 +446,16 @@
                     // Handle message content and properly format template variables
                     let messageContent = msg.content || '';
                     
-                    // First, escape < and > that aren't part of template variables
+                    // First, escape < and > characters for HTML safety
                     messageContent = messageContent
                         .replace(/</g, '&lt;')
                         .replace(/>/g, '&gt;');
                     
-                    // Process special template tags - only style variables, remove section headers
+                    // Only style the template variables, leave HTML tags as plain text
                     messageContent = messageContent
                         // Format template variables
-                        .replace(/\{([^}]+)\}/g, '<span class="template-variable">{$1}</span>')
-                        // Remove template tags without adding headers
-                        .replace(/&lt;template&gt;/g, '')
-                        // Remove content_chunks tags without adding headers
-                        .replace(/&lt;content_chunks&gt;/g, '');
+                        .replace(/\{([^}]+)\}/g, '<span class="template-variable">{$1}</span>');
+                        // No replacements for template tags - leave as plain text
 
                     messageEl.innerHTML = `
                         <div class="message-role">${msg.role || 'Unknown Role'}</div>
