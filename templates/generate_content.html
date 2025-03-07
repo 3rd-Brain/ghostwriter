@@ -1,0 +1,260 @@
+
+{% extends "base.html" %}
+
+{% block title %}Generate Content | Ghostwriter API{% endblock %}
+
+{% block page_title %}Generate Content{% endblock %}
+{% block page_subtitle %}Create and repurpose content for your social media{% endblock %}
+
+{% block content %}
+<!-- Main layout with three cards side by side in a single row -->
+<div class="dashboard-grid">
+    <!-- Create New Posts card -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <span>Create New Posts</span>
+                <i data-lucide="info"></i>
+            </div>
+        </div>
+        <div class="card-content">
+            <p class="text-secondary">Generate fresh social media content from your source materials</p>
+            <div class="button-container">
+                <button class="form-button" id="open-create-posts-modal">Create Posts</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Repurpose My Top Posts card -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <span>Repurpose My Top Posts</span>
+                <i data-lucide="info"></i>
+            </div>
+        </div>
+        <div class="card-content">
+            <p class="text-secondary">Create variations of your best-performing content</p>
+            <div class="button-container">
+                <button class="form-button" id="open-repurpose-modal">Repurpose Content</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Generate Posts with Templates card -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <span>Generate Posts with Templates</span>
+                <i data-lucide="info"></i>
+            </div>
+        </div>
+        <div class="card-content">
+            <p class="text-secondary">Use specific templates to create consistent content</p>
+            <div class="button-container">
+                <button class="form-button" id="open-templates-modal">Use Templates</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Create New Posts -->
+<div id="create-posts-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Create New Posts</h2>
+            <span class="close" id="close-create-posts-modal">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="create-posts-form">
+                <div class="form-group">
+                    <label for="topic-query" class="form-label">Topic Query</label>
+                    <input type="text" id="topic-query" name="topic-query" class="form-control" placeholder="Enter a topic or keyword...">
+                </div>
+                <div class="form-group">
+                    <label for="brand" class="form-label">Brand</label>
+                    <input type="text" id="brand" name="brand" class="form-control" placeholder="Enter brand name...">
+                </div>
+                <div class="form-group">
+                    <label for="post-count" class="form-label">Number of Posts</label>
+                    <input type="number" id="post-count" name="post-count" class="form-control" min="1" max="10" value="3">
+                </div>
+                <div class="form-group">
+                    <label for="workflow-id" class="form-label">Workflow ID</label>
+                    <input type="text" id="workflow-id" name="workflow-id" class="form-control" placeholder="Enter workflow ID...">
+                </div>
+                <button type="submit" class="form-button">Generate Posts</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Repurpose My Top Posts -->
+<div id="repurpose-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Repurpose Top Content</h2>
+            <span class="close" id="close-repurpose-modal">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="repurpose-form">
+                <div class="form-group">
+                    <label for="repurpose-query" class="form-label">Content Query</label>
+                    <input type="text" id="repurpose-query" name="repurpose-query" class="form-control" placeholder="Enter a search query...">
+                </div>
+                <div class="form-group">
+                    <label for="repurpose-topic" class="form-label">Topic</label>
+                    <input type="text" id="repurpose-topic" name="repurpose-topic" class="form-control" placeholder="Enter topic...">
+                </div>
+                <div class="form-group">
+                    <label for="repurpose-brand" class="form-label">Brand</label>
+                    <input type="text" id="repurpose-brand" name="repurpose-brand" class="form-control" placeholder="Enter brand name...">
+                </div>
+                <div class="form-group">
+                    <label for="posts-to-find" class="form-label">Number of Posts to Find</label>
+                    <input type="number" id="posts-to-find" name="posts-to-find" class="form-control" min="1" max="5" value="2">
+                </div>
+                <div class="form-group">
+                    <label for="variations-per-post" class="form-label">Variations Per Post</label>
+                    <input type="number" id="variations-per-post" name="variations-per-post" class="form-control" min="1" max="5" value="2">
+                </div>
+                <div class="form-group">
+                    <label for="repurpose-workflow-id" class="form-label">Workflow ID</label>
+                    <input type="text" id="repurpose-workflow-id" name="repurpose-workflow-id" class="form-control" placeholder="Enter workflow ID...">
+                </div>
+                <button type="submit" class="form-button">Repurpose Content</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Generate Posts with Templates -->
+<div id="templates-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Generate Posts with Templates</h2>
+            <span class="close" id="close-templates-modal">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="templates-form">
+                <div class="form-group">
+                    <label for="content-topic" class="form-label">Content Topic</label>
+                    <input type="text" id="content-topic" name="content-topic" class="form-control" placeholder="Enter topic for content...">
+                </div>
+                <div class="form-group">
+                    <label for="template-post" class="form-label">Template Post</label>
+                    <textarea id="template-post" name="template-post" class="form-control" rows="6" placeholder="Paste a template post..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="template-brand" class="form-label">Brand</label>
+                    <input type="text" id="template-brand" name="template-brand" class="form-control" placeholder="Enter brand name...">
+                </div>
+                <div class="form-group">
+                    <label for="template-workflow-id" class="form-label">Workflow ID</label>
+                    <input type="text" id="template-workflow-id" name="template-workflow-id" class="form-control" placeholder="Enter workflow ID...">
+                </div>
+                <div class="form-group">
+                    <label for="posts-count" class="form-label">Number of Posts</label>
+                    <input type="number" id="posts-count" name="posts-count" class="form-control" min="1" max="10" value="3">
+                </div>
+                <button type="submit" class="form-button">Generate Posts</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Create New Posts modal
+        const createPostsModal = document.getElementById('create-posts-modal');
+        const openCreatePostsBtn = document.getElementById('open-create-posts-modal');
+        const closeCreatePostsBtn = document.getElementById('close-create-posts-modal');
+        
+        openCreatePostsBtn.addEventListener('click', function() {
+            createPostsModal.style.display = 'block';
+        });
+        
+        closeCreatePostsBtn.addEventListener('click', function() {
+            createPostsModal.style.display = 'none';
+        });
+        
+        // Repurpose modal
+        const repurposeModal = document.getElementById('repurpose-modal');
+        const openRepurposeBtn = document.getElementById('open-repurpose-modal');
+        const closeRepurposeBtn = document.getElementById('close-repurpose-modal');
+        
+        openRepurposeBtn.addEventListener('click', function() {
+            repurposeModal.style.display = 'block';
+        });
+        
+        closeRepurposeBtn.addEventListener('click', function() {
+            repurposeModal.style.display = 'none';
+        });
+        
+        // Templates modal
+        const templatesModal = document.getElementById('templates-modal');
+        const openTemplatesBtn = document.getElementById('open-templates-modal');
+        const closeTemplatesBtn = document.getElementById('close-templates-modal');
+        
+        openTemplatesBtn.addEventListener('click', function() {
+            templatesModal.style.display = 'block';
+        });
+        
+        closeTemplatesBtn.addEventListener('click', function() {
+            templatesModal.style.display = 'none';
+        });
+        
+        // Close modals when clicking outside
+        window.addEventListener('click', function(event) {
+            if (event.target == createPostsModal) {
+                createPostsModal.style.display = 'none';
+            }
+            if (event.target == repurposeModal) {
+                repurposeModal.style.display = 'none';
+            }
+            if (event.target == templatesModal) {
+                templatesModal.style.display = 'none';
+            }
+        });
+        
+        // Form submissions
+        document.getElementById('create-posts-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            // Display loading indicator or notification
+            window.showNotification('Generating posts, please wait...', false);
+            
+            // Add API call here
+            // For now, just simulate success after 2 seconds
+            setTimeout(() => {
+                window.showNotification('Posts generated successfully!', false);
+                createPostsModal.style.display = 'none';
+            }, 2000);
+        });
+        
+        document.getElementById('repurpose-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            window.showNotification('Repurposing content, please wait...', false);
+            
+            // Add API call here
+            setTimeout(() => {
+                window.showNotification('Content repurposed successfully!', false);
+                repurposeModal.style.display = 'none';
+            }, 2000);
+        });
+        
+        document.getElementById('templates-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            window.showNotification('Generating posts from template, please wait...', false);
+            
+            // Add API call here
+            setTimeout(() => {
+                window.showNotification('Template-based posts generated successfully!', false);
+                templatesModal.style.display = 'none';
+            }, 2000);
+        });
+    });
+</script>
+{% endblock %}
+
+{% endblock %}

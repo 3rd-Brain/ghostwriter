@@ -148,6 +148,14 @@ async def generation_posts_templates(request: Request, current_user: str = Depen
         "page": "posts-templates"
     })
 
+@app.get("/generate-content", response_class=HTMLResponse, include_in_schema=False)
+async def generate_content(request: Request, current_user: str = Depends(get_current_user)):
+    return templates.TemplateResponse("generate_content.html", {
+        "request": request,
+        "username": current_user,
+        "current_page": "generate_content"
+    })
+
 @app.get("/create/brand-voice", response_class=HTMLResponse, include_in_schema=False)
 async def create_brand_voice(request: Request, current_user: str = Depends(get_current_user)):
     return templates.TemplateResponse("brand_voice.html", {
