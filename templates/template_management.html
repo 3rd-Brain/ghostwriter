@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 
 {% block title %}Template Management | Ghostwriter API{% endblock %}
@@ -7,65 +6,48 @@
 {% block page_subtitle %}Create and manage content templates{% endblock %}
 
 {% block content %}
-<!-- Main content area with two sections side by side -->
-<div class="form-container-grid">
-    <!-- First content card container -->
-    <div class="content-card">
-        <div class="card-header">
-            <h2>Templatizer</h2>
-            <p class="text-secondary">Convert existing social posts into reusable templates</p>
-        </div>
-        <div class="card-content">
-            <form id="templatizerForm">
-                <div class="form-group">
-                    <label for="socialPost">Paste social post to convert:</label>
-                    <textarea 
-                        id="socialPost" 
-                        class="form-control fixed-height" 
-                        rows="8" 
-                        placeholder="Paste your social post here to convert it into a template..."
-                    ></textarea>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Create Template</button>
-                </div>
-            </form>
+<!-- Main layout container with two sections side by side -->
+<div class="template-management-layout">
+    <!-- Left section -->
+    <div class="template-management-section">
+        <!-- Content card for the Templatizer feature -->
+        <div class="content-card">
+            <div class="card-header">
+                <h2>Templatizer</h2>
+                <p class="text-secondary">Convert existing social posts into reusable templates</p>
+            </div>
+            <div class="card-content">
+                <!-- Form elements will be added here later -->
+            </div>
         </div>
     </div>
 
-    <!-- Second content card container -->
-    <div class="content-card">
-        <div class="card-header">
-            <h2>Upload Template</h2>
-            <p class="text-secondary">Add a new template to your template library</p>
-        </div>
-        <div class="card-content">
-            <form id="templateUploadForm">
-                <div class="form-group">
-                    <label for="templateContent">Template content:</label>
-                    <textarea 
-                        id="templateContent" 
-                        class="form-control fixed-height" 
-                        rows="8" 
-                        placeholder="Enter your template with placeholders like [placeholder]..."
-                    ></textarea>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Upload Template</button>
-                </div>
-            </form>
+    <!-- Right section -->
+    <div class="template-management-section">
+        <!-- Content card for template uploads -->
+        <div class="content-card">
+            <div class="card-header">
+                <h2>Upload Template</h2>
+                <p class="text-secondary">Add a new template to your template library</p>
+            </div>
+            <div class="card-content">
+                <!-- Form elements will be added here later -->
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Additional section for template listing that can be added later -->
-<div class="content-card">
-    <div class="card-header">
-        <h2>Your Templates</h2>
-        <p class="text-secondary">View and manage your saved templates</p>
-    </div>
-    <div class="card-content">
-        <p>Template listing will appear here.</p>
+<!-- Bottom section spanning full width -->
+<div class="template-management-full-width">
+    <!-- Content card for template listing -->
+    <div class="content-card">
+        <div class="card-header">
+            <h2>Your Templates</h2>
+            <p class="text-secondary">View and manage your saved templates</p>
+        </div>
+        <div class="card-content">
+            <!-- Template listing will be added here later -->
+        </div>
     </div>
 </div>
 {% endblock %}

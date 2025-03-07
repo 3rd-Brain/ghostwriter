@@ -745,66 +745,26 @@ button, input, select, textarea {
 /* Add more specific styles here */
 
 /* Template Management Styles */
-.form-container-grid {
+.template-management-layout {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-bottom: 20px;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.template-management-section {
+    display: flex;
+    flex-direction: column;
+}
+
+.template-management-full-width {
+    width: 100%;
 }
 
 @media (max-width: 992px) {
-    .form-container-grid {
+    .template-management-layout {
         grid-template-columns: 1fr;
     }
-}
-
-.form-group {
-    margin-bottom: 20px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 6px;
-    font-weight: 500;
-}
-
-.form-control {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    font-family: inherit;
-    font-size: 14px;
-    background-color: var(--input-bg);
-    color: var(--text-color);
-}
-
-.fixed-height {
-    resize: none;
-    height: 180px;
-}
-
-.form-actions {
-    display: flex;
-    justify-content: flex-end;
-}
-
-.btn {
-    padding: 8px 16px;
-    border-radius: 6px;
-    border: none;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.btn-primary {
-    background-color: var(--primary-color);
-    color: white;
-}
-
-.btn-primary:hover {
-    background-color: var(--primary-hover);
 }
 
 .text-secondary {
