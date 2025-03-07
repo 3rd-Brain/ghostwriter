@@ -215,7 +215,7 @@
     function populateWorkflowsTable(workflows) {
         const tableBody = document.getElementById('workflows-table-body');
         tableBody.innerHTML = ''; // Clear existing rows
-        
+
         if (workflows.length === 0) {
             // Display a message if no workflows
             const row = document.createElement('tr');
@@ -227,26 +227,26 @@
             tableBody.appendChild(row);
             return;
         }
-        
+
         // Add a row for each workflow
         workflows.forEach((workflow, index) => {
             const row = document.createElement('tr');
-            
+
             // Workflow ID
             const idCell = document.createElement('td');
             idCell.textContent = workflow.Workflow_ID || 'N/A';
             row.appendChild(idCell);
-            
+
             // Workflow Type
             const typeCell = document.createElement('td');
             typeCell.textContent = workflow.Workflow_Type || 'N/A';
             row.appendChild(typeCell);
-            
+
             // Description
             const descCell = document.createElement('td');
             descCell.textContent = workflow.Description || workflow.Short_Description || 'N/A';
             row.appendChild(descCell);
-            
+
             // Generation Flow button
             const flowCell = document.createElement('td');
             const flowButton = document.createElement('button');
@@ -259,22 +259,22 @@
             });
             flowCell.appendChild(flowButton);
             row.appendChild(flowCell);
-            
+
             tableBody.appendChild(row);
         });
     }
-    
+
     // Function to create the workflow modal if it doesn't exist
     function createWorkflowModal() {
         if (document.getElementById('workflow-modal')) {
             return;
         }
-        
+
         // Create the modal container
         const modal = document.createElement('div');
         modal.id = 'workflow-modal';
         modal.className = 'workflow-modal';
-        
+
         // Create modal content
         modal.innerHTML = `
             <div class="workflow-modal-content">
@@ -292,14 +292,14 @@
                 </div>
             </div>
         `;
-        
+
         document.body.appendChild(modal);
-        
+
         // Add event listener to close button
         document.getElementById('close-workflow-modal').addEventListener('click', function() {
             modal.style.display = 'none';
         });
-        
+
         // Close when clicking outside of the modal content
         modal.addEventListener('click', function(event) {
             if (event.target === modal) {
@@ -307,68 +307,68 @@
             }
         });
     }
-    
+
     // Function to display the generation flow in a modal
     function showGenerationFlow(jsonPayload) {
         console.log('Generation Flow:', jsonPayload);
-        
+
         // Create the modal if it doesn't exist
         createWorkflowModal();
-        
+
         const modal = document.getElementById('workflow-modal');
         const sidebarEl = document.getElementById('workflow-steps-sidebar');
         const detailAreaEl = document.getElementById('workflow-detail-area');
-        
+
         // Clear previous content
         sidebarEl.innerHTML = '';
         detailAreaEl.innerHTML = '';
-        
+
         if (!jsonPayload || !jsonPayload.steps || !Array.isArray(jsonPayload.steps)) {
             detailAreaEl.innerHTML = '<div class="error-message">Invalid workflow data</div>';
             modal.style.display = 'block';
             return;
         }
-        
+
         // Sort steps by order
         const steps = [...jsonPayload.steps].sort((a, b) => a.Order - b.Order);
-        
+
         // Populate steps sidebar
         steps.forEach((step, index) => {
             const stepItem = document.createElement('div');
             stepItem.className = 'workflow-step-item';
             stepItem.dataset.stepIndex = index;
-            
+
             stepItem.innerHTML = `
                 <div class="workflow-step-name">${step.Step_name || 'Unnamed Step'}</div>
                 <div class="workflow-step-order">Step ${step.Order || index + 1}</div>
             `;
-            
+
             stepItem.addEventListener('click', function() {
                 // Remove active class from all step items
                 document.querySelectorAll('.workflow-step-item').forEach(item => {
                     item.classList.remove('active');
                 });
-                
+
                 // Add active class to clicked step item
                 stepItem.classList.add('active');
-                
+
                 // Show step details
                 showStepDetails(step, index);
             });
-            
+
             sidebarEl.appendChild(stepItem);
         });
-        
+
         // Function to show step details
         function showStepDetails(step, index) {
             // Clear previous details
             detailAreaEl.innerHTML = '';
-            
+
             // Create detail elements
             const detailEl = document.createElement('div');
             detailEl.className = 'workflow-step-detail active';
             detailEl.id = `step-detail-${index}`;
-            
+
             // Add step name
             const nameGroup = document.createElement('div');
             nameGroup.className = 'workflow-detail-group';
@@ -377,7 +377,7 @@
                 <div class="workflow-detail-value">${step.Step_name || 'Unnamed Step'}</div>
             `;
             detailEl.appendChild(nameGroup);
-            
+
             // Add step order
             const orderGroup = document.createElement('div');
             orderGroup.className = 'workflow-detail-group';
@@ -386,7 +386,7 @@
                 <div class="workflow-detail-value">${step.Order || index + 1}</div>
             `;
             detailEl.appendChild(orderGroup);
-            
+
             // Add model
             if (step.Model) {
                 const modelGroup = document.createElement('div');
@@ -397,7 +397,7 @@
                 `;
                 detailEl.appendChild(modelGroup);
             }
-            
+
             // Add temperature if it exists
             if (step.Temperature !== undefined) {
                 const tempGroup = document.createElement('div');
@@ -408,7 +408,7 @@
                 `;
                 detailEl.appendChild(tempGroup);
             }
-            
+
             // Add max tokens if it exists
             if (step.Max_tokens !== undefined) {
                 const tokensGroup = document.createElement('div');
@@ -419,7 +419,7 @@
                 `;
                 detailEl.appendChild(tokensGroup);
             }
-            
+
             // Add system prompt if it exists
             if (step.System_prompt) {
                 const systemGroup = document.createElement('div');
@@ -430,7 +430,7 @@
                 `;
                 detailEl.appendChild(systemGroup);
             }
-            
+
             // Add messages if they exist
             if (step.Message && Array.isArray(step.Message) && step.Message.length > 0) {
                 const messagesGroup = document.createElement('div');
@@ -438,24 +438,34 @@
                 messagesGroup.innerHTML = `
                     <div class="workflow-detail-label">Messages</div>
                 `;
-                
+
                 step.Message.forEach((msg, msgIndex) => {
                     const messageEl = document.createElement('div');
                     messageEl.className = 'message-container';
+
+                    // Safely handle message content - escape HTML and preserve template variables
+                    let messageContent = msg.content || '';
+                    // Replace template variables with highlighted versions to make them more visible
+                    messageContent = messageContent
+                        .replace(/\{([^}]+)\}/g, '<span style="color: var(--primary); font-weight: 500;">{$1}</span>')
+                        // Ensure < and > are properly escaped for display
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;');
+
                     messageEl.innerHTML = `
                         <div class="message-role">${msg.role || 'Unknown Role'}</div>
-                        <div class="message-content">${msg.content || ''}</div>
+                        <div class="message-content">${messageContent}</div>
                     `;
                     messagesGroup.appendChild(messageEl);
                 });
-                
+
                 detailEl.appendChild(messagesGroup);
             }
-            
+
             // Append the detail element to the detail area
             detailAreaEl.appendChild(detailEl);
         }
-        
+
         // Show the first step by default
         if (steps.length > 0) {
             const firstStepItem = sidebarEl.querySelector('.workflow-step-item');
@@ -464,7 +474,7 @@
                 showStepDetails(steps[0], 0);
             }
         }
-        
+
         // Show the modal
         modal.style.display = 'block';
     }
@@ -472,7 +482,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         // Fetch workflows when the page loads
         fetchWorkflows();
-        
+
         // Create New Posts modal
         const createPostsModal = document.getElementById('create-posts-modal');
         const openCreatePostsBtn = document.getElementById('open-create-posts-modal');
