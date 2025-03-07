@@ -807,14 +807,17 @@ textarea.form-control {
     position: relative;
     display: flex;
     flex-direction: column;
+    padding-bottom: 60px; /* Add space for the button */
 }
 
 .button-container {
-    margin-top: auto;
+    position: absolute;
+    bottom: 0;
+    right: 0;
     display: flex;
     justify-content: flex-end;
-    align-self: flex-end;
-    margin-top: var(--spacing-md);
+    padding-bottom: var(--spacing-md);
+    padding-right: var(--spacing-md);
 }
 
 .template-stats {
