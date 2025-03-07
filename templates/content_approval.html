@@ -315,102 +315,67 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function fetchContentData() {
-    // In a real implementation, this would be an API call
-    // For now, we'll use dummy data
-    const dummyData = [
-        {
-            id: 1,
-            first_draft: "AI tools are revolutionizing content creation, but the human touch remains essential for authentic connection.",
-            status: "draft",
-            source_chunk: "Studies show that while AI content tools can generate material quickly, human editors still play a crucial role in ensuring quality, brand alignment, and emotional resonance. The most effective content strategies combine AI efficiency with human creativity.",
-            template: "Here's the thing about {topic}: {key_insight}.\n\nBut don't forget: {human_element}.",
-            tag: "content_creation",
-            format: "Short Form Social",
-            author: "AI Generated",
-            created_time: "2024-06-10 14:32:21",
-            approval_date: "",
-            publish_date: "",
-            post_id: "",
-            channel: "Twitter",
-            metrics: {
-                likes: 0,
-                shares: 0,
-                quotes: 0,
-                bookmarks: 0,
-                replies: 0,
-                impressions: 0,
-                weighted_impressions: 0,
-                weighted_replies: 0,
-                weighted_bookmarks: 0,
-                weighted_shares: 0,
-                weighted_likes: 0,
-                followers: 0,
-                score: 0
-            }
-        },
-        {
-            id: 2,
-            first_draft: "The best social media strategies aren't about posting more, but posting with more purpose.",
-            status: "approved",
-            source_chunk: "Research from leading marketing firms indicates that engagement rates increase by up to 40% when content is strategically planned rather than randomly posted. Quality and consistency trump quantity in almost all case studies across industries.",
-            template: "{counter_intuitive_insight} about {topic}.",
-            tag: "social_media",
-            format: "Mid Form Social",
-            author: "AI Generated",
-            created_time: "2024-06-09 10:15:33",
-            approval_date: "2024-06-10 09:22:18",
-            publish_date: "",
-            post_id: "",
-            channel: "LinkedIn",
-            metrics: {
-                likes: 0,
-                shares: 0,
-                quotes: 0,
-                bookmarks: 0,
-                replies: 0,
-                impressions: 0,
-                weighted_impressions: 0,
-                weighted_replies: 0,
-                weighted_bookmarks: 0,
-                weighted_shares: 0,
-                weighted_likes: 0,
-                followers: 0,
-                score: 0
-            }
-        },
-        {
-            id: 3,
-            first_draft: "Data doesn't lie, but it doesn't tell the whole truth either. Context matters.",
-            status: "published",
-            source_chunk: "Multiple studies from data science journals show that misinterpreted data leads to wrong business decisions in approximately 68% of cases. Contextual understanding, domain expertise, and proper framing are essential to derive meaningful insights from any dataset.",
-            template: "{provocative_statement}. {qualification}.",
-            tag: "data_science",
-            format: "Atomic Essay",
-            author: "User Generated",
-            created_time: "2024-06-08 15:45:12",
-            approval_date: "2024-06-09 11:30:05",
-            publish_date: "2024-06-09 13:00:00",
-            post_id: "12345678",
-            channel: "Twitter",
-            metrics: {
-                likes: 152,
-                shares: 48,
-                quotes: 12,
-                bookmarks: 35,
-                replies: 22,
-                impressions: 3450,
-                weighted_impressions: 86.5,
-                weighted_replies: 44.0,
-                weighted_bookmarks: 35.0,
-                weighted_shares: 96.0,
-                weighted_likes: 76.0,
-                followers: 2500,
-                score: 87.3
-            }
-        }
-    ];
+    // Show loading state
+    const tableBody = document.getElementById('approval-table-body');
+    tableBody.innerHTML = '<tr><td colspan="26" style="text-align: center; padding: 20px;">Loading content data...</td></tr>';
     
-    renderContentTable(dummyData);
+    // Fetch content data from the API
+    fetch('/api/latest-content')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch content data');
+            }
+            return response.json();
+        })
+        .then(responseData => {
+            if (responseData.status === 'success' && Array.isArray(responseData.content)) {
+                // Transform the API response to the expected format for rendering
+                const transformedData = responseData.content.map(item => {
+                    return {
+                        id: item._id,
+                        first_draft: item.First_Draft || '',
+                        status: (item.Status || 'draft').toLowerCase(),
+                        source_chunk: item.Source_Chunk || '',
+                        template: item.Template || '',
+                        tag: item.Tag || '',
+                        format: item.Content_Format || 'Short Form Social',
+                        author: item.Content_Author || 'AI Generated',
+                        created_time: item.Created_Time || '',
+                        approval_date: item.Approval_Date || '',
+                        publish_date: item.Publish_Date || '',
+                        post_id: item.Post_ID || '',
+                        channel: item.Post_Channel || '',
+                        metrics: {
+                            likes: item.Likes || 0,
+                            shares: item.Shares || 0,
+                            quotes: item.Quotes || 0,
+                            bookmarks: item.Bookmarks || 0,
+                            replies: item.Replies || 0,
+                            impressions: item.Impressions || 0,
+                            weighted_impressions: item.Weighted_Impressions || 0,
+                            weighted_replies: item.Weighted_Replies || 0,
+                            weighted_bookmarks: item.Weighted_Bookmarks || 0,
+                            weighted_shares: item.Weighted_Shares || 0,
+                            weighted_likes: item.Weighted_Likes || 0,
+                            followers: item.Followers || 0,
+                            score: item.Score || 0
+                        }
+                    };
+                });
+                
+                renderContentTable(transformedData);
+                
+                if (transformedData.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="26" style="text-align: center; padding: 20px;">No content found</td></tr>';
+                }
+            } else {
+                throw new Error('Invalid response format');
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching content data:', error);
+            tableBody.innerHTML = `<tr><td colspan="26" style="text-align: center; padding: 20px; color: #f44336;">Error: ${error.message}</td></tr>`;
+        });
 }
 
 function renderContentTable(data) {
@@ -484,7 +449,8 @@ function approveSelected() {
         return;
     }
     
-    // In a real implementation, this would make an API call
+    // In a future implementation, this would make an API call to update the status
+    // For now, just show a notification
     showNotification(`${selectedItems.length} items approved`);
     fetchContentData(); // Refresh the table
 }
@@ -496,7 +462,8 @@ function rejectSelected() {
         return;
     }
     
-    // In a real implementation, this would make an API call
+    // In a future implementation, this would make an API call to update the status
+    // For now, just show a notification
     showNotification(`${selectedItems.length} items rejected`);
     fetchContentData(); // Refresh the table
 }
@@ -524,9 +491,49 @@ function filterContent() {
         date: dateFilter
     });
     
-    // In a real implementation, these filters would be sent to the backend
+    // In a future implementation, these filters would be sent to the backend
     // For now, just refresh with all data
     fetchContentData();
+}
+
+// Function to show notification messages to the user
+function showNotification(message, isError = false) {
+    // Create notification element if it doesn't exist
+    let notification = document.getElementById('notification');
+    if (!notification) {
+        notification = document.createElement('div');
+        notification.id = 'notification';
+        notification.style.position = 'fixed';
+        notification.style.top = '20px';
+        notification.style.right = '20px';
+        notification.style.padding = '12px 20px';
+        notification.style.borderRadius = '8px';
+        notification.style.zIndex = '1000';
+        notification.style.maxWidth = '300px';
+        notification.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+        notification.style.transition = 'opacity 0.3s ease';
+        document.body.appendChild(notification);
+    }
+
+    // Set style based on error status
+    if (isError) {
+        notification.style.backgroundColor = '#ffd2d2';
+        notification.style.color = '#7d0000';
+        notification.style.border = '1px solid #ffb8b8';
+    } else {
+        notification.style.backgroundColor = '#d1f7c4';
+        notification.style.color = '#2a6b00';
+        notification.style.border = '1px solid #b8e986';
+    }
+
+    // Set message and show notification
+    notification.textContent = message;
+    notification.style.opacity = '1';
+
+    // Hide notification after 3 seconds
+    setTimeout(() => {
+        notification.style.opacity = '0';
+    }, 3000);
 }
 </script>
 {% endblock %}
