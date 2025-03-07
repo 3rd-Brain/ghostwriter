@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 
 {% block title %}Content Approval | Ghostwriter API{% endblock %}
@@ -15,13 +14,13 @@
         border-radius: 12px;
         box-shadow: var(--shadow-sm);
     }
-    
+
     .approval-table {
         width: 100%;
         border-collapse: collapse;
         font-size: 14px;
     }
-    
+
     .approval-table th {
         padding: 12px 16px;
         text-align: left;
@@ -32,17 +31,17 @@
         position: sticky;
         top: 0;
     }
-    
+
     .approval-table td {
         padding: 12px 16px;
         border-bottom: 1px solid var(--border);
         vertical-align: top;
     }
-    
+
     .approval-table tbody tr:hover {
         background-color: rgba(107, 53, 255, 0.04);
     }
-    
+
     .btn-small {
         padding: 4px 8px;
         font-size: 12px;
@@ -51,11 +50,11 @@
         border: 1px solid var(--border);
         cursor: pointer;
     }
-    
+
     .btn-small:hover {
         background-color: var(--primary-lightest);
     }
-    
+
     .status-badge {
         padding: 4px 8px;
         border-radius: 12px;
@@ -63,40 +62,40 @@
         font-weight: 500;
         display: inline-block;
     }
-    
+
     .status-draft {
         background-color: #ffecb5;
         color: #835d00;
     }
-    
+
     .status-approved {
         background-color: #d1f7c4;
         color: #2a6b00;
     }
-    
+
     .status-rejected {
         background-color: #ffd2d2;
         color: #7d0000;
     }
-    
+
     .status-published {
         background-color: #c8e1ff;
         color: #0046a6;
     }
-    
+
     .first-draft-cell {
         max-width: 600px;
         min-width: 400px;
         white-space: pre-wrap;
         overflow: hidden;
     }
-    
+
     .approval-actions {
         display: flex;
         gap: 8px;
         margin-bottom: 1rem;
     }
-    
+
     .approval-actions button {
         padding: 8px 16px;
         border-radius: 8px;
@@ -104,17 +103,17 @@
         font-weight: 500;
         cursor: pointer;
     }
-    
+
     .btn-approve {
         background-color: var(--primary);
         color: white;
     }
-    
+
     .btn-reject {
         background-color: #f44336;
         color: white;
     }
-    
+
     .content-filters {
         display: flex;
         align-items: center;
@@ -122,19 +121,47 @@
         margin-bottom: 1.5rem;
         flex-wrap: wrap;
     }
-    
+
     .filter-group {
         display: flex;
         align-items: center;
         gap: 0.5rem;
     }
-    
+
     .filter-select {
         padding: 8px 12px;
         border-radius: 8px;
         border: 1px solid var(--border);
         background-color: var(--surface);
         min-width: 150px;
+    }
+
+    .pagination-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 1rem;
+    }
+
+    .pagination-button {
+        padding: 8px 12px;
+        margin: 0 4px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background-color: var(--surface);
+        cursor: pointer;
+    }
+
+    .pagination-button:hover {
+        background-color: var(--primary-lightest);
+    }
+
+    .pagination-button.active {
+        background-color: var(--primary);
+        color: white;
+    }
+
+    .pagination-ellipsis {
+        margin: 0 4px;
     }
 </style>
 {% endblock %}
@@ -204,12 +231,12 @@
                 </select>
             </div>
         </div>
-        
+
         <div class="approval-actions">
             <button class="btn-approve" id="approve-selected">Approve Selected</button>
             <button class="btn-reject" id="reject-selected">Reject Selected</button>
         </div>
-        
+
         <div class="approval-table-container">
             <table class="approval-table">
                 <thead>
@@ -247,6 +274,10 @@
                 </tbody>
             </table>
         </div>
+        <!-- Pagination controls -->
+        <div id="pagination-controls" class="pagination-container">
+            <!-- Pagination buttons will be added here -->
+        </div>
     </div>
 </div>
 
@@ -280,10 +311,15 @@
 
 {% block extra_js %}
 <script>
+// Global variables for pagination
+let currentPage = 1;
+let itemsPerPage = 10;
+let allContentData = [];
+
 document.addEventListener('DOMContentLoaded', function() {
     // Fetch content data
     fetchContentData();
-    
+
     // Set up event listeners
     document.getElementById('select-all').addEventListener('change', toggleSelectAll);
     document.getElementById('approve-selected').addEventListener('click', approveSelected);
@@ -294,7 +330,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('author-filter').addEventListener('change', filterContent);
     document.getElementById('channel-filter').addEventListener('change', filterContent);
     document.getElementById('date-range').addEventListener('change', filterContent);
-    
+
     // Modal close buttons
     document.getElementById('close-source-modal').addEventListener('click', function() {
         document.getElementById('source-modal').style.display = 'none';
@@ -302,7 +338,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('close-template-modal').addEventListener('click', function() {
         document.getElementById('template-modal').style.display = 'none';
     });
-    
+
     // Close modals when clicking outside
     window.addEventListener('click', function(event) {
         if (event.target === document.getElementById('source-modal')) {
@@ -318,7 +354,7 @@ function fetchContentData() {
     // Show loading state
     const tableBody = document.getElementById('approval-table-body');
     tableBody.innerHTML = '<tr><td colspan="26" style="text-align: center; padding: 20px;">Loading content data...</td></tr>';
-    
+
     // Fetch content data from the API
     fetch('/api/latest-content')
         .then(response => {
@@ -332,41 +368,42 @@ function fetchContentData() {
                 // Transform the API response to the expected format for rendering
                 const transformedData = responseData.content.map(item => {
                     return {
-                        id: item._id,
-                        first_draft: item.First_Draft || '',
-                        status: (item.Status || 'draft').toLowerCase(),
-                        source_chunk: item.Source_Chunk || '',
-                        template: item.Template || '',
-                        tag: item.Tag || '',
-                        format: item.Content_Format || 'Short Form Social',
-                        author: item.Content_Author || 'AI Generated',
-                        created_time: item.Created_Time || '',
-                        approval_date: item.Approval_Date || '',
-                        publish_date: item.Publish_Date || '',
-                        post_id: item.Post_ID || '',
-                        channel: item.Post_Channel || '',
-                        metrics: {
-                            likes: item.Likes || 0,
-                            shares: item.Shares || 0,
-                            quotes: item.Quotes || 0,
-                            bookmarks: item.Bookmarks || 0,
-                            replies: item.Replies || 0,
-                            impressions: item.Impressions || 0,
-                            weighted_impressions: item.Weighted_Impressions || 0,
-                            weighted_replies: item.Weighted_Replies || 0,
-                            weighted_bookmarks: item.Weighted_Bookmarks || 0,
-                            weighted_shares: item.Weighted_Shares || 0,
-                            weighted_likes: item.Weighted_Likes || 0,
-                            followers: item.Followers || 0,
-                            score: item.Score || 0
-                        }
+                        _id: item._id,
+                        First_Draft: item.First_Draft || '',
+                        Status: (item.Status || 'draft').toLowerCase(),
+                        Source_Chunk: item.Source_Chunk || '',
+                        Template: item.Template || '',
+                        Tag: item.Tag || '',
+                        Content_Format: item.Content_Format || 'Short Form Social',
+                        Content_Author: item.Content_Author || 'AI Generated',
+                        Created_Time: item.Created_Time || '',
+                        Approval_Date: item.Approval_Date || '',
+                        Publish_Date: item.Publish_Date || '',
+                        Post_ID: item.Post_ID || '',
+                        Post_Channel: item.Post_Channel || '',
+                        Likes: item.Likes || 0,
+                        Shares: item.Shares || 0,
+                        Quotes: item.Quotes || 0,
+                        Bookmarks: item.Bookmarks || 0,
+                        Replies: item.Replies || 0,
+                        Impressions: item.Impressions || 0,
+                        Weighted_Impressions: item.Weighted_Impressions || 0,
+                        Weighted_Replies: item.Weighted_Replies || 0,
+                        Weighted_Bookmarks: item.Weighted_Bookmarks || 0,
+                        Weighted_Shares: item.Weighted_Shares || 0,
+                        Weighted_Likes: item.Weighted_Likes || 0,
+                        Followers: item.Followers || 0,
+                        Score: item.Score || 0
                     };
                 });
-                
-                renderContentTable(transformedData);
-                
+
+                allContentData = transformedData;
+                renderContentTable(1);
+                setupPagination(allContentData.length);
+
                 if (transformedData.length === 0) {
                     tableBody.innerHTML = '<tr><td colspan="26" style="text-align: center; padding: 20px;">No content found</td></tr>';
+                    document.getElementById('pagination-controls').style.display = 'none';
                 }
             } else {
                 throw new Error('Invalid response format');
@@ -375,48 +412,64 @@ function fetchContentData() {
         .catch(error => {
             console.error('Error fetching content data:', error);
             tableBody.innerHTML = `<tr><td colspan="26" style="text-align: center; padding: 20px; color: #f44336;">Error: ${error.message}</td></tr>`;
+            document.getElementById('pagination-controls').style.display = 'none';
         });
 }
 
-function renderContentTable(data) {
+function renderContentTable(page) {
+    // Update current page
+    currentPage = page;
+
     const tableBody = document.getElementById('approval-table-body');
     tableBody.innerHTML = '';
-    
-    data.forEach(item => {
+
+    // Calculate start and end indices for the current page
+    const startIndex = (page - 1) * itemsPerPage;
+    const endIndex = Math.min(startIndex + itemsPerPage, allContentData.length);
+
+    // Get data for the current page
+    const currentPageData = allContentData.slice(startIndex, endIndex);
+
+    if (currentPageData.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="26" style="text-align: center; padding: 20px;">No content found on this page</td></tr>';
+        return;
+    }
+
+    currentPageData.forEach(item => {
         const row = document.createElement('tr');
-        
+
         row.innerHTML = `
-            <td><input type="checkbox" class="content-checkbox" data-id="${item.id}"></td>
-            <td class="first-draft-cell">${item.first_draft}</td>
-            <td><span class="status-badge status-${item.status}">${item.status.charAt(0).toUpperCase() + item.status.slice(1)}</span></td>
-            <td><button class="btn-small view-source" data-source="${encodeURIComponent(item.source_chunk)}">View</button></td>
-            <td><button class="btn-small view-template" data-template="${encodeURIComponent(item.template)}">View</button></td>
-            <td>${item.tag}</td>
-            <td>${item.format}</td>
-            <td>${item.author}</td>
-            <td>${item.created_time}</td>
-            <td>${item.approval_date}</td>
-            <td>${item.publish_date}</td>
-            <td>${item.post_id}</td>
-            <td>${item.channel}</td>
-            <td>${item.metrics.likes}</td>
-            <td>${item.metrics.shares}</td>
-            <td>${item.metrics.quotes}</td>
-            <td>${item.metrics.bookmarks}</td>
-            <td>${item.metrics.replies}</td>
-            <td>${item.metrics.impressions}</td>
-            <td>${item.metrics.weighted_impressions}</td>
-            <td>${item.metrics.weighted_replies}</td>
-            <td>${item.metrics.weighted_bookmarks}</td>
-            <td>${item.metrics.weighted_shares}</td>
-            <td>${item.metrics.weighted_likes}</td>
-            <td>${item.metrics.followers}</td>
-            <td>${item.metrics.score}</td>
+            <td><input type="checkbox" class="content-checkbox" data-id="${item._id}"></td>
+            <td class="first-draft-cell">${item.First_Draft}</td>
+            <td><span class="status-badge status-${item.Status}">${item.Status.charAt(0).toUpperCase() + item.Status.slice(1)}</span></td>
+            <td><button class="btn-small view-source" data-source="${encodeURIComponent(item.Source_Chunk)}">View</button></td>
+            <td><button class="btn-small view-template" data-template="${encodeURIComponent(item.Template)}">View</button></td>
+            <td>${item.Tag}</td>
+            <td>${item.Content_Format}</td>
+            <td>${item.Content_Author}</td>
+            <td>${item.Created_Time}</td>
+            <td>${item.Approval_Date}</td>
+            <td>${item.Publish_Date}</td>
+            <td>${item.Post_ID}</td>
+            <td>${item.Post_Channel}</td>
+            <td>${item.Likes}</td>
+            <td>${item.Shares}</td>
+            <td>${item.Quotes}</td>
+            <td>${item.Bookmarks}</td>
+            <td>${item.Replies}</td>
+            <td>${item.Impressions}</td>
+            <td>${item.Weighted_Impressions}</td>
+            <td>${item.Weighted_Replies}</td>
+            <td>${item.Weighted_Bookmarks}</td>
+            <td>${item.Weighted_Shares}</td>
+            <td>${item.Weighted_Likes}</td>
+            <td>${item.Followers}</td>
+            <td>${item.Score}</td>
         `;
-        
+
         tableBody.appendChild(row);
     });
-    
+
     // Add event listeners for view buttons
     document.querySelectorAll('.view-source').forEach(button => {
         button.addEventListener('click', function() {
@@ -425,7 +478,7 @@ function renderContentTable(data) {
             document.getElementById('source-modal').style.display = 'block';
         });
     });
-    
+
     document.querySelectorAll('.view-template').forEach(button => {
         button.addEventListener('click', function() {
             const templateContent = decodeURIComponent(this.getAttribute('data-template'));
@@ -433,6 +486,115 @@ function renderContentTable(data) {
             document.getElementById('template-modal').style.display = 'block';
         });
     });
+    updateActivePaginationButton();
+}
+
+function setupPagination(totalItems) {
+    const paginationControls = document.getElementById('pagination-controls');
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+    // Only show pagination if we have more than one page
+    if (totalPages <= 1) {
+        paginationControls.style.display = 'none';
+        return;
+    }
+
+    paginationControls.style.display = 'flex';
+
+    // Clear existing pagination
+    paginationControls.innerHTML = '';
+
+    // Previous button
+    const prevButton = document.createElement('button');
+    prevButton.innerHTML = '&laquo;';
+    prevButton.className = 'pagination-button';
+    prevButton.addEventListener('click', () => {
+        if (currentPage > 1) {
+            renderContentTable(currentPage - 1);
+        }
+    });
+    paginationControls.appendChild(prevButton);
+
+    // Page numbers
+    const maxDisplayedPages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxDisplayedPages / 2));
+    let endPage = Math.min(totalPages, startPage + maxDisplayedPages - 1);
+
+    // Adjust if at the end of the range
+    if (endPage - startPage + 1 < maxDisplayedPages) {
+        startPage = Math.max(1, endPage - maxDisplayedPages + 1);
+    }
+
+    // Show first page and ellipsis if needed
+    if (startPage > 1) {
+        const firstPageButton = document.createElement('button');
+        firstPageButton.textContent = '1';
+        firstPageButton.className = 'pagination-button page-number';
+        firstPageButton.dataset.page = 1;
+        firstPageButton.addEventListener('click', () => renderContentTable(1));
+        paginationControls.appendChild(firstPageButton);
+
+        if (startPage > 2) {
+            const ellipsis = document.createElement('span');
+            ellipsis.textContent = '...';
+            ellipsis.className = 'pagination-ellipsis';
+            paginationControls.appendChild(ellipsis);
+        }
+    }
+
+    // Page buttons
+    for (let i = startPage; i <= endPage; i++) {
+        const pageButton = document.createElement('button');
+        pageButton.textContent = i;
+        pageButton.className = 'pagination-button page-number';
+        pageButton.dataset.page = i;
+        if (i === currentPage) {
+            pageButton.classList.add('active');
+        }
+        pageButton.addEventListener('click', () => renderContentTable(i));
+        paginationControls.appendChild(pageButton);
+    }
+
+    // Show last page and ellipsis if needed
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+            const ellipsis = document.createElement('span');
+            ellipsis.textContent = '...';
+            ellipsis.className = 'pagination-ellipsis';
+            paginationControls.appendChild(ellipsis);
+        }
+
+        const lastPageButton = document.createElement('button');
+        lastPageButton.textContent = totalPages;
+        lastPageButton.className = 'pagination-button page-number';
+        lastPageButton.dataset.page = totalPages;
+        lastPageButton.addEventListener('click', () => renderContentTable(totalPages));
+        paginationControls.appendChild(lastPageButton);
+    }
+
+    // Next button
+    const nextButton = document.createElement('button');
+    nextButton.innerHTML = '&raquo;';
+    nextButton.className = 'pagination-button';
+    nextButton.addEventListener('click', () => {
+        if (currentPage < totalPages) {
+            renderContentTable(currentPage + 1);
+        }
+    });
+    paginationControls.appendChild(nextButton);
+}
+
+function updateActivePaginationButton() {
+    // Remove active class from all page buttons
+    document.querySelectorAll('.pagination-button.page-number').forEach(button => {
+        button.classList.remove('active');
+    });
+
+    // Add active class to current page button if it exists
+    const currentPageButton = document.querySelector(`.pagination-button.page-number[data-page="${currentPage}"]`);
+    if (currentPageButton) {
+        currentPageButton.classList.add('active');
+    }
 }
 
 function toggleSelectAll(e) {
@@ -448,7 +610,7 @@ function approveSelected() {
         showNotification('No items selected', true);
         return;
     }
-    
+
     // In a future implementation, this would make an API call to update the status
     // For now, just show a notification
     showNotification(`${selectedItems.length} items approved`);
@@ -461,7 +623,7 @@ function rejectSelected() {
         showNotification('No items selected', true);
         return;
     }
-    
+
     // In a future implementation, this would make an API call to update the status
     // For now, just show a notification
     showNotification(`${selectedItems.length} items rejected`);
@@ -481,7 +643,7 @@ function filterContent() {
     const authorFilter = document.getElementById('author-filter').value;
     const channelFilter = document.getElementById('channel-filter').value;
     const dateFilter = document.getElementById('date-range').value;
-    
+
     console.log('Filtering content with:', {
         status: statusFilter,
         tag: tagFilter,
@@ -490,7 +652,7 @@ function filterContent() {
         channel: channelFilter,
         date: dateFilter
     });
-    
+
     // In a future implementation, these filters would be sent to the backend
     // For now, just refresh with all data
     fetchContentData();
