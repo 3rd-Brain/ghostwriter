@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 
 {% block title %}Generate Content | Ghostwriter API{% endblock %}
@@ -36,7 +35,7 @@
             <button class="form-button mt-md" id="open-repurpose-modal">Repurpose Content</button>
         </div>
     </div>
-    
+
     <!-- Generate Posts with Templates card -->
     <div class="card">
         <div class="card-header">
@@ -48,6 +47,55 @@
         <div class="card-content">
             <p class="text-secondary">Use specific templates to create consistent content</p>
             <button class="form-button mt-md" id="open-templates-modal">Use Templates</button>
+        </div>
+    </div>
+</div>
+
+<!-- Workflows Card -->
+<div class="template-management-full-width">
+    <!-- Content card for workflow listing -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <span>Your Workflows</span>
+                <i data-lucide="info"></i>
+            </div>
+        </div>
+        <div class="card-content">
+            <p class="text-secondary">View and manage your generation workflows</p>
+            <div class="table-container mt-md">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Workflow ID</th>
+                            <th>Workflow Type</th>
+                            <th>Description</th>
+                            <th>Generation Flow</th>
+                        </tr>
+                    </thead>
+                    <tbody id="workflows-table-body">
+                        <!-- Placeholder rows - will be populated from API -->
+                        <tr>
+                            <td>default-social-flow</td>
+                            <td>Social</td>
+                            <td>Default workflow for social media posts</td>
+                            <td><button class="form-button form-button-small">Click to see Generation Flow</button></td>
+                        </tr>
+                        <tr>
+                            <td>blog-content-flow</td>
+                            <td>Blog</td>
+                            <td>Optimized for long-form blog articles</td>
+                            <td><button class="form-button form-button-small">Click to see Generation Flow</button></td>
+                        </tr>
+                        <tr>
+                            <td>email-marketing-flow</td>
+                            <td>Email</td>
+                            <td>Email marketing campaign generator</td>
+                            <td><button class="form-button form-button-small">Click to see Generation Flow</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
@@ -164,41 +212,41 @@
         const createPostsModal = document.getElementById('create-posts-modal');
         const openCreatePostsBtn = document.getElementById('open-create-posts-modal');
         const closeCreatePostsBtn = document.getElementById('close-create-posts-modal');
-        
+
         openCreatePostsBtn.addEventListener('click', function() {
             createPostsModal.style.display = 'block';
         });
-        
+
         closeCreatePostsBtn.addEventListener('click', function() {
             createPostsModal.style.display = 'none';
         });
-        
+
         // Repurpose modal
         const repurposeModal = document.getElementById('repurpose-modal');
         const openRepurposeBtn = document.getElementById('open-repurpose-modal');
         const closeRepurposeBtn = document.getElementById('close-repurpose-modal');
-        
+
         openRepurposeBtn.addEventListener('click', function() {
             repurposeModal.style.display = 'block';
         });
-        
+
         closeRepurposeBtn.addEventListener('click', function() {
             repurposeModal.style.display = 'none';
         });
-        
+
         // Templates modal
         const templatesModal = document.getElementById('templates-modal');
         const openTemplatesBtn = document.getElementById('open-templates-modal');
         const closeTemplatesBtn = document.getElementById('close-templates-modal');
-        
+
         openTemplatesBtn.addEventListener('click', function() {
             templatesModal.style.display = 'block';
         });
-        
+
         closeTemplatesBtn.addEventListener('click', function() {
             templatesModal.style.display = 'none';
         });
-        
+
         // Close modals when clicking outside
         window.addEventListener('click', function(event) {
             if (event.target == createPostsModal) {
@@ -211,13 +259,13 @@
                 templatesModal.style.display = 'none';
             }
         });
-        
+
         // Form submissions
         document.getElementById('create-posts-form').addEventListener('submit', function(e) {
             e.preventDefault();
             // Display loading indicator or notification
             window.showNotification('Generating posts, please wait...', false);
-            
+
             // Add API call here
             // For now, just simulate success after 2 seconds
             setTimeout(() => {
@@ -225,22 +273,22 @@
                 createPostsModal.style.display = 'none';
             }, 2000);
         });
-        
+
         document.getElementById('repurpose-form').addEventListener('submit', function(e) {
             e.preventDefault();
             window.showNotification('Repurposing content, please wait...', false);
-            
+
             // Add API call here
             setTimeout(() => {
                 window.showNotification('Content repurposed successfully!', false);
                 repurposeModal.style.display = 'none';
             }, 2000);
         });
-        
+
         document.getElementById('templates-form').addEventListener('submit', function(e) {
             e.preventDefault();
             window.showNotification('Generating posts from template, please wait...', false);
-            
+
             // Add API call here
             setTimeout(() => {
                 window.showNotification('Template-based posts generated successfully!', false);

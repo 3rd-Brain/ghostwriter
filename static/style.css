@@ -535,6 +535,40 @@ textarea.form-control {
     min-height: 200px;
 }
 
+/* Table styles */
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.data-table th, 
+.data-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+.data-table th {
+    background-color: var(--surface-variant);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.data-table tbody tr:hover {
+    background-color: var(--surface-hover);
+}
+
+.form-button-small {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+}
+
 .form-control:focus {
     outline: none;
     border-color: var(--primary);

@@ -156,6 +156,55 @@ async def generate_content(request: Request, current_user: str = Depends(get_cur
         "current_page": "generate_content"
     })
 
+@app.get("/api/workflows", tags=["Generation Flows"])
+async def get_workflows(current_user: str = Depends(get_current_user)):
+    """
+    **Retrieve all generation workflow configurations**
+
+    This endpoint fetches all workflows available for the current user.
+
+    ## When to use
+    Use this endpoint when you need to:
+    * **List all available workflows** for user selection
+    * Get an overview of configured generation processes
+    * Select a workflow for content generation
+    """
+    ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+    ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+
+    if not ASTRA_DB_API_ENDPOINT:
+        raise HTTPException(status_code=500, detail="ASTRA_DB_API_ENDPOINT not configured")
+    if not ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER:
+        raise HTTPException(status_code=500, detail="ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
+
+    # Get the current user's username
+    username = current_user
+
+    # Use the current user's username for the URL path
+    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/{username}/workflows"
+
+    headers = {
+        "Token": ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
+        "Content-Type": "application/json"
+    }
+
+    payload = {"find": {"filter": {}}}
+
+    try:
+        response = requests.post(url, headers=headers, json=payload)
+        response.raise_for_status()
+        result = response.json()
+
+        # Extract the documents from the response
+        workflows = result.get("data", {}).get("documents", [])
+        
+        return {
+            "status": "success",
+            "workflows": workflows
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/create/brand-voice", response_class=HTMLResponse, include_in_schema=False)
 async def create_brand_voice(request: Request, current_user: str = Depends(get_current_user)):
     return templates.TemplateResponse("brand_voice.html", {
