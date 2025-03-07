@@ -19,7 +19,7 @@
         </div>
         <div class="card-content">
             <p class="text-secondary">Convert existing social posts into reusable templates</p>
-            <!-- Form elements will be added here later -->
+            <button class="form-button mt-md" id="open-templatizer-modal">Create Template</button>
         </div>
     </div>
 
@@ -33,7 +33,7 @@
         </div>
         <div class="card-content">
             <p class="text-secondary">Add a new template to your template library</p>
-            <!-- Form elements will be added here later -->
+            <button class="form-button mt-md" id="open-upload-modal">Upload Template</button>
         </div>
     </div>
     
@@ -77,4 +77,196 @@
         </div>
     </div>
 </div>
+
+<!-- Modal for Templatizer -->
+<div id="templatizer-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Create Template</h2>
+            <span class="close" id="close-templatizer-modal">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="templatizer-form">
+                <div class="form-group">
+                    <label for="social-post" class="form-label">Social Post to Templatize</label>
+                    <textarea id="social-post" name="social-post" class="form-control" rows="6" placeholder="Paste a social media post to convert into a template..."></textarea>
+                </div>
+                <button type="submit" class="form-button">Generate Template</button>
+            </form>
+            <div id="templatizer-result" class="mt-lg" style="display: none;">
+                <h3>Generated Template</h3>
+                <div class="template-result-box">
+                    <pre id="template-result-content"></pre>
+                    <button id="copy-template" class="icon-button"><i data-lucide="copy"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Upload Template -->
+<div id="upload-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Upload Template</h2>
+            <span class="close" id="close-upload-modal">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="upload-template-form">
+                <div class="form-group">
+                    <label for="template-name" class="form-label">Template Name</label>
+                    <input type="text" id="template-name" name="template-name" class="form-control" placeholder="Enter a descriptive name for your template">
+                </div>
+                <div class="form-group">
+                    <label for="template-content" class="form-label">Template Content</label>
+                    <textarea id="template-content" name="template-content" class="form-control" rows="6" placeholder="Enter or paste your template content here..."></textarea>
+                </div>
+                <button type="submit" class="form-button">Save Template</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add JavaScript for modals -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Templatizer Modal
+    const templatizerModal = document.getElementById('templatizer-modal');
+    const openTemplatizerBtn = document.getElementById('open-templatizer-modal');
+    const closeTemplatizerBtn = document.getElementById('close-templatizer-modal');
+    
+    openTemplatizerBtn.addEventListener('click', function() {
+        templatizerModal.style.display = 'block';
+    });
+    
+    closeTemplatizerBtn.addEventListener('click', function() {
+        templatizerModal.style.display = 'none';
+    });
+    
+    // Upload Modal
+    const uploadModal = document.getElementById('upload-modal');
+    const openUploadBtn = document.getElementById('open-upload-modal');
+    const closeUploadBtn = document.getElementById('close-upload-modal');
+    
+    openUploadBtn.addEventListener('click', function() {
+        uploadModal.style.display = 'block';
+    });
+    
+    closeUploadBtn.addEventListener('click', function() {
+        uploadModal.style.display = 'none';
+    });
+    
+    // Close modals when clicking outside
+    window.addEventListener('click', function(event) {
+        if (event.target == templatizerModal) {
+            templatizerModal.style.display = 'none';
+        }
+        if (event.target == uploadModal) {
+            uploadModal.style.display = 'none';
+        }
+    });
+
+    // Handle templatizer form submission
+    const templatizerForm = document.getElementById('templatizer-form');
+    templatizerForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const socialPost = document.getElementById('social-post').value;
+        
+        // Show loading state
+        const submitBtn = templatizerForm.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = 'Generating...';
+        submitBtn.disabled = true;
+        
+        // Make API call to backend
+        fetch('/api/templatizer', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ social_post: socialPost })
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Display result
+            document.getElementById('template-result-content').textContent = data.template;
+            document.getElementById('templatizer-result').style.display = 'block';
+            
+            // Reset button
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while generating the template');
+            
+            // Reset button
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+        });
+    });
+
+    // Handle template upload form submission
+    const uploadForm = document.getElementById('upload-template-form');
+    uploadForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const templateName = document.getElementById('template-name').value;
+        const templateContent = document.getElementById('template-content').value;
+        
+        // Show loading state
+        const submitBtn = uploadForm.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = 'Saving...';
+        submitBtn.disabled = true;
+        
+        // Make API call to backend
+        fetch('/api/template-context-and-uploader', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ template: templateContent })
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert('Template saved successfully!');
+            uploadModal.style.display = 'none';
+            uploadForm.reset();
+            
+            // Reset button
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while saving the template');
+            
+            // Reset button
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+        });
+    });
+
+    // Handle copy template button
+    const copyTemplateBtn = document.getElementById('copy-template');
+    copyTemplateBtn.addEventListener('click', function() {
+        const templateContent = document.getElementById('template-result-content').textContent;
+        navigator.clipboard.writeText(templateContent)
+            .then(() => {
+                // Show success feedback
+                const icon = copyTemplateBtn.querySelector('[data-lucide]');
+                icon.setAttribute('data-lucide', 'check');
+                lucide.createIcons(); // Refresh icon
+                
+                setTimeout(() => {
+                    icon.setAttribute('data-lucide', 'copy');
+                    lucide.createIcons(); // Reset icon after delay
+                }, 2000);
+            })
+            .catch(err => {
+                console.error('Failed to copy text: ', err);
+            });
+    });
+});
+</script>
 {% endblock %}
