@@ -7,8 +7,9 @@
 {% block page_subtitle %}Create and manage content templates{% endblock %}
 
 {% block content %}
+<!-- Main content area with two sections side by side -->
 <div class="form-container-grid">
-    <!-- Templatizer Container -->
+    <!-- First content card container -->
     <div class="content-card">
         <div class="card-header">
             <h2>Templatizer</h2>
@@ -32,7 +33,7 @@
         </div>
     </div>
 
-    <!-- Template Upload Container -->
+    <!-- Second content card container -->
     <div class="content-card">
         <div class="card-header">
             <h2>Upload Template</h2>
@@ -57,5 +58,14 @@
     </div>
 </div>
 
-<!-- Template listing section can be added here later -->
+<!-- Additional section for template listing that can be added later -->
+<div class="content-card">
+    <div class="card-header">
+        <h2>Your Templates</h2>
+        <p class="text-secondary">View and manage your saved templates</p>
+    </div>
+    <div class="card-content">
+        <p>Template listing will appear here.</p>
+    </div>
+</div>
 {% endblock %}
