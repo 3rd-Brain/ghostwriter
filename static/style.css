@@ -812,3 +812,12 @@ button, input, select, textarea {
     font-size: 0.9rem;
     margin-top: 5px;
 }
+
+.content-card {
+    background-color: var(--surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+    border: 1px solid var(--border);
+}
