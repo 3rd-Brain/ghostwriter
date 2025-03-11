@@ -123,16 +123,11 @@ function loadMarkdownIt() {
   const script = document.createElement('script');
   script.src = 'https://cdn.jsdelivr.net/npm/markdown-it@13.0.1/dist/markdown-it.min.js';
   script.onload = function() {
-    // Initialize markdown-it with improved options for content formatting
+    // Initialize markdown-it with safe options
     md = window.markdownit({
       html: false,
       linkify: true,
-      typographer: true,
-      breaks: true,
-      // Ensure lists render properly
-      langPrefix: 'language-',
-      quotes: '""''',
-      xhtmlOut: true
+      typographer: true
     });
     console.log('Markdown-it loaded');
   };
@@ -163,20 +158,7 @@ function addMessageToChat(sender, text) {
   
   // If it's a bot message and markdown-it is loaded, render as markdown
   if (sender === 'bot' && window.markdownit && md) {
-    // Normalize whitespace to avoid excessive line breaks and spaces
-    const normalizedText = text
-      .replace(/\n\s*\n\s*\n/g, '\n\n')  // Replace triple newlines with double
-      .replace(/[ \t]+/g, ' ');          // Normalize spaces
-    
-    // Render markdown with proper formatting
-    messageContent.innerHTML = md.render(normalizedText);
-    
-    // Fix any remaining formatting issues with lists
-    const lists = messageContent.querySelectorAll('ul, ol');
-    lists.forEach(list => {
-      list.style.marginTop = '8px';
-      list.style.marginBottom = '8px';
-    });
+    messageContent.innerHTML = md.render(text);
   } else {
     // Otherwise render as plain text
     messageContent.textContent = text;

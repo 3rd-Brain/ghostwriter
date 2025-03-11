@@ -71,16 +71,8 @@
 }
 
 .message-content ul, .message-content ol {
-  margin: 8px 0;
+  margin: 10px 0;
   padding-left: 20px;
-}
-
-.message-content li {
-  margin-bottom: 6px;
-}
-
-.message-content li p {
-  margin: 0;
 }
 
 .message-content code {
@@ -88,14 +80,6 @@
   background-color: rgba(0,0,0,0.05);
   padding: 2px 4px;
   border-radius: 3px;
-}
-
-/* Fix indentation issues */
-.message-content ul ul,
-.message-content ol ol,
-.message-content ul ol,
-.message-content ol ul {
-  margin: 6px 0;
 }
 
 .message-content pre {
