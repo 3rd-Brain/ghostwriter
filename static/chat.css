@@ -2,24 +2,38 @@
 /* Chatbot Styles */
 .message {
   display: flex;
-  margin-bottom: 16px;
-  max-width: 85%;
+  flex-direction: column;
+  margin-bottom: 20px;
+  max-width: 90%;
   animation: fadeIn 0.3s ease-in-out;
 }
 
 /* Make bot messages wider */
 .bot-message {
-  max-width: 95%;
+  max-width: 98%;
 }
 
 .user-message {
-  flex-direction: row-reverse;
+  align-items: flex-end;
   margin-left: auto;
 }
 
 .bot-message {
-  flex-direction: row;
+  align-items: flex-start;
   margin-right: auto;
+}
+
+.message-row {
+  display: flex;
+  width: 100%;
+}
+
+.user-message .message-row {
+  flex-direction: row-reverse;
+}
+
+.bot-message .message-row {
+  flex-direction: row;
 }
 
 .bot-avatar {
@@ -34,6 +48,7 @@
   font-weight: 600;
   font-size: 14px;
   flex-shrink: 0;
+  margin: 0 8px;
 }
 
 .message-content {
@@ -43,7 +58,7 @@
   font-size: 14px;
   line-height: 1.4;
   word-break: break-word;
-  margin: 0 8px;
+  max-width: 100%;
 }
 
 /* Markdown content styling */
@@ -97,17 +112,18 @@
 .message-timestamp {
   font-size: 11px;
   color: #666;
-  align-self: flex-end;
-  margin-bottom: 5px;
+  margin-top: 4px;
   flex-shrink: 0;
 }
 
 .user-message .message-timestamp {
-  margin-right: 4px;
+  align-self: flex-end;
+  margin-right: 8px;
 }
 
 .bot-message .message-timestamp {
-  margin-left: 4px;
+  align-self: flex-start;
+  margin-left: 48px; /* Align with message content, accounting for avatar */
 }
 
 /* Loading indicator */

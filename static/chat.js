@@ -140,12 +140,16 @@ function addMessageToChat(sender, text) {
   const messageDiv = document.createElement('div');
   messageDiv.className = `message ${sender}-message`;
   
+  // Create message row for avatar and content
+  const messageRow = document.createElement('div');
+  messageRow.className = 'message-row';
+  
   // Create avatar for bot messages
   if (sender === 'bot') {
     const avatar = document.createElement('div');
     avatar.className = 'bot-avatar';
     avatar.textContent = 'GW';
-    messageDiv.appendChild(avatar);
+    messageRow.appendChild(avatar);
   }
   
   // Create message content
@@ -160,7 +164,8 @@ function addMessageToChat(sender, text) {
     messageContent.textContent = text;
   }
   
-  messageDiv.appendChild(messageContent);
+  messageRow.appendChild(messageContent);
+  messageDiv.appendChild(messageRow);
   
   // Add timestamp
   const timestamp = document.createElement('div');
@@ -185,16 +190,20 @@ function addLoadingIndicator() {
   loadingDiv.className = 'message bot-message loading';
   loadingDiv.id = loadingId;
   
+  const messageRow = document.createElement('div');
+  messageRow.className = 'message-row';
+  
   const avatar = document.createElement('div');
   avatar.className = 'bot-avatar';
   avatar.textContent = 'GW';
-  loadingDiv.appendChild(avatar);
+  messageRow.appendChild(avatar);
   
   const dots = document.createElement('div');
   dots.className = 'typing-dots';
   dots.innerHTML = '<span></span><span></span><span></span>';
-  loadingDiv.appendChild(dots);
+  messageRow.appendChild(dots);
   
+  loadingDiv.appendChild(messageRow);
   messagesContainer.appendChild(loadingDiv);
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
   
