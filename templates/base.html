@@ -255,12 +255,16 @@
         </div>
     
     <div class="chatbox-container">
-        <div class="chatbox" id="n8n-chatbot-container">
-            <!-- n8n chatbot will be loaded here -->
+        <div class="chatbox">
+            <div class="chatbox-header">
+                <h3>Ghostwriter Agent</h3>
+            </div>
+            <div id="n8n-chat-container" style="height: calc(100% - 56px); display: flex; flex-direction: column;"></div>
         </div>
     </div>
     
-    <!-- n8n Chatbot Script -->
+    <!-- n8n Chatbot Script and Styling -->
+    <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
     <script type="module">
         document.addEventListener('DOMContentLoaded', function() {
             import('https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js')
@@ -268,15 +272,25 @@
                     const { createChat } = module;
                     createChat({
                         webhookUrl: 'https://clickdown.app.n8n.cloud/webhook/a889d2ae-2159-402f-b326-5f61e90f602e/chat',
-                        selector: '#n8n-chatbot-container',
-                        title: 'Ghostwriter Agent',
+                        selector: '#n8n-chat-container',
+                        title: '',  // We'll use our own header
+                        headerless: true,  // Don't show the n8n header
                         theme: {
-                            primary: '#6b35ff', // Match your existing purple theme
+                            primary: '#6b35ff',
                             fontFamily: 'Inter, sans-serif',
-                            borderRadius: '12px',
+                            borderRadius: '8px',
                             fontSize: '14px'
                         }
                     });
+
+                    // Add custom styling for n8n chat to match our UI
+                    const style = document.createElement('style');
+                    style.textContent = `
+                        .n8n-chat-bubble-user { background-color: #6b35ff !important; }
+                        .n8n-chat-input-container { padding: 12px !important; }
+                        .n8n-chat-messages-container { padding: 12px !important; background-color: rgba(107, 53, 255, 0.02) !important; }
+                    `;
+                    document.head.appendChild(style);
                 })
                 .catch(error => {
                     console.error('Failed to load n8n chat:', error);
