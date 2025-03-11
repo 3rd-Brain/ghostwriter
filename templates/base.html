@@ -255,21 +255,34 @@
         </div>
     
     <div class="chatbox-container">
-        <div class="chatbox">
-            <div class="chatbox-header">
-                <h3>Ghostwriter Agent</h3>
-            </div>
-            <div class="chatbox-messages" id="chatbox-messages">
-                <!-- Messages will appear here -->
-            </div>
-            <div class="chatbox-input">
-                <textarea placeholder="Type your message here..."></textarea>
-                <button class="send-button">
-                    <i data-lucide="send"></i>
-                </button>
-            </div>
+        <div class="chatbox" id="n8n-chatbot-container">
+            <!-- n8n chatbot will be loaded here -->
         </div>
     </div>
+    
+    <!-- n8n Chatbot Script -->
+    <script type="module">
+        document.addEventListener('DOMContentLoaded', function() {
+            import('https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js')
+                .then(module => {
+                    const { createChat } = module;
+                    createChat({
+                        webhookUrl: 'https://clickdown.app.n8n.cloud/webhook/a889d2ae-2159-402f-b326-5f61e90f602e/chat',
+                        selector: '#n8n-chatbot-container',
+                        title: 'Ghostwriter Agent',
+                        theme: {
+                            primary: '#6b35ff', // Match your existing purple theme
+                            fontFamily: 'Inter, sans-serif',
+                            borderRadius: '12px',
+                            fontSize: '14px'
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Failed to load n8n chat:', error);
+                });
+        });
+    </script>
 
     <div class="notification" id="notification"></div>
 
