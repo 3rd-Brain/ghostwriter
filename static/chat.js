@@ -123,12 +123,16 @@ function loadMarkdownIt() {
   const script = document.createElement('script');
   script.src = 'https://cdn.jsdelivr.net/npm/markdown-it@13.0.1/dist/markdown-it.min.js';
   script.onload = function() {
-    // Initialize markdown-it with safe options
+    // Initialize markdown-it with enhanced options for better listicle support
     md = window.markdownit({
       html: false,
       linkify: true,
-      typographer: true
+      typographer: true,
+      breaks: true,
+      listIndent: 2
     });
+    // Enable better list handling
+    md.options.listIndent = 2;
     console.log('Markdown-it loaded');
   };
   document.head.appendChild(script);
@@ -156,9 +160,17 @@ function addMessageToChat(sender, text) {
   const messageContent = document.createElement('div');
   messageContent.className = 'message-content';
   
-  // If it's a bot message and markdown-it is loaded, render as markdown
+  // If it's a bot message and markdown-it is loaded, render as markdown with better formatting
   if (sender === 'bot' && window.markdownit && md) {
-    messageContent.innerHTML = md.render(text);
+    // Process markdown with special handling for lists
+    let renderedText = md.render(text);
+    messageContent.innerHTML = renderedText;
+    
+    // Add special class to lists for better styling
+    const lists = messageContent.querySelectorAll('ul, ol');
+    lists.forEach(list => {
+      list.classList.add('chatbot-list');
+    });
   } else {
     // Otherwise render as plain text
     messageContent.textContent = text;

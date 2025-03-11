@@ -63,7 +63,7 @@
 
 /* Markdown content styling */
 .message-content p {
-  margin: 0 0 10px 0;
+  margin: 0 0 8px 0;
 }
 
 .message-content p:last-child {
@@ -71,8 +71,14 @@
 }
 
 .message-content ul, .message-content ol {
-  margin: 10px 0;
-  padding-left: 20px;
+  margin: 8px 0;
+  padding-left: 24px;
+  list-style-position: outside;
+}
+
+.message-content ul li, .message-content ol li {
+  margin-bottom: 4px;
+  padding-left: 4px;
 }
 
 .message-content code {
@@ -87,7 +93,7 @@
   padding: 8px;
   border-radius: 4px;
   overflow-x: auto;
-  margin: 10px 0;
+  margin: 8px 0;
 }
 
 .message-content a {
@@ -99,9 +105,26 @@
 .message-content h2, 
 .message-content h3, 
 .message-content h4 {
-  margin-top: 16px;
-  margin-bottom: 8px;
+  margin-top: 12px;
+  margin-bottom: 6px;
   font-weight: 600;
+  line-height: 1.2;
+}
+
+.message-content h1 {
+  font-size: 1.4em;
+}
+
+.message-content h2 {
+  font-size: 1.3em;
+}
+
+.message-content h3 {
+  font-size: 1.2em;
+}
+
+.message-content h4 {
+  font-size: 1.1em;
 }
 
 .user-message .message-content {
@@ -178,6 +201,36 @@
 }
 
 .typing-dots span:nth-child(3) {
+
+/* Special styling for listicles in chat */
+.chatbot-list {
+  margin: 8px 0 12px 0 !important;
+}
+
+.chatbot-list li {
+  margin-bottom: 6px !important;
+}
+
+/* Fix spacing between sections */
+.message-content h1 + ul,
+.message-content h2 + ul,
+.message-content h3 + ul,
+.message-content h1 + ol,
+.message-content h2 + ol,
+.message-content h3 + ol {
+  margin-top: 4px !important;
+}
+
+/* Ensure lists don't create too much whitespace */
+.message-content ul + h1,
+.message-content ul + h2,
+.message-content ul + h3,
+.message-content ol + h1,
+.message-content ol + h2,
+.message-content ol + h3 {
+  margin-top: 12px !important;
+}
+
   animation-delay: 0.8s;
 }
 
