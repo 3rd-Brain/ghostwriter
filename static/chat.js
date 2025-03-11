@@ -48,6 +48,9 @@ async function sendMessage() {
   // Add user message to chat
   addMessageToChat('user', messageText);
   
+  // Store original message for potential retry
+  const originalMessage = messageText;
+  
   // Clear input
   messageInput.value = '';
   
@@ -67,10 +70,14 @@ async function sendMessage() {
       })
     });
     
+    // Check for non-2xx response
     if (!response.ok) {
+      const errorText = await response.text().catch(() => 'No error details available');
+      console.error(`API error: Status ${response.status}, Details:`, errorText);
       throw new Error(`API returned status ${response.status}`);
     }
     
+    // Parse response JSON
     const data = await response.json();
     
     // Remove loading indicator
@@ -80,7 +87,8 @@ async function sendMessage() {
     if (data && data.response) {
       addMessageToChat('bot', data.response);
     } else {
-      addMessageToChat('bot', 'Sorry, I encountered an error processing your request.');
+      console.error('API returned invalid data format:', data);
+      addMessageToChat('bot', 'Sorry, I received an incomplete response. Please try a different question.');
     }
   } catch (error) {
     console.error('Error sending message:', error);
@@ -88,8 +96,20 @@ async function sendMessage() {
     // Remove loading indicator
     removeLoadingIndicator(loadingId);
     
-    // Add error message
-    addMessageToChat('bot', 'Sorry, I encountered an error. Please try again later.');
+    // Add more descriptive error message
+    addMessageToChat('bot', 'Sorry, I encountered an error connecting to the API. Please check your connection and try again in a moment.');
+    
+    // Add a retry button
+    addRetryButton(originalMessage);
+    
+    // If we're in development, log to console
+    if (window.location.hostname === 'localhost' || window.location.hostname.includes('replit.dev')) {
+      console.log('Chat API request details:', {
+        url: 'https://clickdown.app.n8n.cloud/webhook/a889d2ae-2159-402f-b326-5f61e90f602e/chat',
+        sessionId: chatSessionId,
+        error: error.toString()
+      });
+    }
   }
 }
 
@@ -195,6 +215,26 @@ function resetChatSession() {
       window.showNotification('Failed to reset chat session', true);
     }
   });
+}
+
+// Retry a failed message send
+function retryMessage(originalMessage) {
+  const messageInput = document.querySelector('.chatbox-input textarea');
+  messageInput.value = originalMessage;
+  sendMessage();
+}
+
+// Add a retry button to an error message
+function addRetryButton(originalMessage) {
+  const lastMessage = document.querySelector('.bot-message:last-child .message-content');
+  if (lastMessage) {
+    const retryBtn = document.createElement('button');
+    retryBtn.className = 'retry-button';
+    retryBtn.textContent = 'Retry';
+    retryBtn.onclick = () => retryMessage(originalMessage);
+    lastMessage.appendChild(document.createElement('br'));
+    lastMessage.appendChild(retryBtn);
+  }
 }
 
 // Initialize when DOM is loaded
