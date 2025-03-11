@@ -86,6 +86,8 @@ async function sendMessage() {
     // Add bot response to chat
     if (data && data.response) {
       addMessageToChat('bot', data.response);
+    } else if (data && data.output) {
+      addMessageToChat('bot', data.output);
     } else {
       console.error('API returned invalid data format:', data);
       addMessageToChat('bot', 'Sorry, I received an incomplete response. Please try a different question.');
