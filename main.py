@@ -1030,3 +1030,22 @@ async def delete_content(content_id: str, current_user: str = Depends(get_curren
     except Exception as e:
         print(f"Error deleting content: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/chat/reset", tags=["Utility"])
+async def reset_chat_session(current_user: str = Depends(get_current_user)):
+    """
+    **Reset the current chat session**
+    
+    This endpoint signals the client to start a new chat session with a fresh ID.
+    
+    ## When to use
+    Use this endpoint when you need to:
+    * Start a fresh conversation
+    * Clear conversation history with the chatbot
+    * Resolve issues with the current chat session
+    """
+    try:
+        return {"status": "success", "message": "Chat session reset requested"}
+    except Exception as e:
+        print(f"Error resetting chat session: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))

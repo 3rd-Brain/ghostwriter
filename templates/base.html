@@ -9,6 +9,7 @@
     <!-- Lucide icons -->
     <script src="/static/lucide-init.js" defer></script>
     {% block extra_css %}{% endblock %}
+    <link rel="stylesheet" href="/static/chat.css">
     <style>
         /* Fixed sidebar styles */
         .sidebar {
@@ -258,6 +259,9 @@
         <div class="chatbox">
             <div class="chatbox-header">
                 <h3>Ghostwriter Agent</h3>
+                <button id="reset-chat" class="reset-chat-button" title="Reset conversation">
+                    <i data-lucide="refresh-cw"></i>
+                </button>
             </div>
             <div class="chatbox-messages" id="chatbox-messages">
                 <!-- Messages will appear here -->
@@ -308,6 +312,7 @@
             }
         });
     </script>
+    <script src="/static/chat.js"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>
