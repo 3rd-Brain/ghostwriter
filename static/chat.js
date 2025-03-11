@@ -115,28 +115,7 @@ async function sendMessage() {
   }
 }
 
-// Initialize markdown-it when loaded
-let md;
-
-// Load markdown-it from CDN
-function loadMarkdownIt() {
-  const script = document.createElement('script');
-  script.src = 'https://cdn.jsdelivr.net/npm/markdown-it@13.0.1/dist/markdown-it.min.js';
-  script.onload = function() {
-    // Initialize markdown-it with enhanced options for better listicle support
-    md = window.markdownit({
-      html: false,
-      linkify: true,
-      typographer: true,
-      breaks: true,
-      listIndent: 2
-    });
-    // Enable better list handling
-    md.options.listIndent = 2;
-    console.log('Markdown-it loaded');
-  };
-  document.head.appendChild(script);
-}
+// No markdown-it initialization needed
 
 // Add a message to the chat container
 function addMessageToChat(sender, text) {
@@ -160,21 +139,8 @@ function addMessageToChat(sender, text) {
   const messageContent = document.createElement('div');
   messageContent.className = 'message-content';
   
-  // If it's a bot message and markdown-it is loaded, render as markdown with better formatting
-  if (sender === 'bot' && window.markdownit && md) {
-    // Process markdown with special handling for lists
-    let renderedText = md.render(text);
-    messageContent.innerHTML = renderedText;
-    
-    // Add special class to lists for better styling
-    const lists = messageContent.querySelectorAll('ul, ol');
-    lists.forEach(list => {
-      list.classList.add('chatbot-list');
-    });
-  } else {
-    // Otherwise render as plain text
-    messageContent.textContent = text;
-  }
+  // Display all messages as plain text (no markdown)
+  messageContent.textContent = text;
   
   messageRow.appendChild(messageContent);
   messageDiv.appendChild(messageRow);
@@ -289,9 +255,6 @@ function addRetryButton(originalMessage) {
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-  // Load markdown-it library
-  loadMarkdownIt();
-  
   initChat();
   
   // Set up reset chat button
