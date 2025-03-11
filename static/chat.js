@@ -115,6 +115,25 @@ async function sendMessage() {
   }
 }
 
+// Initialize markdown-it when loaded
+let md;
+
+// Load markdown-it from CDN
+function loadMarkdownIt() {
+  const script = document.createElement('script');
+  script.src = 'https://cdn.jsdelivr.net/npm/markdown-it@13.0.1/dist/markdown-it.min.js';
+  script.onload = function() {
+    // Initialize markdown-it with safe options
+    md = window.markdownit({
+      html: false,
+      linkify: true,
+      typographer: true
+    });
+    console.log('Markdown-it loaded');
+  };
+  document.head.appendChild(script);
+}
+
 // Add a message to the chat container
 function addMessageToChat(sender, text) {
   const messagesContainer = document.getElementById('chatbox-messages');
@@ -132,7 +151,15 @@ function addMessageToChat(sender, text) {
   // Create message content
   const messageContent = document.createElement('div');
   messageContent.className = 'message-content';
-  messageContent.textContent = text;
+  
+  // If it's a bot message and markdown-it is loaded, render as markdown
+  if (sender === 'bot' && window.markdownit && md) {
+    messageContent.innerHTML = md.render(text);
+  } else {
+    // Otherwise render as plain text
+    messageContent.textContent = text;
+  }
+  
   messageDiv.appendChild(messageContent);
   
   // Add timestamp
@@ -241,6 +268,9 @@ function addRetryButton(originalMessage) {
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
+  // Load markdown-it library
+  loadMarkdownIt();
+  
   initChat();
   
   // Set up reset chat button
