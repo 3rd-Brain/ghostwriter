@@ -139,8 +139,22 @@ function addMessageToChat(sender, text) {
   const messageContent = document.createElement('div');
   messageContent.className = 'message-content';
   
-  // Display all messages as plain text (no markdown)
-  messageContent.textContent = text;
+  // Remove markdown symbols but preserve hyphens and normal text
+  let processedText = text;
+  // Remove bold/italic markers
+  processedText = processedText.replace(/\*\*/g, '');
+  processedText = processedText.replace(/\*/g, '');
+  // Remove strikethrough
+  processedText = processedText.replace(/~~/g, '');
+  // Remove code blocks
+  processedText = processedText.replace(/```[\s\S]*?```/g, function(match) {
+    return match.replace(/```/g, '').trim();
+  });
+  // Remove inline code
+  processedText = processedText.replace(/`/g, '');
+  
+  // Display with markdown symbols removed
+  messageContent.textContent = processedText;
   
   messageRow.appendChild(messageContent);
   messageDiv.appendChild(messageRow);
