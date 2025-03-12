@@ -621,10 +621,10 @@ async def get_source_content(request_data: schemas.SourceContentRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/repurpose", response_model=schemas.SuccessResponse, tags=["Generation"])
-async def repurpose_content(request_data: schemas.RepurposeRequest, background_tasks: BackgroundTasks):
+@app.post("/generate-new-content", response_model=schemas.SuccessResponse, tags=["Generation"])
+async def generate_new_content(request_data: schemas.RepurposeRequest, background_tasks: BackgroundTasks):
     """
-    **Repurpose content based on a topic query for a specific brand.**
+    **Generate new content based on a topic query for a specific brand.**
 
     This endpoint generates new content based on source content and brand voice.
 
