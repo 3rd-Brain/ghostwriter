@@ -894,3 +894,84 @@ def delete_generated_content(username: str, content_id: str) -> Dict:
     except requests.exceptions.RequestException as e:
         print(f"Request exception: {str(e)}")
         raise Exception(f"Failed to delete content from AstraDB: {str(e)}")
+
+def simple_repurpose(social_post: str, brand: str, repurpose_count: int = 5, workflow_id: str = "Simple Repurpose Flow") -> List[Dict]:
+    """
+    Simple repurposing of a social post using multiple templates
+    Args:
+        social_post: String containing the social post to repurpose
+        brand: String containing the brand name for brand voice
+        repurpose_count: Number of templates to use (default: 5)
+        workflow_id: String containing the workflow ID for generation (default: "Simple Repurpose Flow")
+    Returns:
+        List of dictionaries containing the generated content results
+    """
+    print("\n=== Starting Simple Repurpose Process ===")
+    print(f"Input social post: {social_post}")
+    print(f"Brand: {brand}")
+    print(f"Repurpose count: {repurpose_count}")
+    print(f"Workflow ID: {workflow_id}")
+    
+    # Step 1: Get templates using multitemplate_retriever
+    print("\n--- Retrieving Templates ---")
+    template_results = multitemplate_retriever(social_post, template_count_to_retrieve=repurpose_count)
+    
+    # Step 2: Get brand voice
+    print("\n--- Retrieving Brand Voice ---")
+    brand_voice_result = get_client_brand_voice(brand)
+    brand_voice = brand_voice_result["brand_voice"]
+    
+    # Step 3: Generate content for each template
+    generated_results = []
+    
+    if template_results.get("data", {}).get("documents"):
+        templates = template_results["data"]["documents"][:repurpose_count]
+        
+        print(f"\n--- Found {len(templates)} templates ---")
+        
+        for i, template in enumerate(templates, 1):
+            print(f"\n--- Generating Content for Template {i}/{len(templates)} ---")
+            print(f"Template: {template['content']}")
+            
+            # Extract template without variations by splitting on "|" and taking first part
+            template_base = template["content"].split("|")[0].strip()
+            
+            try:
+                # Generate content using the template
+                generated_content = social_post_generation_with_json(
+                    workflow_id=workflow_id,
+                    client_brief=brand_voice,
+                    template=template_base,
+                    content_chunks=social_post
+                )
+                
+                print(f"Generated Content: {generated_content}")
+                
+                # Store result
+                generated_results.append({
+                    "template": template_base,
+                    "generated_content": generated_content
+                })
+                
+                # Prepare content data for upload
+                content_data = {
+                    "first_draft": generated_content,
+                    "content_chunks": social_post,
+                    "template": template_base
+                }
+                
+                # Upload the generated content
+                upload_result = generated_content_uploader(content_data)
+                print(f"Content upload successful. ID: {upload_result.get('data', {}).get('documentId', 'Unknown')}")
+                
+            except Exception as e:
+                print(f"Error generating content with template {i}: {str(e)}")
+                generated_results.append({
+                    "template": template_base,
+                    "error": str(e)
+                })
+    else:
+        print("No templates found for the given social post")
+    
+    print("\n=== Simple Repurpose Process Complete ===")
+    return generated_results
