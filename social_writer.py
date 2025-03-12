@@ -1,5 +1,5 @@
 import anthropic
-from typing import Dict
+from typing import Dict, List
 import os
 import uuid
 import requests
