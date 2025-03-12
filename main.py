@@ -446,7 +446,7 @@ async def create_generation_flow(request_data: schemas.GenerationFlowRequest):
         raise HTTPException(status_code=500, detail="ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
     
     # Get the current user's username from the environment
-    CURRENT_USERNAME = os.environ.get("CURRENT_USERNAME", "GentOfTech")  # Default to GentOfTech if not set
+    CURRENT_USERNAME = os.environ.get("CURRENT_USERNAME")
     
     # Use the current user's username for the URL path
     url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/{CURRENT_USERNAME}/workflows"
