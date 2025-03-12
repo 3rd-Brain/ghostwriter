@@ -38,10 +38,13 @@ SECRET_KEY = "your-secret-key-keep-it-secret"  # In production, use a secure sec
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
+import bcrypt
+
 # Hardcoded credentials (in production, use a secure database)
+# The passwords are stored as hashed values
 CREDENTIALS = {
     "GentOfTech": {
-        "password": "GOTBrain?"
+        "password_hash": bcrypt.hashpw("GOTBrain?".encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
     }
 }
 
@@ -76,7 +79,10 @@ async def login_page(request: Request):
 
 @app.post("/login")
 async def login(request: Request, username: str = Form(...), password: str = Form(...)):
-    if username in CREDENTIALS and CREDENTIALS[username]["password"] == password:
+    if username in CREDENTIALS and bcrypt.checkpw(
+        password.encode('utf-8'), 
+        CREDENTIALS[username]["password_hash"].encode('utf-8')
+    ):
         # Set the username as an environment variable
         os.environ["CURRENT_USERNAME"] = username
 
