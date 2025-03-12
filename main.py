@@ -40,13 +40,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 import bcrypt
 
-# Hardcoded credentials (in production, use a secure database)
-# The passwords are stored as hashed values
-CREDENTIALS = {
-    "GentOfTech": {
-        "password_hash": bcrypt.hashpw("GOTBrain?".encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-    }
-}
+# bcrypt for password hashing
 
 # CORS configuration
 app.add_middleware(
@@ -79,26 +73,64 @@ async def login_page(request: Request):
 
 @app.post("/login")
 async def login(request: Request, username: str = Form(...), password: str = Form(...)):
-    if username in CREDENTIALS and bcrypt.checkpw(
-        password.encode('utf-8'), 
-        CREDENTIALS[username]["password_hash"].encode('utf-8')
-    ):
-        # Set the username as an environment variable
-        os.environ["CURRENT_USERNAME"] = username
-
-        access_token = create_access_token(
-            data={"sub": username},
-            expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    # Get Astra DB credentials from environment
+    ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+    ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+    
+    if not ASTRA_DB_API_ENDPOINT or not ASTRA_DB_APPLICATION_TOKEN:
+        return templates.TemplateResponse(
+            "login.html",
+            {"request": request, "error": "Database configuration error. Please contact administrator."},
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
-        response = RedirectResponse(url="/dashboard", status_code=status.HTTP_302_FOUND)
-        response.set_cookie(key="access_token", value=access_token, httponly=True)
-        return response
-
-    return templates.TemplateResponse(
-        "login.html",
-        {"request": request, "error": "Access denied. Wrong credentials."},
-        status_code=status.HTTP_401_UNAUTHORIZED
-    )
+    
+    try:
+        # Query the user from the database
+        url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/users_keyspace/users"
+        headers = {
+            "Token": ASTRA_DB_APPLICATION_TOKEN,
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "findOne": {
+                "filter": {"username": username}
+            }
+        }
+        
+        response = requests.post(url, headers=headers, json=payload)
+        response.raise_for_status()
+        user_data = response.json()
+        
+        # Check if user exists and password matches
+        if user_data.get("data") and user_data["data"].get("document"):
+            user = user_data["data"]["document"]
+            stored_hash = user.get("password_hash")
+            
+            if stored_hash and bcrypt.checkpw(password.encode('utf-8'), stored_hash.encode('utf-8')):
+                # Set the username as an environment variable
+                os.environ["CURRENT_USERNAME"] = username
+                
+                access_token = create_access_token(
+                    data={"sub": username},
+                    expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+                )
+                response = RedirectResponse(url="/dashboard", status_code=status.HTTP_302_FOUND)
+                response.set_cookie(key="access_token", value=access_token, httponly=True)
+                return response
+    
+        # If authentication fails or user doesn't exist
+        return templates.TemplateResponse(
+            "login.html",
+            {"request": request, "error": "Access denied. Wrong credentials."},
+            status_code=status.HTTP_401_UNAUTHORIZED
+        )
+    except Exception as e:
+        print(f"Login error: {str(e)}")
+        return templates.TemplateResponse(
+            "login.html",
+            {"request": request, "error": "An error occurred during login. Please try again."},
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 # Authentication dependency
 async def get_current_user(request: Request):
