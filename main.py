@@ -107,11 +107,16 @@ async def login(request: Request, username: str = Form(...), password: str = For
             stored_hash = user.get("password_hash")
             
             if stored_hash and bcrypt.checkpw(password.encode('utf-8'), stored_hash.encode('utf-8')):
-                # Set the username as an environment variable
-                os.environ["CURRENT_USERNAME"] = username
+                # Retrieve user_id from the database response
+                user_id = user.get("user_id", "")
                 
+                # Set the username and user_id as environment variables
+                os.environ["CURRENT_USERNAME"] = username
+                os.environ["CURRENT_USER_ID"] = user_id
+                
+                # Create an access token that includes both username and user_id
                 access_token = create_access_token(
-                    data={"sub": username},
+                    data={"sub": username, "user_id": user_id},
                     expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
                 )
                 response = RedirectResponse(url="/dashboard", status_code=status.HTTP_302_FOUND)
@@ -145,57 +150,63 @@ async def get_current_user(request: Request):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
+        user_id: str = payload.get("user_id", "")
         if username is None:
             raise credentials_exception
-        return username
+        return {"username": username, "user_id": user_id}
     except JWTError:
         raise credentials_exception
 
 @app.get("/dashboard", response_class=HTMLResponse, include_in_schema=False)
-async def dashboard(request: Request, current_user: str = Depends(get_current_user)):
+async def dashboard(request: Request, current_user: dict = Depends(get_current_user)):
     return templates.TemplateResponse("dashboard.html", {
         "request": request,
-        "username": current_user,
+        "username": current_user["username"],
+        "user_id": current_user["user_id"],
         "current_page": "dashboard"
     })
 
 @app.get("/generation/repurpose", response_class=HTMLResponse, include_in_schema=False)
-async def generation_repurpose(request: Request, current_user: str = Depends(get_current_user)):
+async def generation_repurpose(request: Request, current_user: dict = Depends(get_current_user)):
     return templates.TemplateResponse("generation.html", {
         "request": request,
-        "username": current_user,
+        "username": current_user["username"],
+        "user_id": current_user["user_id"],
         "current_page": "generation_repurpose",
         "page": "repurpose"
     })
 
 @app.get("/generation/top-content", response_class=HTMLResponse, include_in_schema=False)
-async def generation_top_content(request: Request, current_user: str = Depends(get_current_user)):
+async def generation_top_content(request: Request, current_user: dict = Depends(get_current_user)):
     return templates.TemplateResponse("top_content.html", {
         "request": request,
-        "username": current_user,
+        "username": current_user["username"],
+        "user_id": current_user["user_id"],
         "current_page": "generation_top_content",
         "page": "top-content"
     })
 
 @app.get("/generation/posts-templates", response_class=HTMLResponse, include_in_schema=False)
-async def generation_posts_templates(request: Request, current_user: str = Depends(get_current_user)):
+async def generation_posts_templates(request: Request, current_user: dict = Depends(get_current_user)):
     return templates.TemplateResponse("posts_templates.html", {
         "request": request,
-        "username": current_user,
+        "username": current_user["username"],
+        "user_id": current_user["user_id"],
         "current_page": "generation_posts_templates",
         "page": "posts-templates"
     })
 
 @app.get("/generate-content", response_class=HTMLResponse, include_in_schema=False)
-async def generate_content(request: Request, current_user: str = Depends(get_current_user)):
+async def generate_content(request: Request, current_user: dict = Depends(get_current_user)):
     return templates.TemplateResponse("generate_content.html", {
         "request": request,
-        "username": current_user,
+        "username": current_user["username"],
+        "user_id": current_user["user_id"],
         "current_page": "generate_content"
     })
 
 @app.get("/api/workflows", tags=["Generation Flows"])
-async def get_workflows(current_user: str = Depends(get_current_user)):
+async def get_workflows(current_user: dict = Depends(get_current_user)):
     """
     **Retrieve all generation workflow configurations**
 
@@ -215,8 +226,9 @@ async def get_workflows(current_user: str = Depends(get_current_user)):
     if not ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER:
         raise HTTPException(status_code=500, detail="ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
 
-    # Get the current user's username
-    username = current_user
+    # Get the current user's username and user_id
+    username = current_user["username"]
+    user_id = current_user["user_id"]
 
     # Use the current user's username for the URL path
     url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/{username}/workflows"
@@ -276,12 +288,13 @@ async def create_generation_flow(request: Request, current_user: str = Depends(g
     })
 
 @app.get("/generated-content", response_class=HTMLResponse, include_in_schema=False)
-async def generated_content(request: Request, current_user: str = Depends(get_current_user)):
+async def generated_content(request: Request, current_user: dict = Depends(get_current_user)):
     from social_writer import get_latest_generated_content
     
     try:
-        # Use the current user's username from the authentication
-        username = current_user
+        # Use the current user's username and user_id from the authentication
+        username = current_user["username"]
+        user_id = current_user["user_id"]
         
         # Fetch the latest content from AstraDB
         result = get_latest_generated_content(username)
@@ -308,7 +321,8 @@ async def generated_content(request: Request, current_user: str = Depends(get_cu
             
         return templates.TemplateResponse("generated_content.html", {
             "request": request,
-            "username": current_user,
+            "username": current_user["username"],
+            "user_id": current_user["user_id"],
             "current_page": "generated_content",
             "contents": contents
         })
@@ -978,7 +992,7 @@ async def delete_generation_flow(workflow_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/latest-content", tags=["Content Management"])
-async def get_latest_generated_content(current_user: str = Depends(get_current_user)):
+async def get_latest_generated_content(current_user: dict = Depends(get_current_user)):
     """
     **Retrieve the latest generated content for the current user**
     
@@ -995,13 +1009,15 @@ async def get_latest_generated_content(current_user: str = Depends(get_current_u
         from social_writer import get_latest_generated_content
         
         # Use the current user's username from the authentication
-        username = current_user
+        username = current_user["username"]
+        user_id = current_user["user_id"]
         
         result = get_latest_generated_content(username)
         
         return {
             "status": "success", 
-            "content": result.get("data", {}).get("documents", [])
+            "content": result.get("data", {}).get("documents", []),
+            "user_id": user_id
         }
     except Exception as e:
         print(f"Error fetching latest content: {str(e)}")
@@ -1038,7 +1054,7 @@ async def get_latest_content_specified(username: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.delete("/api/content/{content_id}", tags=["Content Management"])
-async def delete_content(content_id: str, current_user: str = Depends(get_current_user)):
+async def delete_content(content_id: str, current_user: dict = Depends(get_current_user)):
     """
     **Delete a specific generated content entry**
     
@@ -1056,7 +1072,8 @@ async def delete_content(content_id: str, current_user: str = Depends(get_curren
         from social_writer import delete_generated_content
         
         # Use the current user's username from the authentication
-        username = current_user
+        username = current_user["username"]
+        user_id = current_user["user_id"]
         
         result = delete_generated_content(username, content_id)
         
@@ -1103,7 +1120,7 @@ async def simple_repurpose_endpoint(request_data: schemas.SimpleRepurposeRequest
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/chat/reset", tags=["Utility"])
-async def reset_chat_session(current_user: str = Depends(get_current_user)):
+async def reset_chat_session(current_user: dict = Depends(get_current_user)):
     """
     **Reset the current chat session**
     
@@ -1116,7 +1133,12 @@ async def reset_chat_session(current_user: str = Depends(get_current_user)):
     * Resolve issues with the current chat session
     """
     try:
-        return {"status": "success", "message": "Chat session reset requested"}
+        return {
+            "status": "success", 
+            "message": "Chat session reset requested",
+            "username": current_user["username"],
+            "user_id": current_user["user_id"]
+        }
     except Exception as e:
         print(f"Error resetting chat session: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
