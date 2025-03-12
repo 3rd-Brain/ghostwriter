@@ -176,3 +176,10 @@ class SourceContentRepurposeWithTemplatesRequest(BaseModel):
     is_given_template_query: bool = Field(False, description="Whether the template is a query")
     number_of_posts_to_template: int = Field(5, description="Number of posts to template")
     post_topic_query: str = Field("Digital Operations", description="Topic query for posts")
+
+# Simple Repurpose Request
+class SimpleRepurposeRequest(BaseModel):
+    social_post: str = Field(..., description="Social post to repurpose")
+    brand: str = Field(..., description="Brand name for content style")
+    repurpose_count: int = Field(5, description="Number of templates to use")
+    workflow_id: str = Field("Simple Repurpose Flow", description="ID of workflow to use")

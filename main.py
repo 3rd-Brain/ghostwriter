@@ -1037,6 +1037,39 @@ async def delete_content(content_id: str, current_user: str = Depends(get_curren
         print(f"Error deleting content: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/api/simple-repurpose", response_model=schemas.SuccessResponse, tags=["Generation"])
+async def simple_repurpose_endpoint(request_data: schemas.SimpleRepurposeRequest, background_tasks: BackgroundTasks):
+    """
+    **Generate content variations using a simple repurposing workflow**
+    
+    This endpoint takes a social post and generates variations using multiple templates.
+    
+    ## When to use
+    Use this endpoint when you need to:
+    * Create multiple variations of an existing social post
+    * Apply different templates to the same content
+    * Get quick repurposing without manual template selection
+    
+    *This endpoint runs in the background and returns immediately with a status.*
+    """
+    try:
+        from social_writer import simple_repurpose
+        
+        # Add the simple_repurpose function to background tasks
+        background_tasks.add_task(
+            simple_repurpose,
+            social_post=request_data.social_post,
+            brand=request_data.brand,
+            repurpose_count=request_data.repurpose_count,
+            workflow_id=request_data.workflow_id
+        )
+        
+        # Return immediately with success message
+        return {"status": "success", "message": "Your content is being generated"}
+    except Exception as e:
+        print(f"Error in simple repurpose: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/api/chat/reset", tags=["Utility"])
 async def reset_chat_session(current_user: str = Depends(get_current_user)):
     """
