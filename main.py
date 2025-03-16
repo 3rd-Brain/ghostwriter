@@ -78,14 +78,14 @@ async def login(request: Request, username: str = Form(...), password: str = For
     # Get Astra DB credentials from environment
     ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
     ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
-    
+
     if not ASTRA_DB_API_ENDPOINT or not ASTRA_DB_APPLICATION_TOKEN:
         return templates.TemplateResponse(
             "login.html",
             {"request": request, "error": "Database configuration error. Please contact administrator."},
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
-    
+
     try:
         # Query the user from the database
         url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/users_keyspace/users"
@@ -98,24 +98,24 @@ async def login(request: Request, username: str = Form(...), password: str = For
                 "filter": {"username": username}
             }
         }
-        
+
         response = requests.post(url, headers=headers, json=payload)
         response.raise_for_status()
         user_data = response.json()
-        
+
         # Check if user exists and password matches
         if user_data.get("data") and user_data["data"].get("document"):
             user = user_data["data"]["document"]
             stored_hash = user.get("password_hash")
-            
+
             if stored_hash and bcrypt.checkpw(password.encode('utf-8'), stored_hash.encode('utf-8')):
                 # Retrieve user_id from the database response
                 user_id = user.get("user_id", "")
-                
+
                 # Set the username and user_id as environment variables
                 os.environ["CURRENT_USERNAME"] = username
                 os.environ["CURRENT_USER_ID"] = user_id
-                
+
                 # Create an access token that includes both username and user_id
                 access_token = create_access_token(
                     data={"sub": username, "user_id": user_id},
@@ -124,7 +124,7 @@ async def login(request: Request, username: str = Form(...), password: str = For
                 response = RedirectResponse(url="/dashboard", status_code=status.HTTP_302_FOUND)
                 response.set_cookie(key="access_token", value=access_token, httponly=True)
                 return response
-    
+
         # If authentication fails or user doesn't exist
         return templates.TemplateResponse(
             "login.html",
@@ -249,7 +249,7 @@ async def get_workflows(current_user: dict = Depends(get_current_user)):
 
         # Extract the documents from the response
         workflows = result.get("data", {}).get("documents", [])
-        
+
         return {
             "status": "success",
             "workflows": workflows
@@ -292,16 +292,16 @@ async def create_generation_flow(request: Request, current_user: str = Depends(g
 @app.get("/generated-content", response_class=HTMLResponse, include_in_schema=False)
 async def generated_content(request: Request, current_user: dict = Depends(get_current_user)):
     from social_writer import get_latest_generated_content
-    
+
     try:
         # Use the current user's username and user_id from the authentication
         username = current_user["username"]
         user_id = current_user["user_id"]
-        
+
         # Fetch the latest content from AstraDB
         result = get_latest_generated_content(username)
         documents = result.get("data", {}).get("documents", [])
-        
+
         contents = []
         for doc in documents:
             # Parse the date from string format to datetime object
@@ -311,7 +311,7 @@ async def generated_content(request: Request, current_user: dict = Depends(get_c
                 date_obj = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S UTC") if date_str else None
             except (ValueError, AttributeError):
                 date_obj = None
-            
+
             contents.append({
                 "content_id": doc.get("_id", ""),
                 "first_draft": doc.get("First_Draft", ""),
@@ -320,7 +320,7 @@ async def generated_content(request: Request, current_user: dict = Depends(get_c
                 "tag": doc.get("Tag", ""),
                 "date_created": date_obj
             })
-            
+
         return templates.TemplateResponse("generated_content.html", {
             "request": request,
             "username": current_user["username"],
@@ -458,18 +458,18 @@ async def create_generation_flow(request_data: schemas.GenerationFlowRequest):
     """
     ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
     ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
-    
+
     if not ASTRA_DB_API_ENDPOINT:
         raise HTTPException(status_code=500, detail="ASTRA_DB_API_ENDPOINT not configured")
     if not ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER:
         raise HTTPException(status_code=500, detail="ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
-    
+
     # Get the current user's username from the environment
     CURRENT_USERNAME = os.environ.get("CURRENT_USERNAME")
-    
+
     # Use the current user's username for the URL path
     url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/{CURRENT_USERNAME}/workflows"
-    
+
     headers = {
         "Token": ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
         "Content-Type": "application/json"
@@ -477,12 +477,12 @@ async def create_generation_flow(request_data: schemas.GenerationFlowRequest):
 
     # Convert the Pydantic model objects to dictionaries first
     steps_dict = [step.dict() for step in request_data.steps]
-    
+
     # Prepare the payload according to AstraDB format
     json_payload = {
         "steps": steps_dict
     }
-    
+
     # Create the document object
     document = {
         "Workflow_ID": request_data.workflowId,
@@ -493,14 +493,14 @@ async def create_generation_flow(request_data: schemas.GenerationFlowRequest):
         "Sample_Output": "",
         "Workflow_Tag": request_data.workflowId
     }
-    
+
     # Create the final AstraDB payload
     payload = {
         "insertOne": {
             "document": document
         }
     }
-    
+
     print("Payload being sent to AstraDB:", json.dumps(payload, indent=2))
 
     try:
@@ -517,16 +517,16 @@ async def create_generation_flow(request_data: schemas.GenerationFlowRequest):
 async def upload_content(content_data: schemas.ContentUploadRequest):
     """
     **Upload generated content to the content database**
-    
+
     This endpoint stores content that has been generated along with its metadata for future reference and retrieval.
-    
+
     ## When to use
     Use this endpoint when you need to:
     * **Store newly generated content** after creation
     * **Preserve the relationship** between content and its source material
     * **Track templates** used for specific content pieces
     * Build a **searchable knowledge base** of content for later reference
-    
+
     *This endpoint should be called after content generation to ensure all content is properly archived.*
     """
     if not os.getenv("AIRTABLE_API_KEY"):
@@ -544,16 +544,16 @@ async def upload_content(content_data: schemas.ContentUploadRequest):
 async def get_brand_voice(brand: str):
     """
     **Retrieve brand voice and tone guidelines**
-    
+
     This endpoint fetches the complete brand voice profile, including tone, style, and communication guidelines for a specific brand.
-    
+
     ## When to use
     Use this endpoint when you need to:
     * **Apply consistent branding** to generated content
     * Access **tone and style guidelines** for content creation
     * Ensure content reflects the **brand personality**
     * Incorporate brand-specific **terminology and phrasing**
-    
+
     *This endpoint should be called before content generation to ensure all content adheres to brand guidelines.*
     """
     if not os.getenv("AIRTABLE_API_KEY"):
@@ -622,16 +622,16 @@ def top_content_retriever(query: str, topic: str = "general") -> Dict:
 async def get_top_content(request_data: schemas.TopContentRequest):
     """
     **Retrieve top-performing content based on performance metrics**
-    
+
     This endpoint identifies your best content by combining semantic search with performance metric analysis.
-    
+
     ## When to use
     Use this endpoint when you need to:
     * **Identify successful content patterns** for future creation
     * **Find high-engagement posts** on specific topics
     * **Analyze what works** for your specific audience
     * **Select content for repurposing** based on proven performance
-    
+
     *Unlike `/source-content` which finds reference material, this endpoint specifically targets content with strong performance metrics.*
     """
     if not os.getenv("OPENAI_API_KEY"):
@@ -649,16 +649,16 @@ async def get_top_content(request_data: schemas.TopContentRequest):
 async def get_source_content(request_data: schemas.SourceContentRequest):
     """
     **Retrieve relevant source content from the knowledge base**
-    
+
     This endpoint performs semantic search to find the most relevant source material based on a topic query.
-    
+
     ## When to use
     Use this endpoint when you need to:
     * **Find reference material** for content creation
     * **Research specific topics** in your knowledge base
     * **Gather source material** before content generation
     * Access **foundational content** without knowing exact document names
-    
+
     *This endpoint is typically called before content generation to provide source material for the AI models.*
     """
     if not os.getenv("OPENAI_API_KEY"):
@@ -726,7 +726,7 @@ async def get_top_content_repurposing(request_data: schemas.TopContentRepurposin
     if not os.getenv("OPENAI_API_KEY"):
         raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
     if not os.getenv("ASTRA_DB_APPLICATION_TOKEN"):
-        raise HTTPException(status_code=500, detail="ASTRA_DB_APPLICATION_TOKEN not configured")
+        raise HTTPException(status_code=500, detail="ASTRA_DB_APPLICATION_TOKEN notconfigured")
 
     try:
         # Add task to background
@@ -1000,10 +1000,10 @@ async def delete_generation_flow(workflow_id: str):
 async def get_latest_generated_content(current_user: dict = Depends(get_current_user)):
     """
     **Retrieve the latest generated content for the current user**
-    
+
     This endpoint fetches the most recent content generated by the current user,
     sorted by creation timestamp.
-    
+
     ## When to use
     Use this endpoint when you need to:
     * View your most recently generated content
@@ -1012,13 +1012,13 @@ async def get_latest_generated_content(current_user: dict = Depends(get_current_
     """
     try:
         from social_writer import get_latest_generated_content
-        
+
         # Use the current user's username from the authentication
         username = current_user["username"]
         user_id = current_user["user_id"]
-        
+
         result = get_latest_generated_content(username)
-        
+
         return {
             "status": "success", 
             "content": result.get("data", {}).get("documents", []),
@@ -1027,29 +1027,29 @@ async def get_latest_generated_content(current_user: dict = Depends(get_current_
     except Exception as e:
         print(f"Error fetching latest content: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
-        
+
 @app.get("/api/latest-content-specified/{username}", tags=["Content Management"])
 async def get_latest_content_specified(username: str):
     """
     **Retrieve the latest generated content for a specified username**
-    
+
     This endpoint fetches the most recent content generated by the specified username,
     sorted by creation timestamp.
-    
+
     ## When to use
     Use this endpoint when you need to:
     * View content generated by a specific user
     * Access content across multiple user accounts
     * Compare content generation across different users
-    
+
     *No authentication required to access this endpoint.*
     """
     try:
         from social_writer import get_latest_generated_content
-        
+
         # Use the username provided in the path parameter
         result = get_latest_generated_content(username)
-        
+
         return {
             "status": "success", 
             "content": result.get("data", {}).get("documents", [])
@@ -1062,26 +1062,26 @@ async def get_latest_content_specified(username: str):
 async def delete_content(content_id: str, current_user: dict = Depends(get_current_user)):
     """
     **Delete a specific generated content entry**
-    
+
     This endpoint permanently removes a generated content document from the database.
-    
+
     ## When to use
     Use this endpoint when you need to:
     * Remove outdated or incorrect content
     * Clean up your content repository
     * Delete test content after development
-    
+
     *This action cannot be undone, and content will be permanently removed.*
     """
     try:
         from social_writer import delete_generated_content
-        
+
         # Use the current user's username from the authentication
         username = current_user["username"]
         user_id = current_user["user_id"]
-        
+
         result = delete_generated_content(username, content_id)
-        
+
         # Check if deletion was successful
         if result.get("data", {}).get("document"):
             return {"status": "success", "message": f"Content '{content_id}' deleted successfully"}
@@ -1095,20 +1095,20 @@ async def delete_content(content_id: str, current_user: dict = Depends(get_curre
 async def simple_repurpose_endpoint(request_data: schemas.SimpleRepurposeRequest, background_tasks: BackgroundTasks):
     """
     **Generate content variations using a simple repurposing workflow**
-    
+
     This endpoint takes a social post and generates variations using multiple templates.
-    
+
     ## When to use
     Use this endpoint when you need to:
     * Create multiple variations of an existing social post
     * Apply different templates to the same content
     * Get quick repurposing without manual template selection
-    
+
     *This endpoint runs in the background and returns immediately with a status.*
     """
     try:
         from social_writer import simple_repurpose
-        
+
         # Add the simple_repurpose function to background tasks
         background_tasks.add_task(
             simple_repurpose,
@@ -1117,7 +1117,7 @@ async def simple_repurpose_endpoint(request_data: schemas.SimpleRepurposeRequest
             repurpose_count=request_data.repurpose_count,
             workflow_id=request_data.workflow_id
         )
-        
+
         # Return immediately with success message
         return {"status": "success", "message": "Your content is being generated"}
     except Exception as e:
@@ -1128,9 +1128,9 @@ async def simple_repurpose_endpoint(request_data: schemas.SimpleRepurposeRequest
 async def reset_chat_session(current_user: dict = Depends(get_current_user)):
     """
     **Reset the current chat session**
-    
+
     This endpoint signals the client to start a new chat session with a fresh ID.
-    
+
     ## When to use
     Use this endpoint when you need to:
     * Start a fresh conversation
@@ -1147,3 +1147,7 @@ async def reset_chat_session(current_user: dict = Depends(get_current_user)):
     except Exception as e:
         print(f"Error resetting chat session: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/signup", response_class=HTMLResponse, include_in_schema=False)
+async def signup(request: Request):
+    return templates.TemplateResponse("signup.html", {"request": request})

@@ -1,0 +1,605 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up | Ghostwriter API</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <style>
+        .signup-container {
+            max-width: 500px;
+            margin: 60px auto;
+            padding: var(--spacing-xl);
+            background-color: var(--surface);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .steps-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .steps-indicator::before {
+            content: '';
+            position: absolute;
+            top: 14px;
+            left: 20px;
+            right: 20px;
+            height: 2px;
+            background-color: var(--border);
+            z-index: 1;
+        }
+        
+        .step-circle {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: var(--background);
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            position: relative;
+            z-index: 2;
+            transition: all 0.3s ease;
+        }
+        
+        .step-label {
+            font-size: 12px;
+            text-align: center;
+            margin-top: 8px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .step-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 33%;
+        }
+        
+        .step-item.active .step-circle {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+        
+        .step-item.active .step-label {
+            color: var(--primary);
+        }
+        
+        .step-item.completed .step-circle {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+        
+        .form-step {
+            display: none;
+        }
+        
+        .form-step.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        .form-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        
+        .form-button-secondary {
+            background-color: var(--background);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md) var(--spacing-lg);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+        
+        .form-button-secondary:hover {
+            background-color: var(--border);
+        }
+        
+        .form-button-secondary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .social-links {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .social-link-item {
+            margin-bottom: 10px;
+        }
+        
+        .error-message {
+            color: var(--error);
+            font-size: 0.85rem;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="signup-container">
+        <div class="login-logo">
+            <div class="logo-icon" style="margin: 0 auto;">G</div>
+        </div>
+        <h2 class="login-title">Create Your Account</h2>
+        
+        <div class="steps-indicator">
+            <div class="step-item active" data-step="1">
+                <div class="step-circle">1</div>
+                <div class="step-label">Account</div>
+            </div>
+            <div class="step-item" data-step="2">
+                <div class="step-circle">2</div>
+                <div class="step-label">Profile</div>
+            </div>
+            <div class="step-item" data-step="3">
+                <div class="step-circle">3</div>
+                <div class="step-label">Social</div>
+            </div>
+        </div>
+        
+        <form id="signup-form">
+            <!-- Step 1: Account Basics -->
+            <div class="form-step active" data-step="1">
+                <div class="form-group">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" id="username" name="username" class="form-control" required>
+                    <div class="error-message" id="username-error"></div>
+                </div>
+                <div class="form-group">
+                    <label for="email" class="form-label">Email Address</label>
+                    <input type="email" id="email" name="email" class="form-control" required>
+                    <div class="error-message" id="email-error"></div>
+                </div>
+                <div class="form-group">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" id="password" name="password" class="form-control" required>
+                    <div class="error-message" id="password-error"></div>
+                </div>
+                <div class="form-group">
+                    <label for="confirm-password" class="form-label">Confirm Password</label>
+                    <input type="password" id="confirm-password" name="confirm-password" class="form-control" required>
+                    <div class="error-message" id="confirm-password-error"></div>
+                </div>
+                
+                <div class="form-navigation">
+                    <div></div> <!-- Empty div for spacing -->
+                    <button type="button" class="form-button next-step" data-step="1">Continue</button>
+                </div>
+            </div>
+            
+            <!-- Step 2: Profile Information -->
+            <div class="form-step" data-step="2">
+                <div class="form-group">
+                    <label for="full-name" class="form-label">Full Name</label>
+                    <input type="text" id="full-name" name="full-name" class="form-control" required>
+                    <div class="error-message" id="full-name-error"></div>
+                </div>
+                <div class="form-group">
+                    <label for="company" class="form-label">Company</label>
+                    <input type="text" id="company" name="company" class="form-control">
+                    <div class="error-message" id="company-error"></div>
+                </div>
+                
+                <div class="form-navigation">
+                    <button type="button" class="form-button-secondary prev-step" data-step="2">Back</button>
+                    <button type="button" class="form-button next-step" data-step="2">Continue</button>
+                </div>
+            </div>
+            
+            <!-- Step 3: Social Media Links -->
+            <div class="form-step" data-step="3">
+                <div class="form-group">
+                    <label class="form-label">Social Media Links</label>
+                    <p class="text-secondary">Please provide at least one social media link.</p>
+                    
+                    <div class="social-links">
+                        <div class="social-link-item">
+                            <label for="podcast" class="form-label">Podcast RSS</label>
+                            <input type="url" id="podcast" name="podcast" class="form-control" placeholder="https://...">
+                        </div>
+                        <div class="social-link-item">
+                            <label for="youtube" class="form-label">YouTube</label>
+                            <input type="url" id="youtube" name="youtube" class="form-control" placeholder="https://youtube.com/...">
+                        </div>
+                        <div class="social-link-item">
+                            <label for="twitter" class="form-label">Twitter</label>
+                            <input type="url" id="twitter" name="twitter" class="form-control" placeholder="https://twitter.com/...">
+                        </div>
+                        <div class="social-link-item">
+                            <label for="linkedin" class="form-label">LinkedIn</label>
+                            <input type="url" id="linkedin" name="linkedin" class="form-control" placeholder="https://linkedin.com/in/...">
+                        </div>
+                        <div class="social-link-item">
+                            <label for="newsletter" class="form-label">Newsletter</label>
+                            <input type="url" id="newsletter" name="newsletter" class="form-control" placeholder="https://...">
+                        </div>
+                        <div class="social-link-item">
+                            <label for="website" class="form-label">Blog/Website</label>
+                            <input type="url" id="website" name="website" class="form-control" placeholder="https://...">
+                        </div>
+                    </div>
+                    <div class="error-message" id="social-error"></div>
+                </div>
+                
+                <div class="form-navigation">
+                    <button type="button" class="form-button-secondary prev-step" data-step="3">Back</button>
+                    <button type="submit" class="form-button" id="submit-button">Create Account</button>
+                </div>
+            </div>
+        </form>
+        
+        <div class="mt-lg" style="text-align: center;">
+            <span>Already have an account? <a href="/login" style="color: var(--primary);">Log In</a></span>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('signup-form');
+            const steps = document.querySelectorAll('.form-step');
+            const nextButtons = document.querySelectorAll('.next-step');
+            const prevButtons = document.querySelectorAll('.prev-step');
+            const stepIndicators = document.querySelectorAll('.step-item');
+            
+            // Load form data from sessionStorage if available
+            loadFormData();
+            
+            // Next button click handler
+            nextButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const currentStep = parseInt(this.getAttribute('data-step'));
+                    
+                    if (validateStep(currentStep)) {
+                        saveFormData();
+                        
+                        // Hide current step
+                        document.querySelector(`.form-step[data-step="${currentStep}"]`).classList.remove('active');
+                        
+                        // Show next step
+                        document.querySelector(`.form-step[data-step="${currentStep + 1}"]`).classList.add('active');
+                        
+                        // Update step indicators
+                        stepIndicators.forEach(indicator => {
+                            const step = parseInt(indicator.getAttribute('data-step'));
+                            if (step === currentStep) {
+                                indicator.classList.remove('active');
+                                indicator.classList.add('completed');
+                            } else if (step === currentStep + 1) {
+                                indicator.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            });
+            
+            // Previous button click handler
+            prevButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const currentStep = parseInt(this.getAttribute('data-step'));
+                    
+                    // Hide current step
+                    document.querySelector(`.form-step[data-step="${currentStep}"]`).classList.remove('active');
+                    
+                    // Show previous step
+                    document.querySelector(`.form-step[data-step="${currentStep - 1}"]`).classList.add('active');
+                    
+                    // Update step indicators
+                    stepIndicators.forEach(indicator => {
+                        const step = parseInt(indicator.getAttribute('data-step'));
+                        if (step === currentStep) {
+                            indicator.classList.remove('active');
+                        } else if (step === currentStep - 1) {
+                            indicator.classList.remove('completed');
+                            indicator.classList.add('active');
+                        }
+                    });
+                });
+            });
+            
+            // Form submission
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                if (validateStep(3)) {
+                    const formData = getFormData();
+                    
+                    // Initialize onboarding session
+                    fetch('/sys/onboarding/init', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            email: formData.email
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        const sessionToken = data.session_token;
+                        
+                        // Submit Account Basics
+                        return fetch('/sys/onboarding/step/account_basics', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${sessionToken}`
+                            },
+                            body: JSON.stringify({
+                                form_data: {
+                                    username: formData.username,
+                                    email: formData.email,
+                                    password: formData.password
+                                }
+                            })
+                        });
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        const sessionToken = document.cookie
+                            .split('; ')
+                            .find(row => row.startsWith('session_token='))
+                            ?.split('=')[1];
+                        
+                        // Submit Profile Information
+                        return fetch('/sys/onboarding/step/profile_basics', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${sessionToken}`
+                            },
+                            body: JSON.stringify({
+                                form_data: {
+                                    full_name: formData.full_name,
+                                    company: formData.company
+                                }
+                            })
+                        });
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        const sessionToken = document.cookie
+                            .split('; ')
+                            .find(row => row.startsWith('session_token='))
+                            ?.split('=')[1];
+                        
+                        // Prepare social media links
+                        const socialLinks = {};
+                        
+                        if (formData.podcast) socialLinks.podcast = formData.podcast;
+                        if (formData.youtube) socialLinks.youtube = formData.youtube;
+                        if (formData.twitter) socialLinks.twitter = formData.twitter;
+                        if (formData.linkedin) socialLinks.linkedin = formData.linkedin;
+                        if (formData.newsletter) socialLinks.newsletter = formData.newsletter;
+                        if (formData.website) socialLinks.website = formData.website;
+                        
+                        // Submit Social Media Links
+                        return fetch('/sys/onboarding/step/social_media', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${sessionToken}`
+                            },
+                            body: JSON.stringify({
+                                form_data: socialLinks
+                            })
+                        });
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        const sessionToken = document.cookie
+                            .split('; ')
+                            .find(row => row.startsWith('session_token='))
+                            ?.split('=')[1];
+                        
+                        // Complete onboarding
+                        return fetch('/sys/onboarding/complete', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${sessionToken}`
+                            },
+                            body: JSON.stringify({})
+                        });
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Clear stored form data
+                        sessionStorage.removeItem('signupFormData');
+                        
+                        // Redirect to login or dashboard
+                        window.location.href = '/login?signup=success';
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred during signup. Please try again.');
+                    });
+                }
+            });
+            
+            // Validate each step
+            function validateStep(step) {
+                let isValid = true;
+                
+                if (step === 1) {
+                    // Validate username
+                    const username = document.getElementById('username').value.trim();
+                    const usernameError = document.getElementById('username-error');
+                    
+                    if (username === '') {
+                        usernameError.textContent = 'Username is required';
+                        usernameError.style.display = 'block';
+                        isValid = false;
+                    } else if (username.length < 3) {
+                        usernameError.textContent = 'Username must be at least 3 characters';
+                        usernameError.style.display = 'block';
+                        isValid = false;
+                    } else {
+                        usernameError.style.display = 'none';
+                    }
+                    
+                    // Validate email
+                    const email = document.getElementById('email').value.trim();
+                    const emailError = document.getElementById('email-error');
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    
+                    if (email === '') {
+                        emailError.textContent = 'Email is required';
+                        emailError.style.display = 'block';
+                        isValid = false;
+                    } else if (!emailRegex.test(email)) {
+                        emailError.textContent = 'Please enter a valid email address';
+                        emailError.style.display = 'block';
+                        isValid = false;
+                    } else {
+                        emailError.style.display = 'none';
+                    }
+                    
+                    // Validate password
+                    const password = document.getElementById('password').value;
+                    const passwordError = document.getElementById('password-error');
+                    
+                    if (password === '') {
+                        passwordError.textContent = 'Password is required';
+                        passwordError.style.display = 'block';
+                        isValid = false;
+                    } else if (password.length < 8) {
+                        passwordError.textContent = 'Password must be at least 8 characters';
+                        passwordError.style.display = 'block';
+                        isValid = false;
+                    } else {
+                        passwordError.style.display = 'none';
+                    }
+                    
+                    // Validate confirm password
+                    const confirmPassword = document.getElementById('confirm-password').value;
+                    const confirmPasswordError = document.getElementById('confirm-password-error');
+                    
+                    if (confirmPassword === '') {
+                        confirmPasswordError.textContent = 'Please confirm your password';
+                        confirmPasswordError.style.display = 'block';
+                        isValid = false;
+                    } else if (confirmPassword !== password) {
+                        confirmPasswordError.textContent = 'Passwords do not match';
+                        confirmPasswordError.style.display = 'block';
+                        isValid = false;
+                    } else {
+                        confirmPasswordError.style.display = 'none';
+                    }
+                } else if (step === 2) {
+                    // Validate full name
+                    const fullName = document.getElementById('full-name').value.trim();
+                    const fullNameError = document.getElementById('full-name-error');
+                    
+                    if (fullName === '') {
+                        fullNameError.textContent = 'Full name is required';
+                        fullNameError.style.display = 'block';
+                        isValid = false;
+                    } else {
+                        fullNameError.style.display = 'none';
+                    }
+                } else if (step === 3) {
+                    // Validate at least one social media link
+                    const podcast = document.getElementById('podcast').value.trim();
+                    const youtube = document.getElementById('youtube').value.trim();
+                    const twitter = document.getElementById('twitter').value.trim();
+                    const linkedin = document.getElementById('linkedin').value.trim();
+                    const newsletter = document.getElementById('newsletter').value.trim();
+                    const website = document.getElementById('website').value.trim();
+                    const socialError = document.getElementById('social-error');
+                    
+                    if (!podcast && !youtube && !twitter && !linkedin && !newsletter && !website) {
+                        socialError.textContent = 'At least one social media link is required';
+                        socialError.style.display = 'block';
+                        isValid = false;
+                    } else {
+                        socialError.style.display = 'none';
+                    }
+                    
+                    // Validate URL format for non-empty fields
+                    const urlRegex = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
+                    const inputs = ['podcast', 'youtube', 'twitter', 'linkedin', 'newsletter', 'website'];
+                    
+                    inputs.forEach(input => {
+                        const value = document.getElementById(input).value.trim();
+                        if (value && !urlRegex.test(value)) {
+                            socialError.textContent = 'Please enter valid URLs';
+                            socialError.style.display = 'block';
+                            isValid = false;
+                        }
+                    });
+                }
+                
+                return isValid;
+            }
+            
+            // Save form data to sessionStorage
+            function saveFormData() {
+                const formData = getFormData();
+                sessionStorage.setItem('signupFormData', JSON.stringify(formData));
+            }
+            
+            // Load form data from sessionStorage
+            function loadFormData() {
+                const savedData = sessionStorage.getItem('signupFormData');
+                if (savedData) {
+                    const formData = JSON.parse(savedData);
+                    
+                    // Fill the form fields
+                    Object.keys(formData).forEach(key => {
+                        const element = document.getElementById(key);
+                        if (element) {
+                            element.value = formData[key];
+                        }
+                    });
+                }
+            }
+            
+            // Get all form data
+            function getFormData() {
+                return {
+                    username: document.getElementById('username').value.trim(),
+                    email: document.getElementById('email').value.trim(),
+                    password: document.getElementById('password').value,
+                    'confirm-password': document.getElementById('confirm-password').value,
+                    'full-name': document.getElementById('full-name').value.trim(),
+                    company: document.getElementById('company').value.trim(),
+                    podcast: document.getElementById('podcast').value.trim(),
+                    youtube: document.getElementById('youtube').value.trim(),
+                    twitter: document.getElementById('twitter').value.trim(),
+                    linkedin: document.getElementById('linkedin').value.trim(),
+                    newsletter: document.getElementById('newsletter').value.trim(),
+                    website: document.getElementById('website').value.trim()
+                };
+            }
+        });
+    </script>
+</body>
+</html>
