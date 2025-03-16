@@ -34,7 +34,7 @@ def generated_content_uploader(content_data: Dict) -> Dict:
         raise Exception("ASTRA_DB_APPLICATION_TOKEN not configured")
         
     # Get the current user's username from the environment
-    CURRENT_USERNAME = os.environ.get("CURRENT_USERNAME", "GentOfTech")  # Default to GentOfTech if not set
+    CURRENT_USERNAME = os.environ.get("CURRENT_USERNAME")
     
     content = content_data.get("first_draft", "")
     content_chunks = content_data.get("content_chunks", "")
@@ -121,7 +121,7 @@ def get_client_brand_voice(brand: str) -> Dict:
         raise Exception("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
 
     # Get the current user's username from the environment
-    CURRENT_USERNAME = os.environ.get("CURRENT_USERNAME", "GentOfTech")  # Default to GentOfTech if not set
+    CURRENT_USERNAME = os.environ.get("CURRENT_USERNAME")
     print(f"Current username: {CURRENT_USERNAME}")
     
     # Use the current user's username for the URL path
