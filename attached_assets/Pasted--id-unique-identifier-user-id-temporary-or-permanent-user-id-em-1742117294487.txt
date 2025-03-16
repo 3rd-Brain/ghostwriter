@@ -1,0 +1,348 @@
+    {
+      "_id": "unique_identifier",
+      "user_id": "temporary_or_permanent_user_id",
+      "email": "user@example.com",
+      "step": "social_media",  // Current step in the flow
+      "completed_steps": ["account_basics", "profile_basics"],
+      "last_updated": "2024-06-12T15:30:00Z",
+      "expires_at": "2024-06-19T15:30:00Z",  // TTL for cleanup
+      "form_data": {
+        "account_basics": {
+          "username": "GentOfTech",
+          "email": "sample@email.com",
+          "password_hash": "$2b$12$Acvs99vEu2h0UhAOVjtUKOgt6kA9PKZdIEJeiyB9pzXMKZXcCzFGi"
+        },
+        "profile_basics": {
+          "full_name": "Michael Greenberg",
+          "company": "3rd Brain"
+        },
+        "social_media": {
+          "Twitter": "https://twitter.com/yourhandle"
+        },
+        "brand_setup": {},
+        "workflow_selection": {}
+      },
+      "session_id": "browser_session_identifier"
+    }
+
+2. API Endpoints
+
+    Onboarding Initialization
+        POST /api/onboarding/init - Create new onboarding session
+        Returns a session token for tracking progress
+
+    Step Progression
+        POST /api/onboarding/step/:step_name - Save data for a specific step
+        GET /api/onboarding/step/:step_name - Retrieve data for a specific step
+        PUT /api/onboarding/step/:step_name - Update data for a specific step
+
+    Onboarding Completion
+        POST /api/onboarding/complete - Finalize onboarding and create user
+
+    Session Management
+        GET /api/onboarding/progress - Get current progress
+        POST /api/onboarding/reset - Reset the onboarding process
+
+3. Frontend Implementation
+
+    Multi-step Form Components
+        Progressive step indicator
+        Step validation before progression
+        Step navigation (back/forward)
+        Form state persistence
+
+    Required Steps
+        Step 1: Account Basics (username, email, password)
+        Step 2: Profile Information (full name, company)
+        Step 3: Social Media Link (at least one required)
+        Step 4: Brand Setup (optional but prompted)
+        Step 5: Workflow Selection (with defaults)
+
+4. Security Considerations
+
+    Session Management
+        JWT-based temporary tokens for onboarding sessions
+        Token expiration (7 days)
+        Rate limiting to prevent abuse
+
+    Data Validation
+        Server-side validation for all fields
+        URL validation for social media links
+        Email validation and potential verification
+
+5. Database Integration
+
+    TTL Index
+        Automatically expire incomplete records after 7 days
+        Scheduled cleanup job for orphaned records
+
+    Transaction Handling
+        Atomic user creation on completion
+        Rollback mechanisms for failures
+
+6. Deployment Strategy
+
+    Database Updates
+        Create new collection in AstraDB
+        Set up TTL index
+
+    API Deployment
+        Deploy new endpoints
+        Integrate with existing auth system
+
+    Frontend Deployment
+        Deploy new onboarding flow UI
+        Update routing to direct new users to onboarding
+
+7. Testing Plan
+
+    Unit Tests
+        Test individual step validation
+        Test data persistence
+
+    Integration Tests
+        Test end-to-end flow completion
+        Test session resumption
+
+    Edge Cases
+        Test expiration handling
+        Test multiple concurrent sessions
+
+This implementation plan provides a comprehensive framework for the onboarding flow while maintaining flexibility for future adjustments. The structure prioritizes user data security while ensuring a smooth experience with partial progress saving.
+
+I've built the collection for onboarding_progress.
+
+Let's make sure to use the structure as we've intended.
+
+Let's now create the API endpoints first.
+
+    Onboarding Initialization
+        POST /sys/onboarding/init - Create new onboarding session
+        Returns a session token for tracking progress
+
+    Step Progression
+        POST /sys/onboarding/step/:step_name - Save data for a specific step
+        GET /sys/onboarding/step/:step_name - Retrieve data for a specific step
+        PUT /sys/onboarding/step/:step_name - Update data for a specific step
+
+    Onboarding Completion
+        POST /sys/onboarding/complete - Finalize onboarding and create user
+
+    Session Management
+        GET /sys/onboarding/progress - Get current progress
+        POST /sys/onboarding/reset - Reset the onboarding process
+
+We use the /sys/{endpoint}. Because I'm 100% sure we don't want to show this to users as something they can access.
+JB
+james-baca
+Assistant41 minutes ago
+
+I'll create the onboarding API endpoints based on your requirements. Let's create a new module for the onboarding system with all the endpoints you specified.
+onboarding.py
+
+Now, let's update the main.py file to include our new onboarding router:
+main.py
+requirements.txt
+pip install bcrypt uuid requests
+Checkpoint made
+Implement onboarding API endpoints
+36 minutes ago
+•
+
+No code changes, but I want to ask for one thing:
+What are the authorization needed on certain APIs on Onbaording? Where does it come from? And what does it do?
+JB
+james-baca
+Assistant6 minutes ago
+
+Based on the onboarding module you've implemented, here's a breakdown of the authorization mechanisms used:
+Authorization in the Onboarding System
+
+    JWT-based Session Tokens:
+        Generated when a user initiates the onboarding process
+        Used to track and authenticate all subsequent onboarding steps
+        Carries the session ID and user email in its payload
+        Expires after 7 days (configured via SESSION_TOKEN_EXPIRE_DAYS)
+
+    Bearer Token Authentication:
+        Required for all API endpoints except initialization
+        Format: Authorization: Bearer <jwt_token>
+        Extracted and validated by the get_onboarding_session dependency
+
+    Token Validation Process:
+        JWT is decoded using the SECRET_KEY environment variable
+        Session ID is extracted and verified against the database
+        Ensures the session exists and hasn't expired
+
+    Session Verification Flow:
+        JWT is first verified cryptographically
+        Then the session is validated against the onboarding_progress collection in AstraDB
+        Both checks must pass to access protected endpoints
+
+All this is implemented through:
+
+    The create_session_token function to generate tokens
+    The decode_session_token function to validate tokens
+    The get_onboarding_session dependency to enforce authentication
+
+The system creates a stateful authentication mechanism that allows users to start onboarding before they have a full account, while maintaining security throughout the multi-step process.
+
+Please edit our onboarding APIs for the following steps only:
+
+    Account Basics
+    Profile Information
+    Social Media
+
+Brand Setup will be automatically be generated with their provided Social Media Links. Workflow Selection should default to "Legacy Generation Flow" under sys_keyspace/workflows.
+JB
+james-baca
+Assistant3 minutes ago
+
+I'll modify the onboarding API to apply the changes you requested for the Account Basics, Profile Information, and Social Media steps. The API will automatically generate Brand Setup based on Social Media Links and use the default "Legacy Generation Flow" workflow.
+
+Here's my implementation:
+onboarding.py
+Update onboarding flow to auto-generate Brand Setup and set default workflow, Mark Brand Setup and Workflow Selection as completed steps
+
+The changes I've made ensure that:
+
+    When the user completes the Social Media step, the system automatically:
+        Generates a Brand Setup based on their social media links
+        Sets "Legacy Generation Flow" as the default workflow
+        Marks both Brand Setup and Workflow Selection steps as completed
+
+    When finalizing the onboarding process, the system:
+        Includes the auto-generated Brand Setup in the user document
+        Sets the default workflow to "Legacy Generation Flow"
+        Completes the onboarding process with all required information
+
+This implementation streamlines the onboarding process by requiring only the three essential steps (Account Basics, Profile Information, and Social Media) while ensuring the Brand Setup and Workflow Selection are handled automatically.
+
+No, no. Auto-generation will be handled outside onboarding. Don't perform any actions during onboarding, just remove the brand setup step from onboarding.
+
+For workflow, default to "Legacy Generation Flow".
+Then just have three steps during onboarding:
+
+    Account Basics
+    Profile Information
+    Social Media Setup
+
+JB
+james-baca
+Assistant5 minutes ago
+
+I'll modify the onboarding API to have just the three steps you specified and set the default workflow to "Legacy Generation Flow", without performing any auto-generation during onboarding.
+onboarding.py
+
+These changes simplify the onboarding process to include only the three steps you specified:
+
+    Account Basics
+    Profile Information
+    Social Media Setup
+
+The workflow is defaulted to "Legacy Generation Flow" for all users, and the brand setup step has been removed from the valid steps list, so it won't be part of the onboarding flow anymore.
+
+I've maintained the existing preference settings where the default workflow is already set to "Legacy Generation Flow".
+Checkpoint made
+Simplified onboarding to three core steps
+19 minutes ago
+•
+You may need to re-run your App to see the latest changes take effect.
+Run
+Assistant mode
+Claude 3.7 Sonnet
+Okay, we'll now move on to our multi-stemp form components:
+
+3. Frontend Implementation
+- Multi-step Form Components
+  - Progressive step indicator
+  - Step validation before progression
+  - Step navigation (back/forward)
+  - Form state persistence
+
+import json
+import requests
+from datetime import datetime, timedelta
+from typing import Optional
+from fastapi import FastAPI, HTTPException, Depends, Request, Response, status, Form, BackgroundTasks
+from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.security import OAuth2PasswordBearer
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from jose import JWTError, jwt
+from fastapi.middleware.cors import CORSMiddleware
+import os
+from typing import Dict
+from social_writer import generated_content_uploader, get_client_brand_voice, vector_search_for_published_content, metric_sorter, top_content_sentiment_setup, source_content_retriever, multitemplate_retriever, short_form_social_repurposing, top_content_to_repurposing, template_context_and_uploader, Templatizer, repurposer_using_posts_as_templates, source_content_repurposer_using_posts_as_templates
+from social_dynamic_generation_flow import flow_config_retriever, social_post_generation_with_json
+import schemas
+from onboarding import router as onboarding_router
+
+# App setup
+app = FastAPI(
+    title="Ghostwriter API",
+    description="API for generating and managing social media content",
+    version="1.0.0",
+    openapi_tags=[
+        {"name": "Brand Management", "description": "Endpoints for managing brand voices and profiles"},
+        {"name": "Content Management", "description": "Endpoints for managing and retrieving content"},
+        {"name": "Generation Flows", "description": "Endpoints for configuring generation workflows"},
+        {"name": "Template Management", "description": "Endpoints for creating and managing templates"},
+        {"name": "Generation", "description": "Endpoints for generating content"},
+        {"name": "Utility", "description": "Utility endpoints for search and analysis"},
+        {"name": "Onboarding", "description": "Endpoints for user onboarding process"},
+        {"name": "Other", "description": "Miscellaneous endpoints"}
+    ]
+)
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
+
+# Security configuration
+SECRET_KEY = "your-secret-key-keep-it-secret"  # In production, use a secure secret key
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+import bcrypt
+
+# bcrypt for password hashing
+
+# CORS configuration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Token creation
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+# Authentication routes
+@app.get("/", response_class=HTMLResponse, include_in_schema=False)
+async def root(request: Request):
+    return RedirectResponse(url="/login")
+
+@app.get("/login", response_class=HTMLResponse, include_in_schema=False)
+async def login_page(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
+
+@app.post("/login")
+async def login(request: Request, username: str = Form(...), password: str = Form(...)):
+    # Get Astra DB credentials from environment
+    ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+    ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+    
+    if not ASTRA_DB_API_ENDPOINT or not ASTRA_DB_APPLICATION_TOKEN:
+6m • 19 minutes ago
+Preview your App here
+The app is currently not running.
+to see the results of your app.
