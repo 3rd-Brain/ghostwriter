@@ -299,7 +299,8 @@ async def complete_onboarding(request: OnboardingCompleteRequest, session_data=D
     if not password:
         raise HTTPException(status_code=400, detail="Password is required")
 
-    password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+    # Simple and consistent password hashing
+    password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
     # Generate a unique user ID
     user_id = str(uuid.uuid4())
