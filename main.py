@@ -127,9 +127,7 @@ async def login(request: Request, username: str = Form(...), password: str = For
                 # Set the username and user_id as environment variables
                 os.environ["CURRENT_USERNAME"] = username
                 os.environ["CURRENT_USER_ID"] = user_id
-            else:
-                print(f"Login failed for user: {username}")
-
+                
                 # Create an access token that includes both username and user_id
                 access_token = create_access_token(
                     data={"sub": username, "user_id": user_id},
@@ -138,6 +136,13 @@ async def login(request: Request, username: str = Form(...), password: str = For
                 response = RedirectResponse(url="/dashboard", status_code=status.HTTP_302_FOUND)
                 response.set_cookie(key="access_token", value=access_token, httponly=True)
                 return response
+            else:
+                print(f"Login failed for user: {username}")
+                return templates.TemplateResponse(
+                    "login.html",
+                    {"request": request, "error": "Invalid username or password"},
+                    status_code=status.HTTP_401_UNAUTHORIZED
+                )
 
         # If authentication fails or user doesn't exist
         return templates.TemplateResponse(
