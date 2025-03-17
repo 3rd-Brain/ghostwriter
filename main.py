@@ -131,6 +131,16 @@ async def login(request: Request, username: str = Form(...), password: str = For
                     print(f"Stored hash (encoded): {stored_encoded}")
                     print(f"Stored hash (encoded type): {type(stored_encoded)}")
                     
+                    # Extract salt and manually generate hash
+                    print("\nManual Hash Generation:")
+                    stored_salt = stored_encoded[:29]  # bcrypt salt is always 29 chars including version
+                    print(f"Extracted salt: {stored_salt}")
+                    print(f"Salt (type): {type(stored_salt)}")
+                    
+                    manual_hash = bcrypt.hashpw(input_encoded, stored_salt)
+                    print(f"Manually generated hash: {manual_hash}")
+                    print(f"Manual hash matches stored?: {manual_hash == stored_encoded}")
+                    
                     print("\nAttempting hash comparison with bcrypt.checkpw()...")
                     print("=== End Debug Section ===\n")
                     # --End delete section--
