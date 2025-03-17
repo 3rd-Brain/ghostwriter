@@ -121,10 +121,26 @@ async def login(request: Request, username: str = Form(...), password: str = For
                         status_code=401
                     )
 
-                # Simple password verification
-                if bcrypt.checkpw(password.encode('utf-8'), stored_hash.encode('utf-8')):
-                    user_id = user.get("user_id", "")
-                    print(f"Login successful for user: {username}")
+                # Add debug logging for password verification
+                print(f"Attempting password verification for user: {username}")
+                try:
+                    if bcrypt.checkpw(password.encode('utf-8'), stored_hash.encode('utf-8')):
+                        user_id = user.get("user_id", "")
+                        print(f"Login successful for user: {username}")
+                    else:
+                        print(f"Password verification failed for user: {username}")
+                        return templates.TemplateResponse(
+                            "login.html",
+                            {"request": request, "error": "Invalid credentials"},
+                            status_code=401
+                        )
+                except Exception as e:
+                    print(f"Password verification error: {str(e)}")
+                    return templates.TemplateResponse(
+                        "login.html",
+                        {"request": request, "error": "Error during login"},
+                        status_code=500
+                    )
 
                     # Set the username and user_id as environment variables
                     os.environ["CURRENT_USERNAME"] = username
