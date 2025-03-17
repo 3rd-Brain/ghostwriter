@@ -121,9 +121,9 @@ async def login(request: Request, username: str = Form(...), password: str = For
                     print("=== Debug Password Comparison ===")
                     print(f"Input password (raw): {password}")
                     input_encoded = password.encode('utf-8')
-                    stored_encoded = stored_hash.encode('utf-8')
-                    print(f"Input password (encoded): {input_encoded}")
-                    print(f"Stored hash (encoded): {stored_encoded}")
+                    input_hash = bcrypt.hashpw(input_encoded, stored_hash.encode('utf-8')).decode('utf-8')
+                    print(f"Input password hash: {input_hash}")
+                    print(f"Stored hash: {stored_hash}")
                     print("=== End Debug Section ===")
                     # --End delete section--
                     
