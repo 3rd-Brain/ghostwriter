@@ -194,9 +194,29 @@ async def save_step_data(step_name: str, request: StepDataRequest, session_data=
 
     # Hash password if this is the account_basics step
     if step_name == "account_basics" and "password" in request.form_data:
+        print("\n=== Debug Password Hashing During Registration ===")
         password = request.form_data["password"]
-        hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-        request.form_data["password"] = hashed.decode('utf-8')
+        print(f"Raw password: {password}")
+        print(f"Raw password type: {type(password)}")
+
+        password_encoded = password.encode('utf-8')
+        print(f"Password encoded: {password_encoded}")
+        print(f"Password encoded type: {type(password_encoded)}")
+
+        salt = bcrypt.gensalt()
+        print(f"Generated salt: {salt}")
+        print(f"Generated salt type: {type(salt)}")
+
+        hashed = bcrypt.hashpw(password_encoded, salt)
+        print(f"Generated hash: {hashed}")
+        print(f"Generated hash type: {type(hashed)}")
+
+        decoded_hash = hashed.decode('utf-8')
+        print(f"Decoded hash for storage: {decoded_hash}")
+        print(f"Decoded hash type: {type(decoded_hash)}")
+
+        request.form_data["password"] = decoded_hash
+        print("=== End Debug Section ===\n")
 
     update_payload = {
         "updateOne": {
