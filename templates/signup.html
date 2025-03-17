@@ -453,8 +453,22 @@
                         window.location.href = '/login?signup=success';
                     })
                     .catch(error => {
-                        console.error('Error:', error);
-                        alert('An error occurred during signup. Please try again.');
+                        // Log the full error details
+                        console.error('Signup Error:', error);
+                        if (error.response) {
+                            // Server responded with error
+                            console.error('Error Response:', {
+                                status: error.response.status,
+                                data: error.response.data
+                            });
+                        } else if (error.request) {
+                            // Request made but no response
+                            console.error('No Response Error:', error.request);
+                        } else {
+                            // Other errors
+                            console.error('Error Details:', error.message);
+                        }
+                        alert('An error occurred during signup. Please check the console for details.');
                     });
                 }
             });
