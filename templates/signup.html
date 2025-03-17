@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,14 +16,14 @@
             border-radius: var(--radius-lg);
             box-shadow: var(--shadow-lg);
         }
-        
+
         .steps-indicator {
             display: flex;
             justify-content: space-between;
             margin-bottom: 30px;
             position: relative;
         }
-        
+
         .steps-indicator::before {
             content: '';
             position: absolute;
@@ -35,7 +34,7 @@
             background-color: var(--border);
             z-index: 1;
         }
-        
+
         .step-circle {
             width: 30px;
             height: 30px;
@@ -51,7 +50,7 @@
             z-index: 2;
             transition: all 0.3s ease;
         }
-        
+
         .step-label {
             font-size: 12px;
             text-align: center;
@@ -60,45 +59,45 @@
             font-weight: 500;
             transition: all 0.3s ease;
         }
-        
+
         .step-item {
             display: flex;
             flex-direction: column;
             align-items: center;
             width: 33%;
         }
-        
+
         .step-item.active .step-circle {
             background-color: var(--primary);
             border-color: var(--primary);
             color: white;
         }
-        
+
         .step-item.active .step-label {
             color: var(--primary);
         }
-        
+
         .step-item.completed .step-circle {
             background-color: var(--primary);
             border-color: var(--primary);
             color: white;
         }
-        
+
         .form-step {
             display: none;
         }
-        
+
         .form-step.active {
             display: block;
             animation: fadeIn 0.5s;
         }
-        
+
         .form-navigation {
             display: flex;
             justify-content: space-between;
             margin-top: 30px;
         }
-        
+
         .form-button-secondary {
             background-color: var(--background);
             color: var(--text-primary);
@@ -109,34 +108,34 @@
             cursor: pointer;
             transition: var(--transition-fast);
         }
-        
+
         .form-button-secondary:hover {
             background-color: var(--border);
         }
-        
+
         .form-button-secondary:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
-        
+
         .social-links {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
             margin-top: 15px;
         }
-        
+
         .social-link-item {
             margin-bottom: 10px;
         }
-        
+
         .error-message {
             color: var(--error);
             font-size: 0.85rem;
             margin-top: 5px;
             display: none;
         }
-        
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -149,7 +148,7 @@
             <div class="logo-icon" style="margin: 0 auto;">G</div>
         </div>
         <h2 class="login-title">Create Your Account</h2>
-        
+
         <div class="steps-indicator">
             <div class="step-item active" data-step="1">
                 <div class="step-circle">1</div>
@@ -164,7 +163,7 @@
                 <div class="step-label">Social</div>
             </div>
         </div>
-        
+
         <form id="signup-form">
             <!-- Step 1: Account Basics -->
             <div class="form-step active" data-step="1">
@@ -188,13 +187,13 @@
                     <input type="password" id="confirm-password" name="confirm-password" class="form-control" required>
                     <div class="error-message" id="confirm-password-error"></div>
                 </div>
-                
+
                 <div class="form-navigation">
                     <div></div> <!-- Empty div for spacing -->
                     <button type="button" class="form-button next-step" data-step="1">Continue</button>
                 </div>
             </div>
-            
+
             <!-- Step 2: Profile Information -->
             <div class="form-step" data-step="2">
                 <div class="form-group">
@@ -207,19 +206,19 @@
                     <input type="text" id="company" name="company" class="form-control">
                     <div class="error-message" id="company-error"></div>
                 </div>
-                
+
                 <div class="form-navigation">
                     <button type="button" class="form-button-secondary prev-step" data-step="2">Back</button>
                     <button type="button" class="form-button next-step" data-step="2">Continue</button>
                 </div>
             </div>
-            
+
             <!-- Step 3: Social Media Links -->
             <div class="form-step" data-step="3">
                 <div class="form-group">
                     <label class="form-label">Social Media Links</label>
                     <p class="text-secondary">Please provide at least one social media link.</p>
-                    
+
                     <div class="social-links">
                         <div class="social-link-item">
                             <label for="podcast" class="form-label">Podcast RSS</label>
@@ -248,14 +247,14 @@
                     </div>
                     <div class="error-message" id="social-error"></div>
                 </div>
-                
+
                 <div class="form-navigation">
                     <button type="button" class="form-button-secondary prev-step" data-step="3">Back</button>
                     <button type="submit" class="form-button" id="submit-button">Create Account</button>
                 </div>
             </div>
         </form>
-        
+
         <div class="mt-lg" style="text-align: center;">
             <span>Already have an account? <a href="/login" style="color: var(--primary);">Log In</a></span>
         </div>
@@ -268,24 +267,24 @@
             const nextButtons = document.querySelectorAll('.next-step');
             const prevButtons = document.querySelectorAll('.prev-step');
             const stepIndicators = document.querySelectorAll('.step-item');
-            
+
             // Load form data from sessionStorage if available
             loadFormData();
-            
+
             // Next button click handler
             nextButtons.forEach(button => {
                 button.addEventListener('click', function() {
                     const currentStep = parseInt(this.getAttribute('data-step'));
-                    
+
                     if (validateStep(currentStep)) {
                         saveFormData();
-                        
+
                         // Hide current step
                         document.querySelector(`.form-step[data-step="${currentStep}"]`).classList.remove('active');
-                        
+
                         // Show next step
                         document.querySelector(`.form-step[data-step="${currentStep + 1}"]`).classList.add('active');
-                        
+
                         // Update step indicators
                         stepIndicators.forEach(indicator => {
                             const step = parseInt(indicator.getAttribute('data-step'));
@@ -299,18 +298,18 @@
                     }
                 });
             });
-            
+
             // Previous button click handler
             prevButtons.forEach(button => {
                 button.addEventListener('click', function() {
                     const currentStep = parseInt(this.getAttribute('data-step'));
-                    
+
                     // Hide current step
                     document.querySelector(`.form-step[data-step="${currentStep}"]`).classList.remove('active');
-                    
+
                     // Show previous step
                     document.querySelector(`.form-step[data-step="${currentStep - 1}"]`).classList.add('active');
-                    
+
                     // Update step indicators
                     stepIndicators.forEach(indicator => {
                         const step = parseInt(indicator.getAttribute('data-step'));
@@ -323,14 +322,14 @@
                     });
                 });
             });
-            
+
             // Form submission
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
-                
+
                 if (validateStep(3)) {
                     const formData = getFormData();
-                    
+
                     // Initialize onboarding session
                     fetch('/sys/onboarding/init', {
                         method: 'POST',
@@ -343,8 +342,12 @@
                     })
                     .then(response => response.json())
                     .then(data => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
                         const sessionToken = data.session_token;
-                        
+                        sessionStorage.setItem('onboardingToken', sessionToken);
+
                         // Submit Account Basics
                         return fetch('/sys/onboarding/step/account_basics', {
                             method: 'POST',
@@ -361,13 +364,15 @@
                             })
                         });
                     })
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
                     .then(data => {
-                        const sessionToken = document.cookie
-                            .split('; ')
-                            .find(row => row.startsWith('session_token='))
-                            ?.split('=')[1];
-                        
+                        const sessionToken = sessionStorage.getItem('onboardingToken');
+
                         // Submit Profile Information
                         return fetch('/sys/onboarding/step/profile_basics', {
                             method: 'POST',
@@ -383,23 +388,25 @@
                             })
                         });
                     })
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
                     .then(data => {
-                        const sessionToken = document.cookie
-                            .split('; ')
-                            .find(row => row.startsWith('session_token='))
-                            ?.split('=')[1];
-                        
+                        const sessionToken = sessionStorage.getItem('onboardingToken');
+
                         // Prepare social media links
                         const socialLinks = {};
-                        
+
                         if (formData.podcast) socialLinks.podcast = formData.podcast;
                         if (formData.youtube) socialLinks.youtube = formData.youtube;
                         if (formData.twitter) socialLinks.twitter = formData.twitter;
                         if (formData.linkedin) socialLinks.linkedin = formData.linkedin;
                         if (formData.newsletter) socialLinks.newsletter = formData.newsletter;
                         if (formData.website) socialLinks.website = formData.website;
-                        
+
                         // Submit Social Media Links
                         return fetch('/sys/onboarding/step/social_media', {
                             method: 'POST',
@@ -412,13 +419,15 @@
                             })
                         });
                     })
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
                     .then(data => {
-                        const sessionToken = document.cookie
-                            .split('; ')
-                            .find(row => row.startsWith('session_token='))
-                            ?.split('=')[1];
-                        
+                        const sessionToken = sessionStorage.getItem('onboardingToken');
+
                         // Complete onboarding
                         return fetch('/sys/onboarding/complete', {
                             method: 'POST',
@@ -429,11 +438,17 @@
                             body: JSON.stringify({})
                         });
                     })
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         // Clear stored form data
                         sessionStorage.removeItem('signupFormData');
-                        
+                        sessionStorage.removeItem('onboardingToken');
+
                         // Redirect to login or dashboard
                         window.location.href = '/login?signup=success';
                     })
@@ -443,16 +458,16 @@
                     });
                 }
             });
-            
+
             // Validate each step
             function validateStep(step) {
                 let isValid = true;
-                
+
                 if (step === 1) {
                     // Validate username
                     const username = document.getElementById('username').value.trim();
                     const usernameError = document.getElementById('username-error');
-                    
+
                     if (username === '') {
                         usernameError.textContent = 'Username is required';
                         usernameError.style.display = 'block';
@@ -464,12 +479,12 @@
                     } else {
                         usernameError.style.display = 'none';
                     }
-                    
+
                     // Validate email
                     const email = document.getElementById('email').value.trim();
                     const emailError = document.getElementById('email-error');
                     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                    
+
                     if (email === '') {
                         emailError.textContent = 'Email is required';
                         emailError.style.display = 'block';
@@ -481,11 +496,11 @@
                     } else {
                         emailError.style.display = 'none';
                     }
-                    
+
                     // Validate password
                     const password = document.getElementById('password').value;
                     const passwordError = document.getElementById('password-error');
-                    
+
                     if (password === '') {
                         passwordError.textContent = 'Password is required';
                         passwordError.style.display = 'block';
@@ -497,11 +512,11 @@
                     } else {
                         passwordError.style.display = 'none';
                     }
-                    
+
                     // Validate confirm password
                     const confirmPassword = document.getElementById('confirm-password').value;
                     const confirmPasswordError = document.getElementById('confirm-password-error');
-                    
+
                     if (confirmPassword === '') {
                         confirmPasswordError.textContent = 'Please confirm your password';
                         confirmPasswordError.style.display = 'block';
@@ -517,7 +532,7 @@
                     // Validate full name
                     const fullName = document.getElementById('full-name').value.trim();
                     const fullNameError = document.getElementById('full-name-error');
-                    
+
                     if (fullName === '') {
                         fullNameError.textContent = 'Full name is required';
                         fullNameError.style.display = 'block';
@@ -534,7 +549,7 @@
                     const newsletter = document.getElementById('newsletter').value.trim();
                     const website = document.getElementById('website').value.trim();
                     const socialError = document.getElementById('social-error');
-                    
+
                     if (!podcast && !youtube && !twitter && !linkedin && !newsletter && !website) {
                         socialError.textContent = 'At least one social media link is required';
                         socialError.style.display = 'block';
@@ -542,11 +557,11 @@
                     } else {
                         socialError.style.display = 'none';
                     }
-                    
+
                     // Validate URL format for non-empty fields
                     const urlRegex = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
                     const inputs = ['podcast', 'youtube', 'twitter', 'linkedin', 'newsletter', 'website'];
-                    
+
                     inputs.forEach(input => {
                         const value = document.getElementById(input).value.trim();
                         if (value && !urlRegex.test(value)) {
@@ -556,22 +571,22 @@
                         }
                     });
                 }
-                
+
                 return isValid;
             }
-            
+
             // Save form data to sessionStorage
             function saveFormData() {
                 const formData = getFormData();
                 sessionStorage.setItem('signupFormData', JSON.stringify(formData));
             }
-            
+
             // Load form data from sessionStorage
             function loadFormData() {
                 const savedData = sessionStorage.getItem('signupFormData');
                 if (savedData) {
                     const formData = JSON.parse(savedData);
-                    
+
                     // Fill the form fields
                     Object.keys(formData).forEach(key => {
                         const element = document.getElementById(key);
@@ -581,7 +596,7 @@
                     });
                 }
             }
-            
+
             // Get all form data
             function getFormData() {
                 return {
