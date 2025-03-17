@@ -109,11 +109,26 @@ async def login(request: Request, username: str = Form(...), password: str = For
             stored_hash = user.get("password_hash", "")
             user_id = user.get("user_id", "")
 
+            # Debug logging for password comparison
+            print(f"Login attempt for user: {username}")
+            print(f"Stored hash exists: {bool(stored_hash)}")
+            
             # Compare plain password with stored hash
-            if stored_hash and bcrypt.checkpw(password.encode('utf-8'), stored_hash.encode('utf-8')):
+            is_password_match = False
+            if stored_hash:
+                try:
+                    is_password_match = bcrypt.checkpw(password.encode('utf-8'), stored_hash.encode('utf-8'))
+                    print(f"Password comparison result: {is_password_match}")
+                except Exception as e:
+                    print(f"Error during password comparison: {str(e)}")
+                    
+            if is_password_match:
+                print(f"Login successful for user: {username}")
                 # Set the username and user_id as environment variables
                 os.environ["CURRENT_USERNAME"] = username
                 os.environ["CURRENT_USER_ID"] = user_id
+            else:
+                print(f"Login failed for user: {username}")
 
                 # Create an access token that includes both username and user_id
                 access_token = create_access_token(
