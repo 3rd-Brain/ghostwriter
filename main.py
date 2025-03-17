@@ -106,17 +106,11 @@ async def login(request: Request, username: str = Form(...), password: str = For
         # Check if user exists and password matches
         if user_data.get("data") and user_data["data"].get("document"):
             user = user_data["data"]["document"]
-            stored_hash = user.get("password_hash")
+            stored_hash = user.get("password_hash", "")
+            user_id = user.get("user_id", "")
 
-            if user_data.get("data") and user_data["data"].get("document"):
-                user = user_data["data"]["document"]
-                stored_hash = user.get("password_hash", "")
-                
-                # Compare plain password with stored hash
-                if stored_hash and bcrypt.checkpw(password.encode('utf-8'), stored_hash.encode('utf-8')):
-                    # Retrieve user_id from the database response
-                    user_id = user.get("user_id", "")
-
+            # Compare plain password with stored hash
+            if stored_hash and bcrypt.checkpw(password.encode('utf-8'), stored_hash.encode('utf-8')):
                 # Set the username and user_id as environment variables
                 os.environ["CURRENT_USERNAME"] = username
                 os.environ["CURRENT_USER_ID"] = user_id
