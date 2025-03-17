@@ -162,6 +162,15 @@ async def save_step_data(step_name: str, request: StepDataRequest, session_data=
     if step_name not in valid_steps:
         raise HTTPException(status_code=400, detail=f"Invalid step: {step_name}")
 
+    # Get current step index and validate step order
+    current_step = document.get("step", "account_basics")
+    current_index = valid_steps.index(current_step)
+    requested_index = valid_steps.index(step_name)
+    
+    # Only allow moving to the next step or updating current step
+    if requested_index > current_index + 1:
+        raise HTTPException(status_code=400, detail="Steps must be completed in order")
+
     # Update the document with the new step data
     url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/users_keyspace/onboarding_progress"
     headers = {
@@ -169,19 +178,19 @@ async def save_step_data(step_name: str, request: StepDataRequest, session_data=
         "Content-Type": "application/json"
     }
 
-    # Prepare the update
+    # Update form data for this step
+    form_data = document.get("form_data", {})
+    form_data[step_name] = request.form_data
+
+    # Update completed steps
     completed_steps = document.get("completed_steps", [])
     if step_name not in completed_steps:
         completed_steps.append(step_name)
 
-    # Determine next step based on current step
-    next_step = step_name  # Default to same step if something goes wrong
-    step_index = valid_steps.index(step_name)
-    if step_index < len(valid_steps) - 1:
-        next_step = valid_steps[step_index + 1]
-
-    form_data = document.get("form_data", {})
-    form_data[step_name] = request.form_data
+    # Determine next step
+    next_step = step_name
+    if step_name == current_step and current_index < len(valid_steps) - 1:
+        next_step = valid_steps[current_index + 1]
 
     update_payload = {
         "updateOne": {
