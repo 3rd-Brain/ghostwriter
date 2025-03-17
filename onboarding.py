@@ -195,8 +195,9 @@ async def save_step_data(step_name: str, request: StepDataRequest, session_data=
     # Hash password if this is the account_basics step
     if step_name == "account_basics" and "password" in request.form_data:
         password = request.form_data["password"]
-        hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-        request.form_data["password"] = hashed  # Store as bytes directly
+        if isinstance(password, str):
+            hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+            request.form_data["password"] = hashed.decode('utf-8')  # Store as string
 
     update_payload = {
         "updateOne": {
