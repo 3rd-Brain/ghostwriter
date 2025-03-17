@@ -117,7 +117,17 @@ async def login(request: Request, username: str = Form(...), password: str = For
             is_password_match = False
             if stored_hash:
                 try:
-                    is_password_match = bcrypt.checkpw(password.encode('utf-8'), stored_hash.encode('utf-8'))
+                    # --Delete this section during production--
+                    print("=== Debug Password Comparison ===")
+                    print(f"Input password (raw): {password}")
+                    input_encoded = password.encode('utf-8')
+                    stored_encoded = stored_hash.encode('utf-8')
+                    print(f"Input password (encoded): {input_encoded}")
+                    print(f"Stored hash (encoded): {stored_encoded}")
+                    print("=== End Debug Section ===")
+                    # --End delete section--
+                    
+                    is_password_match = bcrypt.checkpw(input_encoded, stored_encoded)
                     print(f"Password comparison result: {is_password_match}")
                 except Exception as e:
                     print(f"Error during password comparison: {str(e)}")
