@@ -314,12 +314,10 @@ async def complete_onboarding(request: OnboardingCompleteRequest, session_data=D
     profile_basics = form_data.get("profile_basics", {})
     social_media = form_data.get("social_media", {})
 
-    # Generate a password hash
-    password = account_basics.get("password", "")
-    if not password:
+    # Get the previously hashed password from account_basics
+    password_hash = account_basics.get("password", "")
+    if not password_hash:
         raise HTTPException(status_code=400, detail="Password is required")
-
-    password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
     # Generate a unique user ID
     user_id = str(uuid.uuid4())
