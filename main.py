@@ -146,13 +146,26 @@ async def login(request: Request, username: str = Form(...), password: str = For
                     os.environ["CURRENT_USERNAME"] = username
                     os.environ["CURRENT_USER_ID"] = user_id
 
-                    # Create an access token and return response
+                    # Create an access token and set environment variables
+                    os.environ["CURRENT_USERNAME"] = username
+                    os.environ["CURRENT_USER_ID"] = user_id
+                    
+                    # Create access token and response
                     access_token = create_access_token(
                         data={"sub": username, "user_id": user_id},
                         expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
                     )
-                    response = RedirectResponse(url="/dashboard", status_code=status.HTTP_302_FOUND)
-                    response.set_cookie(key="access_token", value=access_token, httponly=True)
+                    
+                    # Create response with proper headers
+                    response = RedirectResponse(url="/dashboard")
+                    response.status_code = status.HTTP_302_FOUND
+                    response.set_cookie(
+                        key="access_token",
+                        value=access_token,
+                        httponly=True,
+                        max_age=1800,
+                        path="/"
+                    )
                     return response
                 else:
                     return templates.TemplateResponse(
