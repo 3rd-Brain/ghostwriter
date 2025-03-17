@@ -340,11 +340,13 @@
                             email: formData.email
                         })
                     })
-                    .then(response => response.json())
-                    .then(data => {
+                    .then(response => {
                         if (!response.ok) {
                             throw new Error(`HTTP error! status: ${response.status}`);
                         }
+                        return response.json();
+                    })
+                    .then(data => {
                         const sessionToken = data.session_token;
                         sessionStorage.setItem('onboardingToken', sessionToken);
 
