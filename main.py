@@ -114,8 +114,8 @@ async def login(request: Request, username: str = Form(...), password: str = For
                 
                 # Compare plain password with stored hash
                 if stored_hash and bcrypt.checkpw(password.encode('utf-8'), stored_hash.encode('utf-8')):
-                # Retrieve user_id from the database response
-                user_id = user.get("user_id", "")
+                    # Retrieve user_id from the database response
+                    user_id = user.get("user_id", "")
 
                 # Set the username and user_id as environment variables
                 os.environ["CURRENT_USERNAME"] = username
