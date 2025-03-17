@@ -110,23 +110,27 @@ async def login(request: Request, username: str = Form(...), password: str = For
 
             # Add debug logging
             print(f"Login attempt for user: {username}")
-            
+
             try:
                 stored_hash = user.get("password_hash", "")
                 if not stored_hash:
                     print(f"No password hash found for user: {username}")
-                    raise HTTPException(status_code=401, detail="Invalid credentials")
+                    return templates.TemplateResponse(
+                        "login.html",
+                        {"request": request, "error": "Invalid credentials"},
+                        status_code=401
+                    )
 
                 # Simple password verification
                 if bcrypt.checkpw(password.encode('utf-8'), stored_hash.encode('utf-8')):
                     user_id = user.get("user_id", "")
                     print(f"Login successful for user: {username}")
-                    
+
                     # Set the username and user_id as environment variables
                     os.environ["CURRENT_USERNAME"] = username
                     os.environ["CURRENT_USER_ID"] = user_id
 
-                    # Create an access token that includes both username and user_id
+                    # Create an access token and return response
                     access_token = create_access_token(
                         data={"sub": username, "user_id": user_id},
                         expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -135,10 +139,18 @@ async def login(request: Request, username: str = Form(...), password: str = For
                     response.set_cookie(key="access_token", value=access_token, httponly=True)
                     return response
                 else:
-                    raise HTTPException(status_code=401, detail="Invalid credentials")
+                    return templates.TemplateResponse(
+                        "login.html",
+                        {"request": request, "error": "Invalid credentials"},
+                        status_code=401
+                    )
             except Exception as e:
                 print(f"Login error: {str(e)}")
-                raise HTTPException(status_code=401, detail="Invalid credentials")
+                return templates.TemplateResponse(
+                    "login.html",
+                    {"request": request, "error": "An error occurred during login"},
+                    status_code=500
+                )
 
         # If authentication fails or user doesn't exist
         return templates.TemplateResponse(
