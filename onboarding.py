@@ -196,10 +196,12 @@ async def save_step_data(step_name: str, request: StepDataRequest, session_data=
         "updateOne": {
             "filter": {"_id": session_id},
             "update": {
-                "step": next_step,
-                "completed_steps": completed_steps,
-                "last_updated": datetime.utcnow().isoformat(),
-                "form_data": form_data
+                "$set": {
+                    "step": next_step,
+                    "completed_steps": completed_steps,
+                    "last_updated": datetime.utcnow().isoformat(),
+                    "form_data": form_data
+                }
             }
         }
     }
