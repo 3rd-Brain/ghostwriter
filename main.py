@@ -108,78 +108,22 @@ async def login(request: Request, username: str = Form(...), password: str = For
             user = user_data["data"]["document"]
             stored_hash = user.get("password_hash")
 
-            # Add debug logging
-            print(f"Login attempt for user: {username}")
+            if stored_hash and bcrypt.checkpw(password.encode('utf-8'), stored_hash.encode('utf-8')):
+                # Retrieve user_id from the database response
+                user_id = user.get("user_id", "")
 
-            try:
-                stored_hash = user.get("password_hash", "")
-                if not stored_hash:
-                    print(f"No password hash found for user: {username}")
-                    return templates.TemplateResponse(
-                        "login.html",
-                        {"request": request, "error": "Invalid credentials"},
-                        status_code=401
-                    )
+                # Set the username and user_id as environment variables
+                os.environ["CURRENT_USERNAME"] = username
+                os.environ["CURRENT_USER_ID"] = user_id
 
-                # Add debug logging for password verification
-                print(f"Attempting password verification for user: {username}")
-                try:
-                    if bcrypt.checkpw(password.encode('utf-8'), stored_hash.encode('utf-8')):
-                        user_id = user.get("user_id", "")
-                        print(f"Login successful for user: {username}")
-                    else:
-                        print(f"Password verification failed for user: {username}")
-                        return templates.TemplateResponse(
-                            "login.html",
-                            {"request": request, "error": "Invalid credentials"},
-                            status_code=401
-                        )
-                except Exception as e:
-                    print(f"Password verification error: {str(e)}")
-                    return templates.TemplateResponse(
-                        "login.html",
-                        {"request": request, "error": "Error during login"},
-                        status_code=500
-                    )
-
-                    # Set the username and user_id as environment variables
-                    os.environ["CURRENT_USERNAME"] = username
-                    os.environ["CURRENT_USER_ID"] = user_id
-
-                    # Create an access token and set environment variables
-                    os.environ["CURRENT_USERNAME"] = username
-                    os.environ["CURRENT_USER_ID"] = user_id
-                    
-                    # Create access token and response
-                    access_token = create_access_token(
-                        data={"sub": username, "user_id": user_id},
-                        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-                    )
-                    
-                    # Create response with proper headers
-                    response = RedirectResponse(url="/dashboard")
-                    response.status_code = status.HTTP_302_FOUND
-                    response.set_cookie(
-                        key="access_token",
-                        value=access_token,
-                        httponly=True,
-                        max_age=1800,
-                        path="/"
-                    )
-                    return response
-                else:
-                    return templates.TemplateResponse(
-                        "login.html",
-                        {"request": request, "error": "Invalid credentials"},
-                        status_code=401
-                    )
-            except Exception as e:
-                print(f"Login error: {str(e)}")
-                return templates.TemplateResponse(
-                    "login.html",
-                    {"request": request, "error": "An error occurred during login"},
-                    status_code=500
+                # Create an access token that includes both username and user_id
+                access_token = create_access_token(
+                    data={"sub": username, "user_id": user_id},
+                    expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
                 )
+                response = RedirectResponse(url="/dashboard", status_code=status.HTTP_302_FOUND)
+                response.set_cookie(key="access_token", value=access_token, httponly=True)
+                return response
 
         # If authentication fails or user doesn't exist
         return templates.TemplateResponse(

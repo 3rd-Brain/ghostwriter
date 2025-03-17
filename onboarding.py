@@ -195,9 +195,8 @@ async def save_step_data(step_name: str, request: StepDataRequest, session_data=
     # Hash password if this is the account_basics step
     if step_name == "account_basics" and "password" in request.form_data:
         password = request.form_data["password"]
-        if isinstance(password, str):
-            hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-            request.form_data["password"] = hashed.decode('utf-8')  # Store as string
+        hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+        request.form_data["password"] = hashed.decode('utf-8')
 
     update_payload = {
         "updateOne": {
@@ -300,7 +299,6 @@ async def complete_onboarding(request: OnboardingCompleteRequest, session_data=D
     if not password:
         raise HTTPException(status_code=400, detail="Password is required")
 
-    # Simple and consistent password hashing
     password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
     # Generate a unique user ID
