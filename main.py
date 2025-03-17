@@ -108,9 +108,29 @@ async def login(request: Request, username: str = Form(...), password: str = For
             user = user_data["data"]["document"]
             stored_hash = user.get("password_hash")
 
-            if stored_hash and bcrypt.checkpw(password.encode('utf-8'), stored_hash):
-                # Retrieve user_id from the database response
-                user_id = user.get("user_id", "")
+            # Add debug logging
+            print(f"Login attempt for user: {username}")
+            
+            try:
+                if stored_hash:
+                    # Convert input password to bytes
+                    password_bytes = password.encode('utf-8')
+                    # Convert stored hash to bytes if it's a string
+                    stored_hash_bytes = stored_hash.encode('utf-8') if isinstance(stored_hash, str) else stored_hash
+                    
+                    if bcrypt.checkpw(password_bytes, stored_hash_bytes):
+                        # Retrieve user_id from the database response
+                        user_id = user.get("user_id", "")
+                        print(f"Login successful for user: {username}")
+                    else:
+                        print(f"Password mismatch for user: {username}")
+                        raise HTTPException(status_code=401, detail="Invalid credentials")
+                else:
+                    print(f"No password hash found for user: {username}")
+                    raise HTTPException(status_code=401, detail="Invalid credentials")
+            except Exception as e:
+                print(f"Password verification error for user {username}: {str(e)}")
+                raise HTTPException(status_code=401, detail="Invalid credentials")
 
                 # Set the username and user_id as environment variables
                 os.environ["CURRENT_USERNAME"] = username
