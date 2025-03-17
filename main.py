@@ -36,7 +36,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 # Security configuration
-SECRET_KEY = "your-secret-key-keep-it-secret"  # In production, use a secure secret key
+SECRET_KEY = os.getenv("JWT_SECRET_KEY", "fallback-dev-only-key")  # Fetch from environment variables
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
