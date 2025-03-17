@@ -166,7 +166,7 @@ async def save_step_data(step_name: str, request: StepDataRequest, session_data=
     current_step = document.get("step", "account_basics")
     current_index = valid_steps.index(current_step)
     requested_index = valid_steps.index(step_name)
-    
+
     # Only allow moving to the next step or updating current step
     if requested_index > current_index + 1:
         raise HTTPException(status_code=400, detail="Steps must be completed in order")
@@ -191,6 +191,12 @@ async def save_step_data(step_name: str, request: StepDataRequest, session_data=
     next_step = step_name
     if step_name == current_step and current_index < len(valid_steps) - 1:
         next_step = valid_steps[current_index + 1]
+
+    # Hash password if this is the account_basics step
+    if step_name == "account_basics" and "password" in request.form_data:
+        password = request.form_data["password"]
+        hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+        request.form_data["password"] = hashed.decode('utf-8')
 
     update_payload = {
         "updateOne": {
