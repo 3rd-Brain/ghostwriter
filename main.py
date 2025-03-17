@@ -123,17 +123,22 @@ async def login(request: Request, username: str = Form(...), password: str = For
                     print(f"Login successful for user: {username}")
                     
                     # Set the username and user_id as environment variables
-                os.environ["CURRENT_USERNAME"] = username
-                os.environ["CURRENT_USER_ID"] = user_id
+                    os.environ["CURRENT_USERNAME"] = username
+                    os.environ["CURRENT_USER_ID"] = user_id
 
-                # Create an access token that includes both username and user_id
-                access_token = create_access_token(
-                    data={"sub": username, "user_id": user_id},
-                    expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-                )
-                response = RedirectResponse(url="/dashboard", status_code=status.HTTP_302_FOUND)
-                response.set_cookie(key="access_token", value=access_token, httponly=True)
-                return response
+                    # Create an access token that includes both username and user_id
+                    access_token = create_access_token(
+                        data={"sub": username, "user_id": user_id},
+                        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+                    )
+                    response = RedirectResponse(url="/dashboard", status_code=status.HTTP_302_FOUND)
+                    response.set_cookie(key="access_token", value=access_token, httponly=True)
+                    return response
+                else:
+                    raise HTTPException(status_code=401, detail="Invalid credentials")
+            except Exception as e:
+                print(f"Login error: {str(e)}")
+                raise HTTPException(status_code=401, detail="Invalid credentials")
 
         # If authentication fails or user doesn't exist
         return templates.TemplateResponse(
