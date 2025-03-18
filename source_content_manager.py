@@ -17,6 +17,11 @@ def tweet_to_source_content(tweets: List[Dict]) -> List[Dict]:
     Returns:
         List of dictionaries containing text, embeddings, and upload response
     """
+    print("\n=== Debug Tweet Processing ===")
+    print(f"Number of tweets to process: {len(tweets)}")
+    print(f"Sample tweet structure: {tweets[0] if tweets else 'No tweets'}")
+    print(f"OpenAI API Key configured: {'Yes' if OPENAI_API_KEY else 'No'}")
+    print("=== End Debug Section ===\n")
     if not OPENAI_API_KEY:
         raise Exception("OPENAI_API_KEY not configured in environment")
 
@@ -116,6 +121,12 @@ def gather_user_tweets(
     Returns:
         Dict containing the Twitter data response
     """
+    print("\n=== Debug Tweet Gathering ===")
+    print(f"Max items: {max_items}")
+    print(f"Sort order: {sort}")
+    print(f"User URL: {user_url}")
+    print(f"Apify token configured: {'Yes' if os.environ.get('APIFY_API_TOKEN') else 'No'}")
+    print("=== End Debug Section ===\n")
     APIFY_API_TOKEN = os.environ.get("APIFY_API_TOKEN")
 
     if not APIFY_API_TOKEN:
@@ -144,6 +155,11 @@ def gather_user_tweets(
     try:
         response = requests.post(url, headers=headers, params=params, json=payload)
         response.raise_for_status()
-        return response.json()
+        result = response.json()
+        print("\n=== Debug Apify Response ===")
+        print(f"Response status: {response.status_code}")
+        print(f"Response data sample: {str(result)[:200]}...")
+        print("=== End Debug Section ===\n")
+        return result
     except requests.exceptions.RequestException as e:
         raise Exception(f"Failed to gather tweets: {str(e)}")
