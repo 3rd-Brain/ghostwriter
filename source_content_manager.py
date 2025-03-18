@@ -23,6 +23,10 @@ def tweet_to_source_content(tweets: List[Dict]) -> List[Dict]:
     processed_tweets = []
 
     for tweet in tweets:
+        # Skip retweets
+        if tweet.get('isRetweet', False):
+            continue
+            
         # Extract text from tweet
         text = tweet.get('text', '')
         if not text:
