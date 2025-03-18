@@ -376,7 +376,15 @@ async def complete_onboarding(request: OnboardingCompleteRequest, session_data=D
 
         if twitter_url:
             try:
-                print("\n=== Debug: Starting Tweet Processing ===")
+                print("\n=== Debug: Twitter URL Processing ===")
+                print(f"Twitter URL detected: {twitter_url}")
+                print(f"APIFY_API_TOKEN present: {'Yes' if os.environ.get('APIFY_API_TOKEN') else 'No'}")
+                print(f"OPENAI_API_KEY present: {'Yes' if os.environ.get('OPENAI_API_KEY') else 'No'}")
+                
+                if not os.environ.get("APIFY_API_TOKEN"):
+                    raise Exception("APIFY_API_TOKEN missing")
+                    
+                print("Importing tweet processing functions...")
                 from source_content_manager import gather_user_tweets, tweet_to_source_content
 
                 # Store user ID in environment for the tweet processing
