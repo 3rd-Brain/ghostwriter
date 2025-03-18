@@ -975,3 +975,28 @@ def simple_repurpose(social_post: str, brand: str, repurpose_count: int = 5, wor
     
     print("\n=== Simple Repurpose Process Complete ===")
     return generated_results
+def delete_user_account(identifier: str, delete_by: str = "username") -> dict:
+    """Delete a user account from the database."""
+    ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+    ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+
+    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/users_keyspace/users"
+    headers = {
+        "Token": ASTRA_DB_APPLICATION_TOKEN,
+        "Content-Type": "application/json"
+    }
+
+    # Set up filter based on identifier type
+    filter_field = "_id" if delete_by.lower() == "id" else "username"
+    
+    payload = {
+        "findOneAndDelete": {
+            "filter": {
+                filter_field: identifier
+            }
+        }
+    }
+
+    response = requests.post(url, headers=headers, json=payload)
+    response.raise_for_status()
+    return response.json()
