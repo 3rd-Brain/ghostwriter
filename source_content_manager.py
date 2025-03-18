@@ -1,53 +1,99 @@
-
 import requests
 from typing import Literal, Dict, Union, List
 import os
 from openai import OpenAI
+import uuid
 
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 openai_client = OpenAI(api_key=OPENAI_API_KEY)
 
 def tweet_to_source_content(tweets: List[Dict]) -> List[Dict]:
     """
-    Process tweets by extracting text and generating embeddings
-    
+    Process tweets by extracting text and generating embeddings, then uploading to AstraDB
+
     Args:
         tweets: List of tweet dictionaries containing 'text' field
-        
+
     Returns:
-        List of dictionaries containing text and embeddings
+        List of dictionaries containing text, embeddings, and upload response
     """
     if not OPENAI_API_KEY:
         raise Exception("OPENAI_API_KEY not configured in environment")
-        
+
     processed_tweets = []
-    
+
     for tweet in tweets:
         # Extract text from tweet
         text = tweet.get('text', '')
         if not text:
             continue
-            
+
         try:
             # Generate embedding using OpenAI
             response = openai_client.embeddings.create(
                 input=text,
                 model="text-embedding-3-small"
             )
-            
+
             # Extract embedding from response
             embedding = response.data[0].embedding
-            
-            # Store text and embedding
+
+            # Get the current user's ID from environment
+            user_id = os.environ.get("CURRENT_USER_ID")
+            if not user_id:
+                raise Exception("User ID not found in environment")
+
+            # Generate a unique content ID
+            content_id = str(uuid.uuid4())
+
+            # Prepare document for upload
+            document = {
+                "content_id": content_id,
+                "user_id": user_id,
+                "content": text,
+                "source": "Twitter",
+                "channel_source": "Twitter",
+                "$vector": embedding,
+                "context": "NA"
+            }
+
+            # Prepare upload payload
+            payload = {
+                "insertOne": {
+                    "document": document
+                }
+            }
+
+            # Get AstraDB credentials
+            ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+            ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+
+            if not ASTRA_DB_API_ENDPOINT or not ASTRA_DB_APPLICATION_TOKEN:
+                raise Exception("AstraDB credentials not configured")
+
+            # Construct URL for user's source content collection
+            url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/user_source_content"
+
+            # Set headers
+            headers = {
+                "Token": ASTRA_DB_APPLICATION_TOKEN,
+                "Content-Type": "application/json"
+            }
+
+            # Upload to AstraDB
+            upload_response = requests.post(url, headers=headers, json=payload)
+            upload_response.raise_for_status()
+
             processed_tweets.append({
                 'text': text,
-                'embedding': embedding
+                'embedding': embedding,
+                'upload_response': upload_response.json()
             })
-            
+
         except Exception as e:
             print(f"Failed to process tweet: {str(e)}")
             continue
-            
+
     return processed_tweets
 
 def gather_user_tweets(
@@ -57,40 +103,40 @@ def gather_user_tweets(
 ) -> Dict:
     """
     Gather tweets from a user's X/Twitter profile using Apify
-    
+
     Args:
         max_items: Maximum number of tweets to retrieve
         sort: Sort order - "Latest" or "Top"
         user_url: Full URL of user's X/Twitter profile
-        
+
     Returns:
         Dict containing the Twitter data response
     """
     APIFY_API_TOKEN = os.environ.get("APIFY_API_TOKEN")
-    
+
     if not APIFY_API_TOKEN:
         raise Exception("APIFY_API_TOKEN not configured in environment")
-        
+
     # Apify endpoint
     url = "https://api.apify.com/v2/actor-tasks/james-3rdbrain~twitter-x-com-scraper-unlimited-ghostwriter/run-sync-get-dataset-items"
-    
+
     # Request headers
     headers = {
         "Content-Type": "application/json"
     }
-    
+
     # Request parameters
     params = {
         "token": APIFY_API_TOKEN
     }
-    
+
     # Request payload
     payload = {
         "maxItems": max_items,
         "sort": sort,
         "startUrls": [user_url]
     }
-    
+
     try:
         response = requests.post(url, headers=headers, params=params, json=payload)
         response.raise_for_status()
