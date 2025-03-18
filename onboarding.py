@@ -8,6 +8,7 @@ from fastapi import APIRouter, HTTPException, Request, Depends, Header
 from pydantic import BaseModel, Field
 import requests
 from jose import jwt
+from source_content_manager import gather_user_tweets, tweet_to_source_content
 
 # Define Pydantic models for request/response validation
 class OnboardingInitRequest(BaseModel):
