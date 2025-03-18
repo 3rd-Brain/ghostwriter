@@ -1,0 +1,157 @@
+[
+    {
+        "type": "",
+        "id": "",
+        "url": "",
+        "twitterUrl": "",
+        "text": "",
+        "fullText": "",
+        "source": "",
+        "retweetCount": 0,
+        "replyCount": 0,
+        "likeCount": 0,
+        "quoteCount": 0,
+        "viewCount": 0,
+        "createdAt": "",
+        "lang": "",
+        "bookmarkCount": 0,
+        "isReply": false,
+        "conversationId": "",
+        "isPinned": false,
+        "author": {
+            "type": "",
+            "userName": "",
+            "url": "",
+            "twitterUrl": "",
+            "id": "",
+            "name": "",
+            "isVerified": false,
+            "isBlueVerified": false,
+            "profilePicture": "",
+            "coverPicture": "",
+            "description": "",
+            "location": "",
+            "followers": 0,
+            "following": 0,
+            "status": "",
+            "canDm": false,
+            "canMediaTag": false,
+            "createdAt": "",
+            "entities": {
+                "description": {
+                    "urls": []
+                },
+                "url": {
+                    "urls": [
+                        {
+                            "display_url": "",
+                            "expanded_url": "",
+                            "url": "",
+                            "indices": []
+                        }
+                    ]
+                }
+            },
+            "fastFollowersCount": 0,
+            "favouritesCount": 0,
+            "hasCustomTimelines": false,
+            "isTranslator": false,
+            "mediaCount": 0,
+            "statusesCount": 0,
+            "withheldInCountries": [],
+            "affiliatesHighlightedLabel": {},
+            "possiblySensitive": false,
+            "pinnedTweetIds": []
+        },
+        "extendedEntities": {},
+        "card": {},
+        "place": {},
+        "entities": {
+            "hashtags": [],
+            "symbols": [],
+            "timestamps": [],
+            "urls": [],
+            "user_mentions": [
+                {
+                    "id_str": "",
+                    "name": "",
+                    "screen_name": "",
+                    "indices": []
+                }
+            ]
+        },
+        "isRetweet": false,
+        "retweet": {
+            "type": "",
+            "id": "",
+            "text": "",
+            "source": "",
+            "retweetCount": 0,
+            "replyCount": 0,
+            "likeCount": 0,
+            "quoteCount": 0,
+            "viewCount": 0,
+            "createdAt": "",
+            "lang": "",
+            "bookmarkCount": 0,
+            "isPinned": false,
+            "author": {
+                "type": "",
+                "userName": "",
+                "url": "",
+                "twitterUrl": "",
+                "id": "",
+                "name": "",
+                "isVerified": false,
+                "isBlueVerified": false,
+                "profilePicture": "",
+                "coverPicture": "",
+                "description": "",
+                "location": "",
+                "followers": 0,
+                "following": 0,
+                "status": "",
+                "canDm": false,
+                "canMediaTag": false,
+                "createdAt": "",
+                "entities": {
+                    "description": {
+                        "urls": []
+                    },
+                    "url": {
+                        "urls": [
+                            {
+                                "display_url": "",
+                                "expanded_url": "",
+                                "url": "",
+                                "indices": []
+                            }
+                        ]
+                    }
+                },
+                "fastFollowersCount": 0,
+                "favouritesCount": 0,
+                "hasCustomTimelines": false,
+                "isTranslator": false,
+                "mediaCount": 0,
+                "statusesCount": 0,
+                "withheldInCountries": [],
+                "affiliatesHighlightedLabel": {},
+                "possiblySensitive": false,
+                "pinnedTweetIds": []
+            },
+            "extendedEntities": {},
+            "card": {},
+            "place": {},
+            "entities": {
+                "hashtags": [],
+                "symbols": [],
+                "urls": [],
+                "user_mentions": []
+            }
+        },
+        "isQuote": false,
+        "media": [],
+        "isConversationControlled": false
+    }
+]
