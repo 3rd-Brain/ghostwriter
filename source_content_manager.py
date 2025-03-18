@@ -1,7 +1,54 @@
 
 import requests
-from typing import Literal, Dict, Union
+from typing import Literal, Dict, Union, List
 import os
+from openai import OpenAI
+
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+openai_client = OpenAI(api_key=OPENAI_API_KEY)
+
+def tweet_to_source_content(tweets: List[Dict]) -> List[Dict]:
+    """
+    Process tweets by extracting text and generating embeddings
+    
+    Args:
+        tweets: List of tweet dictionaries containing 'text' field
+        
+    Returns:
+        List of dictionaries containing text and embeddings
+    """
+    if not OPENAI_API_KEY:
+        raise Exception("OPENAI_API_KEY not configured in environment")
+        
+    processed_tweets = []
+    
+    for tweet in tweets:
+        # Extract text from tweet
+        text = tweet.get('text', '')
+        if not text:
+            continue
+            
+        try:
+            # Generate embedding using OpenAI
+            response = openai_client.embeddings.create(
+                input=text,
+                model="text-embedding-3-small"
+            )
+            
+            # Extract embedding from response
+            embedding = response.data[0].embedding
+            
+            # Store text and embedding
+            processed_tweets.append({
+                'text': text,
+                'embedding': embedding
+            })
+            
+        except Exception as e:
+            print(f"Failed to process tweet: {str(e)}")
+            continue
+            
+    return processed_tweets
 
 def gather_user_tweets(
     max_items: int,
