@@ -190,7 +190,7 @@
 {% block extra_js %}
 <script>
     // Store workflows data globally so we can access it when clicking on "Generation Flow" buttons
-    let workflowsData = [];
+    const workflowsData = [];
 
     // Function to fetch workflows and populate the table
     function fetchWorkflows() {
@@ -445,12 +445,12 @@
 
                     // Handle message content and properly format template variables
                     let messageContent = msg.content || '';
-                    
+
                     // First, escape < and > characters for HTML safety
                     messageContent = messageContent
                         .replace(/</g, '&lt;')
                         .replace(/>/g, '&gt;');
-                    
+
                     // Only style the template variables, leave HTML tags as plain text
                     messageContent = messageContent
                         // Format template variables
