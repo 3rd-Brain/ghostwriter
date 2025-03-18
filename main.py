@@ -11,7 +11,7 @@ from jose import JWTError, jwt
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from typing import Dict
-from social_writer import generated_content_uploader, get_client_brand_voice, vector_search_for_published_content, metric_sorter, top_content_sentiment_setup, source_content_retriever, multitemplate_retriever, short_form_social_repurposing, top_content_to_repurposing, template_context_and_uploader, Templatizer, repurposer_using_posts_as_templates, source_content_repurposer_using_posts_as_templates
+from social_writer import generated_content_uploader, get_client_brand_voice, vector_search_for_published_content, metric_sorter, top_content_sentiment_setup, source_content_retriever, multitemplate_retriever, short_form_social_repurposing, top_content_to_repurposing, template_context_and_uploader, Templatizer, repurposer_using_posts_as_templates, source_content_repurposer_using_posts_as_templates, delete_user_account
 from social_dynamic_generation_flow import flow_config_retriever, social_post_generation_with_json
 import schemas
 from onboarding import router as onboarding_router
@@ -1198,3 +1198,42 @@ async def reset_chat_session(current_user: dict = Depends(get_current_user)):
 @app.get("/signup", response_class=HTMLResponse, include_in_schema=False)
 async def signup(request: Request):
     return templates.TemplateResponse("signup.html", {"request": request})
+
+@app.delete("/api/user/{identifier}", tags=["User Management"])
+async def delete_user(identifier: str, delete_by: str = "username"):
+    """
+    **Delete a user account**
+
+    This endpoint permanently deletes a user account from the database.
+    The user can be identified by either username or _id.
+
+    ## When to use
+    Use this endpoint when you need to:
+    * Remove a user account from the system
+    * Clean up user data
+    * Handle account deletion requests
+
+    *This action cannot be undone, and all user data will be permanently removed.*
+    """
+    if not os.getenv("ASTRA_DB_API_ENDPOINT"):
+        raise HTTPException(status_code=500, detail="ASTRA_DB_API_ENDPOINT not configured")
+    if not os.getenv("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER"):
+        raise HTTPException(status_code=500, detail="ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
+
+    try:
+        from social_writer import delete_user_account
+        result = delete_user_account(identifier, delete_by)
+
+        if result.get("data", {}).get("document"):
+            return {
+                "status": "success", 
+                "message": f"User {identifier} deleted successfully"
+            }
+        else:
+            raise HTTPException(
+                status_code=404, 
+                detail=f"User with {delete_by} '{identifier}' not found"
+            )
+    except Exception as e:
+        print(f"Error deleting user: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
