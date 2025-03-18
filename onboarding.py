@@ -369,6 +369,35 @@ async def complete_onboarding(request: OnboardingCompleteRequest, session_data=D
     }
 
     try:
+        # Process Twitter data if provided
+        social_media_data = form_data.get("social_media", {})
+        twitter_url = social_media_data.get("twitter_url")
+        
+        if twitter_url:
+            try:
+                from source_content_manager import gather_user_tweets, tweet_to_source_content
+                # Store user ID in environment for the tweet processing
+                os.environ["CURRENT_USER_ID"] = user_id
+                
+                # Gather and process tweets
+                tweets = gather_user_tweets(
+                    max_items=100,
+                    sort="Latest",
+                    user_url=twitter_url
+                )
+                processed_tweets = tweet_to_source_content(tweets)
+                
+                # Clear the environment variable
+                del os.environ["CURRENT_USER_ID"]
+                
+                # Add tweet processing result to user document
+                user["profile"]["twitter_processed"] = True
+                user["profile"]["processed_tweets_count"] = len(processed_tweets)
+            except Exception as e:
+                print(f"Error processing tweets during onboarding: {str(e)}")
+                user["profile"]["twitter_processed"] = False
+                user["profile"]["twitter_process_error"] = str(e)
+
         # Insert user document
         url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/users_keyspace/users"
         headers = {
