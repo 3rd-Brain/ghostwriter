@@ -373,29 +373,44 @@ async def complete_onboarding(request: OnboardingCompleteRequest, session_data=D
         # Process Twitter data if provided
         social_media_data = form_data.get("social_media", {})
         twitter_url = social_media_data.get("twitter_url")
-        
+
         if twitter_url:
             try:
+                print("\n=== Debug: Starting Tweet Processing ===")
                 from source_content_manager import gather_user_tweets, tweet_to_source_content
+
                 # Store user ID in environment for the tweet processing
                 os.environ["CURRENT_USER_ID"] = user_id
-                
+                print(f"Set CURRENT_USER_ID env var to: {user_id}")
+                print(f"Processing Twitter URL: {twitter_url}")
+
                 # Gather and process tweets
+                print("Calling gather_user_tweets...")
                 tweets = gather_user_tweets(
                     max_items=100,
                     sort="Latest",
                     user_url=twitter_url
                 )
+                print(f"Retrieved {len(tweets) if tweets else 0} tweets")
+
+                print("Processing tweets with tweet_to_source_content...")
                 processed_tweets = tweet_to_source_content(tweets)
-                
+                print(f"Successfully processed {len(processed_tweets)} tweets")
+
                 # Clear the environment variable
                 del os.environ["CURRENT_USER_ID"]
-                
+                print("Cleared CURRENT_USER_ID env var")
+
                 # Add tweet processing result to user document
                 user["profile"]["twitter_processed"] = True
                 user["profile"]["processed_tweets_count"] = len(processed_tweets)
+                print("=== End Tweet Processing ===\n")
             except Exception as e:
-                print(f"Error processing tweets during onboarding: {str(e)}")
+                print("\n=== Debug: Tweet Processing Error ===")
+                print(f"Error type: {type(e).__name__}")
+                print(f"Error message: {str(e)}")
+                print(f"Twitter URL attempted: {twitter_url}")
+                print("=== End Error Debug ===\n")
                 user["profile"]["twitter_processed"] = False
                 user["profile"]["twitter_process_error"] = str(e)
 
@@ -429,7 +444,7 @@ async def complete_onboarding(request: OnboardingCompleteRequest, session_data=D
         # Create access token for auto-login
         from datetime import timedelta
         from main import create_access_token
-        
+
         access_token = create_access_token(
             data={"sub": username, "user_id": user_id},
             expires_delta=timedelta(minutes=30)
