@@ -372,7 +372,12 @@ async def complete_onboarding(request: OnboardingCompleteRequest, session_data=D
     try:
         # Process Twitter data if provided
         social_media_data = form_data.get("social_media", {})
-        twitter_url = social_media_data.get("twitter_url")
+        twitter_url = social_media_data.get("twitter")  # Changed from twitter_url to twitter to match form data
+
+        print("\n=== Debug: Twitter URL Check ===")
+        print(f"Social media data: {social_media_data}")
+        print(f"Twitter URL found: {twitter_url}")
+        print("=== End Debug ===\n")
 
         if twitter_url:
             try:
