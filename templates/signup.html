@@ -451,8 +451,9 @@
                         sessionStorage.removeItem('signupFormData');
                         sessionStorage.removeItem('onboardingToken');
 
-                        // Redirect to login or dashboard
-                        window.location.href = '/login?signup=success';
+                        // Set the access token cookie and redirect to dashboard
+                        document.cookie = `access_token=${data.access_token}; path=/`;
+                        window.location.href = '/dashboard';
                     })
                     .catch(error => {
                         // Log the full error details

@@ -425,10 +425,20 @@ async def complete_onboarding(request: OnboardingCompleteRequest, session_data=D
         delete_response = requests.post(delete_url, headers=headers, json=delete_payload)
         delete_response.raise_for_status()
 
+        # Create access token for auto-login
+        from datetime import timedelta
+        from main import create_access_token
+        
+        access_token = create_access_token(
+            data={"sub": username, "user_id": user_id},
+            expires_delta=timedelta(minutes=30)
+        )
+
         return {
             "status": "success", 
             "message": "Onboarding completed successfully", 
-            "user_id": user_id
+            "user_id": user_id,
+            "access_token": access_token
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to complete onboarding: {str(e)}")
