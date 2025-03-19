@@ -4,8 +4,9 @@ import uuid
 import bcrypt
 from datetime import datetime, timedelta
 from typing import Dict, Optional, List
-from fastapi import APIRouter, HTTPException, Request, Depends, Header
+from fastapi import APIRouter, HTTPException, Request, Depends, Header, File, UploadFile
 from pydantic import BaseModel, Field
+from document_processor import DocumentProcessor
 import requests
 from jose import jwt
 from source_content_manager import gather_user_tweets, tweet_to_source_content
@@ -441,6 +442,34 @@ async def complete_onboarding(request: OnboardingCompleteRequest, session_data=D
         }
 
         response = requests.post(url, headers=headers, json=payload)
+
+
+@router.post("/upload-content")
+async def upload_content(
+    file: UploadFile = File(...),
+    session_data=Depends(get_onboarding_session)
+):
+    """Upload and process content during onboarding"""
+    payload, document = session_data
+    
+    try:
+        processor = DocumentProcessor()
+        result = processor.process_file(
+            file.file,
+            file.filename,
+            document.get("user_id")
+        )
+        
+        return {
+            "status": "success",
+            "message": f"File {file.filename} processed successfully",
+            "file_id": result["file_id"]
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error processing file: {str(e)}")
+
         response.raise_for_status()
 
         # Delete the onboarding session
