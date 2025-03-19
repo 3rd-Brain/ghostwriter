@@ -442,34 +442,6 @@ async def complete_onboarding(request: OnboardingCompleteRequest, session_data=D
         }
 
         response = requests.post(url, headers=headers, json=payload)
-
-
-@router.post("/upload-content")
-async def upload_content(
-    file: UploadFile = File(...),
-    session_data=Depends(get_onboarding_session)
-):
-    """Upload and process content during onboarding"""
-    payload, document = session_data
-    
-    try:
-        processor = DocumentProcessor()
-        result = processor.process_file(
-            file.file,
-            file.filename,
-            document.get("user_id")
-        )
-        
-        return {
-            "status": "success",
-            "message": f"File {file.filename} processed successfully",
-            "file_id": result["file_id"]
-        }
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error processing file: {str(e)}")
-
         response.raise_for_status()
 
         # Delete the onboarding session
@@ -586,3 +558,29 @@ async def reset_onboarding(session_data=Depends(get_onboarding_session)):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to reset onboarding: {str(e)}")
+
+@router.post("/upload-content")
+async def upload_content(
+    file: UploadFile = File(...),
+    session_data=Depends(get_onboarding_session)
+):
+    """Upload and process content during onboarding"""
+    payload, document = session_data
+
+    try:
+        processor = DocumentProcessor()
+        result = processor.process_file(
+            file.file,
+            file.filename,
+            document.get("user_id")
+        )
+
+        return {
+            "status": "success",
+            "message": f"File {file.filename} processed successfully",
+            "file_id": result["file_id"]
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error processing file: {str(e)}")
