@@ -352,9 +352,13 @@
                         formData.append('files[]', files[i]);
                     }
 
-                    fetch('/upload', { // Replace '/upload' with your actual upload endpoint
+                    fetch('/upload', {
                         method: 'POST',
-                        body: formData
+                        body: formData,
+                        credentials: 'include',  // Include cookies for authentication
+                        headers: {
+                            'Authorization': `Bearer ${document.cookie.split('access_token=')[1].split(';')[0]}`
+                        }
                     })
                     .then(response => {
                         if (!response.ok) {
