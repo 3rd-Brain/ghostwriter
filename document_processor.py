@@ -123,36 +123,4 @@ class DocumentProcessor:
                 
         return chunks
 
-    def _store_chunk_metadata(self, content_id: str, user_id: str, content: str,
-                            source: str, channel_source: str, embedding: list) -> Dict:
-        """Store chunk metadata and embedding in AstraDB"""
-        ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
-        ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
-        
-        url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/document_chunks"
-        
-        document = {
-            "content_id": content_id,
-            "user_id": user_id,
-            "content": content,
-            "source": source,
-            "channel_source": channel_source,
-            "$vector": embedding,
-            "context": "NA"
-        }
-        
-        payload = {
-            "insertOne": {
-                "document": document
-            }
-        }
-        
-        headers = {
-            "Token": ASTRA_DB_APPLICATION_TOKEN,
-            "Content-Type": "application/json"
-        }
-        
-        response = requests.post(url, headers=headers, json=payload)
-        response.raise_for_status()
-        
-        return document
+    
