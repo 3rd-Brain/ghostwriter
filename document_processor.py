@@ -16,9 +16,12 @@ class DocumentProcessor:
         
     def process_file(self, file: BinaryIO, filename: str, user_id: str) -> Dict:
         """Process uploaded file and store in Object Storage with chunked vector storage"""
+        print(f"\n=== Processing file: {filename} for user: {user_id} ===")
+        
         # Store file in Object Storage
         file_id = str(uuid.uuid4())
         object_path = f"documents/{user_id}/{file_id}/{filename}"
+        print(f"Storing file at: {object_path}")
         self.storage_client.upload_from_file(object_path, file)
         
         # Extract text based on file type
@@ -39,6 +42,9 @@ class DocumentProcessor:
         for chunk in chunks:
             chunk_id = str(uuid.uuid4())
             embedding = self._generate_embedding(chunk)
+            
+            print(f"Processing chunk {len(processed_chunks) + 1}, length: {len(chunk)} characters")
+            print("Generating embedding...")
             
             # Store in AstraDB with the specified structure
             url = f"{os.environ.get('ASTRA_DB_API_ENDPOINT')}/api/json/v1/user_content_keyspace/user_source_content"
@@ -81,10 +87,13 @@ class DocumentProcessor:
         
     def _extract_markdown_text(self, file: BinaryIO) -> str:
         """Extract text from Markdown file"""
+        print("Extracting text from Markdown file...")
         content = file.read().decode('utf-8')
+        print(f"Raw content length: {len(content)} characters")
         html = markdown.markdown(content)
-        # Simple HTML to text conversion
-        return html.replace('<p>', '').replace('</p>', '\n')
+        text = html.replace('<p>', '').replace('</p>', '\n')
+        print(f"Processed text length: {len(text)} characters")
+        return text
         
     def _generate_embedding(self, text: str) -> list:
         """Generate embedding using OpenAI API"""
