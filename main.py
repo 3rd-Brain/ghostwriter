@@ -2,7 +2,7 @@ import json
 import requests
 from datetime import datetime, timedelta
 from typing import Optional
-from fastapi import FastAPI, HTTPException, Depends, Request, Response, status, Form, BackgroundTasks
+from fastapi import FastAPI, HTTPException, Depends, Request, Response, UploadFile, File, status, Form, BackgroundTasks
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.staticfiles import StaticFiles
@@ -1236,4 +1236,25 @@ async def delete_user(identifier: str, delete_by: str = "username"):
             )
     except Exception as e:
         print(f"Error deleting user: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+@app.post("/sys/onboarding/upload_content")
+async def upload_content(
+    file: UploadFile = File(...),
+    token: str = Depends(verify_onboarding_token)
+):
+    try:
+        content = await file.read()
+        processor = DocumentProcessor()
+        
+        if file.filename.endswith('.pdf'):
+            result = processor._extract_pdf_text(content)
+        elif file.filename.endswith('.md'):
+            result = processor._extract_markdown_text(content)
+        else:
+            raise HTTPException(status_code=400, detail="Unsupported file type")
+            
+        # Store the extracted content for later use
+        return {"status": "success", "message": "File processed successfully"}
+        
+    except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

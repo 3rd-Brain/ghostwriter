@@ -245,7 +245,29 @@
                             <input type="url" id="website" name="website" class="form-control" placeholder="https://...">
                         </div>
                     </div>
+                    <div class="text-secondary mt-md">Or upload a file containing your content:</div>
+                    <button type="button" id="upload-file-btn" class="form-button-secondary mt-sm">Upload PDF/Markdown</button>
                     <div class="error-message" id="social-error"></div>
+                    <div id="upload-status" class="mt-sm" style="display: none;"></div>
+                </div>
+
+                <!-- File Upload Modal -->
+                <div id="file-upload-modal" class="modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2>Upload Content File</h2>
+                            <span class="close" id="close-upload-modal">&times;</span>
+                        </div>
+                        <div class="modal-body">
+                            <form id="file-upload-form">
+                                <div class="form-group">
+                                    <label class="form-label">Select PDF or Markdown file</label>
+                                    <input type="file" id="content-file" name="content-file" class="form-control" accept=".pdf,.md">
+                                </div>
+                                <button type="submit" class="form-button">Upload</button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="form-navigation">
@@ -263,6 +285,71 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('signup-form');
+            const uploadModal = document.getElementById('file-upload-modal');
+            const uploadBtn = document.getElementById('upload-file-btn');
+            const closeUploadBtn = document.getElementById('close-upload-modal');
+            const uploadForm = document.getElementById('file-upload-form');
+            const uploadStatus = document.getElementById('upload-status');
+
+            // Show modal
+            uploadBtn.addEventListener('click', function() {
+                uploadModal.style.display = 'block';
+            });
+
+            // Close modal
+            closeUploadBtn.addEventListener('click', function() {
+                uploadModal.style.display = 'none';
+            });
+
+            // Close modal when clicking outside
+            window.addEventListener('click', function(event) {
+                if (event.target == uploadModal) {
+                    uploadModal.style.display = 'none';
+                }
+            });
+
+            // Handle file upload
+            uploadForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const fileInput = document.getElementById('content-file');
+                const file = fileInput.files[0];
+
+                if (!file) {
+                    alert('Please select a file');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('file', file);
+
+                try {
+                    uploadStatus.textContent = 'Uploading...';
+                    uploadStatus.style.display = 'block';
+                    
+                    const response = await fetch('/sys/onboarding/upload_content', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'Authorization': `Bearer ${sessionStorage.getItem('onboardingToken')}`
+                        }
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.detail || 'Upload failed');
+                    }
+
+                    uploadStatus.textContent = 'File uploaded successfully!';
+                    uploadStatus.style.color = 'var(--success)';
+                    uploadModal.style.display = 'none';
+                    uploadForm.reset();
+                } catch (error) {
+                    console.error('Upload error:', error);
+                    uploadStatus.textContent = `Upload failed: ${error.message}`;
+                    uploadStatus.style.color = 'var(--error)';
+                }
+            });
             const steps = document.querySelectorAll('.form-step');
             const nextButtons = document.querySelectorAll('.next-step');
             const prevButtons = document.querySelectorAll('.prev-step');
