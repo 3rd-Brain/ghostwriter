@@ -16,6 +16,18 @@ from social_dynamic_generation_flow import flow_config_retriever, social_post_ge
 import schemas
 from onboarding import router as onboarding_router
 
+async def verify_onboarding_token(authorization: Optional[str] = Header(None)):
+    """Verify the onboarding token from the request header"""
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Authentication required")
+    
+    token = authorization.split(" ")[1]
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return token
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid authentication credentials")
+
 # App setup
 app = FastAPI(
     title="Ghostwriter API",
