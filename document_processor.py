@@ -16,18 +16,18 @@ class DocumentProcessor:
         
     def process_file(self, file: BinaryIO, filename: str, user_id: str) -> Dict:
         """Process uploaded file and store in Object Storage with chunked vector storage"""
-        # Generate unique ID for the file
-        file_id = str(uuid.uuid4())
-        
         # Store file in Object Storage
+        file_id = str(uuid.uuid4())
         object_path = f"documents/{user_id}/{file_id}/{filename}"
         self.storage_client.upload_from_file(object_path, file)
         
         # Extract text based on file type
         if filename.lower().endswith('.pdf'):
             text_content = self._extract_pdf_text(file)
+            channel_source = "PDF"
         elif filename.lower().endswith('.md'):
             text_content = self._extract_markdown_text(file)
+            channel_source = "Markdown"
         else:
             raise ValueError("Unsupported file type")
             
@@ -40,16 +40,34 @@ class DocumentProcessor:
             chunk_id = str(uuid.uuid4())
             embedding = self._generate_embedding(chunk)
             
-            # Store chunk metadata in AstraDB
-            chunk_metadata = self._store_chunk_metadata(
-                content_id=chunk_id,
-                user_id=user_id,
-                content=chunk,
-                source=filename,
-                channel_source="PDF" if filename.lower().endswith('.pdf') else "Markdown",
-                embedding=embedding
-            )
-            processed_chunks.append(chunk_metadata)
+            # Store in AstraDB with the specified structure
+            url = f"{os.environ.get('ASTRA_DB_API_ENDPOINT')}/api/json/v1/user_content_keyspace/user_source_content"
+            
+            document = {
+                "content_id": chunk_id,
+                "user_id": user_id,
+                "content": chunk,
+                "source": filename,
+                "channel_source": channel_source,
+                "$vector": embedding,
+                "context": "NA"
+            }
+            
+            payload = {
+                "insertOne": {
+                    "document": document
+                }
+            }
+            
+            headers = {
+                "Token": os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER"),
+                "Content-Type": "application/json"
+            }
+            
+            response = requests.post(url, headers=headers, json=payload)
+            response.raise_for_status()
+            
+            processed_chunks.append(document)
             
         return {"file_id": file_id, "chunks": processed_chunks}
         
