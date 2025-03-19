@@ -1199,6 +1199,21 @@ async def reset_chat_session(current_user: dict = Depends(get_current_user)):
 async def signup(request: Request):
     return templates.TemplateResponse("signup.html", {"request": request})
 
+@app.post("/upload")
+async def upload_file(file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
+    try:
+        processor = DocumentProcessor()
+        result = processor.process_file(
+            file.file,
+            file.filename,
+            current_user["user_id"]
+        )
+        return {"status": "success", "message": "File uploaded successfully", "data": result}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error processing file: {str(e)}")
+
 @app.delete("/api/user/{identifier}", tags=["User Management"])
 async def delete_user(identifier: str, delete_by: str = "username"):
     """
