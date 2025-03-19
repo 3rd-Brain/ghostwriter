@@ -1,0 +1,204 @@
+@router.post("/complete")
+async def complete_onboarding(request: OnboardingCompleteRequest, session_data=Depends(get_onboarding_session)):
+    """Finalize onboarding and create user account"""
+    payload, document = session_data
+    session_id = payload.get("sub")
+
+    # Check if all required steps are completed
+    required_steps = ["account_basics", "profile_basics", "social_media"]
+    completed_steps = document.get("completed_steps", [])
+
+    missing_steps = [step for step in required_steps if step not in completed_steps]
+    if missing_steps:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Onboarding incomplete. Missing steps: {', '.join(missing_steps)}"
+        )
+
+    # Get form data
+    form_data = document.get("form_data", {})
+
+    # Create user object
+    account_basics = form_data.get("account_basics", {})
+    profile_basics = form_data.get("profile_basics", {})
+    social_media = form_data.get("social_media", {})
+
+    # Get the previously hashed password from account_basics
+    password_hash = account_basics.get("password", "")
+    if not password_hash:
+        raise HTTPException(status_code=400, detail="Password is required")
+
+    # Generate a unique user ID
+    user_id = str(uuid.uuid4())
+    username = account_basics.get("username", "")
+
+    # Create user document
+    user = {
+        "_id": user_id,
+        "user_id": user_id,
+        "username": username,
+        "email": account_basics.get("email", ""),
+        "password_hash": password_hash,
+        "created_at": datetime.utcnow().isoformat(),
+        "last_login": "",
+        "role": "user",
+        "is_active": True,
+        "profile": {
+            "full_name": profile_basics.get("full_name", ""),
+            "bio": "",
+            "company": profile_basics.get("company", ""),
+            "job_title": "",
+            "profile_picture": "",
+            "preferences": {
+                "default_brand_id": username,
+                "default_workflow_id": "Legacy Generation Flow",
+                "notification_settings": {
+                    "email_notifications": False,
+                    "content_approval_alerts": False
+                }
+            },
+            "socials": social_media
+        },
+        "settings": {
+            "theme": "",
+            "language": "",
+            "timezone": "",
+            "content_generation": {
+                "default_repurpose_count": 5,
+                "default_template_count": 5,
+                "auto_approval": False
+            }
+        },
+        "verification": {
+            "is_verified": False,
+            "verification_token": "",
+            "token_expiry": "",
+            "last_password_reset": ""
+        }
+    }
+
+    try:
+        # Process Twitter data if provided
+        social_media_data = form_data.get("social_media", {})
+        twitter_url = social_media_data.get("twitter")  # Changed from twitter_url to twitter to match form data
+
+        print("\n=== Debug: Twitter URL Check ===")
+        print(f"Social media data: {social_media_data}")
+        print(f"Twitter URL found: {twitter_url}")
+        print("=== End Debug ===\n")
+
+        if twitter_url:
+            try:
+                print("\n=== Debug: Twitter URL Processing ===")
+                print(f"Twitter URL detected: {twitter_url}")
+                print(f"APIFY_API_TOKEN present: {'Yes' if os.environ.get('APIFY_API_TOKEN') else 'No'}")
+                print(f"OPENAI_API_KEY present: {'Yes' if os.environ.get('OPENAI_API_KEY') else 'No'}")
+
+                if not os.environ.get("APIFY_API_TOKEN"):
+                    raise Exception("APIFY_API_TOKEN missing")
+
+                print("Importing tweet processing functions...")
+                from source_content_manager import gather_user_tweets, tweet_to_source_content
+
+                # Store user ID in environment for the tweet processing
+                os.environ["CURRENT_USER_ID"] = user_id
+                print(f"Set CURRENT_USER_ID env var to: {user_id}")
+                print(f"Processing Twitter URL: {twitter_url}")
+
+                # Gather and process tweets
+                print("Calling gather_user_tweets...")
+                tweets = gather_user_tweets(
+                    max_items=100,
+                    sort="Latest",
+                    user_url=twitter_url
+                )
+                print(f"Retrieved {len(tweets) if tweets else 0} tweets")
+
+                print("Processing tweets with tweet_to_source_content...")
+                processed_tweets = tweet_to_source_content(tweets)
+                print(f"Successfully processed {len(processed_tweets)} tweets")
+
+                # Clear the environment variable
+                del os.environ["CURRENT_USER_ID"]
+                print("Cleared CURRENT_USER_ID env var")
+
+                # Add tweet processing result to user document
+                user["profile"]["twitter_processed"] = True
+                user["profile"]["processed_tweets_count"] = len(processed_tweets)
+                print("=== End Tweet Processing ===\n")
+            except Exception as e:
+                print("\n=== Debug: Tweet Processing Error ===")
+                print(f"Error type: {type(e).__name__}")
+                print(f"Error message: {str(e)}")
+                print(f"Twitter URL attempted: {twitter_url}")
+                print("=== End Error Debug ===\n")
+                user["profile"]["twitter_processed"] = False
+                user["profile"]["twitter_process_error"] = str(e)
+
+        # Insert user document
+        url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/users_keyspace/users"
+        headers = {
+            "Token": ASTRA_DB_APPLICATION_TOKEN,
+            "Content-Type": "application/json"
+        }
+
+        payload = {
+            "insertOne": {
+                "document": user
+            }
+        }
+
+        response = requests.post(url, headers=headers, json=payload)
+        response.raise_for_status()
+
+
+@router.post("/upload-content")
+async def upload_content(
+    file: UploadFile = File(...),
+    session_data=Depends(get_onboarding_session)
+):
+    """Upload and process content during onboarding"""
+    payload, document = session_data
+
+    processor = DocumentProcessor()
+    result = processor.process_file(
+        file.file,
+        file.filename,
+        document.get("user_id")
+    )
+
+    return {
+        "status": "success",
+        "message": f"File {file.filename} processed successfully",
+        "file_id": result["file_id"]
+    }
+
+
+        # Delete the onboarding session
+        delete_url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/users_keyspace/onboarding_progress"
+        delete_payload = {
+            "deleteOne": {
+                "filter": {"_id": session_id}
+            }
+        }
+
+        delete_response = requests.post(delete_url, headers=headers, json=delete_payload)
+        delete_response.raise_for_status()
+
+        # Create access token for auto-login
+        from datetime import timedelta
+        from main import create_access_token
+
+        access_token = create_access_token(
+            data={"sub": username, "user_id": user_id},
+            expires_delta=timedelta(minutes=30)
+        )
+
+        return {
+            "status": "success", 
+            "message": "Onboarding completed successfully", 
+            "user_id": user_id,
+            "access_token": access_token
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to complete onboarding: {str(e)}")
