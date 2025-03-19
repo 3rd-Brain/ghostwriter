@@ -352,12 +352,30 @@
                         formData.append('files[]', files[i]);
                     }
 
+                    // Get access token safely from cookies
+                    const getAccessToken = () => {
+                        const cookies = document.cookie.split(';');
+                        for (let cookie of cookies) {
+                            const [name, value] = cookie.trim().split('=');
+                            if (name === 'access_token') {
+                                return value;
+                            }
+                        }
+                        return null;
+                    };
+
+                    const accessToken = getAccessToken();
+                    if (!accessToken) {
+                        uploadStatus.textContent = 'Please complete signup first';
+                        return;
+                    }
+
                     fetch('/upload', {
                         method: 'POST',
                         body: formData,
-                        credentials: 'include',  // Include cookies for authentication
+                        credentials: 'include',
                         headers: {
-                            'Authorization': `Bearer ${document.cookie.split('access_token=')[1].split(';')[0]}`
+                            'Authorization': `Bearer ${accessToken}`
                         }
                     })
                     .then(response => {
