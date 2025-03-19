@@ -442,6 +442,7 @@ async def complete_onboarding(request: OnboardingCompleteRequest, session_data=D
         }
 
         response = requests.post(url, headers=headers, json=payload)
+        response.raise_for_status()
 
 
 @router.post("/upload-content")
@@ -469,8 +470,6 @@ async def upload_content(
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing file: {str(e)}")
-
-        response.raise_for_status()
 
         # Delete the onboarding session
         delete_url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/users_keyspace/onboarding_progress"
