@@ -244,16 +244,6 @@
                             <label for="website" class="form-label">Blog/Website</label>
                             <input type="url" id="website" name="website" class="form-control" placeholder="https://...">
                         </div>
-                        <div class="social-link-item">
-                            <label class="form-label">Upload Content</label>
-                            <div class="upload-container">
-                                <button type="button" id="upload-button" class="form-button-secondary">
-                                    <i data-lucide="upload"></i> Upload Files
-                                </button>
-                                <input type="file" id="file-input" accept=".pdf,.md" style="display: none;" multiple>
-                                <div id="upload-status" class="mt-2"></div>
-                            </div>
-                        </div>
                     </div>
                     <div class="error-message" id="social-error"></div>
                 </div>
@@ -277,9 +267,6 @@
             const nextButtons = document.querySelectorAll('.next-step');
             const prevButtons = document.querySelectorAll('.prev-step');
             const stepIndicators = document.querySelectorAll('.step-item');
-            const uploadButton = document.getElementById('upload-button');
-            const fileInput = document.getElementById('file-input');
-            const uploadStatus = document.getElementById('upload-status');
 
             // Load form data from sessionStorage if available
             loadFormData();
@@ -335,45 +322,6 @@
                     });
                 });
             });
-
-            // File upload handler
-            uploadButton.addEventListener('click', () => {
-                fileInput.click();
-            });
-
-            fileInput.addEventListener('change', () => {
-                const files = fileInput.files;
-                if (files.length > 0) {
-                    uploadStatus.textContent = `Uploading ${files.length} file(s)...`;
-                    // Add your file upload logic here using FormData and fetch
-                    // Example:
-                    const formData = new FormData();
-                    for (let i = 0; i < files.length; i++) {
-                        formData.append('files[]', files[i]);
-                    }
-
-                    fetch('/upload', { // Replace '/upload' with your actual upload endpoint
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        uploadStatus.textContent = 'Upload complete!';
-                        // Handle the uploaded file data
-                        console.log(data);
-                    })
-                    .catch(error => {
-                        uploadStatus.textContent = `Upload failed: ${error}`;
-                        console.error('Upload Error:', error);
-                    });
-                }
-            });
-
 
             // Form submission
             form.addEventListener('submit', function(e) {

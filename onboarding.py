@@ -4,9 +4,8 @@ import uuid
 import bcrypt
 from datetime import datetime, timedelta
 from typing import Dict, Optional, List
-from fastapi import APIRouter, HTTPException, Request, Depends, Header, File, UploadFile
+from fastapi import APIRouter, HTTPException, Request, Depends, Header
 from pydantic import BaseModel, Field
-from document_processor import DocumentProcessor
 import requests
 from jose import jwt
 from source_content_manager import gather_user_tweets, tweet_to_source_content
@@ -386,10 +385,10 @@ async def complete_onboarding(request: OnboardingCompleteRequest, session_data=D
                 print(f"Twitter URL detected: {twitter_url}")
                 print(f"APIFY_API_TOKEN present: {'Yes' if os.environ.get('APIFY_API_TOKEN') else 'No'}")
                 print(f"OPENAI_API_KEY present: {'Yes' if os.environ.get('OPENAI_API_KEY') else 'No'}")
-
+                
                 if not os.environ.get("APIFY_API_TOKEN"):
                     raise Exception("APIFY_API_TOKEN missing")
-
+                    
                 print("Importing tweet processing functions...")
                 from source_content_manager import gather_user_tweets, tweet_to_source_content
 
@@ -443,29 +442,6 @@ async def complete_onboarding(request: OnboardingCompleteRequest, session_data=D
 
         response = requests.post(url, headers=headers, json=payload)
         response.raise_for_status()
-
-
-@router.post("/upload-content")
-async def upload_content(
-    file: UploadFile = File(...),
-    session_data=Depends(get_onboarding_session)
-):
-    """Upload and process content during onboarding"""
-    payload, document = session_data
-
-    processor = DocumentProcessor()
-    result = processor.process_file(
-        file.file,
-        file.filename,
-        document.get("user_id")
-    )
-
-    return {
-        "status": "success",
-        "message": f"File {file.filename} processed successfully",
-        "file_id": result["file_id"]
-    }
-
 
         # Delete the onboarding session
         delete_url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/users_keyspace/onboarding_progress"
