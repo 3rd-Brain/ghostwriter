@@ -15,7 +15,7 @@ class DocumentProcessor:
         self.openai_client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
         
     def process_file(self, file: BinaryIO, filename: str, user_id: str) -> Dict:
-        """Process uploaded file and store in Object Storage"""
+        """Process uploaded file and store in Object Storage with chunked vector storage"""
         # Generate unique ID for the file
         file_id = str(uuid.uuid4())
         
@@ -31,19 +31,27 @@ class DocumentProcessor:
         else:
             raise ValueError("Unsupported file type")
             
-        # Generate embedding
-        embedding = self._generate_embedding(text_content)
+        # Chunk the content
+        chunks = self._chunk_content(text_content)
         
-        # Store metadata in AstraDB
-        metadata = self._store_metadata(
-            file_id=file_id,
-            user_id=user_id,
-            filename=filename,
-            text_content=text_content,
-            embedding=embedding
-        )
-        
-        return metadata
+        # Process each chunk
+        processed_chunks = []
+        for chunk in chunks:
+            chunk_id = str(uuid.uuid4())
+            embedding = self._generate_embedding(chunk)
+            
+            # Store chunk metadata in AstraDB
+            chunk_metadata = self._store_chunk_metadata(
+                content_id=chunk_id,
+                user_id=user_id,
+                content=chunk,
+                source=filename,
+                channel_source="PDF" if filename.lower().endswith('.pdf') else "Markdown",
+                embedding=embedding
+            )
+            processed_chunks.append(chunk_metadata)
+            
+        return {"file_id": file_id, "chunks": processed_chunks}
         
     def _extract_pdf_text(self, file: BinaryIO) -> str:
         """Extract text from PDF file"""
@@ -68,21 +76,51 @@ class DocumentProcessor:
         )
         return response.data[0].embedding
         
-    def _store_metadata(self, file_id: str, user_id: str, filename: str,
-                       text_content: str, embedding: list) -> Dict:
-        """Store file metadata and embedding in AstraDB"""
+    def _chunk_content(self, text: str, chunk_size: int = 1000, overlap: int = 200) -> list:
+        """Chunk content with overlap"""
+        chunks = []
+        start = 0
+        text_length = len(text)
+        
+        while start < text_length:
+            end = start + chunk_size
+            
+            # Adjust end to not split words
+            if end < text_length:
+                # Find the next space after the chunk_size
+                while end < text_length and text[end] != ' ':
+                    end += 1
+            
+            # Add chunk
+            chunks.append(text[start:end])
+            
+            # Move start position for next chunk, accounting for overlap
+            start = end - overlap
+            
+            # Adjust start to not split words
+            if start > 0:
+                # Find the next space
+                while start < text_length and text[start] != ' ':
+                    start += 1
+                
+        return chunks
+
+    def _store_chunk_metadata(self, content_id: str, user_id: str, content: str,
+                            source: str, channel_source: str, embedding: list) -> Dict:
+        """Store chunk metadata and embedding in AstraDB"""
         ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
         ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
         
-        url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/user_documents"
+        url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/document_chunks"
         
         document = {
-            "file_id": file_id,
+            "content_id": content_id,
             "user_id": user_id,
-            "filename": filename,
-            "content": text_content,
-            "upload_date": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"),
-            "$vector": embedding
+            "content": content,
+            "source": source,
+            "channel_source": channel_source,
+            "$vector": embedding,
+            "context": "NA"
         }
         
         payload = {
