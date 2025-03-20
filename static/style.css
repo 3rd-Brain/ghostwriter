@@ -997,6 +997,29 @@ textarea.form-control {
     to { transform: translateY(0); opacity: 1; }
 }
 
+/* First Login Modal Styles */
+.modal-page {
+    padding: var(--spacing-lg);
+}
+
+.modal-page h2 {
+    margin-bottom: var(--spacing-md);
+}
+
+.modal-page ul {
+    margin: var(--spacing-lg) 0;
+    padding-left: var(--spacing-lg);
+}
+
+.modal-page ul li {
+    margin-bottom: var(--spacing-sm);
+}
+
+.modal-page .form-button {
+    margin-top: var(--spacing-lg);
+    width: 100%;
+}
+
 /* Workflow Modal Styles */
 .workflow-modal {
     display: none;
