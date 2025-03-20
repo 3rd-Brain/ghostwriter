@@ -335,12 +335,13 @@ async def create_brand_voice(request: Request, current_user: str = Depends(get_c
         "current_page": "create_brand_voice"
     })
 
-@app.get("/create/source-content", response_class=HTMLResponse, include_in_schema=False)
-async def create_source_content(request: Request, current_user: str = Depends(get_current_user)):
-    return templates.TemplateResponse("source_content.html", {
+@app.get("/source-content-management", response_class=HTMLResponse, include_in_schema=False)
+async def source_content_management(request: Request, current_user: dict = Depends(get_current_user)):
+    return templates.TemplateResponse("source_content_management.html", {
         "request": request,
-        "username": current_user,
-        "current_page": "create_source_content"
+        "username": current_user["username"],
+        "user_id": current_user["user_id"],
+        "current_page": "source_content_management"
     })
 
 @app.get("/create/templatizer", response_class=HTMLResponse, include_in_schema=False)
