@@ -52,32 +52,20 @@ function closeFirstLoginModal() {
     modal.style.display = 'none';
 }
 
-// Check first login status from JWT token
+// Check first login status directly
 window.addEventListener('DOMContentLoaded', (event) => {
-    const token = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('access_token='))
-        ?.split('=')[1];
-
-    if (token) {
-        try {
-            // Decode the JWT token
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            console.log("JWT payload:", payload);
-            console.log("First login flag:", payload.first_login);
-            
-            // Show modal if it's first login
-            if (payload.first_login === true) {
-                console.log("First login detected, showing modal");
-                const modal = document.getElementById('firstLoginModal');
-                if (modal) {
-                    modal.style.display = 'block';
-                } else {
-                    console.error("First login modal element not found");
-                }
-            }
-        } catch (error) {
-            console.error("Error processing token:", error);
+    // Get first_login value from the server-side template
+    const firstLogin = {{ first_login|default(false)|tojson }};
+    console.log("First login flag:", firstLogin);
+    
+    if (firstLogin === true) {
+        console.log("First login detected, showing modal");
+        const modal = document.getElementById('firstLoginModal');
+        if (modal) {
+            modal.style.display = 'block';
+            console.log("Modal display style set to block");
+        } else {
+            console.error("First login modal element not found");
         }
     }
 });

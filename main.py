@@ -208,11 +208,34 @@ async def get_current_user(request: Request):
 
 @app.get("/dashboard", response_class=HTMLResponse, include_in_schema=False)
 async def dashboard(request: Request, current_user: dict = Depends(get_current_user)):
+    # Get user data from database
+    ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+    ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+
+    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/users_keyspace/users"
+    headers = {
+        "Token": ASTRA_DB_APPLICATION_TOKEN,
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "findOne": {
+            "filter": {"username": current_user["username"]}
+        }
+    }
+
+    response = requests.post(url, headers=headers, json=payload)
+    user_data = response.json().get("data", {}).get("document", {})
+    first_login = user_data.get("first_login", False)
+
+    print(f"User data loaded for {current_user['username']}, first_login: {first_login}")
+
     return templates.TemplateResponse("dashboard.html", {
         "request": request,
         "username": current_user["username"],
         "user_id": current_user["user_id"],
-        "current_page": "dashboard"
+        "current_page": "dashboard",
+        "first_login": first_login
     })
 
 @app.get("/generation/repurpose", response_class=HTMLResponse, include_in_schema=False)
