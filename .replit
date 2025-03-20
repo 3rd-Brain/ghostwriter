@@ -14,7 +14,7 @@ deploymentTarget = "cloudrun"
 REPLIT_DISABLE_PACKAGE_LAYER = "1"
 
 [objectStorage]
-defaultBucketID = "replit-objstore-2671be20-ff2f-4b45-b882-bc823dc5b905"
+defaultBucketID = "replit-objstore-79c8cd88-525c-4883-857a-badfc3b09dba"
 
 [[ports]]
 localPort = 8000
