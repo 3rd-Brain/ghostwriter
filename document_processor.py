@@ -30,7 +30,7 @@ class DocumentProcessor:
             self.storage_client.upload_from_file(object_path, file)
             print("Successfully uploaded to Object Storage")
         
-        # Extract text based on file type
+            # Extract text based on file type
             print(f"Extracting text from file type: {filename.split('.')[-1].upper()}")
             if filename.lower().endswith('.pdf'):
                 text_content = self._extract_pdf_text(file)
@@ -42,8 +42,8 @@ class DocumentProcessor:
                 raise ValueError("Unsupported file type")
             print(f"Successfully extracted text, length: {len(text_content)} characters")
             
-        # Chunk the content
-        chunks = self._chunk_content(text_content)
+            # Chunk the content
+            chunks = self._chunk_content(text_content)
         
         # Process each chunk
         processed_chunks = []
