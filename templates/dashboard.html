@@ -41,8 +41,68 @@
     </div>
 </div>
 
-<!-- Empty space for future content -->
-<div class="placeholder-section">
-    <p class="placeholder-text">Dashboard content will appear here as you generate content.</p>
+<div class="card mt-lg">
+    <div class="card-header">
+        <div class="card-title">
+            <span>Upload Content</span>
+            <i data-lucide="upload"></i>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="upload-container">
+            <button type="button" id="upload-button" class="form-button">
+                <i data-lucide="upload"></i> Upload Files
+            </button>
+            <input type="file" id="file-input" accept=".pdf,.md" style="display: none;" multiple>
+            <div id="upload-status" class="mt-2"></div>
+        </div>
+    </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadButton = document.getElementById('upload-button');
+    const fileInput = document.getElementById('file-input');
+    const uploadStatus = document.getElementById('upload-status');
+
+    uploadButton.addEventListener('click', () => {
+        fileInput.click();
+    });
+
+    fileInput.addEventListener('change', () => {
+        const files = fileInput.files;
+        if (files.length > 0) {
+            uploadStatus.textContent = `Uploading ${files.length} file(s)...`;
+            
+            const formData = new FormData();
+            for (let i = 0; i < files.length; i++) {
+                formData.append('file', files[i]);
+            }
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData,
+                credentials: 'include'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                uploadStatus.textContent = 'Upload complete!';
+                console.log('Upload response:', data);
+                setTimeout(() => {
+                    uploadStatus.textContent = '';
+                }, 3000);
+            })
+            .catch(error => {
+                uploadStatus.textContent = `Upload failed: ${error}`;
+                console.error('Upload Error:', error);
+            });
+        }
+    });
+});
+</script>
 {% endblock %}
