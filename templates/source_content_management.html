@@ -288,13 +288,19 @@ document.addEventListener('DOMContentLoaded', function() {
         handleFiles(fileInput.files);
     });
 
-    function handleFiles(files) {
+    async function handleFiles(files) {
         if (files.length === 0) return;
 
         uploadProgress.style.display = 'block';
         uploadFiles.innerHTML = '';
         
-        Array.from(files).forEach(file => {
+        for (const file of files) {
+            // Validate file type
+            if (!file.name.toLowerCase().endsWith('.pdf') && !file.name.toLowerCase().endsWith('.md')) {
+                alert('Only PDF and Markdown files are supported');
+                continue;
+            }
+
             const fileDiv = document.createElement('div');
             fileDiv.className = 'file-item';
             fileDiv.innerHTML = `
@@ -302,33 +308,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 <span class="file-status">Uploading...</span>
             `;
             uploadFiles.appendChild(fileDiv);
-        });
-
-        // Simulate progress for now - we'll implement actual upload later
-        let progress = 0;
-        const stages = ['Uploading', 'Chunking', 'Processing', 'Success'];
-        let currentStage = 0;
-
-        const interval = setInterval(() => {
-            progress += 5;
-            progressFill.style.width = `${progress}%`;
             
-            if (progress >= 100) {
-                currentStage++;
-                progress = 0;
-                
-                if (currentStage >= stages.length) {
-                    clearInterval(interval);
-                    progressText.textContent = 'Complete!';
-                    Array.from(uploadFiles.children).forEach(fileDiv => {
-                        fileDiv.querySelector('.file-status').textContent = 'Complete';
-                    });
-                    return;
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/api/upload-file', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Upload failed: ${response.statusText}`);
                 }
+
+                const result = await response.json();
+                fileDiv.querySelector('.file-status').textContent = 'Complete';
+                progressFill.style.width = '100%';
+                progressText.textContent = 'Upload Complete!';
+            } catch (error) {
+                console.error('Upload error:', error);
+                fileDiv.querySelector('.file-status').textContent = 'Failed';
+                fileDiv.className = 'file-item error';
             }
-            
-            progressText.textContent = `${stages[currentStage]} (${progress}%)`;
-        }, 100);
+        }
     }
 });
 </script>

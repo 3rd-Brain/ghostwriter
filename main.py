@@ -2,7 +2,7 @@ import json
 import requests
 from datetime import datetime, timedelta
 from typing import Optional
-from fastapi import FastAPI, HTTPException, Depends, Request, Response, status, Form, BackgroundTasks
+from fastapi import FastAPI, HTTPException, Depends, Request, Response, status, Form, BackgroundTasks, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.staticfiles import StaticFiles
@@ -544,6 +544,25 @@ app.include_router(onboarding_router)
 @app.get("/", include_in_schema=False)
 def read_root():
     return {"Hello": "World"}
+
+@app.post("/api/upload-file", tags=["Content Management"])
+async def upload_file(
+    file: UploadFile,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Upload a file (PDF or Markdown) for processing into source content
+    """
+    # Validate file type
+    if not (file.filename.lower().endswith('.pdf') or file.filename.lower().endswith('.md')):
+        raise HTTPException(status_code=400, detail="Only PDF and Markdown files are supported")
+    
+    try:
+        processor = DocumentProcessor()
+        result = await processor.process_file(file.file, file.filename, current_user["user_id"])
+        return {"status": "success", "file_id": result["file_id"], "chunks": len(result["chunks"])}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/generation-flow", response_model=schemas.SuccessResponse, tags=["Generation Flows"])
 async def create_generation_flow(request_data: schemas.GenerationFlowRequest):
