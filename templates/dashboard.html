@@ -15,7 +15,7 @@
                 <h2>Welcome to Ghostwriter!</h2>
             </div>
             <div class="modal-body">
-                <p>We're excited to have you on board. Let's get started with setting up your content generation workflow.</p>
+                <p>Welcome to Ghostwriter! Before we can generate content, we need some source material to work with.</p>
                 <button class="form-button" onclick="showGuidePage()">Next</button>
             </div>
         </div>
@@ -23,18 +23,17 @@
         <!-- Guide Page -->
         <div id="guidePage" class="modal-page" style="display:none">
             <div class="modal-header">
-                <h2>Quick Guide</h2>
+                <h2>Let's Add Some Content</h2>
                 <span class="close">&times;</span>
             </div>
             <div class="modal-body">
-                <p>Here's what you can do with Ghostwriter:</p>
+                <p>To get started, you'll need to add some source content for AI generation:</p>
                 <ul>
-                    <li>Generate AI-powered content</li>
-                    <li>Manage your brand voice</li>
-                    <li>Create and use templates</li>
-                    <li>Track content performance</li>
+                    <li>Upload documents or text</li>
+                    <li>Import from social media</li>
+                    <li>Create content manually</li>
                 </ul>
-                <button class="form-button" onclick="closeFirstLoginModal()">Get Started</button>
+                <button class="form-button" onclick="window.location.href='/source-content-management'">Go to Source Content</button>
             </div>
         </div>
     </div>
@@ -54,12 +53,12 @@ function closeFirstLoginModal() {
 
 // Check first login status directly
 window.addEventListener('DOMContentLoaded', (event) => {
-    // Get first_login value from the server-side template
-    const firstLogin = {{ first_login|default(false)|tojson }};
-    console.log("First login flag:", firstLogin);
+    // Get show_onboarding value from the server-side template
+    const showOnboarding = {{ show_onboarding|default(false)|tojson }};
+    console.log("Show onboarding flag:", showOnboarding);
     
-    if (firstLogin === true) {
-        console.log("First login detected, showing modal");
+    if (showOnboarding === true) {
+        console.log("No source content detected, showing onboarding modal");
         const modal = document.getElementById('firstLoginModal');
         if (modal) {
             modal.style.display = 'block';

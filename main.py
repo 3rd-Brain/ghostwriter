@@ -208,34 +208,34 @@ async def get_current_user(request: Request):
 
 @app.get("/dashboard", response_class=HTMLResponse, include_in_schema=False)
 async def dashboard(request: Request, current_user: dict = Depends(get_current_user)):
-    # Get user data from database
+    # Check for source content
     ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
     ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
 
-    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/users_keyspace/users"
+    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/user_source_content"
     headers = {
         "Token": ASTRA_DB_APPLICATION_TOKEN,
         "Content-Type": "application/json"
     }
     
     payload = {
-        "findOne": {
-            "filter": {"username": current_user["username"]}
+        "find": {
+            "filter": {"user_id": current_user["user_id"]},
+            "options": {"limit": 1}  # We only need to check if any content exists
         }
     }
 
     response = requests.post(url, headers=headers, json=payload)
-    user_data = response.json().get("data", {}).get("document", {})
-    first_login = user_data.get("first_login", False)
+    has_source_content = bool(response.json().get("data", {}).get("documents", []))
 
-    print(f"User data loaded for {current_user['username']}, first_login: {first_login}")
+    print(f"User data loaded for {current_user['username']}, has_source_content: {has_source_content}")
 
     return templates.TemplateResponse("dashboard.html", {
         "request": request,
         "username": current_user["username"],
         "user_id": current_user["user_id"],
         "current_page": "dashboard",
-        "first_login": first_login
+        "show_onboarding": not has_source_content
     })
 
 @app.get("/generation/repurpose", response_class=HTMLResponse, include_in_schema=False)
