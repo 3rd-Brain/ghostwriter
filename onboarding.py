@@ -335,6 +335,7 @@ async def complete_onboarding(request: OnboardingCompleteRequest, session_data=D
         "last_login": "",
         "role": "user",
         "is_active": True,
+        "first_login": True,
         "profile": {
             "full_name": profile_basics.get("full_name", ""),
             "bio": "",
