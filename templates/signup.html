@@ -244,7 +244,6 @@
                             <label for="website" class="form-label">Blog/Website</label>
                             <input type="url" id="website" name="website" class="form-control" placeholder="https://...">
                         </div>
-                        
                     </div>
                     <div class="error-message" id="social-error"></div>
                 </div>
@@ -268,9 +267,6 @@
             const nextButtons = document.querySelectorAll('.next-step');
             const prevButtons = document.querySelectorAll('.prev-step');
             const stepIndicators = document.querySelectorAll('.step-item');
-            const uploadButton = document.getElementById('upload-button');
-            const fileInput = document.getElementById('file-input');
-            const uploadStatus = document.getElementById('upload-status');
 
             // Load form data from sessionStorage if available
             loadFormData();
@@ -326,67 +322,6 @@
                     });
                 });
             });
-
-            // File upload handler
-            uploadButton.addEventListener('click', () => {
-                fileInput.click();
-            });
-
-            fileInput.addEventListener('change', () => {
-                const files = fileInput.files;
-                if (files.length > 0) {
-                    uploadStatus.textContent = `Uploading ${files.length} file(s)...`;
-                    // Add your file upload logic here using FormData and fetch
-                    // Example:
-                    const formData = new FormData();
-                    for (let i = 0; i < files.length; i++) {
-                        formData.append('files[]', files[i]);
-                    }
-
-                    // Get access token safely from cookies
-                    const getAccessToken = () => {
-                        const cookies = document.cookie.split(';');
-                        for (let cookie of cookies) {
-                            const [name, value] = cookie.trim().split('=');
-                            if (name === 'access_token') {
-                                return value;
-                            }
-                        }
-                        return null;
-                    };
-
-                    const accessToken = getAccessToken();
-                    if (!accessToken) {
-                        uploadStatus.textContent = 'Please complete signup first';
-                        return;
-                    }
-
-                    fetch('/upload', {
-                        method: 'POST',
-                        body: formData,
-                        credentials: 'include',
-                        headers: {
-                            'Authorization': `Bearer ${accessToken}`
-                        }
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        uploadStatus.textContent = 'Upload complete!';
-                        // Handle the uploaded file data
-                        console.log(data);
-                    })
-                    .catch(error => {
-                        uploadStatus.textContent = `Upload failed: ${error}`;
-                        console.error('Upload Error:', error);
-                    });
-                }
-            });
-
 
             // Form submission
             form.addEventListener('submit', function(e) {
