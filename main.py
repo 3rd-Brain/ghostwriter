@@ -152,23 +152,13 @@ async def login(request: Request, username: str = Form(...), password: str = For
                     
             if is_password_match:
                 print(f"Login successful for user: {username}")
-                print(f"User document: {json.dumps(user, indent=2)}")
-                
                 # Set the username and user_id as environment variables
                 os.environ["CURRENT_USERNAME"] = username
                 os.environ["CURRENT_USER_ID"] = user_id
                 
-                # Check first_login flag
-                is_first_login = user.get("first_login", False)
-                print(f"First login flag: {is_first_login}")
-                
                 # Create an access token that includes both username and user_id
                 access_token = create_access_token(
-                    data={
-                        "sub": username, 
-                        "user_id": user_id,
-                        "first_login": is_first_login
-                    },
+                    data={"sub": username, "user_id": user_id},
                     expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
                 )
                 response = RedirectResponse(url="/dashboard", status_code=status.HTTP_302_FOUND)
