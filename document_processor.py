@@ -27,8 +27,12 @@ class DocumentProcessor:
             print(f"Generated object path: {object_path}")
             
             print("Attempting to upload to Object Storage...")
-            self.storage_client.upload_from_file(object_path, file)
+            file_content = file.read()
+            if isinstance(file_content, bytes):
+                file_content = file_content.decode('utf-8')
+            self.storage_client.upload_from_text(object_path, file_content)
             print("Successfully uploaded to Object Storage")
+            file.seek(0)  # Reset file pointer for subsequent operations
         
             # Extract text based on file type
             print(f"Extracting text from file type: {filename.split('.')[-1].upper()}")
