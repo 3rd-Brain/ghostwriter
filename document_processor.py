@@ -44,46 +44,46 @@ class DocumentProcessor:
             
             # Chunk the content
             chunks = self._chunk_content(text_content)
-        
-        # Process each chunk
-        processed_chunks = []
-        for chunk in chunks:
-            chunk_id = str(uuid.uuid4())
-            embedding = self._generate_embedding(chunk)
+            
+            # Process each chunk
+            processed_chunks = []
+            for chunk in chunks:
+                chunk_id = str(uuid.uuid4())
+                embedding = self._generate_embedding(chunk)
             
             # Store in AstraDB with the specified structure
-            url = f"{os.environ.get('ASTRA_DB_API_ENDPOINT')}/api/json/v1/user_content_keyspace/user_source_content"
-            
-            document = {
-                "content_id": chunk_id,
-                "user_id": user_id,
-                "content": chunk,
-                "source": filename,
-                "channel_source": channel_source,
-                "$vector": embedding,
-                "context": "NA"
-            }
-            
-            payload = {
-                "insertOne": {
-                    "document": document
+                url = f"{os.environ.get('ASTRA_DB_API_ENDPOINT')}/api/json/v1/user_content_keyspace/user_source_content"
+                
+                document = {
+                    "content_id": chunk_id,
+                    "user_id": user_id,
+                    "content": chunk,
+                    "source": filename,
+                    "channel_source": channel_source,
+                    "$vector": embedding,
+                    "context": "NA"
                 }
-            }
+                
+                payload = {
+                    "insertOne": {
+                        "document": document
+                    }
+                }
+                
+                headers = {
+                    "Token": os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER"),
+                    "Content-Type": "application/json"
+                }
+                
+                print(f"Uploading chunk {len(processed_chunks) + 1} to AstraDB...")
+                response = requests.post(url, headers=headers, json=payload)
+                response.raise_for_status()
+                print(f"Successfully uploaded chunk to AstraDB. Response: {response.status_code}")
+                
+                processed_chunks.append(document)
             
-            headers = {
-                "Token": os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER"),
-                "Content-Type": "application/json"
-            }
-            
-            print(f"Uploading chunk {len(processed_chunks) + 1} to AstraDB...")
-            response = requests.post(url, headers=headers, json=payload)
-            response.raise_for_status()
-            print(f"Successfully uploaded chunk to AstraDB. Response: {response.status_code}")
-            
-            processed_chunks.append(document)
-            
-        print(f"\nProcessing complete! Total chunks: {len(processed_chunks)}")
-        return {"file_id": file_id, "chunks": processed_chunks}
+            print(f"\nProcessing complete! Total chunks: {len(processed_chunks)}")
+            return {"file_id": file_id, "chunks": processed_chunks}
             
         except Exception as e:
             print("\n=== Error in file processing ===")
