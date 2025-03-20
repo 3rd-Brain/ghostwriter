@@ -553,15 +553,29 @@ async def upload_file(
     """
     Upload a file (PDF or Markdown) for processing into source content
     """
+    print("\n=== File Upload Debug ===")
+    print(f"Received file: {file.filename}")
+    print(f"Content type: {file.content_type}")
+    print(f"User ID: {current_user['user_id']}")
+    
     # Validate file type
     if not (file.filename.lower().endswith('.pdf') or file.filename.lower().endswith('.md')):
+        print("File type validation failed")
         raise HTTPException(status_code=400, detail="Only PDF and Markdown files are supported")
     
     try:
+        print("Creating DocumentProcessor instance...")
         processor = DocumentProcessor()
+        
+        print("Processing file...")
         result = await processor.process_file(file.file, file.filename, current_user["user_id"])
+        
+        print(f"Processing complete. File ID: {result['file_id']}, Chunks: {len(result['chunks'])}")
         return {"status": "success", "file_id": result["file_id"], "chunks": len(result["chunks"])}
     except Exception as e:
+        print(f"Error processing file: {str(e)}")
+        print(f"Error type: {type(e).__name__}")
+        print(f"Error traceback:", e.__traceback__)
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/generation-flow", response_model=schemas.SuccessResponse, tags=["Generation Flows"])
