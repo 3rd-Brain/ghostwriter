@@ -71,9 +71,15 @@ document.addEventListener('DOMContentLoaded', function() {
         // Decode the JWT token (it's base64 encoded)
         const payload = JSON.parse(atob(token.split('.')[1]));
 
+        // Debug JWT payload
+        console.log("JWT payload:", payload);
+        console.log("First login flag:", payload.first_login);
+        
         // Check if it's first login
         if (payload.first_login) {
+            console.log("First login detected, showing modal");
             const modal = document.getElementById('firstLoginModal');
+            console.log("Modal element:", modal);
             modal.style.display = 'block';
             
             // Close button functionality
