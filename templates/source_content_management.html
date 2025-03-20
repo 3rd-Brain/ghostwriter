@@ -19,6 +19,34 @@
         <div class="card-content">
             <p class="text-secondary">Upload documents or text files to use as source content</p>
             <button class="form-button mt-md" id="open-upload-modal">Upload Files</button>
+
+            <!-- Upload Modal -->
+            <div id="upload-modal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Upload Files</h2>
+                        <span class="close" id="close-upload-modal">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <div id="upload-area" class="upload-area">
+                            <div class="upload-prompt">
+                                <i data-lucide="upload-cloud"></i>
+                                <p>Drag & drop files here or click to select</p>
+                                <input type="file" id="file-input" multiple style="display: none">
+                            </div>
+                        </div>
+                        <div id="upload-progress" class="mt-md" style="display: none;">
+                            <div class="progress-status">
+                                <span id="progress-text">Processing...</span>
+                                <div class="progress-bar">
+                                    <div id="progress-fill" class="progress-fill"></div>
+                                </div>
+                            </div>
+                            <div id="upload-files" class="upload-files"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -85,6 +113,68 @@
 
 {% block extra_css %}
 <style>
+.upload-area {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius-md);
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.upload-area:hover, .upload-area.drag-over {
+    border-color: var(--primary);
+    background-color: var(--surface-hover);
+}
+
+.upload-prompt {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.upload-prompt i {
+    width: 48px;
+    height: 48px;
+    color: var(--text-secondary);
+}
+
+.progress-status {
+    margin-bottom: 1rem;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background-color: var(--surface-alt);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    width: 0;
+    height: 100%;
+    background-color: var(--primary);
+    transition: width 0.3s ease;
+}
+
+.upload-files {
+    margin-top: 1rem;
+}
+
+.file-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem;
+    background-color: var(--surface-alt);
+    border-radius: var(--radius-sm);
+    margin-bottom: 0.5rem;
+}
+
+.file-status {
+    color: var(--text-secondary);
+}
 .source-content-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -158,6 +248,90 @@
 
 {% block extra_js %}
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadModal = document.getElementById('upload-modal');
+    const openUploadBtn = document.getElementById('open-upload-modal');
+    const closeUploadBtn = document.getElementById('close-upload-modal');
+    const uploadArea = document.getElementById('upload-area');
+    const fileInput = document.getElementById('file-input');
+    const uploadProgress = document.getElementById('upload-progress');
+    const progressText = document.getElementById('progress-text');
+    const progressFill = document.getElementById('progress-fill');
+    const uploadFiles = document.getElementById('upload-files');
+
+    // Modal controls
+    openUploadBtn.addEventListener('click', () => uploadModal.style.display = 'block');
+    closeUploadBtn.addEventListener('click', () => uploadModal.style.display = 'none');
+    window.addEventListener('click', (e) => {
+        if (e.target === uploadModal) uploadModal.style.display = 'none';
+    });
+
+    // File upload handling
+    uploadArea.addEventListener('click', () => fileInput.click());
+    
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('drag-over');
+    });
+
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('drag-over');
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('drag-over');
+        handleFiles(e.dataTransfer.files);
+    });
+
+    fileInput.addEventListener('change', () => {
+        handleFiles(fileInput.files);
+    });
+
+    function handleFiles(files) {
+        if (files.length === 0) return;
+
+        uploadProgress.style.display = 'block';
+        uploadFiles.innerHTML = '';
+        
+        Array.from(files).forEach(file => {
+            const fileDiv = document.createElement('div');
+            fileDiv.className = 'file-item';
+            fileDiv.innerHTML = `
+                <span>${file.name}</span>
+                <span class="file-status">Uploading...</span>
+            `;
+            uploadFiles.appendChild(fileDiv);
+        });
+
+        // Simulate progress for now - we'll implement actual upload later
+        let progress = 0;
+        const stages = ['Uploading', 'Chunking', 'Processing', 'Success'];
+        let currentStage = 0;
+
+        const interval = setInterval(() => {
+            progress += 5;
+            progressFill.style.width = `${progress}%`;
+            
+            if (progress >= 100) {
+                currentStage++;
+                progress = 0;
+                
+                if (currentStage >= stages.length) {
+                    clearInterval(interval);
+                    progressText.textContent = 'Complete!';
+                    Array.from(uploadFiles.children).forEach(fileDiv => {
+                        fileDiv.querySelector('.file-status').textContent = 'Complete';
+                    });
+                    return;
+                }
+            }
+            
+            progressText.textContent = `${stages[currentStage]} (${progress}%)`;
+        }, 100);
+    }
+});
+</script>
 document.addEventListener('DOMContentLoaded', function() {
     const contentType = document.getElementById('contentType');
     const documentUpload = document.getElementById('documentUpload');
