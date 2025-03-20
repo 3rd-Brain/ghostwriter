@@ -931,6 +931,11 @@ textarea.form-control {
     padding: var(--spacing-lg);
 }
 
+.modal-list {
+    padding-left: var(--spacing-xl);
+    line-height: 1.6;
+}
+
 .close {
     color: var(--text-secondary);
     font-size: 28px;
