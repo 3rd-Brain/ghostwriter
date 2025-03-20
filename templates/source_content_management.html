@@ -1,0 +1,313 @@
+
+{% extends "base.html" %}
+
+{% block title %}Source Content Management | Ghostwriter API{% endblock %}
+
+{% block page_title %}Source Content Management{% endblock %}
+{% block page_subtitle %}Upload and manage your source content for AI generation{% endblock %}
+
+{% block content %}
+<div class="source-content-grid">
+    <!-- Upload Section -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <span>Upload Content</span>
+                <i data-lucide="upload"></i>
+            </div>
+        </div>
+        <div class="card-content">
+            <p class="text-secondary">Upload documents or text that will be used as source material for content generation</p>
+            <div class="upload-section mt-md">
+                <form id="uploadForm" class="upload-form">
+                    <div class="form-group">
+                        <label for="contentType">Content Type</label>
+                        <select id="contentType" name="contentType" class="form-select">
+                            <option value="document">Document</option>
+                            <option value="text">Text</option>
+                            <option value="social">Social Media</option>
+                        </select>
+                    </div>
+                    <div id="documentUpload" class="upload-area">
+                        <input type="file" id="fileInput" accept=".txt,.doc,.docx,.pdf" multiple hidden>
+                        <div class="upload-prompt">
+                            <i data-lucide="file-plus"></i>
+                            <p>Drag & drop files here or click to browse</p>
+                            <span class="text-secondary">Supported formats: PDF, DOC, DOCX, TXT</span>
+                        </div>
+                    </div>
+                    <div id="textInput" class="form-group" style="display: none;">
+                        <label for="sourceText">Source Text</label>
+                        <textarea id="sourceText" name="sourceText" rows="6" class="form-textarea" 
+                                placeholder="Enter or paste your source text here..."></textarea>
+                    </div>
+                    <div id="socialMediaInput" class="form-group" style="display: none;">
+                        <label for="profileUrl">Social Media Profile URL</label>
+                        <input type="url" id="profileUrl" name="profileUrl" class="form-input"
+                               placeholder="Enter profile URL (e.g., Twitter/X profile)">
+                        <div class="form-row mt-sm">
+                            <div class="form-group half">
+                                <label for="postCount">Number of Posts</label>
+                                <input type="number" id="postCount" name="postCount" class="form-input" 
+                                       value="50" min="1" max="1000">
+                            </div>
+                            <div class="form-group half">
+                                <label for="sortOrder">Sort Order</label>
+                                <select id="sortOrder" name="sortOrder" class="form-select">
+                                    <option value="Latest">Latest</option>
+                                    <option value="Top">Top performing</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="form-button mt-md">Upload Content</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Library -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <span>Content Library</span>
+                <i data-lucide="library"></i>
+            </div>
+        </div>
+        <div class="card-content">
+            <div class="filters">
+                <div class="form-group">
+                    <label for="sourceFilter">Source</label>
+                    <select id="sourceFilter" class="form-select">
+                        <option value="">All Sources</option>
+                        <option value="document">Documents</option>
+                        <option value="text">Text</option>
+                        <option value="social">Social Media</option>
+                    </select>
+                </div>
+            </div>
+            <div id="contentList" class="content-list mt-md">
+                <!-- Content items will be populated here -->
+            </div>
+            <div id="pagination" class="pagination-container">
+                <!-- Pagination controls will be added here -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.source-content-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.upload-section {
+    background-color: var(--surface-alt);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+}
+
+.upload-area {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-xl);
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.upload-area:hover {
+    border-color: var(--primary);
+    background-color: var(--surface-hover);
+}
+
+.upload-prompt {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.upload-prompt i {
+    font-size: 2rem;
+    color: var(--text-secondary);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-md);
+}
+
+.content-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.content-item {
+    background-color: var(--surface-alt);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.content-info {
+    flex: 1;
+}
+
+.content-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const contentType = document.getElementById('contentType');
+    const documentUpload = document.getElementById('documentUpload');
+    const textInput = document.getElementById('textInput');
+    const socialMediaInput = document.getElementById('socialMediaInput');
+    const uploadForm = document.getElementById('uploadForm');
+    const fileInput = document.getElementById('fileInput');
+
+    // Toggle input sections based on content type
+    contentType.addEventListener('change', function() {
+        documentUpload.style.display = this.value === 'document' ? 'block' : 'none';
+        textInput.style.display = this.value === 'text' ? 'block' : 'none';
+        socialMediaInput.style.display = this.value === 'social' ? 'block' : 'none';
+    });
+
+    // Handle file upload area clicks
+    documentUpload.addEventListener('click', function() {
+        fileInput.click();
+    });
+
+    // Handle file selection
+    fileInput.addEventListener('change', function() {
+        // Handle file upload UI updates
+        if (this.files.length > 0) {
+            const fileList = Array.from(this.files)
+                .map(file => file.name)
+                .join(', ');
+            document.querySelector('.upload-prompt p').textContent = fileList;
+        }
+    });
+
+    // Handle form submission
+    uploadForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const formData = new FormData();
+
+        switch (contentType.value) {
+            case 'document':
+                Array.from(fileInput.files).forEach(file => {
+                    formData.append('files', file);
+                });
+                break;
+            case 'text':
+                formData.append('text', document.getElementById('sourceText').value);
+                break;
+            case 'social':
+                formData.append('profile_url', document.getElementById('profileUrl').value);
+                formData.append('post_count', document.getElementById('postCount').value);
+                formData.append('sort_order', document.getElementById('sortOrder').value);
+                break;
+        }
+
+        try {
+            const response = await fetch('/api/source-content', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                showNotification('Content uploaded successfully');
+                loadContentLibrary(); // Refresh content list
+            } else {
+                throw new Error('Upload failed');
+            }
+        } catch (error) {
+            showNotification('Failed to upload content', true);
+            console.error('Upload error:', error);
+        }
+    });
+
+    // Initialize content library
+    loadContentLibrary();
+});
+
+// Function to load content library
+async function loadContentLibrary(page = 1) {
+    try {
+        const sourceFilter = document.getElementById('sourceFilter').value;
+        const response = await fetch(`/api/source-content?page=${page}&source=${sourceFilter}`);
+        const data = await response.json();
+        
+        // Update content list
+        const contentList = document.getElementById('contentList');
+        contentList.innerHTML = data.items.map(item => `
+            <div class="content-item">
+                <div class="content-info">
+                    <div class="content-title">${item.title}</div>
+                    <div class="text-secondary">${item.source} • ${item.date}</div>
+                </div>
+                <div class="content-actions">
+                    <button class="icon-button" onclick="viewContent('${item.id}')">
+                        <i data-lucide="eye"></i>
+                    </button>
+                    <button class="icon-button" onclick="deleteContent('${item.id}')">
+                        <i data-lucide="trash-2"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+
+        // Update pagination
+        updatePagination(data.total, data.page, data.pages);
+        
+        // Reinitialize Lucide icons for new content
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+    } catch (error) {
+        console.error('Error loading content:', error);
+        showNotification('Failed to load content library', true);
+    }
+}
+
+// Function to update pagination
+function updatePagination(total, currentPage, totalPages) {
+    const pagination = document.getElementById('pagination');
+    pagination.innerHTML = `
+        <button class="page-button" onclick="loadContentLibrary(1)" ${currentPage === 1 ? 'disabled' : ''}>
+            <i data-lucide="chevrons-left"></i>
+        </button>
+        <button class="page-button" onclick="loadContentLibrary(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+            <i data-lucide="chevron-left"></i>
+        </button>
+        <span class="page-info">Page ${currentPage} of ${totalPages}</span>
+        <button class="page-button" onclick="loadContentLibrary(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+            <i data-lucide="chevron-right"></i>
+        </button>
+        <button class="page-button" onclick="loadContentLibrary(${totalPages})" ${currentPage === totalPages ? 'disabled' : ''}>
+            <i data-lucide="chevrons-right"></i>
+        </button>
+    `;
+    
+    // Reinitialize Lucide icons for pagination
+    if (window.lucide) {
+        lucide.createIcons();
+    }
+}
+</script>
+{% endblock %}
