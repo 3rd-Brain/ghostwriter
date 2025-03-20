@@ -163,3 +163,37 @@ def gather_user_tweets(
         return result
     except requests.exceptions.RequestException as e:
         raise Exception(f"Failed to gather tweets: {str(e)}")
+def count_user_documents(user_id: str) -> int:
+    """
+    Count documents for a specific user in AstraDB
+    Args:
+        user_id: String containing the user ID to count documents for
+    Returns:
+        Integer count of documents
+    """
+    ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+    ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+    
+    if not ASTRA_DB_API_ENDPOINT or not ASTRA_DB_APPLICATION_TOKEN:
+        return 0
+        
+    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/user_source_content"
+    
+    headers = {
+        "Token": ASTRA_DB_APPLICATION_TOKEN,
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "countDocuments": {
+            "filter": {"user_id": user_id}
+        }
+    }
+    
+    try:
+        response = requests.post(url, headers=headers, json=payload)
+        response.raise_for_status()
+        result = response.json()
+        return result.get("data", {}).get("count", 0)
+    except:
+        return 0

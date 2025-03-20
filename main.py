@@ -364,12 +364,18 @@ async def source_content_management(request: Request, current_user: dict = Depen
         print(f"Error fetching user data: {str(e)}")
         social_count = 0
     
+    from source_content_manager import count_user_documents
+    
+    # Get document count
+    doc_count = count_user_documents(current_user["user_id"])
+    
     return templates.TemplateResponse("source_content_management.html", {
         "request": request,
         "username": current_user["username"],
         "user_id": current_user["user_id"],
         "current_page": "source_content_management",
-        "social_count": social_count
+        "social_count": social_count,
+        "doc_count": doc_count
     })
 
 @app.get("/create/templatizer", response_class=HTMLResponse, include_in_schema=False)
