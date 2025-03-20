@@ -16,20 +16,31 @@ class DocumentProcessor:
         
     def process_file(self, file: BinaryIO, filename: str, user_id: str) -> Dict:
         """Process uploaded file and store in Object Storage with chunked vector storage"""
-        # Store file in Object Storage
-        file_id = str(uuid.uuid4())
-        object_path = f"documents/{user_id}/{file_id}/{filename}"
-        self.storage_client.upload_from_file(object_path, file)
+        try:
+            print("\n=== Starting file processing ===")
+            print(f"Processing file: {filename}")
+            print(f"User ID: {user_id}")
+            
+            # Store file in Object Storage
+            file_id = str(uuid.uuid4())
+            object_path = f"documents/{user_id}/{file_id}/{filename}"
+            print(f"Generated object path: {object_path}")
+            
+            print("Attempting to upload to Object Storage...")
+            self.storage_client.upload_from_file(object_path, file)
+            print("Successfully uploaded to Object Storage")
         
         # Extract text based on file type
-        if filename.lower().endswith('.pdf'):
-            text_content = self._extract_pdf_text(file)
-            channel_source = "PDF"
-        elif filename.lower().endswith('.md'):
-            text_content = self._extract_markdown_text(file)
-            channel_source = "Markdown"
-        else:
-            raise ValueError("Unsupported file type")
+            print(f"Extracting text from file type: {filename.split('.')[-1].upper()}")
+            if filename.lower().endswith('.pdf'):
+                text_content = self._extract_pdf_text(file)
+                channel_source = "PDF"
+            elif filename.lower().endswith('.md'):
+                text_content = self._extract_markdown_text(file)
+                channel_source = "Markdown"
+            else:
+                raise ValueError("Unsupported file type")
+            print(f"Successfully extracted text, length: {len(text_content)} characters")
             
         # Chunk the content
         chunks = self._chunk_content(text_content)
@@ -64,12 +75,22 @@ class DocumentProcessor:
                 "Content-Type": "application/json"
             }
             
+            print(f"Uploading chunk {len(processed_chunks) + 1} to AstraDB...")
             response = requests.post(url, headers=headers, json=payload)
             response.raise_for_status()
+            print(f"Successfully uploaded chunk to AstraDB. Response: {response.status_code}")
             
             processed_chunks.append(document)
             
+        print(f"\nProcessing complete! Total chunks: {len(processed_chunks)}")
         return {"file_id": file_id, "chunks": processed_chunks}
+            
+        except Exception as e:
+            print("\n=== Error in file processing ===")
+            print(f"Error type: {type(e).__name__}")
+            print(f"Error message: {str(e)}")
+            print(f"Error occurred at: {e.__traceback__.tb_lineno}")
+            raise
         
     def _extract_pdf_text(self, file: BinaryIO) -> str:
         """Extract text from PDF file"""
