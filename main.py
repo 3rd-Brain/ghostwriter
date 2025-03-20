@@ -337,11 +337,39 @@ async def create_brand_voice(request: Request, current_user: str = Depends(get_c
 
 @app.get("/source-content-management", response_class=HTMLResponse, include_in_schema=False)
 async def source_content_management(request: Request, current_user: dict = Depends(get_current_user)):
+    # Get user data from AstraDB
+    ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+    ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+    
+    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/users_keyspace/users"
+    headers = {
+        "Token": ASTRA_DB_APPLICATION_TOKEN,
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "findOne": {
+            "filter": {"user_id": current_user["user_id"]}
+        }
+    }
+    
+    try:
+        response = requests.post(url, headers=headers, json=payload)
+        response.raise_for_status()
+        user_data = response.json()
+        
+        # Count social media accounts
+        socials = user_data.get("data", {}).get("document", {}).get("profile", {}).get("socials", {})
+        social_count = sum(1 for value in socials.values() if value)
+    except Exception as e:
+        print(f"Error fetching user data: {str(e)}")
+        social_count = 0
+    
     return templates.TemplateResponse("source_content_management.html", {
         "request": request,
         "username": current_user["username"],
         "user_id": current_user["user_id"],
-        "current_page": "source_content_management"
+        "current_page": "source_content_management",
+        "social_count": social_count
     })
 
 @app.get("/create/templatizer", response_class=HTMLResponse, include_in_schema=False)
