@@ -156,9 +156,16 @@ async def login(request: Request, username: str = Form(...), password: str = For
                 os.environ["CURRENT_USERNAME"] = username
                 os.environ["CURRENT_USER_ID"] = user_id
                 
+                # Check first_login flag
+                is_first_login = user.get("first_login", False)
+                
                 # Create an access token that includes both username and user_id
                 access_token = create_access_token(
-                    data={"sub": username, "user_id": user_id},
+                    data={
+                        "sub": username, 
+                        "user_id": user_id,
+                        "first_login": is_first_login
+                    },
                     expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
                 )
                 response = RedirectResponse(url="/dashboard", status_code=status.HTTP_302_FOUND)

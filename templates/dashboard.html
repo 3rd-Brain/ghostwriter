@@ -45,4 +45,37 @@
 <div class="placeholder-section">
     <p class="placeholder-text">Dashboard content will appear here as you generate content.</p>
 </div>
+
+<!-- First Login Modal -->
+<div id="firstLoginModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Welcome to Ghostwriter</h2>
+            <span class="close">&times;</span>
+        </div>
+        <div class="modal-body">
+            <!-- Modal content will be implemented in next step -->
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get the JWT token from cookies
+    const token = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('access_token='))
+        ?.split('=')[1];
+
+    if (token) {
+        // Decode the JWT token (it's base64 encoded)
+        const payload = JSON.parse(atob(token.split('.')[1]));
+
+        // Check if it's first login
+        if (payload.first_login) {
+            document.getElementById('firstLoginModal').style.display = 'block';
+        }
+    }
+});
+</script>
 {% endblock %}
