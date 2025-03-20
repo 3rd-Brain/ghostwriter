@@ -14,7 +14,7 @@ class DocumentProcessor:
         self.storage_client = Client()
         self.openai_client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
         
-    def process_file(self, file: BinaryIO, filename: str, user_id: str) -> Dict:
+    async def process_file(self, file: BinaryIO, filename: str, user_id: str) -> Dict:
         """Process uploaded file and store in Object Storage with chunked vector storage"""
         try:
             print("\n=== Starting file processing ===")
