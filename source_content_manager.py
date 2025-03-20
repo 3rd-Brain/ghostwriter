@@ -194,6 +194,6 @@ def count_user_documents(user_id: str) -> int:
         response = requests.post(url, headers=headers, json=payload)
         response.raise_for_status()
         result = response.json()
-        return result.get("data", {}).get("count", 0)
+        return result.get("status", {}).get("count", 0)
     except:
         return 0
