@@ -300,7 +300,7 @@ async def get_workflows(current_user: dict = Depends(get_current_user)):
     """
     **Retrieve all generation workflow configurations**
 
-    This endpoint fetches all workflows available for the current user.
+    This endpoint fetches all system workflows available for all users.
 
     ## When to use
     Use this endpoint when you need to:
@@ -316,12 +316,8 @@ async def get_workflows(current_user: dict = Depends(get_current_user)):
     if not ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER:
         raise HTTPException(status_code=500, detail="ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
 
-    # Get the current user's username and user_id
-    username = current_user["username"]
-    user_id = current_user["user_id"]
-
-    # Use the current user's username for the URL path
-    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/{username}/workflows"
+    # Use the system keyspace for workflows instead of user-specific
+    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/sys_keyspace/workflows"
 
     headers = {
         "Token": ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
