@@ -84,8 +84,8 @@
     }
 
     .first-draft-cell {
-        max-width: 600px;
-        min-width: 400px;
+        max-width: 800px;
+        min-width: 600px;
         white-space: pre-wrap;
         overflow: hidden;
     }
@@ -220,23 +220,6 @@
                         <th>Status</th>
                         <th>Source</th>
                         <th>Template</th>
-                        <th>Approved</th>
-                        <th>Published</th>
-                        <th>Post ID</th>
-                        <th>Channel</th>
-                        <th>Likes</th>
-                        <th>Shares</th>
-                        <th>Quotes</th>
-                        <th>Bookmarks</th>
-                        <th>Replies</th>
-                        <th>Impressions</th>
-                        <th>Weighted Impressions</th>
-                        <th>Weighted Replies</th>
-                        <th>Weighted Bookmarks</th>
-                        <th>Weighted Shares</th>
-                        <th>Weighted Likes</th>
-                        <th>Followers</th>
-                        <th>Score</th>
                     </tr>
                 </thead>
                 <tbody id="approval-table-body">
@@ -321,7 +304,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function fetchContentData() {
     // Show loading state
     const tableBody = document.getElementById('approval-table-body');
-    tableBody.innerHTML = '<tr><td colspan="22" style="text-align: center; padding: 20px;">Loading content data...</td></tr>';
+    tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px;">Loading content data...</td></tr>';
 
     // Fetch content data from the API
     fetch('/api/latest-content')
@@ -370,7 +353,7 @@ function fetchContentData() {
                 setupPagination(allContentData.length);
 
                 if (transformedData.length === 0) {
-                    tableBody.innerHTML = '<tr><td colspan="22" style="text-align: center; padding: 20px;">No content found</td></tr>';
+                    tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px;">No content found</td></tr>';
                     document.getElementById('pagination-controls').style.display = 'none';
                 }
             } else {
@@ -379,7 +362,7 @@ function fetchContentData() {
         })
         .catch(error => {
             console.error('Error fetching content data:', error);
-            tableBody.innerHTML = `<tr><td colspan="22" style="text-align: center; padding: 20px; color: #f44336;">Error: ${error.message}</td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 20px; color: #f44336;">Error: ${error.message}</td></tr>`;
             document.getElementById('pagination-controls').style.display = 'none';
         });
 }
@@ -399,7 +382,7 @@ function renderContentTable(page) {
     const currentPageData = allContentData.slice(startIndex, endIndex);
 
     if (currentPageData.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="22" style="text-align: center; padding: 20px;">No content found on this page</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px;">No content found on this page</td></tr>';
         return;
     }
 
@@ -412,23 +395,6 @@ function renderContentTable(page) {
             <td><span class="status-badge status-${item.Status}">${item.Status.charAt(0).toUpperCase() + item.Status.slice(1)}</span></td>
             <td><button class="btn-small view-source" data-source="${encodeURIComponent(item.Source_Chunk)}">View</button></td>
             <td><button class="btn-small view-template" data-template="${encodeURIComponent(item.Template)}">View</button></td>
-            <td>${item.Approval_Date}</td>
-            <td>${item.Publish_Date}</td>
-            <td>${item.Post_ID}</td>
-            <td>${item.Post_Channel}</td>
-            <td>${item.Likes}</td>
-            <td>${item.Shares}</td>
-            <td>${item.Quotes}</td>
-            <td>${item.Bookmarks}</td>
-            <td>${item.Replies}</td>
-            <td>${item.Impressions}</td>
-            <td>${item.Weighted_Impressions}</td>
-            <td>${item.Weighted_Replies}</td>
-            <td>${item.Weighted_Bookmarks}</td>
-            <td>${item.Weighted_Shares}</td>
-            <td>${item.Weighted_Likes}</td>
-            <td>${item.Followers}</td>
-            <td>${item.Score}</td>
         `;
 
         tableBody.appendChild(row);
