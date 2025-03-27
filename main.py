@@ -1072,6 +1072,7 @@ async def repurpose_with_templates(request_data: schemas.RepurposeWithTemplatesR
         )
         return result
     except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/template-search", response_model=Dict, tags=["Template Management"])
 async def search_templates(request_data: schemas.MultitemplateRequest):
@@ -1098,8 +1099,6 @@ async def search_templates(request_data: schemas.MultitemplateRequest):
         result = template_search(request_data.content_chunk, request_data.template_count)
         return result
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/source-content-repurpose-with-templates", response_model=schemas.SuccessResponse, tags=["Generation"])
