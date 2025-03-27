@@ -190,7 +190,7 @@
 {% block extra_js %}
 <script>
     // Store workflows data globally so we can access it when clicking on "Generation Flow" buttons
-    const workflowsData = [];
+    let workflowsData = [];
 
     // Function to fetch workflows and populate the table
     function fetchWorkflows() {
