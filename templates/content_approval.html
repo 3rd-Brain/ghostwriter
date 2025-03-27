@@ -186,33 +186,7 @@
                     <option value="published">Published</option>
                 </select>
             </div>
-            <div class="filter-group">
-                <label for="tag-filter">Workflow:</label>
-                <select id="tag-filter" class="filter-select">
-                    <option value="all">All</option>
-                    <option value="content_creation">Content Creation</option>
-                    <option value="social_media">Social Media</option>
-                    <option value="data_science">Data Science</option>
-                    <option value="marketing">Marketing</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label for="format-filter">Format:</label>
-                <select id="format-filter" class="filter-select">
-                    <option value="all">All</option>
-                    <option value="short_form">Short Form Social</option>
-                    <option value="mid_form">Mid Form Social</option>
-                    <option value="atomic_essay">Atomic Essay</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label for="author-filter">Author:</label>
-                <select id="author-filter" class="filter-select">
-                    <option value="all">All</option>
-                    <option value="ai">AI Generated</option>
-                    <option value="user">User Generated</option>
-                </select>
-            </div>
+            
             <div class="filter-group">
                 <label for="channel-filter">Channel:</label>
                 <select id="channel-filter" class="filter-select">
@@ -246,10 +220,6 @@
                         <th>Status</th>
                         <th>Source</th>
                         <th>Template</th>
-                        <th>Tag</th>
-                        <th>Format</th>
-                        <th>Author</th>
-                        <th>Created</th>
                         <th>Approved</th>
                         <th>Published</th>
                         <th>Post ID</th>
@@ -325,9 +295,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('approve-selected').addEventListener('click', approveSelected);
     document.getElementById('reject-selected').addEventListener('click', rejectSelected);
     document.getElementById('status-filter').addEventListener('change', filterContent);
-    document.getElementById('tag-filter').addEventListener('change', filterContent);
-    document.getElementById('format-filter').addEventListener('change', filterContent);
-    document.getElementById('author-filter').addEventListener('change', filterContent);
+    
     document.getElementById('channel-filter').addEventListener('change', filterContent);
     document.getElementById('date-range').addEventListener('change', filterContent);
 
@@ -353,7 +321,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function fetchContentData() {
     // Show loading state
     const tableBody = document.getElementById('approval-table-body');
-    tableBody.innerHTML = '<tr><td colspan="26" style="text-align: center; padding: 20px;">Loading content data...</td></tr>';
+    tableBody.innerHTML = '<tr><td colspan="22" style="text-align: center; padding: 20px;">Loading content data...</td></tr>';
 
     // Fetch content data from the API
     fetch('/api/latest-content')
@@ -402,7 +370,7 @@ function fetchContentData() {
                 setupPagination(allContentData.length);
 
                 if (transformedData.length === 0) {
-                    tableBody.innerHTML = '<tr><td colspan="26" style="text-align: center; padding: 20px;">No content found</td></tr>';
+                    tableBody.innerHTML = '<tr><td colspan="22" style="text-align: center; padding: 20px;">No content found</td></tr>';
                     document.getElementById('pagination-controls').style.display = 'none';
                 }
             } else {
@@ -411,7 +379,7 @@ function fetchContentData() {
         })
         .catch(error => {
             console.error('Error fetching content data:', error);
-            tableBody.innerHTML = `<tr><td colspan="26" style="text-align: center; padding: 20px; color: #f44336;">Error: ${error.message}</td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="22" style="text-align: center; padding: 20px; color: #f44336;">Error: ${error.message}</td></tr>`;
             document.getElementById('pagination-controls').style.display = 'none';
         });
 }
@@ -431,7 +399,7 @@ function renderContentTable(page) {
     const currentPageData = allContentData.slice(startIndex, endIndex);
 
     if (currentPageData.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="26" style="text-align: center; padding: 20px;">No content found on this page</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="22" style="text-align: center; padding: 20px;">No content found on this page</td></tr>';
         return;
     }
 
@@ -444,10 +412,6 @@ function renderContentTable(page) {
             <td><span class="status-badge status-${item.Status}">${item.Status.charAt(0).toUpperCase() + item.Status.slice(1)}</span></td>
             <td><button class="btn-small view-source" data-source="${encodeURIComponent(item.Source_Chunk)}">View</button></td>
             <td><button class="btn-small view-template" data-template="${encodeURIComponent(item.Template)}">View</button></td>
-            <td>${item.Tag}</td>
-            <td>${item.Content_Format}</td>
-            <td>${item.Content_Author}</td>
-            <td>${item.Created_Time}</td>
             <td>${item.Approval_Date}</td>
             <td>${item.Publish_Date}</td>
             <td>${item.Post_ID}</td>
@@ -638,17 +602,11 @@ function getSelectedItems() {
 function filterContent() {
     // Get filter values
     const statusFilter = document.getElementById('status-filter').value;
-    const tagFilter = document.getElementById('tag-filter').value;
-    const formatFilter = document.getElementById('format-filter').value;
-    const authorFilter = document.getElementById('author-filter').value;
     const channelFilter = document.getElementById('channel-filter').value;
     const dateFilter = document.getElementById('date-range').value;
 
     console.log('Filtering content with:', {
         status: statusFilter,
-        tag: tagFilter,
-        format: formatFilter,
-        author: authorFilter,
         channel: channelFilter,
         date: dateFilter
     });
