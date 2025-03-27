@@ -88,17 +88,31 @@ async def login(request: Request, username: str = Form(...), password: str = For
         )
 
     try:
+        # Check if input is email or username
+        is_email = '@' in username
+        
         # Query the user from the database
         url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/users_keyspace/users"
         headers = {
             "Token": ASTRA_DB_APPLICATION_TOKEN,
             "Content-Type": "application/json"
         }
-        payload = {
-            "findOne": {
-                "filter": {"username": username}
+        
+        # Use different filter depending on login method
+        if is_email:
+            print(f"Login attempt using email: {username}")
+            payload = {
+                "findOne": {
+                    "filter": {"email": username}
+                }
             }
-        }
+        else:
+            print(f"Login attempt using username: {username}")
+            payload = {
+                "findOne": {
+                    "filter": {"username": username}
+                }
+            }
 
         response = requests.post(url, headers=headers, json=payload)
         response.raise_for_status()
@@ -109,9 +123,10 @@ async def login(request: Request, username: str = Form(...), password: str = For
             user = user_data["data"]["document"]
             stored_hash = user.get("password_hash", "")
             user_id = user.get("user_id", "")
+            actual_username = user.get("username", "")
 
             # Debug logging for password comparison
-            print(f"Login attempt for user: {username}")
+            print(f"Found user: {actual_username}")
             print(f"Stored hash exists: {bool(stored_hash)}")
             
             # Compare plain password with stored hash
@@ -152,31 +167,33 @@ async def login(request: Request, username: str = Form(...), password: str = For
                     print(f"Error during password comparison: {str(e)}")
                     
             if is_password_match:
-                print(f"Login successful for user: {username}")
+                print(f"Login successful for user: {actual_username}")
                 # Set the username and user_id as environment variables
-                os.environ["CURRENT_USERNAME"] = username
+                os.environ["CURRENT_USERNAME"] = actual_username
                 os.environ["CURRENT_USER_ID"] = user_id
                 
                 # Create an access token that includes both username and user_id
                 access_token = create_access_token(
-                    data={"sub": username, "user_id": user_id},
+                    data={"sub": actual_username, "user_id": user_id},
                     expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
                 )
                 response = RedirectResponse(url="/dashboard", status_code=status.HTTP_302_FOUND)
                 response.set_cookie(key="access_token", value=access_token, httponly=True)
                 return response
             else:
-                print(f"Login failed for user: {username}")
+                login_type = "email" if is_email else "username"
+                print(f"Login failed for {login_type}: {username}")
                 return templates.TemplateResponse(
                     "login.html",
-                    {"request": request, "error": "Invalid username or password"},
+                    {"request": request, "error": "Invalid credentials"},
                     status_code=status.HTTP_401_UNAUTHORIZED
                 )
 
         # If authentication fails or user doesn't exist
+        login_type = "email" if is_email else "username"
         return templates.TemplateResponse(
             "login.html",
-            {"request": request, "error": "Access denied. Wrong credentials."},
+            {"request": request, "error": f"No user found with this {login_type}"},
             status_code=status.HTTP_401_UNAUTHORIZED
         )
     except Exception as e:
