@@ -234,17 +234,17 @@
 
             // Workflow ID
             const idCell = document.createElement('td');
-            idCell.textContent = workflow.Workflow_ID || 'N/A';
+            idCell.textContent = workflow.workflow_id || 'N/A';
             row.appendChild(idCell);
 
             // Workflow Type
             const typeCell = document.createElement('td');
-            typeCell.textContent = workflow.Workflow_Type || 'N/A';
+            typeCell.textContent = workflow.workflow_type || 'N/A';
             row.appendChild(typeCell);
 
             // Description
             const descCell = document.createElement('td');
-            descCell.textContent = workflow.Description || workflow.Short_Description || 'N/A';
+            descCell.textContent = workflow.description || 'N/A';
             row.appendChild(descCell);
 
             // Generation Flow button
@@ -254,8 +254,8 @@
             flowButton.textContent = 'Click to see Generation Flow';
             flowButton.dataset.index = index; // Store index to access data later
             flowButton.addEventListener('click', function() {
-                // We'll implement this function later to show the JSON payload
-                showGenerationFlow(workflow.JSON_Payload);
+                // Show the steps data from the workflow
+                showGenerationFlow(workflow.steps);
             });
             flowCell.appendChild(flowButton);
             row.appendChild(flowCell);
@@ -309,8 +309,8 @@
     }
 
     // Function to display the generation flow in a modal
-    function showGenerationFlow(jsonPayload) {
-        console.log('Generation Flow:', jsonPayload);
+    function showGenerationFlow(stepsData) {
+        console.log('Generation Flow:', stepsData);
 
         // Create the modal if it doesn't exist
         createWorkflowModal();
@@ -323,14 +323,14 @@
         sidebarEl.innerHTML = '';
         detailAreaEl.innerHTML = '';
 
-        if (!jsonPayload || !jsonPayload.steps || !Array.isArray(jsonPayload.steps)) {
+        if (!stepsData || !stepsData.steps || !Array.isArray(stepsData.steps)) {
             detailAreaEl.innerHTML = '<div class="error-message">Invalid workflow data</div>';
             modal.style.display = 'block';
             return;
         }
 
         // Sort steps by order
-        const steps = [...jsonPayload.steps].sort((a, b) => a.Order - b.Order);
+        const steps = [...stepsData.steps].sort((a, b) => a.Order - b.Order);
 
         // Populate steps sidebar
         steps.forEach((step, index) => {
