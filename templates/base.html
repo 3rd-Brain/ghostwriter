@@ -224,9 +224,9 @@
             </div>
 
             <div class="user-profile">
-                <div class="avatar">{{ username|first|upper }}</div>
+                <div class="avatar">{{ username.username|default:username|first|upper }}</div>
                 <div class="user-info">
-                    <div class="username">{{ username }}</div>
+                    <div class="username">{{ username.username|default:username }}</div>
                     <a href="/logout" class="logout-link">Sign out</a>
                 </div>
             </div>
