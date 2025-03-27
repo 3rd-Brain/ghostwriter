@@ -32,7 +32,7 @@ class DocumentProcessor:
             # Handle binary files (like PDFs) and text files differently
             if filename.lower().endswith('.pdf'):
                 print("Detected PDF file, storing as binary data...")
-                self.storage_client.upload(object_path, file_content)
+                self.storage_client.upload_from_bytes(object_path, file_content)
             else:
                 # For text-based files like Markdown
                 if isinstance(file_content, bytes):
@@ -42,7 +42,7 @@ class DocumentProcessor:
                     except UnicodeDecodeError as e:
                         print(f"UTF-8 decoding failed: {str(e)}")
                         print("Falling back to binary storage...")
-                        self.storage_client.upload(object_path, file_content)
+                        self.storage_client.upload_from_bytes(object_path, file_content)
                         file.seek(0)
                         return
                 self.storage_client.upload_from_text(object_path, file_content)
