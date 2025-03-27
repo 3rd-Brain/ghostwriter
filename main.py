@@ -1072,6 +1072,34 @@ async def repurpose_with_templates(request_data: schemas.RepurposeWithTemplatesR
         )
         return result
     except Exception as e:
+
+@app.post("/template-search", response_model=Dict, tags=["Template Management"])
+async def search_templates(request_data: schemas.MultitemplateRequest):
+    """
+    **Search for templates matching specific content**
+
+    This endpoint uses semantic search to identify templates best suited for a particular content chunk,
+    without additional AI analysis of the content.
+
+    ## When to use
+    Use this endpoint when you need to:
+    * **Find appropriate templates** for specific content
+    * Get **multiple formatting options** for a content piece
+    * **Directly search templates** without additional processing
+    * Perform faster template searches for performance-sensitive applications
+    """
+    if not os.getenv("OPENAI_API_KEY"):
+        raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
+    if not os.getenv("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER"):
+        raise HTTPException(status_code=500, detail="ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
+
+    try:
+        from social_writer import template_search
+        result = template_search(request_data.content_chunk, request_data.template_count)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/source-content-repurpose-with-templates", response_model=schemas.SuccessResponse, tags=["Generation"])

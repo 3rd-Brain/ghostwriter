@@ -582,6 +582,60 @@ def repurposer_using_posts_as_templates(
     content_chunks: str,
     template_post: str,
     brand: str,
+
+def template_search(text_query: str, template_count: int = 5) -> Dict:
+    """
+    Search for templates using vector embedding of the provided text
+    
+    Args:
+        text_query: String containing the text to find templates for
+        template_count: The number of templates to retrieve (default: 5)
+    
+    Returns:
+        Dictionary containing template search results
+    """
+    if not OPENAI_API_KEY:
+        raise Exception("OPENAI_API_KEY not configured")
+    
+    ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+    ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+    
+    if not ASTRA_DB_API_ENDPOINT:
+        raise Exception("ASTRA_DB_API_ENDPOINT not configured")
+    if not ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER:
+        raise Exception("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
+    
+    # Generate embedding directly for the input text
+    response = openai_client.embeddings.create(
+        input=text_query,
+        model="text-embedding-3-small"
+    )
+    vector = response.data[0].embedding
+    
+    # Prepare search request
+    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/sys_keyspace/templates"
+    
+    headers = {
+        "Token": ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "find": {
+            "sort": {"$vector": vector},
+            "options": {
+                "limit": template_count
+            }
+        }
+    }
+    
+    try:
+        response = requests.post(url, headers=headers, json=payload)
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        raise Exception(f"Failed to retrieve templates: {str(e)}")
+
     workflow_id: str = "Legacy Generation Flow with Claude",
     is_given_template_query: bool = False,
     number_of_posts_to_template: int = 5,
