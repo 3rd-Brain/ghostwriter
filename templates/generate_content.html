@@ -67,7 +67,7 @@
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Workflow ID</th>
+                            <th>Workflow Name</th>
                             <th>Workflow Type</th>
                             <th>Description</th>
                             <th>Generation Flow</th>
@@ -232,10 +232,10 @@
         workflows.forEach((workflow, index) => {
             const row = document.createElement('tr');
 
-            // Workflow ID
-            const idCell = document.createElement('td');
-            idCell.textContent = workflow.workflow_id || 'N/A';
-            row.appendChild(idCell);
+            // Workflow Name
+            const nameCell = document.createElement('td');
+            nameCell.textContent = workflow.workflow_name || 'N/A';
+            row.appendChild(nameCell);
 
             // Workflow Type
             const typeCell = document.createElement('td');
