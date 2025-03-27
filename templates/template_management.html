@@ -73,7 +73,52 @@
         </div>
         <div class="card-content">
             <p class="text-secondary">View and manage your saved templates</p>
-            <!-- Template listing will be added here later -->
+            
+            <!-- Search bar -->
+            <div class="search-container mb-lg">
+                <div class="search-box">
+                    <input type="text" id="template-search-input" placeholder="Search templates..." value="step by step transformation guides">
+                    <button id="template-search-button" class="search-button">
+                        <i data-lucide="search"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Templates table -->
+            <div class="table-container">
+                <table class="data-table" id="templates-table">
+                    <thead>
+                        <tr>
+                            <th>Template</th>
+                            <th>Description</th>
+                            <th>Category</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="templates-table-body">
+                        <tr>
+                            <td colspan="4" class="text-center">Loading templates...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Loading indicator -->
+            <div id="templates-loading" class="loading-spinner" style="display: none;">
+                <div class="spinner"></div>
+                <p>Loading templates...</p>
+            </div>
+            
+            <!-- Pagination controls -->
+            <div class="pagination-container" id="templates-pagination">
+                <button class="pagination-btn" id="prev-page" disabled>
+                    <i data-lucide="chevron-left"></i>
+                </button>
+                <span id="page-info">Page 1</span>
+                <button class="pagination-btn" id="next-page">
+                    <i data-lucide="chevron-right"></i>
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -127,7 +172,7 @@
     </div>
 </div>
 
-<!-- Add JavaScript for modals -->
+<!-- Add JavaScript for modals and template management -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Templatizer Modal
@@ -232,6 +277,7 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Template saved successfully!');
             uploadModal.style.display = 'none';
             uploadForm.reset();
+            loadTemplates(); // Refresh templates after adding new one
             
             // Reset button
             submitBtn.textContent = originalText;
@@ -267,6 +313,191 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Failed to copy text: ', err);
             });
     });
+    
+    // Template Management
+    const templatesTableBody = document.getElementById('templates-table-body');
+    const templatesLoading = document.getElementById('templates-loading');
+    const templateSearchInput = document.getElementById('template-search-input');
+    const templateSearchButton = document.getElementById('template-search-button');
+    const prevPageButton = document.getElementById('prev-page');
+    const nextPageButton = document.getElementById('next-page');
+    const pageInfo = document.getElementById('page-info');
+    
+    let currentPage = 1;
+    const pageSize = 10;
+    let totalTemplates = 0;
+    let currentSearchQuery = "step by step transformation guides";
+    
+    // Load templates from API
+    function loadTemplates(page = 1) {
+        // Show loading indicator
+        templatesLoading.style.display = 'flex';
+        templatesTableBody.innerHTML = '<tr><td colspan="4" class="text-center">Loading templates...</td></tr>';
+        
+        // Get search query
+        const searchQuery = templateSearchInput.value.trim() || currentSearchQuery;
+        currentSearchQuery = searchQuery;
+        
+        // Make API call to search templates
+        fetch('/template-search', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+                content_chunk: searchQuery,
+                template_count: 50 // Request more to support pagination
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Hide loading indicator
+            templatesLoading.style.display = 'none';
+            
+            // Process templates
+            const templates = data.data?.documents || [];
+            totalTemplates = templates.length;
+            
+            // Update pagination
+            updatePagination(page, pageSize, totalTemplates);
+            
+            // Calculate slice for current page
+            const startIdx = (page - 1) * pageSize;
+            const endIdx = Math.min(startIdx + pageSize, totalTemplates);
+            const pageTemplates = templates.slice(startIdx, endIdx);
+            
+            // Clear table
+            templatesTableBody.innerHTML = '';
+            
+            if (pageTemplates.length === 0) {
+                templatesTableBody.innerHTML = '<tr><td colspan="4" class="text-center">No templates found</td></tr>';
+                return;
+            }
+            
+            // Populate table
+            pageTemplates.forEach(template => {
+                // Extract template parts
+                let templateText = template.content || template.template || "";
+                let description = "";
+                let category = "General";
+                
+                // If the template contains a | character, split into template and description
+                if (templateText.includes('|')) {
+                    const parts = templateText.split('|');
+                    templateText = parts[0].trim();
+                    description = parts[1].trim();
+                }
+                
+                // Create table row
+                const row = document.createElement('tr');
+                
+                // Template column - truncate if too long
+                const templateCell = document.createElement('td');
+                templateCell.className = 'template-content';
+                const templateTextTruncated = templateText.length > 50 ? 
+                    templateText.substring(0, 50) + '...' : 
+                    templateText;
+                templateCell.textContent = templateTextTruncated;
+                templateCell.title = templateText; // Show full text on hover
+                row.appendChild(templateCell);
+                
+                // Description column
+                const descriptionCell = document.createElement('td');
+                descriptionCell.className = 'template-description';
+                const descriptionTruncated = description.length > 100 ? 
+                    description.substring(0, 100) + '...' : 
+                    description;
+                descriptionCell.textContent = descriptionTruncated;
+                descriptionCell.title = description; // Show full text on hover
+                row.appendChild(descriptionCell);
+                
+                // Category column
+                const categoryCell = document.createElement('td');
+                categoryCell.textContent = category;
+                row.appendChild(categoryCell);
+                
+                // Actions column
+                const actionsCell = document.createElement('td');
+                actionsCell.className = 'template-actions';
+                
+                // Use template button
+                const useButton = document.createElement('button');
+                useButton.className = 'icon-button';
+                useButton.innerHTML = '<i data-lucide="copy"></i>';
+                useButton.title = 'Copy template';
+                useButton.addEventListener('click', () => {
+                    navigator.clipboard.writeText(templateText)
+                        .then(() => {
+                            // Show success message
+                            alert('Template copied to clipboard!');
+                        })
+                        .catch(err => {
+                            console.error('Failed to copy template:', err);
+                        });
+                });
+                actionsCell.appendChild(useButton);
+                
+                row.appendChild(actionsCell);
+                
+                // Add row to table
+                templatesTableBody.appendChild(row);
+            });
+            
+            // Initialize Lucide icons in the new rows
+            lucide.createIcons();
+        })
+        .catch(error => {
+            console.error('Error loading templates:', error);
+            templatesLoading.style.display = 'none';
+            templatesTableBody.innerHTML = '<tr><td colspan="4" class="text-center">Error loading templates</td></tr>';
+        });
+    }
+    
+    // Update pagination controls
+    function updatePagination(page, pageSize, totalItems) {
+        const totalPages = Math.ceil(totalItems / pageSize);
+        currentPage = page;
+        
+        // Update page info
+        pageInfo.textContent = `Page ${page} of ${totalPages || 1}`;
+        
+        // Update button states
+        prevPageButton.disabled = page <= 1;
+        nextPageButton.disabled = page >= totalPages;
+    }
+    
+    // Search button click handler
+    templateSearchButton.addEventListener('click', function() {
+        currentPage = 1;
+        loadTemplates(currentPage);
+    });
+    
+    // Search input enter key handler
+    templateSearchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            currentPage = 1;
+            loadTemplates(currentPage);
+        }
+    });
+    
+    // Pagination button handlers
+    prevPageButton.addEventListener('click', function() {
+        if (currentPage > 1) {
+            loadTemplates(currentPage - 1);
+        }
+    });
+    
+    nextPageButton.addEventListener('click', function() {
+        loadTemplates(currentPage + 1);
+    });
+    
+    // Initial load of templates with default query
+    loadTemplates(1);
 });
 </script>
 {% endblock %}
