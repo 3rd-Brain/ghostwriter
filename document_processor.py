@@ -28,9 +28,25 @@ class DocumentProcessor:
             
             print("Attempting to upload to Object Storage...")
             file_content = file.read()
-            if isinstance(file_content, bytes):
-                file_content = file_content.decode('utf-8')
-            self.storage_client.upload_from_text(object_path, file_content)
+            
+            # Handle binary files (like PDFs) and text files differently
+            if filename.lower().endswith('.pdf'):
+                print("Detected PDF file, storing as binary data...")
+                self.storage_client.upload_bytes(object_path, file_content)
+            else:
+                # For text-based files like Markdown
+                if isinstance(file_content, bytes):
+                    try:
+                        print("Converting bytes to text using UTF-8 decoding...")
+                        file_content = file_content.decode('utf-8')
+                    except UnicodeDecodeError as e:
+                        print(f"UTF-8 decoding failed: {str(e)}")
+                        print("Falling back to binary storage...")
+                        self.storage_client.upload_bytes(object_path, file_content)
+                        file.seek(0)
+                        return
+                self.storage_client.upload_from_text(object_path, file_content)
+            
             print("Successfully uploaded to Object Storage")
             file.seek(0)  # Reset file pointer for subsequent operations
         
@@ -98,11 +114,33 @@ class DocumentProcessor:
         
     def _extract_pdf_text(self, file: BinaryIO) -> str:
         """Extract text from PDF file"""
-        doc = fitz.open(stream=file.read(), filetype="pdf")
-        text = ""
-        for page in doc:
-            text += page.get_text()
-        return text
+        try:
+            print("=== PDF Extraction Debug ===")
+            print("Reading PDF file content as bytes...")
+            file_bytes = file.read()
+            print(f"Read {len(file_bytes)} bytes from PDF file")
+            
+            print("Creating PyMuPDF document...")
+            doc = fitz.open(stream=file_bytes, filetype="pdf")
+            print(f"Successfully opened PDF with {len(doc)} pages")
+            
+            text = ""
+            for i, page in enumerate(doc):
+                print(f"Extracting text from page {i+1}/{len(doc)}...")
+                page_text = page.get_text()
+                print(f"Page {i+1}: extracted {len(page_text)} characters")
+                text += page_text
+            
+            print(f"Total extracted text: {len(text)} characters")
+            print("=== PDF Extraction Complete ===")
+            return text
+        except Exception as e:
+            print(f"=== PDF Extraction Error ===")
+            print(f"Error type: {type(e).__name__}")
+            print(f"Error message: {str(e)}")
+            print(f"Error occurred at line: {e.__traceback__.tb_lineno}")
+            print("=== PDF Extraction Error End ===")
+            raise
         
     def _extract_markdown_text(self, file: BinaryIO) -> str:
         """Extract text from Markdown file"""
