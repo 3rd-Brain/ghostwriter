@@ -76,9 +76,9 @@
             
             <!-- Search bar -->
             <div class="search-container mb-lg">
-                <div class="search-box">
-                    <input type="text" id="template-search-input" placeholder="Search templates..." value="step by step transformation guides">
-                    <button id="template-search-button" class="search-button">
+                <div class="chatbot-input-container">
+                    <input type="text" id="template-search-input" class="chatbot-input" placeholder="Search templates..." value="step by step transformation guides">
+                    <button id="template-search-button" class="send-button">
                         <i data-lucide="search"></i>
                     </button>
                 </div>
@@ -92,12 +92,11 @@
                             <th>Template</th>
                             <th>Description</th>
                             <th>Category</th>
-                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="templates-table-body">
                         <tr>
-                            <td colspan="4" class="text-center">Loading templates...</td>
+                            <td colspan="3" class="text-center">Loading templates...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -332,7 +331,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function loadTemplates(page = 1) {
         // Show loading indicator
         templatesLoading.style.display = 'flex';
-        templatesTableBody.innerHTML = '<tr><td colspan="4" class="text-center">Loading templates...</td></tr>';
+        templatesTableBody.innerHTML = '<tr><td colspan="3" class="text-center">Loading templates...</td></tr>';
         
         // Get search query
         const searchQuery = templateSearchInput.value.trim() || currentSearchQuery;
@@ -375,45 +374,34 @@ document.addEventListener('DOMContentLoaded', function() {
             templatesTableBody.innerHTML = '';
             
             if (pageTemplates.length === 0) {
-                templatesTableBody.innerHTML = '<tr><td colspan="4" class="text-center">No templates found</td></tr>';
+                templatesTableBody.innerHTML = '<tr><td colspan="3" class="text-center">No templates found</td></tr>';
                 return;
             }
             
             // Populate table
             pageTemplates.forEach(template => {
-                // Extract template parts
-                let templateText = template.content || template.template || "";
-                let description = "";
-                let category = "General";
-                
-                // If the template contains a | character, split into template and description
-                if (templateText.includes('|')) {
-                    const parts = templateText.split('|');
-                    templateText = parts[0].trim();
-                    description = parts[1].trim();
-                }
+                // Extract template data from the correct fields
+                let templateText = template.template || "";
+                let description = template.description || "";
+                let category = template.category || "General";
                 
                 // Create table row
                 const row = document.createElement('tr');
                 
-                // Template column - truncate if too long
+                // Template column with expandable content
                 const templateCell = document.createElement('td');
                 templateCell.className = 'template-content';
-                const templateTextTruncated = templateText.length > 50 ? 
-                    templateText.substring(0, 50) + '...' : 
-                    templateText;
-                templateCell.textContent = templateTextTruncated;
-                templateCell.title = templateText; // Show full text on hover
+                templateCell.textContent = templateText;
+                templateCell.style.whiteSpace = 'pre-wrap'; // Allow wrapping
+                templateCell.style.wordBreak = 'break-word'; // Break long words
                 row.appendChild(templateCell);
                 
                 // Description column
                 const descriptionCell = document.createElement('td');
                 descriptionCell.className = 'template-description';
-                const descriptionTruncated = description.length > 100 ? 
-                    description.substring(0, 100) + '...' : 
-                    description;
-                descriptionCell.textContent = descriptionTruncated;
-                descriptionCell.title = description; // Show full text on hover
+                descriptionCell.textContent = description;
+                descriptionCell.style.whiteSpace = 'pre-wrap'; // Allow wrapping
+                descriptionCell.style.wordBreak = 'break-word'; // Break long words
                 row.appendChild(descriptionCell);
                 
                 // Category column
@@ -421,16 +409,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 categoryCell.textContent = category;
                 row.appendChild(categoryCell);
                 
-                // Actions column
-                const actionsCell = document.createElement('td');
-                actionsCell.className = 'template-actions';
+                // Add row to table
+                templatesTableBody.appendChild(row);
                 
-                // Use template button
-                const useButton = document.createElement('button');
-                useButton.className = 'icon-button';
-                useButton.innerHTML = '<i data-lucide="copy"></i>';
-                useButton.title = 'Copy template';
-                useButton.addEventListener('click', () => {
+                // Double-click to copy template
+                row.addEventListener('dblclick', () => {
                     navigator.clipboard.writeText(templateText)
                         .then(() => {
                             // Show success message
@@ -440,12 +423,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             console.error('Failed to copy template:', err);
                         });
                 });
-                actionsCell.appendChild(useButton);
-                
-                row.appendChild(actionsCell);
-                
-                // Add row to table
-                templatesTableBody.appendChild(row);
             });
             
             // Initialize Lucide icons in the new rows
@@ -454,7 +431,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => {
             console.error('Error loading templates:', error);
             templatesLoading.style.display = 'none';
-            templatesTableBody.innerHTML = '<tr><td colspan="4" class="text-center">Error loading templates</td></tr>';
+            templatesTableBody.innerHTML = '<tr><td colspan="3" class="text-center">Error loading templates</td></tr>';
         });
     }
     
