@@ -904,34 +904,45 @@ textarea.form-control {
     color: var(--text-primary);
 }
 
-/* Chatbot-style input for template search */
-.chatbot-input-container {
+/* Simple search bar for template search */
+.simple-search-container {
     display: flex;
     align-items: center;
     background-color: var(--input-bg);
     border: 1px solid var(--border);
-    border-radius: 24px;
-    padding: 4px 8px;
+    border-radius: 8px;
     overflow: hidden;
     width: 100%;
-    max-width: 600px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+    max-width: 500px;
 }
 
-.chatbot-input-container:focus-within {
+.simple-search-container:focus-within {
     border-color: var(--primary);
-    box-shadow: 0 2px 10px rgba(107, 53, 255, 0.1);
 }
 
-.chatbot-input {
+.simple-search-input {
     flex: 1;
     border: none;
     background: transparent;
-    padding: 10px 16px;
+    padding: 10px 12px;
     color: var(--text-primary);
-    font-size: 15px;
+    font-size: 14px;
     outline: none;
+}
+
+.simple-search-button {
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.simple-search-button:hover {
+    background-color: var(--primary-dark);
 }
 
 /* Styles for expandable table cells */

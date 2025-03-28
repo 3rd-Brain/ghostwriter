@@ -76,9 +76,9 @@
             
             <!-- Search bar -->
             <div class="search-container mb-lg">
-                <div class="chatbot-input-container">
-                    <input type="text" id="template-search-input" class="chatbot-input" placeholder="Search templates..." value="step by step transformation guides">
-                    <button id="template-search-button" class="send-button">
+                <div class="simple-search-container">
+                    <input type="text" id="template-search-input" class="simple-search-input" placeholder="Search templates..." value="step by step transformation guides">
+                    <button id="template-search-button" class="simple-search-button">
                         <i data-lucide="search"></i>
                     </button>
                 </div>
@@ -89,9 +89,9 @@
                 <table class="data-table" id="templates-table">
                     <thead>
                         <tr>
-                            <th>Template</th>
-                            <th>Description</th>
-                            <th>Category</th>
+                            <th style="width: 50%">Template</th>
+                            <th style="width: 35%">Description</th>
+                            <th style="width: 15%">Category</th>
                         </tr>
                     </thead>
                     <tbody id="templates-table-body">
