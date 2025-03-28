@@ -144,13 +144,13 @@ def get_client_brand_voice(brand: str, user_id: str = None) -> Dict:
         "Content-Type": "application/json"
     }
     
-    # Update the payload to include both user_id and brand_name filters
+    # Update the payload to use $and operator for multiple filters
     payload = {
         "findOne": {
-            "filter": {
-                "user_id": user_id,
-                "brand_name": brand
-            }
+            "filter": {"$and": [
+                {"user_id": user_id},
+                {"brand_name": brand}
+            ]}
         }
     }
     print(f"Request payload: {json.dumps(payload, indent=2)}")
