@@ -184,3 +184,29 @@ class SimpleRepurposeRequest(BaseModel):
     brand: str = Field(..., description="Brand name for content style")
     repurpose_count: int = Field(5, description="Number of templates to use")
     workflow_id: str = Field("Simple Repurpose Flow", description="ID of workflow to use")
+
+# API Key schemas
+class ApiKeyCreateRequest(BaseModel):
+    name: str = Field(..., description="Descriptive name for the API key")
+    scope: str = Field("user", description="Permission scope (admin or user)")
+
+class ApiKeyResponse(BaseModel):
+    api_key: str = Field(..., description="Full API key (only shown once)")
+    prefix: str = Field(..., description="API key prefix for display")
+    name: str = Field(..., description="Descriptive name")
+    scope: str = Field(..., description="Permission scope")
+    created_at: str = Field(..., description="Creation timestamp")
+    is_active: bool = Field(..., description="Whether the key is active")
+    _id: str = Field(..., description="Database ID")
+
+class ApiKeyInfo(BaseModel):
+    _id: str = Field(..., description="Database ID")
+    name: str = Field(..., description="Descriptive name")
+    prefix: str = Field(..., description="API key prefix for display")
+    scope: str = Field(..., description="Permission scope")
+    created_at: str = Field(..., description="Creation timestamp")
+    last_used: Optional[str] = Field(None, description="Last used timestamp")
+    is_active: bool = Field(..., description="Whether the key is active")
+
+class ApiKeyListResponse(BaseModel):
+    keys: list[ApiKeyInfo] = Field(..., description="List of API keys")
