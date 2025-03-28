@@ -709,8 +709,8 @@ async def get_brand_voice(request_data: schemas.BrandVoiceRequest, current_user:
     *This endpoint should be called before content generation to ensure all content adheres to brand guidelines.*
     """
     try:
-        # Get the user ID from the authenticated user
-        user_id = current_user["user_id"]
+        # Get the user ID from the authenticated user or from request data
+        user_id = request_data.user_id or current_user["user_id"]
         brand = request_data.brand
         
         # Print debugging information before calling get_client_brand_voice

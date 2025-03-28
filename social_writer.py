@@ -431,8 +431,9 @@ def short_form_social_repurposing(topic_query: str, brand: str, repurpose_count:
     # Step 2: Get templates based on repurpose count
     template_results = multitemplate_retriever(combined_chunks, template_count_to_retrieve=repurpose_count)
 
-    # Step 3: Get brand voice
-    brand_voice = get_client_brand_voice(brand)
+    # Step 3: Get brand voice (use current user's ID from environment)
+    user_id = os.environ.get("CURRENT_USER_ID")
+    brand_voice = get_client_brand_voice(brand, user_id)
 
     # Return early with status message
     result = {"status": "Your content is being generated"}
@@ -617,8 +618,9 @@ def repurposer_using_posts_as_templates(
     """
     print("\n=== Starting Posts as Templates Repurposing Process ===")
     
-    # Get brand voice
-    brand_voice_result = get_client_brand_voice(brand)
+    # Get brand voice with current user's ID
+    user_id = os.environ.get("CURRENT_USER_ID")
+    brand_voice_result = get_client_brand_voice(brand, user_id)
     brand_voice = brand_voice_result["brand_voice"]
     
     if not is_given_template_query:
@@ -933,7 +935,8 @@ def simple_repurpose(social_post: str, brand: str, repurpose_count: int = 5, wor
     
     # Step 2: Get brand voice
     print("\n--- Retrieving Brand Voice ---")
-    brand_voice_result = get_client_brand_voice(brand)
+    user_id = os.environ.get("CURRENT_USER_ID")
+    brand_voice_result = get_client_brand_voice(brand, user_id)
     brand_voice = brand_voice_result["brand_voice"]
     
     # Step 3: Generate content for each template
