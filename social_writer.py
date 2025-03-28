@@ -103,9 +103,16 @@ def generated_content_uploader(content_data: Dict) -> Dict:
         raise Exception(f"Failed to upload to AstraDB: {str(e)}")
 
 
-def get_client_brand_voice(brand: str) -> Dict:
+def get_client_brand_voice(brand: str, user_id: str = None) -> Dict:
     """
     Retrieve client brand voice information from AstraDB
+    
+    Args:
+        brand: String containing the brand name to search for
+        user_id: String containing the user ID (if None, will use current user from environment)
+    
+    Returns:
+        Dictionary containing brand voice information
     """
     ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
     ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
@@ -120,12 +127,16 @@ def get_client_brand_voice(brand: str) -> Dict:
     if not ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER:
         raise Exception("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
 
-    # Get the current user's username from the environment
-    CURRENT_USERNAME = os.environ.get("CURRENT_USERNAME")
-    print(f"Current username: {CURRENT_USERNAME}")
+    # Get the current user's ID from the environment if not provided
+    if not user_id:
+        user_id = os.environ.get("CURRENT_USER_ID")
+        print(f"Using current user ID from environment: {user_id}")
     
-    # Use the current user's username for the URL path
-    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/{CURRENT_USERNAME}/brand"
+    if not user_id:
+        raise Exception("User ID not provided and not found in environment")
+    
+    # Use the new collection path for brands
+    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/brands"
     print(f"Request URL: {url}")
     
     headers = {
@@ -133,9 +144,13 @@ def get_client_brand_voice(brand: str) -> Dict:
         "Content-Type": "application/json"
     }
     
+    # Update the payload to include both user_id and brand_name filters
     payload = {
         "findOne": {
-            "filter": {"Brand": brand}
+            "filter": {
+                "user_id": user_id,
+                "brand_name": brand
+            }
         }
     }
     print(f"Request payload: {json.dumps(payload, indent=2)}")
@@ -158,11 +173,11 @@ def get_client_brand_voice(brand: str) -> Dict:
         # The response should have a 'data' field that contains the document
         if 'data' in data and 'document' in data['data']:
             document = data['data']['document']
-            brand_voice = document.get("Brand_Voice")
-            print(f"Brand_Voice from response: {brand_voice}")
+            brand_voice = document.get("brand_voice")
+            print(f"Brand voice from response: {brand_voice}")
             
             if not brand_voice:
-                print("Brand_Voice field not found in document data")
+                print("brand_voice field not found in document data")
                 raise Exception(f"No brand voice found for brand: {brand}")
         else:
             print("Expected data structure not found in response")

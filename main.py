@@ -693,7 +693,7 @@ async def upload_content(content_data: schemas.ContentUploadRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/brand-voice/{brand}", response_model=Dict, tags=["Brand Management"])
-async def get_brand_voice(brand: str):
+async def get_brand_voice(brand: str, current_user: dict = Depends(get_current_user)):
     """
     **Retrieve brand voice and tone guidelines**
 
@@ -708,13 +708,13 @@ async def get_brand_voice(brand: str):
 
     *This endpoint should be called before content generation to ensure all content adheres to brand guidelines.*
     """
-    if not os.getenv("AIRTABLE_API_KEY"):
-        raise HTTPException(status_code=500, detail="AIRTABLE_API_KEY not configured")
-
     try:
+        # Get the user ID from the authenticated user
+        user_id = current_user["user_id"]
+        
         # Print debugging information before calling get_client_brand_voice
-        print(f"\n=== Debug: Calling get_client_brand_voice for brand: {brand} ===")
-        result = get_client_brand_voice(brand)
+        print(f"\n=== Debug: Calling get_client_brand_voice for brand: {brand}, user ID: {user_id} ===")
+        result = get_client_brand_voice(brand, user_id)
         print(f"=== Debug: API Response: {result} ===\n")
         return result
     except Exception as e:
