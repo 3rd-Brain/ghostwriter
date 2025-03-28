@@ -10,6 +10,7 @@ class SuccessResponse(BaseModel):
 # Brand Voice schemas
 class BrandVoiceRequest(BaseModel):
     brand: str = Field(..., description="The brand name to retrieve voice information for")
+    user_id: Optional[str] = Field(None, description="Optional user ID (defaults to authenticated user)")
 
 # Vector Search schemas
 class VectorSearchRequest(BaseModel):

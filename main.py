@@ -692,8 +692,8 @@ async def upload_content(content_data: schemas.ContentUploadRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/brand-voice/{brand}", response_model=Dict, tags=["Brand Management"])
-async def get_brand_voice(brand: str, current_user: dict = Depends(get_current_user)):
+@app.post("/api/brand-voice", response_model=Dict, tags=["Brand Management"])
+async def get_brand_voice(request_data: schemas.BrandVoiceRequest, current_user: dict = Depends(get_current_user)):
     """
     **Retrieve brand voice and tone guidelines**
 
@@ -711,6 +711,7 @@ async def get_brand_voice(brand: str, current_user: dict = Depends(get_current_u
     try:
         # Get the user ID from the authenticated user
         user_id = current_user["user_id"]
+        brand = request_data.brand
         
         # Print debugging information before calling get_client_brand_voice
         print(f"\n=== Debug: Calling get_client_brand_voice for brand: {brand}, user ID: {user_id} ===")
