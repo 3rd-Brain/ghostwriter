@@ -579,15 +579,26 @@ def read_root():
 @app.post("/api/upload-file", tags=["Content Management"])
 async def upload_file(
     file: UploadFile,
-    current_user: dict = Depends(get_current_user)
+    user: dict = Depends(check_api_key_or_jwt)
 ):
     """
-    Upload a file (PDF or Markdown) for processing into source content
+    **Upload a file (PDF or Markdown) for processing into source content**
+    
+    This endpoint allows users to upload document files that will be processed into source content chunks.
+    
+    ## When to use
+    Use this endpoint when you need to:
+    * Add new content sources to your knowledge base
+    * Process documents into AI-ready content chunks
+    * Import external content into your content generation system
+    
+    *This endpoint supports both JWT and API key authentication.*
     """
     print("\n=== File Upload Debug ===")
     print(f"Received file: {file.filename}")
     print(f"Content type: {file.content_type}")
-    print(f"User ID: {current_user['user_id']}")
+    print(f"User ID: {user['user_id']}")
+    print(f"Auth method: {user.get('auth_source', 'unknown')}")
     
     # Validate file type
     if not (file.filename.lower().endswith('.pdf') or file.filename.lower().endswith('.md')):
@@ -599,7 +610,7 @@ async def upload_file(
         processor = DocumentProcessor()
         
         print("Processing file...")
-        result = await processor.process_file(file.file, file.filename, current_user["user_id"])
+        result = await processor.process_file(file.file, file.filename, user["user_id"])
         
         print(f"Processing complete. File ID: {result['file_id']}, Chunks: {len(result['chunks'])}")
         return {"status": "success", "file_id": result["file_id"], "chunks": len(result["chunks"])}
@@ -683,7 +694,7 @@ async def create_generation_flow(request_data: schemas.GenerationFlowRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/upload-post", response_model=Dict, tags=["Content Management"])
-async def upload_post(content_data: schemas.ContentUploadRequest):
+async def upload_post(content_data: schemas.ContentUploadRequest, user: dict = Depends(check_api_key_or_jwt)):
     """
     **Upload generated post to the posts database**
 
@@ -697,6 +708,7 @@ async def upload_post(content_data: schemas.ContentUploadRequest):
     * Build a **searchable knowledge base** of posts for later reference
 
     *This endpoint should be called after post generation to ensure all posts are properly archived.*
+    *This endpoint supports both JWT and API key authentication.*
     """
     if not os.getenv("AIRTABLE_API_KEY"):
         raise HTTPException(status_code=500, detail="AIRTABLE_API_KEY not configured")
@@ -792,7 +804,7 @@ def top_content_retriever(query: str, topic: str = "general") -> Dict:
     return results
 
 @app.post("/api/top-content", response_model=Dict, tags=["Content Management"])
-async def get_top_content(request_data: schemas.TopContentRequest):
+async def get_top_content(request_data: schemas.TopContentRequest, user: dict = Depends(check_api_key_or_jwt)):
     """
     **Retrieve top-performing content based on performance metrics**
 
@@ -806,6 +818,7 @@ async def get_top_content(request_data: schemas.TopContentRequest):
     * **Select content for repurposing** based on proven performance
 
     *Unlike `/source-content` which finds reference material, this endpoint specifically targets content with strong performance metrics.*
+    *This endpoint supports both JWT and API key authentication.*
     """
     if not os.getenv("OPENAI_API_KEY"):
         raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
@@ -819,7 +832,7 @@ async def get_top_content(request_data: schemas.TopContentRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/source-content", response_model=Dict, tags=["Content Management"])
-async def get_source_content(request_data: schemas.SourceContentRequest):
+async def get_source_content(request_data: schemas.SourceContentRequest, user: dict = Depends(check_api_key_or_jwt)):
     """
     **Retrieve relevant source content from the knowledge base**
 
@@ -833,6 +846,7 @@ async def get_source_content(request_data: schemas.SourceContentRequest):
     * Access **foundational content** without knowing exact document names
 
     *This endpoint is typically called before content generation to provide source material for the AI models.*
+    *This endpoint supports both JWT and API key authentication.*
     """
     if not os.getenv("OPENAI_API_KEY"):
         raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
@@ -1197,7 +1211,7 @@ async def delete_generation_flow(workflow_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/latest-posts", tags=["Content Management"])
-async def get_latest_generated_posts(current_user: dict = Depends(get_current_user)):
+async def get_latest_generated_posts(user: dict = Depends(check_api_key_or_jwt)):
     """
     **Retrieve the latest generated posts for the current user**
 
@@ -1209,13 +1223,15 @@ async def get_latest_generated_posts(current_user: dict = Depends(get_current_us
     * View your most recently generated posts
     * Track your latest post generation activities
     * Retrieve posts for editing or review
+    
+    *This endpoint supports both JWT and API key authentication.*
     """
     try:
         from social_writer import get_latest_generated_content
 
         # Use the current user's username from the authentication
-        username = current_user["username"]
-        user_id = current_user["user_id"]
+        username = user["username"]
+        user_id = user["user_id"]
 
         result = get_latest_generated_content(username)
 
@@ -1259,7 +1275,7 @@ async def get_latest_posts_by_username(username: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.delete("/api/post/{post_id}", tags=["Content Management"])
-async def delete_post(post_id: str, current_user: dict = Depends(get_current_user)):
+async def delete_post(post_id: str, user: dict = Depends(check_api_key_or_jwt)):
     """
     **Delete a specific generated post entry**
 
@@ -1272,13 +1288,14 @@ async def delete_post(post_id: str, current_user: dict = Depends(get_current_use
     * Delete test posts after development
 
     *This action cannot be undone, and posts will be permanently removed.*
+    *This endpoint supports both JWT and API key authentication.*
     """
     try:
         from social_writer import delete_generated_content
 
         # Use the current user's username from the authentication
-        username = current_user["username"]
-        user_id = current_user["user_id"]
+        username = user["username"]
+        user_id = user["user_id"]
 
         result = delete_generated_content(username, post_id)
 
