@@ -46,6 +46,12 @@ import bcrypt
 
 # bcrypt for password hashing
 
+# Import rate limiter
+from rate_limiter import RateLimitMiddleware
+
+# Rate limiting configuration - 300 requests per hour
+app.add_middleware(RateLimitMiddleware, rate_limit_per_hour=300)
+
 # CORS configuration
 app.add_middleware(
     CORSMiddleware,
