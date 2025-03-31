@@ -297,7 +297,7 @@ async def generate_content(request: Request, current_user: dict = Depends(get_cu
     })
 
 @app.get("/api/workflows", tags=["Generation Flows"])
-async def get_workflows(current_user: dict = Depends(get_current_user)):
+async def get_workflows(user: dict = Depends(check_api_key_or_jwt)):
     """
     **Retrieve all generation workflow configurations**
 
@@ -308,6 +308,8 @@ async def get_workflows(current_user: dict = Depends(get_current_user)):
     * **List all available workflows** for user selection
     * Get an overview of configured generation processes
     * Select a workflow for content generation
+    
+    *This endpoint supports both JWT and API key authentication.*
     """
     ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
     ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
@@ -621,7 +623,7 @@ async def upload_file(
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/generation-flow", response_model=schemas.SuccessResponse, tags=["Generation Flows"])
-async def create_generation_flow(request_data: schemas.GenerationFlowRequest):
+async def create_generation_flow(request_data: schemas.GenerationFlowRequest, user: dict = Depends(check_api_key_or_jwt)):
     """
     **Create or update a content generation workflow**
 
@@ -635,6 +637,7 @@ async def create_generation_flow(request_data: schemas.GenerationFlowRequest):
     * Define **multi-stage generation** with different parameters
 
     *Once created, workflows can be referenced by ID in content generation endpoints.*
+    *This endpoint supports both JWT and API key authentication.*
     """
     ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
     ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
@@ -990,7 +993,7 @@ async def create_template_embedding(request_data: schemas.TemplateContextRequest
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/flow-config/{workflow_id}", tags=["Generation Flows"])
-async def get_flow_config(workflow_id: str):
+async def get_flow_config(workflow_id: str, user: dict = Depends(check_api_key_or_jwt)):
     """
     **Retrieve a generation workflow configuration**
 
@@ -1004,6 +1007,7 @@ async def get_flow_config(workflow_id: str):
     * Clone an existing workflow as a starting point for a new one
 
     *This endpoint is typically used before running content generation to ensure the workflow is configured correctly.*
+    *This endpoint supports both JWT and API key authentication.*
     """
     if not os.getenv("ASTRA_DB_API_ENDPOINT"):
         raise HTTPException(status_code=500, detail="ASTRA_DB_API_ENDPOINT not configured")
@@ -1178,7 +1182,7 @@ if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8080)
 
 @app.delete("/api/generation-flow/{workflow_id}", tags=["Generation Flows"])
-async def delete_generation_flow(workflow_id: str):
+async def delete_generation_flow(workflow_id: str, user: dict = Depends(check_api_key_or_jwt)):
     """
     **Delete a generation workflow configuration**
 
@@ -1192,6 +1196,7 @@ async def delete_generation_flow(workflow_id: str):
     * Remove workflows that have been replaced with newer versions
 
     *This action cannot be undone, and workflows in use by other processes will cause errors if deleted.*
+    *This endpoint supports both JWT and API key authentication.*
     """
     if not os.getenv("ASTRA_DB_API_ENDPOINT"):
         raise HTTPException(status_code=500, detail="ASTRA_DB_API_ENDPOINT not configured")
