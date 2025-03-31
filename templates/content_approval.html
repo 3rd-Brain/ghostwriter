@@ -315,9 +315,9 @@ function fetchContentData() {
             return response.json();
         })
         .then(responseData => {
-            if (responseData.status === 'success' && Array.isArray(responseData.content)) {
+            if (responseData.status === 'success' && Array.isArray(responseData.posts)) {
                 // Transform the API response to the expected format for rendering
-                const transformedData = responseData.content.map(item => {
+                const transformedData = responseData.posts.map(item => {
                     return {
                         _id: item._id,
                         First_Draft: item.First_Draft || '',
