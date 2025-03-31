@@ -338,7 +338,7 @@ document.addEventListener('DOMContentLoaded', function() {
         currentSearchQuery = searchQuery;
         
         // Make API call to search templates
-        fetch('/template-search', {
+        fetch('/api/template-search', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
