@@ -1,24 +1,58 @@
 
 import time
 from typing import Callable, Dict, Optional, Tuple, Union
-import redis
 from fastapi import Request, Response
-from slowapi import Limiter
-from slowapi.util import get_remote_address
 from starlette.middleware.base import BaseHTTPMiddleware
+import threading
 import os
 
-# Initialize Redis client
-REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
-redis_client = redis.from_url(REDIS_URL)
+# In-memory storage for rate limiting
+class InMemoryStore:
+    def __init__(self):
+        self.storage = {}
+        self.lock = threading.Lock()
+        
+    def get(self, key):
+        with self.lock:
+            return self.storage.get(key, (0, 0))  # (count, expiry)
+            
+    def increment(self, key, expiry):
+        with self.lock:
+            count, _ = self.storage.get(key, (0, 0))
+            count += 1
+            self.storage[key] = (count, expiry)
+            return count
+            
+    def ttl(self, key):
+        with self.lock:
+            _, expiry = self.storage.get(key, (0, 0))
+            now = time.time()
+            return max(0, expiry - now)
 
-# Initialize slowapi limiter
-limiter = Limiter(key_func=get_remote_address)
+# Initialize in-memory store
+store = InMemoryStore()
+
+# Clean up expired items periodically
+def cleanup_expired():
+    now = time.time()
+    with store.lock:
+        for key in list(store.storage.keys()):
+            _, expiry = store.storage[key]
+            if now > expiry:
+                del store.storage[key]
+    
+    # Schedule next cleanup
+    threading.Timer(60.0, cleanup_expired).start()
+
+# Start cleanup thread
+cleanup_thread = threading.Timer(60.0, cleanup_expired)
+cleanup_thread.daemon = True
+cleanup_thread.start()
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
     """
     Custom middleware for rate limiting based on API keys or JWT tokens
-    with Redis as a backend store.
+    with in-memory storage as a backend.
     """
     
     def __init__(self, app, rate_limit_per_hour: int = 300):
@@ -97,7 +131,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             - Time when the rate limit resets (timestamp)
             - Number of requests remaining
         """
-        # Create Redis key for this user
+        # Create key for this user
         key = f"ratelimit:{identifier}"
         
         # Get current time
@@ -106,20 +140,15 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         # Calculate window expiry (1 hour from now)
         window_expiry = now + 3600
         
-        # Get current count and expiry time from Redis
-        pipe = redis_client.pipeline()
-        pipe.get(key)
-        pipe.ttl(key)
-        count_bytes, ttl = pipe.execute()
+        # Get current count and ttl from store
+        count, old_expiry = store.get(key)
         
-        # Convert count from bytes to int if it exists
-        count = int(count_bytes) if count_bytes else 0
-        
-        # If key doesn't exist or TTL is -1 (no expiry), set expiry to 1 hour
-        if ttl < 0:
-            pipe.expire(key, 3600)
-            pipe.execute()
-            ttl = 3600
+        # If key doesn't exist or expired, reset count
+        if now > old_expiry:
+            count = 0
+            
+        # Get ttl
+        ttl = window_expiry - now if count == 0 else store.ttl(key)
         
         # Calculate when the window resets
         reset_time = now + ttl
@@ -129,9 +158,9 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             return False, reset_time, 0
         
         # Increment the counter
-        redis_client.incr(key)
+        count = store.increment(key, window_expiry)
         
         # Calculate remaining requests
-        remaining = self.rate_limit_per_hour - count - 1
+        remaining = self.rate_limit_per_hour - count
         
         return True, reset_time, remaining
