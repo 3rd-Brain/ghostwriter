@@ -682,7 +682,7 @@ async def create_generation_flow(request_data: schemas.GenerationFlowRequest):
         print(f"Error details: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/upload-content", response_model=Dict, tags=["Content Management"])
+@app.post("/api/upload-content", response_model=Dict, tags=["Content Management"])
 async def upload_content(content_data: schemas.ContentUploadRequest):
     """
     **Upload generated content to the content database**
@@ -742,7 +742,7 @@ async def get_brand_voice(request_data: schemas.BrandVoiceRequest, user: dict = 
         print(f"\n=== Debug: Error in get_brand_voice: {str(e)} ===\n")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/vector-search", response_model=Dict, tags=["Utility"])
+@app.post("/api/vector-search", response_model=Dict, tags=["Utility"])
 async def vector_search(request_data: schemas.VectorSearchRequest):
     """
     Search for similar content using vector search.
@@ -768,7 +768,7 @@ async def vector_search(request_data: schemas.VectorSearchRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/sentiment-setup", response_model=Dict, tags=["Utility"])
+@app.post("/api/sentiment-setup", response_model=Dict, tags=["Utility"])
 async def setup_sentiment(request_data: schemas.SentimentSetupRequest):
     """
     Set up sentiment analysis configuration based on a query.
@@ -791,7 +791,7 @@ def top_content_retriever(query: str, topic: str = "general") -> Dict:
         results = metric_sorter(results, setup_result["metric_sort"])
     return results
 
-@app.post("/top-content", response_model=Dict, tags=["Content Management"])
+@app.post("/api/top-content", response_model=Dict, tags=["Content Management"])
 async def get_top_content(request_data: schemas.TopContentRequest):
     """
     **Retrieve top-performing content based on performance metrics**
@@ -818,7 +818,7 @@ async def get_top_content(request_data: schemas.TopContentRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/source-content", response_model=Dict, tags=["Content Management"])
+@app.post("/api/source-content", response_model=Dict, tags=["Content Management"])
 async def get_source_content(request_data: schemas.SourceContentRequest):
     """
     **Retrieve relevant source content from the knowledge base**
@@ -845,7 +845,7 @@ async def get_source_content(request_data: schemas.SourceContentRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/generate-new-content", response_model=schemas.SuccessResponse, tags=["Generation"])
+@app.post("/api/generate-new-content", response_model=schemas.SuccessResponse, tags=["Generation"])
 async def generate_new_content(request_data: schemas.RepurposeRequest, background_tasks: BackgroundTasks):
     """
     **Generate new content based on a topic query for a specific brand.**
@@ -881,7 +881,7 @@ async def generate_new_content(request_data: schemas.RepurposeRequest, backgroun
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/top-content-repurposing", response_model=schemas.SuccessResponse, tags=["Generation"])
+@app.post("/api/top-content-repurposing", response_model=schemas.SuccessResponse, tags=["Generation"])
 async def get_top_content_repurposing(request_data: schemas.TopContentRepurposingRequest, background_tasks: BackgroundTasks):
     """
     **Repurpose top performing content**
@@ -918,7 +918,7 @@ async def get_top_content_repurposing(request_data: schemas.TopContentRepurposin
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/social-post-generation", response_model=schemas.SocialPostGenerationResponse, tags=["Generation"])
+@app.post("/api/social-post-generation", response_model=schemas.SocialPostGenerationResponse, tags=["Generation"])
 async def generate_social_post(request_data: schemas.SocialPostGenerationRequest):
     """
     **Generate a social media post using a specified workflow.**
@@ -948,7 +948,7 @@ async def generate_social_post(request_data: schemas.SocialPostGenerationRequest
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/template-context-and-uploader", response_model=Dict, tags=["Template Management"])
+@app.post("/api/template-context-and-uploader", response_model=Dict, tags=["Template Management"])
 async def create_template_embedding(request_data: schemas.TemplateContextRequest):
     """
     **Process and index a template for future retrieval**
@@ -1004,7 +1004,7 @@ async def get_flow_config(workflow_id: str):
         print(f"Error retrieving flow config: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/templatizer", response_model=schemas.TemplatizerResponse, tags=["Template Management"])
+@app.post("/api/templatizer", response_model=schemas.TemplatizerResponse, tags=["Template Management"])
 async def create_template(request_data: schemas.TemplatizerRequest):
     """
     **Convert an existing social post into a reusable template**
@@ -1031,7 +1031,7 @@ async def create_template(request_data: schemas.TemplatizerRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/multitemplate", response_model=Dict, tags=["Template Management"])
+@app.post("/api/multitemplate", response_model=Dict, tags=["Template Management"])
 async def get_multitemplate(request_data: schemas.MultitemplateRequest):
     """
     **Find templates that match specific content**
@@ -1060,7 +1060,7 @@ async def get_multitemplate(request_data: schemas.MultitemplateRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/repurpose-with-templates", response_model=Dict, tags=["Generation"])
+@app.post("/api/repurpose-with-templates", response_model=Dict, tags=["Generation"])
 async def repurpose_with_templates(request_data: schemas.RepurposeWithTemplatesRequest):
     """
     **Repurpose content using social posts as templates**
@@ -1095,7 +1095,7 @@ async def repurpose_with_templates(request_data: schemas.RepurposeWithTemplatesR
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/template-search", response_model=Dict, tags=["Template Management"])
+@app.post("/api/template-search", response_model=Dict, tags=["Template Management"])
 async def search_templates(request_data: schemas.MultitemplateRequest):
     """
     **Search for templates matching specific content**
@@ -1122,7 +1122,7 @@ async def search_templates(request_data: schemas.MultitemplateRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/source-content-repurpose-with-templates", response_model=schemas.SuccessResponse, tags=["Generation"])
+@app.post("/api/source-content-repurpose-with-templates", response_model=schemas.SuccessResponse, tags=["Generation"])
 async def repurpose_source_content_with_templates(
     request_data: schemas.SourceContentRepurposeWithTemplatesRequest, 
     background_tasks: BackgroundTasks
