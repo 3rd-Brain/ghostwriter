@@ -863,7 +863,7 @@ async def get_source_content(request_data: schemas.SourceContentRequest, user: d
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/generate-new-content", response_model=schemas.SuccessResponse, tags=["Generation"])
-async def generate_new_content(request_data: schemas.RepurposeRequest, background_tasks: BackgroundTasks):
+async def generate_new_content(request_data: schemas.RepurposeRequest, background_tasks: BackgroundTasks, user: dict = Depends(check_api_key_or_jwt)):
     """
     **Generate new content based on a topic query for a specific brand.**
 
@@ -876,6 +876,7 @@ async def generate_new_content(request_data: schemas.RepurposeRequest, backgroun
     * Need simple content generation directly from source material
 
     *This endpoint runs in the background and doesn't provide immediate results.*
+    *This endpoint supports both JWT and API key authentication.*
     """
     if not os.getenv("OPENAI_API_KEY"):
         raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
@@ -899,7 +900,7 @@ async def generate_new_content(request_data: schemas.RepurposeRequest, backgroun
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/top-content-repurposing", response_model=schemas.SuccessResponse, tags=["Generation"])
-async def get_top_content_repurposing(request_data: schemas.TopContentRepurposingRequest, background_tasks: BackgroundTasks):
+async def get_top_content_repurposing(request_data: schemas.TopContentRepurposingRequest, background_tasks: BackgroundTasks, user: dict = Depends(check_api_key_or_jwt)):
     """
     **Repurpose top performing content**
 
@@ -912,6 +913,7 @@ async def get_top_content_repurposing(request_data: schemas.TopContentRepurposin
     * Create variations of successful content patterns
 
     *This performs an automatic selection of high-performing content before repurposing.*
+    *This endpoint supports both JWT and API key authentication.*
     """
     if not os.getenv("OPENAI_API_KEY"):
         raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
@@ -936,7 +938,7 @@ async def get_top_content_repurposing(request_data: schemas.TopContentRepurposin
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/social-post-generation", response_model=schemas.SocialPostGenerationResponse, tags=["Generation"])
-async def generate_social_post(request_data: schemas.SocialPostGenerationRequest):
+async def generate_social_post(request_data: schemas.SocialPostGenerationRequest, user: dict = Depends(check_api_key_or_jwt)):
     """
     **Generate a social media post using a specified workflow.**
 
@@ -949,6 +951,7 @@ async def generate_social_post(request_data: schemas.SocialPostGenerationRequest
     * Need to see results immediately rather than in the background
 
     *Unlike other generation endpoints, this returns the content immediately.*
+    *This endpoint supports both JWT and API key authentication.*
     """
     if not os.getenv("ANTHROPIC_API_KEY"):
         raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY not configured")
@@ -1082,7 +1085,7 @@ async def get_multitemplate(request_data: schemas.MultitemplateRequest, user: di
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/repurpose-with-templates", response_model=Dict, tags=["Generation"])
-async def repurpose_with_templates(request_data: schemas.RepurposeWithTemplatesRequest):
+async def repurpose_with_templates(request_data: schemas.RepurposeWithTemplatesRequest, user: dict = Depends(check_api_key_or_jwt)):
     """
     **Repurpose content using social posts as templates**
 
@@ -1096,6 +1099,7 @@ async def repurpose_with_templates(request_data: schemas.RepurposeWithTemplatesR
     * Get immediate results rather than background processing
 
     *Unlike `/source-content-repurpose-with-templates`, this requires you to provide content chunks.*
+    *This endpoint supports both JWT and API key authentication.*
     """
     if not os.getenv("OPENAI_API_KEY"):
         raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
@@ -1148,7 +1152,8 @@ async def search_templates(request_data: schemas.MultitemplateRequest, user: dic
 @app.post("/api/source-content-repurpose-with-templates", response_model=schemas.SuccessResponse, tags=["Generation"])
 async def repurpose_source_content_with_templates(
     request_data: schemas.SourceContentRepurposeWithTemplatesRequest, 
-    background_tasks: BackgroundTasks
+    background_tasks: BackgroundTasks,
+    user: dict = Depends(check_api_key_or_jwt)
 ):
     """
     **Repurpose source content using social posts as templates**
@@ -1164,6 +1169,7 @@ async def repurpose_source_content_with_templates(
 
     *This endpoint automatically retrieves relevant source content based on your topic query,
     then applies templates to create multiple posts in the background.*
+    *This endpoint supports both JWT and API key authentication.*
     """
     try:
         # Add task to background
@@ -1319,7 +1325,7 @@ async def delete_post(post_id: str, user: dict = Depends(check_api_key_or_jwt)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/simple-repurpose", response_model=schemas.SuccessResponse, tags=["Generation"])
-async def simple_repurpose_endpoint(request_data: schemas.SimpleRepurposeRequest, background_tasks: BackgroundTasks):
+async def simple_repurpose_endpoint(request_data: schemas.SimpleRepurposeRequest, background_tasks: BackgroundTasks, user: dict = Depends(check_api_key_or_jwt)):
     """
     **Generate content variations using a simple repurposing workflow**
 
@@ -1332,6 +1338,7 @@ async def simple_repurpose_endpoint(request_data: schemas.SimpleRepurposeRequest
     * Get quick repurposing without manual template selection
 
     *This endpoint runs in the background and returns immediately with a status.*
+    *This endpoint supports both JWT and API key authentication.*
     """
     try:
         from social_writer import simple_repurpose
