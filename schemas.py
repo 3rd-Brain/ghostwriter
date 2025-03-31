@@ -197,10 +197,10 @@ class ApiKeyResponse(BaseModel):
     scope: str = Field(..., description="Permission scope")
     created_at: str = Field(..., description="Creation timestamp")
     is_active: bool = Field(..., description="Whether the key is active")
-    _id: str = Field(..., description="Database ID")
+    id: str = Field(..., description="Database ID")
 
 class ApiKeyInfo(BaseModel):
-    _id: str = Field(..., description="Database ID")
+    id: str = Field(..., description="Database ID")
     name: str = Field(..., description="Descriptive name")
     prefix: str = Field(..., description="API key prefix for display")
     scope: str = Field(..., description="Permission scope")

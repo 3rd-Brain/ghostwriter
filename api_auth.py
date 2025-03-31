@@ -118,7 +118,7 @@ def create_api_key(user_id: str, name: str, scope: str = "user") -> Dict:
             "scope": scope,                # Permission level
             "is_active": True,             # Active by default
             "name": name,                  # Descriptive name
-            "_id": document_id             # Database document ID
+            "id": document_id              # Database document ID
         }
     except Exception as e:
         print(f"Error creating API key: {str(e)}")
@@ -182,7 +182,7 @@ def verify_api_key(api_key: str) -> Optional[Dict]:
             "user_id": document.get("user_id"),
             "scope": document.get("scope"),
             "name": document.get("name"),
-            "_id": document.get("_id")
+            "id": document.get("_id")  # Keep _id in database but return as id
         }
     except Exception as e:
         print(f"Error verifying API key: {str(e)}")
