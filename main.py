@@ -966,7 +966,7 @@ async def generate_social_post(request_data: schemas.SocialPostGenerationRequest
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/template-context-and-uploader", response_model=Dict, tags=["Template Management"])
-async def create_template_embedding(request_data: schemas.TemplateContextRequest):
+async def create_template_embedding(request_data: schemas.TemplateContextRequest, user: dict = Depends(check_api_key_or_jwt)):
     """
     **Process and index a template for future retrieval**
 
@@ -980,6 +980,7 @@ async def create_template_embedding(request_data: schemas.TemplateContextRequest
     * Enable **automatic template matching** for future content
 
     *This is a prerequisite step before templates can be used with the `/multitemplate` endpoint.*
+    *This endpoint supports both JWT and API key authentication.*
     """
     if not os.getenv("OPENAI_API_KEY"):
         raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
@@ -1023,7 +1024,7 @@ async def get_flow_config(workflow_id: str, user: dict = Depends(check_api_key_o
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/templatizer", response_model=schemas.TemplatizerResponse, tags=["Template Management"])
-async def create_template(request_data: schemas.TemplatizerRequest):
+async def create_template(request_data: schemas.TemplatizerRequest, user: dict = Depends(check_api_key_or_jwt)):
     """
     **Convert an existing social post into a reusable template**
 
@@ -1037,6 +1038,7 @@ async def create_template(request_data: schemas.TemplatizerRequest):
     * Leverage the structure of successful posts for new content
 
     *After creating a template, use `/template-context-and-uploader` to index it for future retrieval.*
+    *This endpoint supports both JWT and API key authentication.*
     """
     if not os.getenv("OPENAI_API_KEY"):
         raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
@@ -1050,7 +1052,7 @@ async def create_template(request_data: schemas.TemplatizerRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/multitemplate", response_model=Dict, tags=["Template Management"])
-async def get_multitemplate(request_data: schemas.MultitemplateRequest):
+async def get_multitemplate(request_data: schemas.MultitemplateRequest, user: dict = Depends(check_api_key_or_jwt)):
     """
     **Find templates that match specific content**
 
@@ -1064,6 +1066,7 @@ async def get_multitemplate(request_data: schemas.MultitemplateRequest):
     * Enhance content presentation with optimized formatting
 
     *This endpoint requires templates to be previously processed with `/template-context-and-uploader`.*
+    *This endpoint supports both JWT and API key authentication.*
     """
     if not os.getenv("OPENAI_API_KEY"):
         raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
@@ -1114,7 +1117,7 @@ async def repurpose_with_templates(request_data: schemas.RepurposeWithTemplatesR
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/template-search", response_model=Dict, tags=["Template Management"])
-async def search_templates(request_data: schemas.MultitemplateRequest):
+async def search_templates(request_data: schemas.MultitemplateRequest, user: dict = Depends(check_api_key_or_jwt)):
     """
     **Search for templates matching specific content**
 
@@ -1127,6 +1130,8 @@ async def search_templates(request_data: schemas.MultitemplateRequest):
     * Get **multiple formatting options** for a content piece
     * **Directly search templates** without additional processing
     * Perform faster template searches for performance-sensitive applications
+    
+    *This endpoint supports both JWT and API key authentication.*
     """
     if not os.getenv("OPENAI_API_KEY"):
         raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
