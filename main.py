@@ -12,6 +12,7 @@ from jose import JWTError, jwt
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from typing import Dict
+from api_middleware import check_api_key_or_jwt
 from social_writer import generated_content_uploader, get_client_brand_voice, vector_search_for_published_content, metric_sorter, top_content_sentiment_setup, source_content_retriever, multitemplate_retriever, short_form_social_repurposing, top_content_to_repurposing, template_context_and_uploader, Templatizer, repurposer_using_posts_as_templates, source_content_repurposer_using_posts_as_templates, delete_user_account
 from social_dynamic_generation_flow import flow_config_retriever, social_post_generation_with_json
 import schemas
