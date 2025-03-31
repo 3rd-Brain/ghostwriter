@@ -758,7 +758,7 @@ async def get_brand_voice(request_data: schemas.BrandVoiceRequest, user: dict = 
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/vector-search", response_model=Dict, tags=["Utility"])
-async def vector_search(request_data: schemas.VectorSearchRequest):
+async def vector_search(request_data: schemas.VectorSearchRequest, current_user: dict = Depends(get_current_user)):
     """
     Search for similar content using vector search.
 
@@ -784,7 +784,7 @@ async def vector_search(request_data: schemas.VectorSearchRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/sentiment-setup", response_model=Dict, tags=["Utility"])
-async def setup_sentiment(request_data: schemas.SentimentSetupRequest):
+async def setup_sentiment(request_data: schemas.SentimentSetupRequest, current_user: dict = Depends(get_current_user)):
     """
     Set up sentiment analysis configuration based on a query.
 
