@@ -709,7 +709,7 @@ async def upload_content(content_data: schemas.ContentUploadRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/brand-voice", response_model=Dict, tags=["Brand Management"])
-async def get_brand_voice(request_data: schemas.BrandVoiceRequest, current_user: dict = Depends(get_current_user)):
+async def get_brand_voice(request_data: schemas.BrandVoiceRequest, user: dict = Depends(check_api_key_or_jwt)):
     """
     **Retrieve brand voice and tone guidelines**
 
@@ -722,15 +722,18 @@ async def get_brand_voice(request_data: schemas.BrandVoiceRequest, current_user:
     * Ensure content reflects the **brand personality**
     * Incorporate brand-specific **terminology and phrasing**
 
-    *This endpoint should be called before content generation to ensure all content adheres to brand guidelines.*
+    *This endpoint supports both JWT and API key authentication.*
     """
     try:
         # Get the user ID from the authenticated user or from request data
-        user_id = request_data.user_id or current_user["user_id"]
+        user_id = request_data.user_id or user.get("user_id")
         brand = request_data.brand
         
         # Print debugging information before calling get_client_brand_voice
+        auth_method = user.get("auth_source", "unknown")
         print(f"\n=== Debug: Calling get_client_brand_voice for brand: {brand}, user ID: {user_id} ===")
+        print(f"=== Debug: Authenticated using: {auth_method} ===")
+        
         result = get_client_brand_voice(brand, user_id)
         print(f"=== Debug: API Response: {result} ===\n")
         return result
