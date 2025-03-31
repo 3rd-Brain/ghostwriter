@@ -975,7 +975,7 @@ async def create_template_embedding(request_data: schemas.TemplateContextRequest
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/flow-config/{workflow_id}", tags=["Generation Flows"])
+@app.get("/api/flow-config/{workflow_id}", tags=["Generation Flows"])
 async def get_flow_config(workflow_id: str):
     """
     **Retrieve a generation workflow configuration**
