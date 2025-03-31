@@ -307,7 +307,7 @@ function fetchContentData() {
     tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px;">Loading content data...</td></tr>';
 
     // Fetch content data from the API
-    fetch('/api/latest-content')
+    fetch('/api/latest-posts')
         .then(response => {
             if (!response.ok) {
                 throw new Error('Failed to fetch content data');
