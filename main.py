@@ -499,6 +499,15 @@ async def content_approval(request: Request, current_user: str = Depends(get_cur
         "current_page": "content_approval"
     })
 
+@app.get("/api-keys", response_class=HTMLResponse, include_in_schema=False)
+async def api_keys_page(request: Request, current_user: dict = Depends(get_current_user)):
+    return templates.TemplateResponse("api_keys.html", {
+        "request": request,
+        "username": current_user["username"],
+        "user_id": current_user["user_id"],
+        "current_page": "api_keys"
+    })
+
 @app.get("/logout", include_in_schema=False)
 async def logout(response: Response):
     # Clear the username environment variable on logout
@@ -552,8 +561,15 @@ class ReferrerPolicyMiddleware(BaseHTTPMiddleware):
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=["*"])
 app.add_middleware(ReferrerPolicyMiddleware)
 
-# Include onboarding router
+# Include routers
 app.include_router(onboarding_router)
+
+# Import and include API routes
+from api_routes import router as api_router
+from api_key_routes import router as api_key_router
+
+app.include_router(api_router)
+app.include_router(api_key_router)
 
 @app.get("/", include_in_schema=False)
 def read_root():
