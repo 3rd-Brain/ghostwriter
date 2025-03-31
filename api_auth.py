@@ -270,7 +270,7 @@ def get_user_api_keys(user_id: str) -> list:
         # Return key details (excluding the actual key)
         return [
             {
-                "_id": doc.get("_id"),
+                "id": doc.get("_id"),  # Renamed from _id to id for consistency with schema
                 "name": doc.get("name"),
                 "prefix": doc.get("prefix"),
                 "scope": doc.get("scope"),
