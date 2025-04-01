@@ -8,16 +8,6 @@ import anthropic
 import os
 from string import Template
 
-
-def legacy_generation_flow_with_claude() -> Dict:
-    """
-    Legacy generation flow using Claude for content generation
-    Returns:
-        Dictionary containing generation results
-    """
-    pass
-
-
 def social_post_generation_with_json(workflow_id: str,
                                      client_brief: str,
                                      template: str,
