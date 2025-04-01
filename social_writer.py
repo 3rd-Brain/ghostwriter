@@ -516,9 +516,14 @@ def source_content_retriever(topic_query: str) -> str:
     """
     if not OPENAI_API_KEY:
         raise Exception("OPENAI_API_KEY not configured")
-    ASTRA_DB_APPLICATION_TOKEN_FOR_SOURCES = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_FOR_SOURCES")
-    if not ASTRA_DB_APPLICATION_TOKEN_FOR_SOURCES:
-        raise Exception("ASTRA_DB_APPLICATION_TOKEN_FOR_SOURCES not configured")
+    ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+    if not ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER:
+        raise Exception("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
+
+    # Get the current user's ID from environment
+    user_id = os.environ.get("CURRENT_USER_ID")
+    if not user_id:
+        raise Exception("CURRENT_USER_ID not configured")
 
     # Generate embedding for the topic query
     response = openai_client.embeddings.create(
@@ -528,16 +533,21 @@ def source_content_retriever(topic_query: str) -> str:
     vector = response.data[0].embedding
 
     # Prepare search request
-    url = "https://168d1caf-ef22-4f69-a1a0-2e771cbd41bf-us-east-2.apps.astra.datastax.com/api/json/v1/default_keyspace/source_content"
+    ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+    if not ASTRA_DB_API_ENDPOINT:
+        raise Exception("ASTRA_DB_API_ENDPOINT not configured")
+        
+    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/user_source_content"
 
     headers = {
-        "Token": ASTRA_DB_APPLICATION_TOKEN_FOR_SOURCES,
+        "Token": ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
         "Content-Type": "application/json"
     }
 
     payload = {
         "find": {
             "sort": {"$vector": vector},
+            "filter": {"user_id": user_id},
             "options": {
                 "limit": 5
             }
@@ -556,7 +566,7 @@ def source_content_retriever(topic_query: str) -> str:
         print(f"Request URL: {url}")
         print(f"Request Headers: {headers}")
         print(f"Request Payload: {payload}")
-        raise Exception(f"Failed to retrieve source content: {str(e)}")
+        raise Exception(f"Failed to retrieve user source content: {str(e)}")
 
 def template_context_and_uploader(template: str) -> Dict:
     """
