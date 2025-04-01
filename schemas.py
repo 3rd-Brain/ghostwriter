@@ -60,6 +60,8 @@ class SocialPostGenerationResponse(BaseModel):
 # Template Context schemas
 class TemplateContextRequest(BaseModel):
     template: str = Field(..., description="Template to create embedding for")
+    template_id: Optional[str] = Field(None, description="Optional template ID for updates")
+    description: Optional[str] = Field(None, description="Optional pre-defined description")
 
 # Content Upload schemas
 class ContentUploadRequest(BaseModel):

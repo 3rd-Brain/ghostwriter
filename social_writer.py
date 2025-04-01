@@ -669,6 +669,11 @@ def template_context_and_uploader(template: str) -> Dict:
     print("\n=== Starting Template Processing ===")
     print(f"Input template: {template}")
 
+    # Get the current user's ID from environment
+    user_id = os.environ.get("CURRENT_USER_ID")
+    if not user_id:
+        raise Exception("CURRENT_USER_ID not configured")
+
     # Generate template description using Claude
     response = client.messages.create(
         model="claude-3-5-haiku-20241022",
@@ -679,34 +684,45 @@ def template_context_and_uploader(template: str) -> Dict:
     template_description = response.content[0].text
     print(f"\n=== Generated Template Description ===\n{template_description}")
 
-    # Combine template and description
-    combined_text = f"{template}|{template_description}"
-    print(f"\n=== Combined Text ===\n{combined_text}")
-
     # Generate vector embedding
     embedding_response = openai_client.embeddings.create(
-        input=combined_text,
+        input=template,
         model="text-embedding-3-small"
     )
     vector = embedding_response.data[0].embedding
 
-    # Upload vector and text to AstraDB
-    url = "https://42ac68c8-bfd9-4149-ab5c-a5212153b560-us-east-2.apps.astra.datastax.com/api/json/v1/default_keyspace/templates_shortform"
-    if not ASTRA_DB_APPLICATION_TOKEN_FOR_SHORTFORM_TEMPLATES:
-        raise Exception("ASTRA_DB_APPLICATION_TOKEN_FOR_SHORTFORM_TEMPLATES not configured")
+    # Generate a unique ID for the template
+    template_id = str(uuid.uuid4())
+    
+    # Get Astra DB endpoint from environment
+    ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+    ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+    
+    if not ASTRA_DB_API_ENDPOINT:
+        raise Exception("ASTRA_DB_API_ENDPOINT not configured")
+    if not ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER:
+        raise Exception("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
+
+    # Upload vector and text to AstraDB using the new URL and structure
+    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/user_templates"
 
     headers = {
-        "Token": ASTRA_DB_APPLICATION_TOKEN_FOR_SHORTFORM_TEMPLATES,
+        "Token": ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
         "Content-Type": "application/json"
     }
+    
     timestamp = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+    
+    # Prepare document with new structure
     payload = {
         "insertOne": {
             "document": {
-                "content": combined_text,
+                "template_id": template_id,
+                "user_id": user_id,
+                "template": template,
+                "description": template_description,
                 "$vector": vector,
                 "metadata": {
-                    "files": [],
                     "timestamp": timestamp
                 }
             }
@@ -714,9 +730,19 @@ def template_context_and_uploader(template: str) -> Dict:
     }
 
     try:
+        print(f"\n=== Uploading Template to AstraDB ===")
+        print(f"URL: {url}")
+        print(f"Payload structure (truncated): {str(payload)[:200]}...")
+        
         response = requests.post(url, headers=headers, json=payload)
+        print(f"Response status code: {response.status_code}")
+        print(f"Response text: {response.text}")
+        
         response.raise_for_status()
-        return response.json()
+        result = response.json()
+        print(f"=== Template Upload Completed ===\n")
+        
+        return result
     except requests.exceptions.RequestException as e:
         print(f"AstraDB upload failed: {str(e)}")
         raise Exception(f"Failed to upload to AstraDB: {str(e)}")
