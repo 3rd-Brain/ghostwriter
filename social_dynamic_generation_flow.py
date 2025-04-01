@@ -128,10 +128,10 @@ def flow_config_retriever(workflow_id: str) -> dict:
                 print(f"Found workflow in system workflows collection")
                 document = system_data['data']['document']
                 # Check for nested fields based on sample document structure
-                json_payload = document.get("JSON_Payload") or document.get("steps")
-                print(f"Payload from system response: {json_payload}")
+                generation_steps = document.get("steps")
+                print(f"Generation Steps from system response: {generation_steps}")
                 
-                if json_payload:
+                if generation_steps:
                     # Parse the JSON payload
                     if isinstance(json_payload, dict):
                         flow_config = json_payload
@@ -164,8 +164,17 @@ def flow_config_retriever(workflow_id: str) -> dict:
         user_url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/user_workflows"
         print(f"Checking user workflows at URL: {user_url}")
         
-        # Need to filter by both user_id and workflow_id for user workflows
-        user_payload = {"findOne": {"filter": {"user_id": CURRENT_USER_ID, "workflow_id": workflow_id}}}  # Use lowercase field name
+        # Need to filter by both user_id and workflow_id for user workflows using $and operator
+        user_payload = {
+            "findOne": {
+                "filter": {
+                    "$and": [
+                        {"user_id": CURRENT_USER_ID},
+                        {"workflow_id": workflow_id}
+                    ]
+                }
+            }
+        }
         print(f"User payload: {json.dumps(user_payload, indent=2)}")
         
         print(f"Sending request to user workflows collection...")
