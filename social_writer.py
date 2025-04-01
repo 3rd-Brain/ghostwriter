@@ -809,19 +809,27 @@ def get_latest_generated_content(username: str) -> Dict:
     if not ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER:
         raise Exception("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
     
-    # Use the provided username for the URL path
-    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/{username}/generated_content"
+    # Get the user_id from environment or by looking it up from the username
+    user_id = os.environ.get("CURRENT_USER_ID")
+    
+    # If we don't have a user_id in the environment, we need to look it up from the username
+    if not user_id:
+        # This would need to be implemented - for now assuming user_id is available
+        print(f"Warning: CURRENT_USER_ID not found in environment")
+    
+    # Use the new URL path for the user_content_keyspace
+    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/generated_content"
     
     headers = {
         "Token": ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
         "Content-Type": "application/json"
     }
     
-    # Create the query payload with filter for AI_Generated content and sort by Created_Time in descending order (-1)
+    # Create the query payload with filter for user_id and sort by Created_Time in descending order (-1)
     payload = {
         "find": {
             "filter": {
-                "Content_Author": "AI_Generated"
+                "user_id": user_id
             },
             "sort": {
                 "Created_Time": -1  # -1 for descending order (newest first)
