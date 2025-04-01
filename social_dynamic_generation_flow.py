@@ -132,17 +132,17 @@ def flow_config_retriever(workflow_id: str) -> dict:
                 print(f"Generation Steps from system response: {generation_steps}")
                 
                 if generation_steps:
-                    # Parse the JSON payload
-                    if isinstance(json_payload, dict):
-                        flow_config = json_payload
+                    # Parse the Generation Steps
+                    if isinstance(generation_steps, dict):
+                        flow_config = generation_steps
                     else:
                         try:
-                            flow_config = json.loads(json_payload)
+                            flow_config = json.loads(generation_steps)
                         except json.JSONDecodeError as e:
-                            print(f"System payload parsing failed: {str(e)}")
-                            if isinstance(json_payload, str) and json_payload.startswith('"') and json_payload.endswith('"'):
-                                unescaped_payload = json_payload[1:-1].replace('\\"', '"')
-                                flow_config = json.loads(unescaped_payload)
+                            print(f"Generation steps parsing failed: {str(e)}")
+                            if isinstance(generation_steps, str) and generation_steps.startswith('"') and generation_steps.endswith('"'):
+                                unescaped_steps = generation_steps[1:-1].replace('\\"', '"')
+                                flow_config = json.loads(unescaped_steps)
                             else:
                                 raise
                     
