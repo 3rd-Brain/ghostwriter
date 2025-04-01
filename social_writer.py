@@ -22,6 +22,18 @@ client = anthropic.Client(api_key=ANTHROPIC_API_KEY)
 def generated_content_uploader(content_data: Dict) -> Dict:
     """
     Upload generated content to AstraDB
+    
+    Args:
+        content_data: Dictionary containing content information with the following keys:
+            - first_draft: The initial content generated
+            - content_chunks: Source content used for generation
+            - template: Template used (or template_id if available)
+            - brand_id: (Optional) ID of the brand used
+            - template_id: (Optional) ID reference to system templates
+            - workflow_id: (Optional) ID of the workflow used for generation
+    
+    Returns:
+        Dictionary with the database response
     """
     ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
     ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
@@ -33,51 +45,52 @@ def generated_content_uploader(content_data: Dict) -> Dict:
     if not ASTRA_DB_APPLICATION_TOKEN:
         raise Exception("ASTRA_DB_APPLICATION_TOKEN not configured")
         
-    # Get the current user's username from the environment
-    CURRENT_USERNAME = os.environ.get("CURRENT_USERNAME")
+    # Get the current user's ID from the environment
+    user_id = os.environ.get("CURRENT_USER_ID")
+    if not user_id:
+        raise Exception("CURRENT_USER_ID not configured")
     
-    content = content_data.get("first_draft", "")
-    content_chunks = content_data.get("content_chunks", "")
+    # Extract content data
+    first_draft = content_data.get("first_draft", "")
+    source_chunks = content_data.get("content_chunks", "")
     template = content_data.get("template", "")
+    template_id = content_data.get("template_id", "")  # New field
+    brand_id = content_data.get("brand_id", "")  # New field
+    workflow_id = content_data.get("workflow_id", "Legacy Generation Flow with Claude")
     
-    # Use the current user's username for the URL path
-    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/{CURRENT_USERNAME}/generated_content"
+    # Set the URL for the new collection path
+    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/generated_content"
     
     headers = {
         "Token": ASTRA_DB_APPLICATION_TOKEN,
         "Content-Type": "application/json"
     }
     
-    # Create a timestamp for the created time
-    timestamp = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+    # Generate UUID for post_id if not provided
+    post_id = content_data.get("post_id", str(uuid.uuid4()))
     
+    # Create a timestamp for created_at
+    created_at = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+    
+    # Create document with new structure
     document = {
-        "First_Draft": content,
-        "Source_Chunk": content_chunks,
-        "Template": template,
-        "Current_Draft": "",
-        "Tag": "Legacy Generation Flow with Claude",
-        "Content_Format": "Short Form Social",
-        "Status": "Draft",
-        "Content_Author": "AI Generated",
-        "Approval_Date": "",
-        "Publish_Date": "",
-        "Post_ID": "",
-        "Post_Channel": "",
-        "Likes": "",
-        "Shares": "",
-        "Quotes": "",
-        "Bookmarks": "",
-        "Replies": "",
-        "Impressions": "",
-        "Created_Time": timestamp,
-        "Weighted_Impressions": "",
-        "Weighted_Replies": "",
-        "Weighted_Bookmarks": "",
-        "Weighted_Shares": "",
-        "Weighted_Likes": "",
-        "Followers": "",
-        "Score": ""
+        "post_id": post_id,
+        "user_id": user_id,
+        "first_draft": first_draft,
+        "current_draft": "",
+        "template_id": template_id,
+        "template": template,  # Keep for backward compatibility
+        "source_chunks": source_chunks,
+        "brand_id": brand_id,
+        "status": "Draft",
+        "created_at": created_at,
+        "workflow_id": workflow_id,
+        "metrics": {
+            "likes": 0,
+            "shares": 0,
+            "comments": 0,
+            "impressions": 0
+        }
     }
     
     payload = {

@@ -128,6 +128,9 @@ class ContentUploadRequest(BaseModel):
     first_draft: str = Field(..., description="First draft of the content")
     content_chunks: str = Field(..., description="Source content chunks")
     template: str = Field(..., description="Template used for generation")
+    template_id: Optional[str] = Field(None, description="ID reference to system templates")
+    brand_id: Optional[str] = Field(None, description="ID reference to brand used")
+    workflow_id: Optional[str] = Field("Legacy Generation Flow with Claude", description="ID of workflow used for generation")
 
 # Source Content
 class SourceContentRequest(BaseModel):
