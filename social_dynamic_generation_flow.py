@@ -145,6 +145,11 @@ def flow_config_retriever(workflow_id: str) -> dict:
                             else:
                                 raise
                     
+                    # If the payload has a 'steps' field and it's a dict with a nested 'steps' array
+                    if 'steps' in flow_config and isinstance(flow_config['steps'], dict) and 'steps' in flow_config['steps']:
+                        print("Found nested steps structure in system workflow")
+                        flow_config['steps'] = flow_config['steps']['steps']
+                    
                     print(f"=== Debug: System Flow Config Retrieval Completed Successfully ===\n")
                     return flow_config
             else:
@@ -179,13 +184,19 @@ def flow_config_retriever(workflow_id: str) -> dict:
             raise Exception(f"No workflow found with ID: {workflow_id}")
         
         document = user_data['data']['document']
+        # Handle nested steps structure - the steps field might be an object with a 'steps' array
         steps = document.get("steps")
         
         if not steps:
             print("No steps field found in user workflow document")
             raise Exception(f"Invalid workflow format for workflow_id: {workflow_id}")
         
-        # For user workflows, we directly return the steps array
+        # Check if steps is a dict with a nested 'steps' array (new format)
+        if isinstance(steps, dict) and 'steps' in steps:
+            print("Found nested steps structure in user workflow")
+            steps = steps['steps']
+        
+        # For user workflows, we return the steps array
         print(f"=== Debug: User Flow Config Retrieval Completed Successfully ===\n")
         return {"steps": steps}
             
