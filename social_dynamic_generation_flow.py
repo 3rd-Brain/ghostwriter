@@ -71,7 +71,9 @@ def social_post_generation_with_json(workflow_id: str,
 
 def flow_config_retriever(workflow_id: str) -> dict:
     """
-    Retrieve flow configuration from AstraDB based on workflow ID
+    Retrieve flow configuration from AstraDB based on workflow ID.
+    First checks system workflows, then falls back to user workflows if not found.
+    
     Args:
         workflow_id: String containing the workflow identifier
     Returns:
@@ -80,9 +82,13 @@ def flow_config_retriever(workflow_id: str) -> dict:
     ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
     ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER = os.environ.get(
         "ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+    
+    # Get the current user's ID from the environment
+    CURRENT_USER_ID = os.environ.get("CURRENT_USER_ID", "")
 
     print(f"\n=== Debug: Flow Config Retrieval Started ===")
     print(f"Workflow ID: {workflow_id}")
+    print(f"User ID: {CURRENT_USER_ID}")
     print(
         f"ASTRA_DB_API_ENDPOINT configured: {'Yes' if ASTRA_DB_API_ENDPOINT else 'No'}"
     )
@@ -96,83 +102,93 @@ def flow_config_retriever(workflow_id: str) -> dict:
         raise Exception(
             "ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
 
-    # Get the current user's username from the environment
-    CURRENT_USERNAME = os.environ.get(
-        "CURRENT_USERNAME", "GentOfTech")  # Default to GentOfTech if not set
-    print(f"Current username: {CURRENT_USERNAME}")
-
-    # Use the current user's username for the URL path
-    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/{CURRENT_USERNAME}/workflows"
-    print(f"Request URL: {url}")
-
     headers = {
         "Token": ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
         "Content-Type": "application/json"
     }
 
-    payload = {"findOne": {"filter": {"Workflow_ID": workflow_id}}}
-    print(f"Request payload: {json.dumps(payload, indent=2)}")
+    # First, try to find the workflow in the system workflows
+    system_url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/sys_keyspace/workflows"
+    print(f"Checking system workflows at URL: {system_url}")
+
+    system_payload = {"findOne": {"filter": {"Workflow_ID": workflow_id}}}
+    print(f"System payload: {json.dumps(system_payload, indent=2)}")
 
     try:
-        print(f"Sending request to AstraDB...")
-        response = requests.post(url, headers=headers, json=payload)
-        print(f"Response status code: {response.status_code}")
-        print(f"Response headers: {response.headers}")
-        print(f"Response body: {response.text}")
-
-        response.raise_for_status()
-        data = response.json()
-        print(f"Parsed JSON data: {json.dumps(data, indent=2)}")
-
-        if not data:
-            print("No data returned from AstraDB")
-            raise Exception(
-                f"No flow configuration found for workflow_id: {workflow_id}")
-
-        # The response should have a 'data' field that contains the document
-        if 'data' in data and 'document' in data['data']:
-            document = data['data']['document']
-            json_payload = document.get("JSON_Payload")
-            print(f"JSON_Payload from response: {json_payload}")
-
-            if not json_payload:
-                print("JSON_Payload field not found in document data")
-                raise Exception(
-                    f"No JSON Payload found for workflow_id: {workflow_id}")
-
-            # Handle double-encoded JSON - the payload seems to be a JSON string within a JSON string
-            try:
-                # Check if the payload is already a dictionary
-                if isinstance(json_payload, dict):
-                    flow_config = json_payload
-                else:
-                    # Otherwise, try to parse it as JSON
-                    flow_config = json.loads(json_payload)
-            except json.JSONDecodeError as e:
-                print(f"First parsing attempt failed: {str(e)}")
-                # If that fails, try to remove the outer quotes and parse again
-                if isinstance(json_payload, str) and json_payload.startswith(
-                        '"') and json_payload.endswith('"'):
-                    # Remove the outer quotes and unescape inner quotes
-                    unescaped_payload = json_payload[1:-1].replace('\\"', '"')
-                    print(
-                        f"Attempting to parse unescaped payload: {unescaped_payload[:100]}..."
-                    )
-                    flow_config = json.loads(unescaped_payload)
-                else:
-                    raise
-
-            print(
-                f"=== Debug: Flow Config Retrieval Completed Successfully ===\n"
-            )
-            return flow_config
+        print(f"Sending request to system workflows collection...")
+        system_response = requests.post(system_url, headers=headers, json=system_payload)
+        print(f"System response status code: {system_response.status_code}")
+        
+        if system_response.status_code == 200:
+            system_data = system_response.json()
+            print(f"System data available: {'Yes' if system_data else 'No'}")
+            
+            # Check if we found a document in the system workflows
+            if system_data.get('data', {}).get('document'):
+                print(f"Found workflow in system workflows collection")
+                document = system_data['data']['document']
+                json_payload = document.get("JSON_Payload")
+                print(f"JSON_Payload from system response: {json_payload}")
+                
+                if json_payload:
+                    # Parse the JSON payload
+                    if isinstance(json_payload, dict):
+                        flow_config = json_payload
+                    else:
+                        try:
+                            flow_config = json.loads(json_payload)
+                        except json.JSONDecodeError as e:
+                            print(f"System payload parsing failed: {str(e)}")
+                            if isinstance(json_payload, str) and json_payload.startswith('"') and json_payload.endswith('"'):
+                                unescaped_payload = json_payload[1:-1].replace('\\"', '"')
+                                flow_config = json.loads(unescaped_payload)
+                            else:
+                                raise
+                    
+                    print(f"=== Debug: System Flow Config Retrieval Completed Successfully ===\n")
+                    return flow_config
+            else:
+                print("No document found in system workflows, checking user workflows...")
         else:
-            print("Expected data structure not found in response")
-            print(f"Available keys in response: {list(data.keys())}")
-            raise Exception(
-                f"Data structure missing expected fields for workflow_id: {workflow_id}"
-            )
-
+            print(f"System workflow request failed with status {system_response.status_code}")
+            print(f"Response: {system_response.text}")
+            
+        # If we reach here, we didn't find the workflow in system workflows
+        # Try to find it in user workflows
+        user_url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/user_workflows"
+        print(f"Checking user workflows at URL: {user_url}")
+        
+        # Need to filter by both user_id and workflow_id for user workflows
+        user_payload = {"findOne": {"filter": {"user_id": CURRENT_USER_ID, "Workflow_ID": workflow_id}}}
+        print(f"User payload: {json.dumps(user_payload, indent=2)}")
+        
+        print(f"Sending request to user workflows collection...")
+        user_response = requests.post(user_url, headers=headers, json=user_payload)
+        print(f"User response status code: {user_response.status_code}")
+        
+        if user_response.status_code != 200:
+            print(f"User workflow request failed with status {user_response.status_code}")
+            print(f"Response: {user_response.text}")
+            raise Exception(f"No workflow found with ID: {workflow_id}")
+        
+        user_data = user_response.json()
+        print(f"User data available: {'Yes' if user_data else 'No'}")
+        
+        if not user_data.get('data', {}).get('document'):
+            print("No document found in user workflows")
+            raise Exception(f"No workflow found with ID: {workflow_id}")
+        
+        document = user_data['data']['document']
+        steps = document.get("steps")
+        
+        if not steps:
+            print("No steps field found in user workflow document")
+            raise Exception(f"Invalid workflow format for workflow_id: {workflow_id}")
+        
+        # For user workflows, we directly return the steps array
+        print(f"=== Debug: User Flow Config Retrieval Completed Successfully ===\n")
+        return {"steps": steps}
+            
     except json.JSONDecodeError as e:
         print(f"Error parsing JSON: {str(e)}")
         raise Exception(f"Invalid JSON in response payload: {str(e)}")
