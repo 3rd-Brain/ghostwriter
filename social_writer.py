@@ -378,12 +378,13 @@ def top_content_retriever(query: str, topic: str) -> Dict:
         return metric_sorter(search_result, setup_result["metric_sort"])
     return search_result
 
-def multitemplate_retriever(content_chunk: str, template_count_to_retrieve: int = 5) -> Dict:
+def multitemplate_retriever(content_chunk: str, template_count_to_retrieve: int = 5, db_to_access: str = "sys") -> Dict:
     """
     Retrieve template documents based on content chunk using vector search
     Args:
         content_chunk: String containing the content to find templates for
         template_count_to_retrieve: The number of templates to retrieve
+        db_to_access: Which databases to access ("sys", "user", or "both")
     Returns:
         Dictionary containing template search results
     """
@@ -391,6 +392,14 @@ def multitemplate_retriever(content_chunk: str, template_count_to_retrieve: int 
         raise Exception("OPENAI_API_KEY not configured")
     if not ASTRA_DB_APPLICATION_TOKEN_FOR_SHORTFORM_TEMPLATES:
         raise Exception("ASTRA_DB_APPLICATION_TOKEN_FOR_SHORTFORM_TEMPLATES not configured")
+    
+    ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+    ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+    
+    if not ASTRA_DB_API_ENDPOINT:
+        raise Exception("ASTRA_DB_API_ENDPOINT not configured")
+    if not ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER:
+        raise Exception("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
 
     # Get template description from Claude
     response = client.messages.create(
@@ -408,15 +417,8 @@ def multitemplate_retriever(content_chunk: str, template_count_to_retrieve: int 
     )
     vector = response.data[0].embedding
 
-    # Prepare search request
-    url = "https://42ac68c8-bfd9-4149-ab5c-a5212153b560-us-east-2.apps.astra.datastax.com/api/json/v1/default_keyspace/templates_shortform"
-
-    headers = {
-        "Token": ASTRA_DB_APPLICATION_TOKEN_FOR_SHORTFORM_TEMPLATES,
-        "Content-Type": "application/json"
-    }
-
-    payload = {
+    # Define base payload for template search
+    base_payload = {
         "find": {
             "sort": {"$vector": vector},
             "options": {
@@ -424,13 +426,101 @@ def multitemplate_retriever(content_chunk: str, template_count_to_retrieve: int 
             }
         }
     }
+    
+    # Configure search based on db_to_access parameter
+    if db_to_access.lower() == "both":
+        # If accessing both databases, split the count between them
+        count_per_db = template_count_to_retrieve // 2
+        remaining_count = template_count_to_retrieve - count_per_db
+        
+        # Get templates from system database
+        sys_results = search_templates_in_db(
+            ASTRA_DB_API_ENDPOINT, 
+            ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
+            vector, 
+            "sys_keyspace/templates", 
+            count_per_db
+        )
+        
+        # Get templates from user database
+        user_results = search_templates_in_db(
+            ASTRA_DB_API_ENDPOINT, 
+            ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
+            vector, 
+            "user_content_keyspace/user_templates", 
+            remaining_count
+        )
+        
+        # Combine results from both databases
+        combined_documents = []
+        if sys_results.get("data", {}).get("documents"):
+            combined_documents.extend(sys_results["data"]["documents"])
+        if user_results.get("data", {}).get("documents"):
+            combined_documents.extend(user_results["data"]["documents"])
+            
+        return {
+            "data": {
+                "documents": combined_documents
+            }
+        }
+        
+    elif db_to_access.lower() == "user":
+        # Access only user templates
+        return search_templates_in_db(
+            ASTRA_DB_API_ENDPOINT, 
+            ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
+            vector, 
+            "user_content_keyspace/user_templates", 
+            template_count_to_retrieve
+        )
+    else:
+        # Default - access only system templates
+        return search_templates_in_db(
+            ASTRA_DB_API_ENDPOINT, 
+            ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
+            vector, 
+            "sys_keyspace/templates", 
+            template_count_to_retrieve
+        )
 
+def search_templates_in_db(api_endpoint: str, api_token: str, vector: List[float], db_path: str, count: int) -> Dict:
+    """
+    Helper function to search templates in a specific database
+    
+    Args:
+        api_endpoint: The AstraDB API endpoint
+        api_token: The AstraDB API token
+        vector: The embedding vector for similarity search
+        db_path: The database path to search in (e.g., "sys_keyspace/templates")
+        count: The number of templates to retrieve
+    
+    Returns:
+        Dictionary containing template search results
+    """
+    url = f"{api_endpoint}/api/json/v1/{db_path}"
+    
+    headers = {
+        "Token": api_token,
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "find": {
+            "sort": {"$vector": vector},
+            "options": {
+                "limit": count
+            }
+        }
+    }
+    
     try:
         response = requests.post(url, headers=headers, json=payload)
         response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as e:
-        raise Exception(f"Failed to retrieve templates: {str(e)}")
+        print(f"Failed to retrieve templates from {db_path}: {str(e)}")
+        # Return empty result structure instead of raising an exception
+        return {"data": {"documents": []}}
 
 def short_form_social_repurposing(topic_query: str, brand: str, repurpose_count: int = 5, workflow_id: str = "Legacy Generation Flow with Claude") -> Dict:
     """
