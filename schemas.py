@@ -131,6 +131,12 @@ class ContentUploadRequest(BaseModel):
     template_id: Optional[str] = Field(None, description="ID reference to system templates")
     brand_id: Optional[str] = Field(None, description="ID reference to brand used")
     workflow_id: Optional[str] = Field("Legacy Generation Flow with Claude", description="ID of workflow used for generation")
+    workflow_name: Optional[str] = Field("Legacy Generation Flow", description="Name of the workflow used")
+    content_format: Optional[str] = Field("Short Form Social", description="Format of the content")
+    post_id: Optional[str] = Field(None, description="UUID for the post (generates automatically if not provided)")
+    current_draft: Optional[str] = Field("", description="Current version of the content")
+    status: Optional[str] = Field("Draft", description="Status of the content")
+    metrics: Optional[Dict[str, int]] = Field(None, description="Engagement metrics")
 
 # Source Content
 class SourceContentRequest(BaseModel):
