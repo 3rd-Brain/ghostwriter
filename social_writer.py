@@ -56,7 +56,9 @@ def generated_content_uploader(content_data: Dict) -> Dict:
     template = content_data.get("template", "")
     template_id = content_data.get("template_id", "")  # New field
     brand_id = content_data.get("brand_id", "")  # New field
-    workflow_id = content_data.get("workflow_id", "Legacy Generation Flow with Claude")
+    workflow_id = content_data.get("workflow_id", "")
+    workflow_name = content_data.get("workflow_name", "Legacy Generation Flow")
+    content_format = content_data.get("content_format", "Short Form Social")
     
     # Set the URL for the new collection path
     url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/generated_content"
@@ -79,18 +81,30 @@ def generated_content_uploader(content_data: Dict) -> Dict:
         "first_draft": first_draft,
         "current_draft": "",
         "template_id": template_id,
-        "template": template,  # Keep for backward compatibility
+        "template": template,
         "source_chunks": source_chunks,
         "brand_id": brand_id,
         "status": "Draft",
         "created_at": created_at,
+        "workflow_name": workflow_name,
         "workflow_id": workflow_id,
+        "content_format": content_format,
         "metrics": {
             "likes": 0,
             "shares": 0,
-            "comments": 0,
+            "quotes": 0,
+            "bookmarks": 0,
+            "replies": 0,
             "impressions": 0
-        }
+        },
+        "weighted_metrics": {
+            "weighted_likes": 0,
+            "weighted_shares": 0,
+            "weighted_bookmarks": 0,
+            "weighted_replies": 0,
+            "weighted_impressions": 0
+        },
+        "score": 0
     }
     
     payload = {
