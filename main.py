@@ -1073,6 +1073,7 @@ async def get_multitemplate(request_data: schemas.MultitemplateRequest, user: di
     * Get **multiple formatting options** for a content piece
     * **Automatically match** content with compatible templates
     * Enhance content presentation with optimized formatting
+    * Access templates from system database, user database, or both
 
     *This endpoint requires templates to be previously processed with `/template-context-and-uploader`.*
     *This endpoint supports both JWT and API key authentication.*
@@ -1085,7 +1086,11 @@ async def get_multitemplate(request_data: schemas.MultitemplateRequest, user: di
         raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY not configured")
 
     try:
-        result = multitemplate_retriever(request_data.content_chunk, request_data.template_count)
+        result = multitemplate_retriever(
+            content_chunk=request_data.content_chunk, 
+            template_count_to_retrieve=request_data.template_count,
+            db_to_access=request_data.db_to_access
+        )
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -1140,6 +1145,7 @@ async def search_templates(request_data: schemas.MultitemplateRequest, user: dic
     * Get **multiple formatting options** for a content piece
     * **Directly search templates** without additional processing
     * Perform faster template searches for performance-sensitive applications
+    * Access templates from system database, user database, or both
     
     *This endpoint supports both JWT and API key authentication.*
     """
@@ -1150,6 +1156,7 @@ async def search_templates(request_data: schemas.MultitemplateRequest, user: dic
 
     try:
         from social_writer import template_search
+        # Note: Update the template_search function in social_writer.py if it needs to support db_to_access parameter
         result = template_search(request_data.content_chunk, request_data.template_count)
         return result
     except Exception as e:

@@ -1,4 +1,3 @@
-
 from typing import Dict, List, Optional, Any
 from pydantic import BaseModel, Field
 
@@ -82,6 +81,7 @@ class TemplatizerResponse(BaseModel):
 class MultitemplateRequest(BaseModel):
     content_chunk: str = Field(..., description="Content chunk to find templates for")
     template_count: int = Field(5, description="Number of templates to retrieve")
+    db_to_access: str = Field("sys", description="Which databases to access ('sys', 'user', or 'both')")
 
 # Repurpose with Templates schemas
 class RepurposeWithTemplatesRequest(BaseModel):
