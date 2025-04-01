@@ -1156,8 +1156,11 @@ async def search_templates(request_data: schemas.MultitemplateRequest, user: dic
 
     try:
         from social_writer import template_search
-        # Note: Update the template_search function in social_writer.py if it needs to support db_to_access parameter
-        result = template_search(request_data.content_chunk, request_data.template_count)
+        result = template_search(
+            request_data.content_chunk, 
+            request_data.template_count,
+            request_data.db_to_access
+        )
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

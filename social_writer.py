@@ -1155,13 +1155,14 @@ def delete_user_account(identifier: str, delete_by: str = "username") -> dict:
     return response.json()
 
 
-def template_search(text_query: str, template_count: int = 5) -> Dict:
+def template_search(text_query: str, template_count: int = 5, db_to_access: str = "sys") -> Dict:
     """
     Search for templates using vector embedding of the provided text
     
     Args:
         text_query: String containing the text to find templates for
         template_count: The number of templates to retrieve (default: 5)
+        db_to_access: Which databases to access ("sys", "user", or "both")
     
     Returns:
         Dictionary containing template search results
@@ -1184,26 +1185,58 @@ def template_search(text_query: str, template_count: int = 5) -> Dict:
     )
     vector = response.data[0].embedding
     
-    # Prepare search request
-    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/sys_keyspace/templates"
-    
-    headers = {
-        "Token": ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
-        "Content-Type": "application/json"
-    }
-    
-    payload = {
-        "find": {
-            "sort": {"$vector": vector},
-            "options": {
-                "limit": template_count
+    # Configure search based on db_to_access parameter
+    if db_to_access.lower() == "both":
+        # If accessing both databases, split the count between them
+        count_per_db = template_count // 2
+        remaining_count = template_count - count_per_db
+        
+        # Get templates from system database
+        sys_results = search_templates_in_db(
+            ASTRA_DB_API_ENDPOINT, 
+            ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
+            vector, 
+            "sys_keyspace/templates", 
+            count_per_db
+        )
+        
+        # Get templates from user database
+        user_results = search_templates_in_db(
+            ASTRA_DB_API_ENDPOINT, 
+            ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
+            vector, 
+            "user_content_keyspace/user_templates", 
+            remaining_count
+        )
+        
+        # Combine results from both databases
+        combined_documents = []
+        if sys_results.get("data", {}).get("documents"):
+            combined_documents.extend(sys_results["data"]["documents"])
+        if user_results.get("data", {}).get("documents"):
+            combined_documents.extend(user_results["data"]["documents"])
+            
+        return {
+            "data": {
+                "documents": combined_documents
             }
         }
-    }
-    
-    try:
-        response = requests.post(url, headers=headers, json=payload)
-        response.raise_for_status()
-        return response.json()
-    except requests.exceptions.RequestException as e:
-        raise Exception(f"Failed to retrieve templates: {str(e)}")
+        
+    elif db_to_access.lower() == "user":
+        # Access only user templates
+        return search_templates_in_db(
+            ASTRA_DB_API_ENDPOINT, 
+            ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
+            vector, 
+            "user_content_keyspace/user_templates", 
+            template_count
+        )
+    else:
+        # Default - access only system templates
+        return search_templates_in_db(
+            ASTRA_DB_API_ENDPOINT, 
+            ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
+            vector, 
+            "sys_keyspace/templates", 
+            template_count
+        )
