@@ -1227,6 +1227,54 @@ async def delete_generation_flow(workflow_id: str, user: dict = Depends(check_ap
     """
     if not os.getenv("ASTRA_DB_API_ENDPOINT"):
         raise HTTPException(status_code=500, detail="ASTRA_DB_API_ENDPOINT not configured")
+
+@app.get("/api/user-workflows", tags=["Generation Flows"])
+async def get_user_workflows(user: dict = Depends(check_api_key_or_jwt)):
+    """
+    **Retrieve generation workflow configurations for the current user**
+
+    This endpoint fetches all workflows created by or available to the current user.
+
+    ## When to use
+    Use this endpoint when you need to:
+    * **List all available workflows** specific to the user
+    * Get an overview of your custom generation processes
+    * Select a personal workflow for content generation
+    
+    *This endpoint supports both JWT and API key authentication.*
+    """
+    ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+    ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+
+    if not ASTRA_DB_API_ENDPOINT:
+        raise HTTPException(status_code=500, detail="ASTRA_DB_API_ENDPOINT not configured")
+    if not ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER:
+        raise HTTPException(status_code=500, detail="ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
+
+    # Get user ID from authenticated user
+    user_id = user.get("user_id")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="User ID not found in authentication context")
+
+    # Query the user-specific workflows collection
+    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/user_workflows"
+
+    headers = {
+        "Token": ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
+        "Content-Type": "application/json"
+    }
+
+    payload = {"find": {"filter": {"user_id": user_id}}}
+
+    try:
+        response = requests.post(url, headers=headers, json=payload)
+        response.raise_for_status()
+        result = response.json()
+
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
     if not os.getenv("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER"):
         raise HTTPException(status_code=500, detail="ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
 
