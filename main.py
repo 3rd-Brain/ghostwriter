@@ -700,11 +700,13 @@ async def create_generation_flow(request_data: schemas.GenerationFlowRequest, us
     if not ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER:
         raise HTTPException(status_code=500, detail="ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
 
-    # Get the current user's username from the environment
-    CURRENT_USERNAME = os.environ.get("CURRENT_USERNAME")
+    # Get the current user's user_id from the authenticated user or environment
+    user_id = user.get("user_id") or os.environ.get("CURRENT_USER_ID")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="User ID not found in authentication context")
 
-    # Use the current user's username for the URL path
-    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/{CURRENT_USERNAME}/workflows"
+    # Use the user_content_keyspace/user_workflows collection
+    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/user_workflows"
 
     headers = {
         "Token": ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
@@ -714,20 +716,20 @@ async def create_generation_flow(request_data: schemas.GenerationFlowRequest, us
     # Convert the Pydantic model objects to dictionaries first
     steps_dict = [step.dict() for step in request_data.steps]
 
-    # Prepare the payload according to AstraDB format
-    json_payload = {
-        "steps": steps_dict
-    }
-
-    # Create the document object
+    # Create the document object with the new schema
     document = {
-        "Workflow_ID": request_data.workflowId,
-        "Workflow_Type": request_data.workflowType.title(),
-        "Short_Description": f"{request_data.workflowType.title()}_Content",
-        "Description": request_data.description,
-        "JSON_Payload": json_payload,
-        "Sample_Output": "",
-        "Workflow_Tag": request_data.workflowId
+        "workflow_id": request_data.workflowId,
+        "user_id": user_id,
+        "workflow_name": request_data.workflowId,  # Use workflowId as name unless a separate name is provided
+        "workflow_type": request_data.workflowType.lower(),
+        "description": request_data.description,
+        "steps": {
+            "steps": steps_dict
+        },
+        "metadata": {
+            "created_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"),
+            "updated_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+        }
     }
 
     # Create the final AstraDB payload
