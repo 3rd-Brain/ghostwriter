@@ -684,9 +684,13 @@ def template_context_and_uploader(template: str) -> Dict:
     template_description = response.content[0].text
     print(f"\n=== Generated Template Description ===\n{template_description}")
 
+    # Combine template and description
+    combined_text = f"{template}|{template_description}"
+    print(f"\n=== Combined Text ===\n{combined_text}")
+
     # Generate vector embedding
     embedding_response = openai_client.embeddings.create(
-        input=template,
+        input=combined_text,
         model="text-embedding-3-small"
     )
     vector = embedding_response.data[0].embedding
