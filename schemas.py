@@ -123,6 +123,7 @@ class GenerationFlowRequest(BaseModel):
     workflowId: str = Field(..., description="Unique identifier for the workflow")
     workflowType: str = Field(..., description="Type of workflow")
     description: str = Field(..., description="Short description of the workflow")
+    workflow_name: Optional[str] = Field(None, description="Display name for the workflow")
     steps: List[GenerationStep] = Field(..., description="Workflow generation steps")
 
 # Content Upload

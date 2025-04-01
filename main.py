@@ -720,7 +720,7 @@ async def create_generation_flow(request_data: schemas.GenerationFlowRequest, us
     document = {
         "workflow_id": request_data.workflowId,
         "user_id": user_id,
-        "workflow_name": request_data.workflowId,  # Use workflowId as name unless a separate name is provided
+        "workflow_name": request_data.workflow_name if hasattr(request_data, 'workflow_name') else request_data.workflowId,
         "workflow_type": request_data.workflowType.lower(),
         "description": request_data.description,
         "steps": {
