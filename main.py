@@ -1057,7 +1057,7 @@ async def get_top_content_repurposing(request_data: schemas.TopContentRepurposin
             request_data.brand, 
             request_data.number_of_posts, 
             request_data.repurpose_count, 
-            request_data.workflow_id
+            request_data.workflow_name  # Changed from workflow_id to workflow_name
         )
 
         # Return immediately
