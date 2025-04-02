@@ -62,16 +62,21 @@ def tweet_to_source_content(tweets: List[Dict]) -> List[Dict]:
             bookmarks = tweet.get('bookmarks', 0)
             replies = tweet.get('replies', 0)
             impressions = tweet.get('impressions', 0)
+            followers = tweet.get('followers', 0)
             
-            # Calculate weighted metrics
-            weighted_likes = likes * 1.0  # You can adjust these weights as needed
-            weighted_shares = shares * 1.5
-            weighted_bookmarks = bookmarks * 0.8
-            weighted_replies = replies * 1.2
-            weighted_impressions = impressions * 0.5
+            # Calculate weighted metrics according to formulas
+            # Use 1 as follower count if it's 0 to avoid division by zero
+            follower_count = max(followers, 1)
+            impression_follower_ratio = impressions / follower_count
+            
+            weighted_impressions = (impression_follower_ratio) * 0.15
+            weighted_replies = (replies / max(impression_follower_ratio, 0.001)) * 0.25
+            weighted_bookmarks = (bookmarks / max(impression_follower_ratio, 0.001)) * 0.25
+            weighted_shares = (shares / max(impression_follower_ratio, 0.001)) * 0.15
+            weighted_likes = (likes / max(impression_follower_ratio, 0.001)) * 0.2
             
             # Calculate overall score
-            score = weighted_likes + weighted_shares + weighted_bookmarks + weighted_replies + weighted_impressions
+            score = weighted_impressions + weighted_replies + weighted_bookmarks + weighted_shares + weighted_likes
             
             # Prepare document for upload
             document = {
@@ -89,6 +94,7 @@ def tweet_to_source_content(tweets: List[Dict]) -> List[Dict]:
                     "bookmarks": bookmarks,
                     "replies": replies,
                     "impressions": impressions,
+                    "followers": followers,
                     "weighted_likes": weighted_likes,
                     "weighted_shares": weighted_shares,
                     "weighted_bookmarks": weighted_bookmarks,
