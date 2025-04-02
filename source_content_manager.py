@@ -202,6 +202,7 @@ def gather_user_tweets(
         return result
     except requests.exceptions.RequestException as e:
         raise Exception(f"Failed to gather tweets: {str(e)}")
+
 def count_user_documents(user_id: str) -> int:
     """
     Count documents for a specific user in AstraDB
