@@ -397,6 +397,79 @@ async def get_user_workflows(user: dict = Depends(check_api_key_or_jwt)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/api/user-brands", tags=["Brand Management"])
+async def get_user_brands(user: dict = Depends(check_api_key_or_jwt)):
+    """
+    **Retrieve brands for the current user**
+
+    This endpoint fetches all brands created by or available to the current user.
+
+    ## When to use
+    Use this endpoint when you need to:
+    * **List all available brands** specific to the user
+    * Get a list of brands for selection in content generation
+    * Access brand information for content creation
+
+    *This endpoint supports both JWT and API key authentication.*
+    """
+    ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+    ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+
+    if not ASTRA_DB_API_ENDPOINT:
+        raise HTTPException(status_code=500, detail="ASTRA_DB_API_ENDPOINT not configured")
+    if not ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER:
+        raise HTTPException(status_code=500, detail="ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
+
+    # Get user ID from authenticated user
+    user_id = user.get("user_id")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="User ID not found in authentication context")
+
+    print(f"\n=== Debug: User Brands Request Started ===")
+    print(f"User ID: {user_id}")
+
+    # Query the brands collection
+    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/brands"
+
+    headers = {
+        "Token": ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
+        "Content-Type": "application/json"
+    }
+
+    # Query for brands matching the user_id
+    payload = {
+        "find": {
+            "filter": {"user_id": user_id}
+        }
+    }
+
+    print(f"Request URL: {url}")
+    print(f"Request payload: {json.dumps(payload, indent=2)}")
+
+    try:
+        print(f"Sending request to AstraDB...")
+        response = requests.post(url, headers=headers, json=payload)
+        print(f"Response status code: {response.status_code}")
+        
+        # Log truncated response for debugging
+        response_text = response.text
+        print(f"Response preview: {response_text[:200]}{'...' if len(response_text) > 200 else ''}")
+        
+        response.raise_for_status()
+        result = response.json()
+        
+        brands = result.get("data", {}).get("documents", [])
+        print(f"Found {len(brands)} brands for user {user_id}")
+        print(f"=== Debug: User Brands Request Completed ===\n")
+        
+        return {
+            "status": "success",
+            "brands": brands
+        }
+    except Exception as e:
+        print(f"Error fetching brands: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/create/brand-voice", response_class=HTMLResponse, include_in_schema=False)
 async def create_brand_voice(request: Request, current_user: str = Depends(get_current_user)):
     return templates.TemplateResponse("brand_voice.html", {

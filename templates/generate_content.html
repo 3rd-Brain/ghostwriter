@@ -97,7 +97,10 @@
                 </div>
                 <div class="form-group">
                     <label for="brand" class="form-label">Brand</label>
-                    <input type="text" id="brand" name="brand" class="form-control" placeholder="Enter brand name...">
+                    <select id="brand" name="brand" class="form-control" required>
+                        <option value="">Select a brand</option>
+                        <!-- Brand options will be added by JavaScript -->
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="post-count" class="form-label">Number of Posts</label>
@@ -135,7 +138,10 @@
                 </div>
                 <div class="form-group">
                     <label for="repurpose-brand" class="form-label">Brand</label>
-                    <input type="text" id="repurpose-brand" name="repurpose-brand" class="form-control" placeholder="Enter brand name...">
+                    <select id="repurpose-brand" name="repurpose-brand" class="form-control" required>
+                        <option value="">Select a brand</option>
+                        <!-- Brand options will be added by JavaScript -->
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="posts-to-find" class="form-label">Number of Posts to Find</label>
@@ -177,7 +183,10 @@
                 </div>
                 <div class="form-group">
                     <label for="template-brand" class="form-label">Brand</label>
-                    <input type="text" id="template-brand" name="template-brand" class="form-control" placeholder="Enter brand name...">
+                    <select id="template-brand" name="template-brand" class="form-control" required>
+                        <option value="">Select a brand</option>
+                        <!-- Brand options will be added by JavaScript -->
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="template-workflowName">Content Generation Workflow</label>
@@ -535,11 +544,60 @@
             workflowSelect.appendChild(option);
         });
     }
+    
+    // Function to fetch brands for the current user
+    function fetchUserBrands() {
+        console.log('Fetching user brands...');
+        
+        fetch('/api/user-brands')
+            .then(response => {
+                console.log('API response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('API response data:', data);
+                if (data.status === 'success' && data.brands) {
+                    populateBrandDropdowns(data.brands);
+                } else {
+                    console.error('Failed to fetch brands:', data);
+                    window.showNotification('Failed to load brand list', true);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching brands:', error);
+                window.showNotification('Error loading brand list', true);
+            });
+    }
+    
+    // Function to populate all brand dropdowns
+    function populateBrandDropdowns(brands) {
+        // Get all brand dropdown elements
+        const brandDropdowns = [
+            document.getElementById('brand'),
+            document.getElementById('repurpose-brand'),
+            document.getElementById('template-brand')
+        ];
+        
+        // For each dropdown, clear and populate
+        brandDropdowns.forEach(dropdown => {
+            if (!dropdown) return;
+            
+            dropdown.innerHTML = '<option value="">Select a brand</option>';
+            
+            brands.forEach(brand => {
+                const option = document.createElement('option');
+                option.value = brand.brand_name;
+                option.textContent = brand.brand_name;
+                dropdown.appendChild(option);
+            });
+        });
+    }
 
 
     document.addEventListener('DOMContentLoaded', function() {
-        // Fetch workflows when the page loads
+        // Fetch workflows and brands when the page loads
         fetchWorkflows();
+        fetchUserBrands();
 
         // Create New Posts modal
         const createPostsModal = document.getElementById('create-posts-modal');
