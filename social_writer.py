@@ -582,20 +582,22 @@ def short_form_social_repurposing(topic_query: str, brand: str, repurpose_count:
             print(f"Template: {template_display}")
             print(f"Generated Content: {generated_content}")
 
-            content_result = {
-                "first_draft": generated_content,
-                "content_chunks": combined_chunks,
-                "template": template["content"]
-            }
-
             # Extract template without variations by splitting on "|" and taking first part
             template_base = template_content.split("|")[0].strip()
 
-            # Prepare content data for upload
+            # Create content result using consistent template access
+            content_result = {
+                "first_draft": generated_content,
+                "content_chunks": combined_chunks,
+                "template": template_base
+            }
+
+            # Prepare content data for upload (now using the same approach as content_result)
             content_data = {
                 "first_draft": content_result["first_draft"],
                 "content_chunks": combined_chunks,
-                "template": template_base
+                "template": template_base,
+                "workflow_name": workflow_name
             }
 
             # Upload the generated content
