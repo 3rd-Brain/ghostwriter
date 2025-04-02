@@ -699,6 +699,34 @@ function filterContent() {
         });
     }
     
+    // Filter by date range if not "all"
+    if (dateFilter !== 'all') {
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        
+        filteredData = filteredData.filter(item => {
+            const createdDateStr = item.Created_Time || item.created_at || item.created_time || '';
+            if (!createdDateStr) return false;
+            
+            const createdDate = new Date(createdDateStr);
+            
+            switch(dateFilter) {
+                case 'today':
+                    return createdDate >= today;
+                case 'week':
+                    const weekAgo = new Date(today);
+                    weekAgo.setDate(today.getDate() - 7);
+                    return createdDate >= weekAgo;
+                case 'month':
+                    const monthAgo = new Date(today);
+                    monthAgo.setDate(today.getDate() - 30);
+                    return createdDate >= monthAgo;
+                default:
+                    return true;
+            }
+        });
+    }
+    
     // Render the filtered data
     renderFilteredData(filteredData);
 }
