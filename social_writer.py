@@ -548,6 +548,17 @@ def short_form_social_repurposing(topic_query: str, brand: str, repurpose_count:
 
     # Step 2: Get templates based on repurpose count
     template_results = multitemplate_retriever(combined_chunks, template_count_to_retrieve=repurpose_count)
+    
+    # Debug logging for template retrieval
+    print("\n=== Debug: Template Retrieval Results ===")
+    template_count = len(template_results.get("data", {}).get("documents", []))
+    print(f"Requested template count: {repurpose_count}")
+    print(f"Actual templates retrieved: {template_count}")
+    if template_count > 0:
+        print(f"First template preview: {template_results['data']['documents'][0].get('template', '')[:50]}...")
+    else:
+        print("Warning: No templates retrieved!")
+    print("=== End Template Debug ===\n")
 
     # Step 3: Get brand voice (use current user's ID from environment)
     user_id = os.environ.get("CURRENT_USER_ID")
@@ -559,6 +570,12 @@ def short_form_social_repurposing(topic_query: str, brand: str, repurpose_count:
     # Step 4: Generate content for each template
     if template_results.get("data", {}).get("documents"):
         templates = template_results["data"]["documents"][:repurpose_count]  # Get templates based on repurpose count
+        print(f"\n=== Debug: Using {len(templates)} templates for content generation ===")
+        
+        # Log each template being used
+        for i, template in enumerate(templates, 1):
+            template_content = template.get("template") if "template" in template else template.get("content", "")
+            print(f"Template {i}: {template_content[:100]}...")
 
         for template in templates:
             from social_dynamic_generation_flow import social_post_generation_with_json
