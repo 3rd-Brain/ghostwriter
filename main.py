@@ -1534,10 +1534,10 @@ async def update_post_status(request_data: schemas.PostStatusUpdateRequest, user
     
     payload = {
         "findOneAndUpdate": {
-            "filter": {
-                "_id": post_id,
-                "user_id": user_id  # Ensure user can only update their own posts
-            },
+            "filter": {"$and": [
+                {"_id": post_id},
+                {"user_id": user_id}  # Ensure user can only update their own posts
+            ]},
             "update": { 
                 "$set": { 
                     "status": new_status,
