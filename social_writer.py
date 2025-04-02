@@ -285,6 +285,7 @@ def vector_search_for_published_content(metadata_filter: Dict, text_to_vectorize
         return response_data
     except requests.exceptions.RequestException as e:
         raise Exception(f"Failed to perform vector search: {str(e)}")
+        
 def metric_sorter(published_content: Dict, sort_metric: str) -> Dict:
     """
     Sort published content by specified metric in descending order
