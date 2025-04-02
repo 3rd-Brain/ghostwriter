@@ -22,7 +22,7 @@ client = anthropic.Client(api_key=ANTHROPIC_API_KEY)
 def generated_content_uploader(content_data: Dict) -> Dict:
     """
     Upload generated content to AstraDB
-    
+
     Args:
         content_data: Dictionary containing content information with the following keys:
             - first_draft: The initial content generated
@@ -31,7 +31,7 @@ def generated_content_uploader(content_data: Dict) -> Dict:
             - brand_id: (Optional) ID of the brand used
             - template_id: (Optional) ID reference to system templates
             - workflow_id: (Optional) ID of the workflow used for generation
-    
+
     Returns:
         Dictionary with the database response
     """
@@ -39,17 +39,17 @@ def generated_content_uploader(content_data: Dict) -> Dict:
     ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
 
     print(f"\n=== Debug: Generated Content Uploader Started ===")
-    
+
     if not ASTRA_DB_API_ENDPOINT:
         raise Exception("ASTRA_DB_API_ENDPOINT not configured")
     if not ASTRA_DB_APPLICATION_TOKEN:
         raise Exception("ASTRA_DB_APPLICATION_TOKEN not configured")
-        
+
     # Get the current user's ID from the environment
     user_id = os.environ.get("CURRENT_USER_ID")
     if not user_id:
         raise Exception("CURRENT_USER_ID not configured")
-    
+
     # Extract content data
     first_draft = content_data.get("first_draft", "")
     source_chunks = content_data.get("content_chunks", "")
@@ -59,21 +59,21 @@ def generated_content_uploader(content_data: Dict) -> Dict:
     workflow_id = content_data.get("workflow_id", "")
     workflow_name = content_data.get("workflow_name", "Legacy Generation Flow")
     content_format = content_data.get("content_format", "Short Form Social")
-    
+
     # Set the URL for the new collection path
     url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/generated_content"
-    
+
     headers = {
         "Token": ASTRA_DB_APPLICATION_TOKEN,
         "Content-Type": "application/json"
     }
-    
+
     # Generate UUID for post_id if not provided
     post_id = content_data.get("post_id", str(uuid.uuid4()))
-    
+
     # Create a timestamp for created_at
     created_at = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
-    
+
     # Create document with new structure
     document = {
         "post_id": post_id,
@@ -106,7 +106,7 @@ def generated_content_uploader(content_data: Dict) -> Dict:
         },
         "score": 0
     }
-    
+
     payload = {
         "insertOne": {
             "document": document
@@ -116,7 +116,7 @@ def generated_content_uploader(content_data: Dict) -> Dict:
     print(f"\n=== Debug: Content Upload Started ===")
     print(f"URL: {url}")
     print(f"Payload (truncated): {str(payload)[:200]}...")
-    
+
     try:
         response = requests.post(url, headers=headers, json=payload)
         print(f"Response status code: {response.status_code}")
@@ -133,22 +133,22 @@ def generated_content_uploader(content_data: Dict) -> Dict:
 def get_client_brand_voice(brand: str, user_id: str = None) -> Dict:
     """
     Retrieve client brand voice information from AstraDB
-    
+
     Args:
         brand: String containing the brand name to search for
         user_id: String containing the user ID (if None, will use current user from environment)
-    
+
     Returns:
         Dictionary containing brand voice information
     """
     ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
     ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
-    
+
     print(f"\n=== Debug: Brand Voice Request Started ===")
     print(f"Brand: {brand}")
     print(f"ASTRA_DB_API_ENDPOINT configured: {'Yes' if ASTRA_DB_API_ENDPOINT else 'No'}")
     print(f"ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER configured: {'Yes' if ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER else 'No'}")
-    
+
     if not ASTRA_DB_API_ENDPOINT:
         raise Exception("ASTRA_DB_API_ENDPOINT not configured")
     if not ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER:
@@ -158,19 +158,19 @@ def get_client_brand_voice(brand: str, user_id: str = None) -> Dict:
     if not user_id:
         user_id = os.environ.get("CURRENT_USER_ID")
         print(f"Using current user ID from environment: {user_id}")
-    
+
     if not user_id:
         raise Exception("User ID not provided and not found in environment")
-    
+
     # Use the new collection path for brands
     url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/brands"
     print(f"Request URL: {url}")
-    
+
     headers = {
         "Token": ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
         "Content-Type": "application/json"
     }
-    
+
     # Update the payload to use $and operator for multiple filters
     payload = {
         "findOne": {
@@ -188,21 +188,21 @@ def get_client_brand_voice(brand: str, user_id: str = None) -> Dict:
         print(f"Response status code: {response.status_code}")
         print(f"Response headers: {response.headers}")
         print(f"Response body: {response.text}")
-        
+
         response.raise_for_status()
         data = response.json()
         print(f"Parsed JSON data: {json.dumps(data, indent=2)}")
-        
+
         if not data:
             print("No data returned from AstraDB")
             raise Exception(f"No brand voice found for brand: {brand}")
-        
+
         # The response should have a 'data' field that contains the document
         if 'data' in data and 'document' in data['data']:
             document = data['data']['document']
             brand_voice = document.get("brand_voice")
             print(f"Brand voice from response: {brand_voice}")
-            
+
             if not brand_voice:
                 print("brand_voice field not found in document data")
                 raise Exception(f"No brand voice found for brand: {brand}")
@@ -210,10 +210,10 @@ def get_client_brand_voice(brand: str, user_id: str = None) -> Dict:
             print("Expected data structure not found in response")
             print(f"Available keys in response: {list(data.keys())}")
             raise Exception(f"Data structure missing expected fields for brand: {brand}")
-            
+
         print(f"=== Debug: Brand Voice Request Completed Successfully ===\n")
         return {"brand_voice": brand_voice}
-        
+
     except requests.exceptions.RequestException as e:
         print(f"Request exception: {str(e)}")
         raise Exception(f"Failed to retrieve brand voice from AstraDB: {str(e)}")
@@ -392,10 +392,10 @@ def multitemplate_retriever(content_chunk: str, template_count_to_retrieve: int 
         raise Exception("OPENAI_API_KEY not configured")
     if not ASTRA_DB_APPLICATION_TOKEN_FOR_SHORTFORM_TEMPLATES:
         raise Exception("ASTRA_DB_APPLICATION_TOKEN_FOR_SHORTFORM_TEMPLATES not configured")
-    
+
     ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
     ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
-    
+
     if not ASTRA_DB_API_ENDPOINT:
         raise Exception("ASTRA_DB_API_ENDPOINT not configured")
     if not ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER:
@@ -426,13 +426,13 @@ def multitemplate_retriever(content_chunk: str, template_count_to_retrieve: int 
             }
         }
     }
-    
+
     # Configure search based on db_to_access parameter
     if db_to_access.lower() == "both":
         # If accessing both databases, split the count between them
         count_per_db = template_count_to_retrieve // 2
         remaining_count = template_count_to_retrieve - count_per_db
-        
+
         # Get templates from system database
         sys_results = search_templates_in_db(
             ASTRA_DB_API_ENDPOINT, 
@@ -441,7 +441,7 @@ def multitemplate_retriever(content_chunk: str, template_count_to_retrieve: int 
             "sys_keyspace/templates", 
             count_per_db
         )
-        
+
         # Get templates from user database
         user_results = search_templates_in_db(
             ASTRA_DB_API_ENDPOINT, 
@@ -450,20 +450,20 @@ def multitemplate_retriever(content_chunk: str, template_count_to_retrieve: int 
             "user_content_keyspace/user_templates", 
             remaining_count
         )
-        
+
         # Combine results from both databases
         combined_documents = []
         if sys_results.get("data", {}).get("documents"):
             combined_documents.extend(sys_results["data"]["documents"])
         if user_results.get("data", {}).get("documents"):
             combined_documents.extend(user_results["data"]["documents"])
-            
+
         return {
             "data": {
                 "documents": combined_documents
             }
         }
-        
+
     elif db_to_access.lower() == "user":
         # Access only user templates
         return search_templates_in_db(
@@ -486,24 +486,24 @@ def multitemplate_retriever(content_chunk: str, template_count_to_retrieve: int 
 def search_templates_in_db(api_endpoint: str, api_token: str, vector: List[float], db_path: str, count: int) -> Dict:
     """
     Helper function to search templates in a specific database
-    
+
     Args:
         api_endpoint: The AstraDB API endpoint
         api_token: The AstraDB API token
         vector: The embedding vector for similarity search
         db_path: The database path to search in (e.g., "sys_keyspace/templates")
         count: The number of templates to retrieve
-    
+
     Returns:
         Dictionary containing template search results
     """
     url = f"{api_endpoint}/api/json/v1/{db_path}"
-    
+
     headers = {
         "Token": api_token,
         "Content-Type": "application/json"
     }
-    
+
     payload = {
         "find": {
             "sort": {"$vector": vector},
@@ -512,7 +512,7 @@ def search_templates_in_db(api_endpoint: str, api_token: str, vector: List[float
             }
         }
     }
-    
+
     try:
         response = requests.post(url, headers=headers, json=payload)
         response.raise_for_status()
@@ -522,14 +522,14 @@ def search_templates_in_db(api_endpoint: str, api_token: str, vector: List[float
         # Return empty result structure instead of raising an exception
         return {"data": {"documents": []}}
 
-def short_form_social_repurposing(topic_query: str, brand: str, repurpose_count: int = 5, workflow_id: str = "Legacy Generation Flow with Claude") -> Dict:
+def short_form_social_repurposing(topic_query: str, brand: str, repurpose_count: int = 5, workflow_name: str = "Legacy Generation Flow") -> Dict:
     """
     Repurpose content based on topic query and user's brand voice
     Args:
         topic_query: String containing the topic to search for
         brand: String containing the brand for brand voice
         repurpose_count: Number of times to repurpose each topic/post (default: 5)
-        workflow_id: String containing the workflow ID for generation
+        workflow_name: String containing the workflow name for generation
     Returns:
         Dictionary with status message
     """
@@ -564,13 +564,13 @@ def short_form_social_repurposing(topic_query: str, brand: str, repurpose_count:
 
             # Determine the correct template content key (template or content)
             template_content = template.get("template") if "template" in template else template.get("content", "")
-            
+
             if not template_content:
                 print(f"Warning: Could not find template content in: {template}")
                 continue
 
             generated_content = social_post_generation_with_json(
-                workflow_id=workflow_id,
+                workflow_name=workflow_name,
                 client_brief=brand_voice["brand_voice"],
                 template=template_content,
                 content_chunks=combined_chunks
@@ -633,7 +633,7 @@ def source_content_retriever(topic_query: str) -> str:
     ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
     if not ASTRA_DB_API_ENDPOINT:
         raise Exception("ASTRA_DB_API_ENDPOINT not configured")
-        
+
     url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/user_source_content"
 
     headers = {
@@ -704,11 +704,11 @@ def template_context_and_uploader(template: str) -> Dict:
 
     # Generate a unique ID for the template
     template_id = str(uuid.uuid4())
-    
+
     # Get Astra DB endpoint from environment
     ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
     ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
-    
+
     if not ASTRA_DB_API_ENDPOINT:
         raise Exception("ASTRA_DB_API_ENDPOINT not configured")
     if not ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER:
@@ -721,9 +721,9 @@ def template_context_and_uploader(template: str) -> Dict:
         "Token": ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
         "Content-Type": "application/json"
     }
-    
+
     timestamp = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
-    
+
     # Prepare document with new structure
     payload = {
         "insertOne": {
@@ -744,15 +744,15 @@ def template_context_and_uploader(template: str) -> Dict:
         print(f"\n=== Uploading Template to AstraDB ===")
         print(f"URL: {url}")
         print(f"Payload structure (truncated): {str(payload)[:200]}...")
-        
+
         response = requests.post(url, headers=headers, json=payload)
         print(f"Response status code: {response.status_code}")
         print(f"Response text: {response.text}")
-        
+
         response.raise_for_status()
         result = response.json()
         print(f"=== Template Upload Completed ===\n")
-        
+
         return result
     except requests.exceptions.RequestException as e:
         print(f"AstraDB upload failed: {str(e)}")
@@ -781,12 +781,12 @@ def repurposer_using_posts_as_templates(
         Dictionary containing repurposing results
     """
     print("\n=== Starting Posts as Templates Repurposing Process ===")
-    
+
     # Get brand voice with current user's ID
     user_id = os.environ.get("CURRENT_USER_ID")
     brand_voice_result = get_client_brand_voice(brand, user_id)
     brand_voice = brand_voice_result["brand_voice"]
-    
+
     if not is_given_template_query:
         # Direct template usage path
         generated_content = social_post_generation_with_json(
@@ -795,7 +795,7 @@ def repurposer_using_posts_as_templates(
             template=template_post,
             content_chunks=content_chunks
         )
-        
+
         # Upload to Airtable
         content_data = {
             "first_draft": generated_content,
@@ -803,7 +803,7 @@ def repurposer_using_posts_as_templates(
             "template": template_post
         }
         upload_result = generated_content_uploader(content_data)
-        
+
         return {
             "status": "success",
             "generated_content": generated_content,
@@ -812,16 +812,16 @@ def repurposer_using_posts_as_templates(
     else:
         # Query-based template retrieval path
         results = top_content_retriever(query=template_post, topic=post_topic_query)
-        
+
         if not results.get("data", {}).get("documents"):
             return {
                 "status": "error",
                 "message": "No templates found from the query"
             }
-            
+
         # Get top X posts based on number_of_posts_to_template
         top_posts = [doc.get("content", "") for doc in results["data"]["documents"][:number_of_posts_to_template]]
-        
+
         # Generate content using each post as a template
         generated_contents = []
         for post in top_posts:
@@ -838,13 +838,13 @@ def repurposer_using_posts_as_templates(
                 "template": post
             }
             upload_result = generated_content_uploader(content_data)
-            
+
             generated_contents.append({
                 "template": post,
                 "generated_content": generated_content,
                 "upload_result": upload_result
             })
-        
+
         return {
             "status": "success",
             "generated_contents": generated_contents
@@ -870,7 +870,7 @@ def Templatizer(social_post: str) -> str:
     )
     template = response.content[0].text.strip()
     print(f"\n=== Generated Template ===\n{template}")
-    
+
     return template
 
 def top_content_to_repurposing(query: str, topic: str, brand: str, numberOfPostsToRepurpose: int = 5, repurpose_count: int = 1, workflow_id: str = "Legacy Generation Flow with Claude") -> Dict:
@@ -934,15 +934,15 @@ def source_content_repurposer_using_posts_as_templates(
     """
     # Get source content
     source_results = source_content_retriever(content_topic_query)
-    
+
     # Extract first three content chunks
     content_chunks = []
     if source_results.get("data", {}).get("documents"):
         content_chunks = [doc["content"] for doc in source_results["data"]["documents"][:3]]
-    
+
     # Combine chunks
     combined_chunks = "\n\n".join(content_chunks)
-    
+
     # Use existing repurposer with prepared content
     return repurposer_using_posts_as_templates(
         content_chunks=combined_chunks,
@@ -964,31 +964,31 @@ def get_latest_generated_content(username: str) -> Dict:
     """
     ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
     ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
-    
+
     print(f"\n=== Debug: Latest Content Retrieval Started ===")
     print(f"Username: {username}")
-    
+
     if not ASTRA_DB_API_ENDPOINT:
         raise Exception("ASTRA_DB_API_ENDPOINT not configured")
     if not ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER:
         raise Exception("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
-    
+
     # Get the user_id from environment or by looking it up from the username
     user_id = os.environ.get("CURRENT_USER_ID")
-    
+
     # If we don't have a user_id in the environment, we need to look it up from the username
     if not user_id:
         # This would need to be implemented - for now assuming user_id is available
         print(f"Warning: CURRENT_USER_ID not found in environment")
-    
+
     # Use the new URL path for the user_content_keyspace
     url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/generated_content"
-    
+
     headers = {
         "Token": ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
         "Content-Type": "application/json"
     }
-    
+
     # Create the query payload with filter for user_id and sort by Created_Time in descending order (-1)
     payload = {
         "find": {
@@ -1000,25 +1000,25 @@ def get_latest_generated_content(username: str) -> Dict:
             }
         }
     }
-    
+
     try:
         print(f"Sending request to AstraDB...")
         print(f"Request URL: {url}")
         print(f"Request payload: {json.dumps(payload, indent=2)}")
-        
+
         response = requests.post(url, headers=headers, json=payload)
         print(f"Response status code: {response.status_code}")
-        
+
         # Log truncated response for debugging
         response_text = response.text
         print(f"Response preview: {response_text[:200]}{'...' if len(response_text) > 200 else ''}")
-        
+
         response.raise_for_status()
         result = response.json()
-        
+
         print(f"Found {len(result.get('data', {}).get('documents', []))} documents")
         print(f"=== Debug: Latest Content Retrieval Completed ===\n")
-        
+
         return result
     except requests.exceptions.RequestException as e:
         print(f"Request exception: {str(e)}")
@@ -1035,24 +1035,24 @@ def delete_generated_content(username: str, content_id: str) -> Dict:
     """
     ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
     ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
-    
+
     print(f"\n=== Debug: Content Deletion Started ===")
     print(f"Username: {username}")
     print(f"Content ID to delete: {content_id}")
-    
+
     if not ASTRA_DB_API_ENDPOINT:
         raise Exception("ASTRA_DB_API_ENDPOINT not configured")
     if not ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER:
         raise Exception("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
-    
+
     # Use the provided username for the URL path
     url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/{username}/generated_content"
-    
+
     headers = {
         "Token": ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
         "Content-Type": "application/json"
     }
-    
+
     # Create the delete payload
     payload = {
         "findOneAndDelete": {
@@ -1061,24 +1061,24 @@ def delete_generated_content(username: str, content_id: str) -> Dict:
             }
         }
     }
-    
+
     try:
         print(f"Sending delete request to AstraDB...")
         print(f"Request URL: {url}")
         print(f"Request payload: {json.dumps(payload, indent=2)}")
-        
+
         response = requests.post(url, headers=headers, json=payload)
         print(f"Response status code: {response.status_code}")
-        
+
         # Log truncated response for debugging
         response_text = response.text
         print(f"Response preview: {response_text[:200]}{'...' if len(response_text) > 200 else ''}")
-        
+
         response.raise_for_status()
         result = response.json()
-        
+
         print(f"=== Debug: Content Deletion Completed ===\n")
-        
+
         return result
     except requests.exceptions.RequestException as e:
         print(f"Request exception: {str(e)}")
@@ -1100,32 +1100,32 @@ def simple_repurpose(social_post: str, brand: str, repurpose_count: int = 5, wor
     print(f"Brand: {brand}")
     print(f"Repurpose count: {repurpose_count}")
     print(f"Workflow ID: {workflow_id}")
-    
+
     # Step 1: Get templates using multitemplate_retriever
     print("\n--- Retrieving Templates ---")
     template_results = multitemplate_retriever(social_post, template_count_to_retrieve=repurpose_count)
-    
+
     # Step 2: Get brand voice
     print("\n--- Retrieving Brand Voice ---")
     user_id = os.environ.get("CURRENT_USER_ID")
     brand_voice_result = get_client_brand_voice(brand, user_id)
     brand_voice = brand_voice_result["brand_voice"]
-    
+
     # Step 3: Generate content for each template
     generated_results = []
-    
+
     if template_results.get("data", {}).get("documents"):
         templates = template_results["data"]["documents"][:repurpose_count]
-        
+
         print(f"\n--- Found {len(templates)} templates ---")
-        
+
         for i, template in enumerate(templates, 1):
             print(f"\n--- Generating Content for Template {i}/{len(templates)} ---")
             print(f"Template: {template['content']}")
-            
+
             # Extract template without variations by splitting on "|" and taking first part
             template_base = template["content"].split("|")[0].strip()
-            
+
             try:
                 # Generate content using the template
                 generated_content = social_post_generation_with_json(
@@ -1134,26 +1134,26 @@ def simple_repurpose(social_post: str, brand: str, repurpose_count: int = 5, wor
                     template=template_base,
                     content_chunks=social_post
                 )
-                
+
                 print(f"Generated Content: {generated_content}")
-                
+
                 # Store result
                 generated_results.append({
                     "template": template_base,
                     "generated_content": generated_content
                 })
-                
+
                 # Prepare content data for upload
                 content_data = {
                     "first_draft": generated_content,
                     "content_chunks": social_post,
                     "template": template_base
                 }
-                
+
                 # Upload the generated content
                 upload_result = generated_content_uploader(content_data)
                 print(f"Content upload successful. ID: {upload_result.get('data', {}).get('documentId', 'Unknown')}")
-                
+
             except Exception as e:
                 print(f"Error generating content with template {i}: {str(e)}")
                 generated_results.append({
@@ -1162,7 +1162,7 @@ def simple_repurpose(social_post: str, brand: str, repurpose_count: int = 5, wor
                 })
     else:
         print("No templates found for the given social post")
-    
+
     print("\n=== Simple Repurpose Process Complete ===")
     return generated_results
 def delete_user_account(identifier: str, delete_by: str = "username") -> dict:
@@ -1178,7 +1178,7 @@ def delete_user_account(identifier: str, delete_by: str = "username") -> dict:
 
     # Set up filter based on identifier type
     filter_field = "_id" if delete_by.lower() == "id" else "username"
-    
+
     payload = {
         "findOneAndDelete": {
             "filter": {
@@ -1195,39 +1195,39 @@ def delete_user_account(identifier: str, delete_by: str = "username") -> dict:
 def template_search(text_query: str, template_count: int = 5, db_to_access: str = "sys") -> Dict:
     """
     Search for templates using vector embedding of the provided text
-    
+
     Args:
         text_query: String containing the text to find templates for
         template_count: The number of templates to retrieve (default: 5)
         db_to_access: Which databases to access ("sys", "user", or "both")
-    
+
     Returns:
         Dictionary containing template search results
     """
     if not OPENAI_API_KEY:
         raise Exception("OPENAI_API_KEY not configured")
-    
+
     ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
     ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
-    
+
     if not ASTRA_DB_API_ENDPOINT:
         raise Exception("ASTRA_DB_API_ENDPOINT not configured")
     if not ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER:
         raise Exception("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
-    
+
     # Generate embedding directly for the input text
     response = openai_client.embeddings.create(
         input=text_query,
         model="text-embedding-3-small"
     )
     vector = response.data[0].embedding
-    
+
     # Configure search based on db_to_access parameter
     if db_to_access.lower() == "both":
         # If accessing both databases, split the count between them
         count_per_db = template_count // 2
         remaining_count = template_count - count_per_db
-        
+
         # Get templates from system database
         sys_results = search_templates_in_db(
             ASTRA_DB_API_ENDPOINT, 
@@ -1236,7 +1236,7 @@ def template_search(text_query: str, template_count: int = 5, db_to_access: str 
             "sys_keyspace/templates", 
             count_per_db
         )
-        
+
         # Get templates from user database
         user_results = search_templates_in_db(
             ASTRA_DB_API_ENDPOINT, 
@@ -1245,20 +1245,20 @@ def template_search(text_query: str, template_count: int = 5, db_to_access: str 
             "user_content_keyspace/user_templates", 
             remaining_count
         )
-        
+
         # Combine results from both databases
         combined_documents = []
         if sys_results.get("data", {}).get("documents"):
             combined_documents.extend(sys_results["data"]["documents"])
         if user_results.get("data", {}).get("documents"):
             combined_documents.extend(user_results["data"]["documents"])
-            
+
         return {
             "data": {
                 "documents": combined_documents
             }
         }
-        
+
     elif db_to_access.lower() == "user":
         # Access only user templates
         return search_templates_in_db(

@@ -104,8 +104,11 @@
                     <input type="number" id="post-count" name="post-count" class="form-control" min="1" max="10" value="3">
                 </div>
                 <div class="form-group">
-                    <label for="workflow-id" class="form-label">Workflow ID</label>
-                    <input type="text" id="workflow-id" name="workflow-id" class="form-control" placeholder="Enter workflow ID...">
+                    <label for="workflowName">Content Generation Workflow</label>
+                    <select id="workflowName" name="workflowName" class="form-control" required>
+                        <option value="">Select a workflow</option>
+                        <!-- Workflow options will be added by JavaScript -->
+                    </select>
                 </div>
                 <button type="submit" class="form-button">Generate Posts</button>
             </form>
@@ -143,8 +146,11 @@
                     <input type="number" id="variations-per-post" name="variations-per-post" class="form-control" min="1" max="5" value="2">
                 </div>
                 <div class="form-group">
-                    <label for="repurpose-workflow-id" class="form-label">Workflow ID</label>
-                    <input type="text" id="repurpose-workflow-id" name="repurpose-workflow-id" class="form-control" placeholder="Enter workflow ID...">
+                    <label for="repurpose-workflowName">Content Generation Workflow</label>
+                    <select id="repurpose-workflowName" name="repurpose-workflowName" class="form-control" required>
+                        <option value="">Select a workflow</option>
+                        <!-- Workflow options will be added by JavaScript -->
+                    </select>
                 </div>
                 <button type="submit" class="form-button">Repurpose Content</button>
             </form>
@@ -174,8 +180,11 @@
                     <input type="text" id="template-brand" name="template-brand" class="form-control" placeholder="Enter brand name...">
                 </div>
                 <div class="form-group">
-                    <label for="template-workflow-id" class="form-label">Workflow ID</label>
-                    <input type="text" id="template-workflow-id" name="template-workflow-id" class="form-control" placeholder="Enter workflow ID...">
+                    <label for="template-workflowName">Content Generation Workflow</label>
+                    <select id="template-workflowName" name="template-workflowName" class="form-control" required>
+                        <option value="">Select a workflow</option>
+                        <!-- Workflow options will be added by JavaScript -->
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="posts-count" class="form-label">Number of Posts</label>
@@ -200,6 +209,10 @@
                 if (data.status === 'success' && data.workflows) {
                     workflowsData = data.workflows;
                     populateWorkflowsTable(data.workflows);
+                    populateWorkflowDropdown(data.workflows); //Added to populate dropdown on page load
+                    populateRepurposeWorkflowDropdown(data.workflows); //Added to populate dropdown on page load
+                    populateTemplateWorkflowDropdown(data.workflows); //Added to populate dropdown on page load
+
                 } else {
                     console.error('Failed to fetch workflows:', data);
                     window.showNotification('Failed to load workflows', true);
@@ -484,6 +497,46 @@
         modal.style.display = 'block';
     }
 
+    // Function to populate the workflow dropdown
+    function populateWorkflowDropdown(workflows) {
+        const workflowSelect = document.getElementById('workflowName');
+        workflowSelect.innerHTML = '<option value="">Select a workflow</option>';
+
+        workflows.forEach(workflow => {
+            const option = document.createElement('option');
+            option.value = workflow.workflow_name;
+            option.textContent = workflow.workflow_name || 'Unnamed Workflow';
+            workflowSelect.appendChild(option);
+        });
+    }
+
+    // Function to populate the repurpose workflow dropdown
+    function populateRepurposeWorkflowDropdown(workflows) {
+        const workflowSelect = document.getElementById('repurpose-workflowName');
+        workflowSelect.innerHTML = '<option value="">Select a workflow</option>';
+
+        workflows.forEach(workflow => {
+            const option = document.createElement('option');
+            option.value = workflow.workflow_name;
+            option.textContent = workflow.workflow_name || 'Unnamed Workflow';
+            workflowSelect.appendChild(option);
+        });
+    }
+
+    // Function to populate the template workflow dropdown
+    function populateTemplateWorkflowDropdown(workflows) {
+        const workflowSelect = document.getElementById('template-workflowName');
+        workflowSelect.innerHTML = '<option value="">Select a workflow</option>';
+
+        workflows.forEach(workflow => {
+            const option = document.createElement('option');
+            option.value = workflow.workflow_name;
+            option.textContent = workflow.workflow_name || 'Unnamed Workflow';
+            workflowSelect.appendChild(option);
+        });
+    }
+
+
     document.addEventListener('DOMContentLoaded', function() {
         // Fetch workflows when the page loads
         fetchWorkflows();
@@ -545,33 +598,35 @@
             e.preventDefault();
             // Display loading indicator or notification
             window.showNotification('Generating posts, please wait...', false);
-            
+
             console.log('Submitting Create Posts form...');
-            
-            // Get form data
-            const topicQuery = document.getElementById('topic-query').value;
-            const brand = document.getElementById('brand').value;
-            const postCount = parseInt(document.getElementById('post-count').value);
-            const workflowId = document.getElementById('workflow-id').value;
-            
-            if (!topicQuery || !brand || !workflowId) {
+
+            // Collect form data
+            const formData = {
+                topicQuery: document.getElementById('topic-query').value,
+                brand: document.getElementById('brand').value,
+                postCount: parseInt(document.getElementById('post-count').value, 10),
+                workflowName: document.getElementById('workflowName').value
+            };
+
+            if (!formData.topicQuery || !formData.brand || !formData.workflowName) {
                 console.error('Missing required form fields');
                 window.showNotification('Please fill in all required fields', true);
                 return;
             }
-            
-            console.log('Form data:', { topicQuery, brand, postCount, workflowId });
-            
-            // Create the request payload
+
+            console.log('Form data:', formData);
+
+            // Prepare API payload
             const payload = {
-                topic_query: topicQuery,
-                brand: brand,
-                repurpose_count: postCount,
-                workflow_id: workflowId
+                topic_query: formData.topicQuery,
+                brand: formData.brand,
+                repurpose_count: formData.postCount,
+                workflow_name: formData.workflowName
             };
-            
+
             console.log('API payload:', payload);
-            
+
             // Make the API call
             fetch('/api/generate-new-content', {
                 method: 'POST',
@@ -602,37 +657,39 @@
         document.getElementById('repurpose-form').addEventListener('submit', function(e) {
             e.preventDefault();
             window.showNotification('Repurposing content, please wait...', false);
-            
+
             console.log('Submitting Repurpose Content form...');
-            
-            // Get form data
-            const query = document.getElementById('repurpose-query').value;
-            const topic = document.getElementById('repurpose-topic').value;
-            const brand = document.getElementById('repurpose-brand').value;
-            const postsToFind = parseInt(document.getElementById('posts-to-find').value);
-            const variationsPerPost = parseInt(document.getElementById('variations-per-post').value);
-            const workflowId = document.getElementById('repurpose-workflow-id').value;
-            
-            if (!query || !topic || !brand || !workflowId) {
+
+            // Collect form data
+            const formData = {
+                query: document.getElementById('repurpose-query').value,
+                topic: document.getElementById('repurpose-topic').value,
+                brand: document.getElementById('repurpose-brand').value,
+                postsToFind: parseInt(document.getElementById('posts-to-find').value, 10),
+                variationsPerPost: parseInt(document.getElementById('variations-per-post').value, 10),
+                workflowName: document.getElementById('repurpose-workflowName').value
+            };
+
+            if (!formData.query || !formData.topic || !formData.brand || !formData.workflowName) {
                 console.error('Missing required form fields');
                 window.showNotification('Please fill in all required fields', true);
                 return;
             }
-            
-            console.log('Form data:', { query, topic, brand, postsToFind, variationsPerPost, workflowId });
-            
-            // Create the request payload
+
+            console.log('Form data:', formData);
+
+            // Prepare API payload
             const payload = {
-                query: query,
-                topic: topic,
-                brand: brand,
-                number_of_posts: postsToFind,
-                repurpose_count: variationsPerPost,
-                workflow_id: workflowId
+                query: formData.query,
+                topic: formData.topic,
+                brand: formData.brand,
+                number_of_posts: formData.postsToFind,
+                repurpose_count: formData.variationsPerPost,
+                workflow_name: formData.workflowName
             };
-            
+
             console.log('API payload:', payload);
-            
+
             // Make the API call
             fetch('/api/top-content-repurposing', {
                 method: 'POST',
@@ -663,37 +720,39 @@
         document.getElementById('templates-form').addEventListener('submit', function(e) {
             e.preventDefault();
             window.showNotification('Generating posts from template, please wait...', false);
-            
+
             console.log('Submitting Templates form...');
-            
-            // Get form data
-            const contentTopic = document.getElementById('content-topic').value;
-            const templatePost = document.getElementById('template-post').value;
-            const brand = document.getElementById('template-brand').value;
-            const workflowId = document.getElementById('template-workflow-id').value;
-            const postsCount = parseInt(document.getElementById('posts-count').value);
-            
-            if (!contentTopic || !templatePost || !brand || !workflowId) {
+
+            // Collect form data
+            const formData = {
+                contentTopic: document.getElementById('content-topic').value,
+                templatePost: document.getElementById('template-post').value,
+                brand: document.getElementById('template-brand').value,
+                workflowName: document.getElementById('template-workflowName').value,
+                postsCount: parseInt(document.getElementById('posts-count').value, 10)
+            };
+
+            if (!formData.contentTopic || !formData.templatePost || !formData.brand || !formData.workflowName) {
                 console.error('Missing required form fields');
                 window.showNotification('Please fill in all required fields', true);
                 return;
             }
-            
-            console.log('Form data:', { contentTopic, templatePost, brand, workflowId, postsCount });
-            
-            // Create the request payload
+
+            console.log('Form data:', formData);
+
+            // Prepare API payload
             const payload = {
-                content_topic_query: contentTopic,
-                template_post: templatePost,
-                brand: brand,
-                workflow_id: workflowId,
+                content_topic_query: formData.contentTopic,
+                template_post: formData.templatePost,
+                brand: formData.brand,
+                workflow_name: formData.workflowName,
                 is_given_template_query: false,
-                number_of_posts_to_template: postsCount,
-                post_topic_query: contentTopic
+                number_of_posts_to_template: formData.postsCount,
+                post_topic_query: formData.contentTopic
             };
-            
+
             console.log('API payload:', payload);
-            
+
             // Make the API call
             fetch('/api/source-content-repurpose-with-templates', {
                 method: 'POST',
