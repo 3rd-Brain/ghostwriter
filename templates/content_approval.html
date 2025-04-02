@@ -396,13 +396,17 @@ function renderContentTable(page) {
 
     currentPageData.forEach(item => {
         const row = document.createElement('tr');
+        
+        // Ensure status is available and properly formatted
+        const status = (item.status || item.Status || 'draft').toLowerCase();
+        const displayStatus = status.charAt(0).toUpperCase() + status.slice(1);
 
         row.innerHTML = `
             <td><input type="checkbox" class="content-checkbox" data-id="${item._id}"></td>
-            <td class="first-draft-cell">${item.First_Draft}</td>
-            <td><span class="status-badge status-${item.Status}">${item.Status.charAt(0).toUpperCase() + item.Status.slice(1)}</span></td>
-            <td><button class="btn-small view-source" data-source="${encodeURIComponent(item.Source_Chunk)}">View</button></td>
-            <td><button class="btn-small view-template" data-template="${encodeURIComponent(item.Template)}">View</button></td>
+            <td class="first-draft-cell">${item.First_Draft || item.first_draft || ''}</td>
+            <td><span class="status-badge status-${status}">${displayStatus}</span></td>
+            <td><button class="btn-small view-source" data-source="${encodeURIComponent(item.Source_Chunk || item.source_chunk || '')}">View</button></td>
+            <td><button class="btn-small view-template" data-template="${encodeURIComponent(item.Template || item.template || '')}">View</button></td>
         `;
 
         tableBody.appendChild(row);
@@ -549,10 +553,41 @@ function approveSelected() {
         return;
     }
 
-    // In a future implementation, this would make an API call to update the status
-    // For now, just show a notification
-    showNotification(`${selectedItems.length} items approved`);
-    fetchContentData(); // Refresh the table
+    // Display loading notification
+    showNotification(`Approving ${selectedItems.length} items...`);
+    
+    // Track successful and failed operations
+    let successCount = 0;
+    let failCount = 0;
+    let completedCount = 0;
+    
+    // Process each selected item
+    selectedItems.forEach(postId => {
+        updatePostStatus(postId, "Approved")
+            .then(success => {
+                if (success) {
+                    successCount++;
+                } else {
+                    failCount++;
+                }
+            })
+            .catch(() => {
+                failCount++;
+            })
+            .finally(() => {
+                completedCount++;
+                
+                // When all operations complete, show result and refresh
+                if (completedCount === selectedItems.length) {
+                    if (failCount > 0) {
+                        showNotification(`${successCount} items approved, ${failCount} failed`, failCount > 0);
+                    } else {
+                        showNotification(`${successCount} items approved successfully`);
+                    }
+                    fetchContentData(); // Refresh the table
+                }
+            });
+    });
 }
 
 function rejectSelected() {
@@ -562,15 +597,75 @@ function rejectSelected() {
         return;
     }
 
-    // In a future implementation, this would make an API call to update the status
-    // For now, just show a notification
-    showNotification(`${selectedItems.length} items rejected`);
-    fetchContentData(); // Refresh the table
+    // Display loading notification
+    showNotification(`Rejecting ${selectedItems.length} items...`);
+    
+    // Track successful and failed operations
+    let successCount = 0;
+    let failCount = 0;
+    let completedCount = 0;
+    
+    // Process each selected item
+    selectedItems.forEach(postId => {
+        updatePostStatus(postId, "Rejected")
+            .then(success => {
+                if (success) {
+                    successCount++;
+                } else {
+                    failCount++;
+                }
+            })
+            .catch(() => {
+                failCount++;
+            })
+            .finally(() => {
+                completedCount++;
+                
+                // When all operations complete, show result and refresh
+                if (completedCount === selectedItems.length) {
+                    if (failCount > 0) {
+                        showNotification(`${successCount} items rejected, ${failCount} failed`, failCount > 0);
+                    } else {
+                        showNotification(`${successCount} items rejected successfully`);
+                    }
+                    fetchContentData(); // Refresh the table
+                }
+            });
+    });
 }
 
 function getSelectedItems() {
     const checkboxes = document.querySelectorAll('.content-checkbox:checked');
     return Array.from(checkboxes).map(checkbox => checkbox.getAttribute('data-id'));
+}
+
+// Function to update post status in AstraDB
+async function updatePostStatus(postId, newStatus) {
+    const ASTRA_DB_API_ENDPOINT = '/api/update-post-status'; // Will be handled by our backend
+
+    try {
+        const response = await fetch(ASTRA_DB_API_ENDPOINT, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                post_id: postId,
+                status: newStatus
+            })
+        });
+
+        if (!response.ok) {
+            console.error(`Error updating post ${postId} status:`, await response.text());
+            return false;
+        }
+
+        const result = await response.json();
+        return result.status === 'success';
+    } catch (error) {
+        console.error(`Error updating post ${postId} status:`, error);
+        return false;
+    }
 }
 
 function filterContent() {

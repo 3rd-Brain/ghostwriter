@@ -1489,6 +1489,86 @@ async def delete_post(post_id: str, user: dict = Depends(check_api_key_or_jwt)):
         print(f"Error deleting post: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/api/update-post-status", tags=["Content Management"])
+async def update_post_status(request_data: schemas.PostStatusUpdateRequest, user: dict = Depends(check_api_key_or_jwt)):
+    """
+    **Update the status of a generated post**
+
+    This endpoint updates the status of a post to either 'Approved' or 'Rejected'.
+
+    ## When to use
+    Use this endpoint when you need to:
+    * Approve posts for publishing
+    * Reject posts that don't meet quality standards
+    * Change the workflow status of content
+
+    *This endpoint supports both JWT and API key authentication.*
+    """
+    ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+    ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+
+    if not ASTRA_DB_API_ENDPOINT:
+        raise HTTPException(status_code=500, detail="ASTRA_DB_API_ENDPOINT not configured")
+    if not ASTRA_DB_APPLICATION_TOKEN:
+        raise HTTPException(status_code=500, detail="ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
+
+    post_id = request_data.post_id
+    new_status = request_data.status
+
+    # Validate status
+    if new_status not in ["Approved", "Rejected"]:
+        raise HTTPException(status_code=400, detail="Status must be 'Approved' or 'Rejected'")
+
+    # Get the current user's ID from the authenticated user
+    user_id = user.get("user_id")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="User ID not found in authentication context")
+
+    # Prepare the API request to AstraDB
+    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/generated_content"
+    
+    headers = {
+        "Token": ASTRA_DB_APPLICATION_TOKEN,
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "findOneAndUpdate": {
+            "filter": {
+                "_id": post_id,
+                "user_id": user_id  # Ensure user can only update their own posts
+            },
+            "update": { 
+                "$set": { 
+                    "status": new_status,
+                    "Approval_Date": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+                } 
+            }
+        }
+    }
+
+    try:
+        print(f"\n=== Debug: Updating Post Status ===")
+        print(f"Post ID: {post_id}")
+        print(f"New Status: {new_status}")
+        print(f"User ID: {user_id}")
+        
+        response = requests.post(url, headers=headers, json=payload)
+        response.raise_for_status()
+        result = response.json()
+        
+        # Check if update was successful
+        if result.get("data", {}).get("document"):
+            print(f"Post status updated successfully")
+            return {"status": "success", "message": f"Post status updated to '{new_status}'"}
+        else:
+            print(f"Post not found or no update made: {result}")
+            return {"status": "warning", "message": "Post not found or no changes were made"}
+            
+    except Exception as e:
+        print(f"Error updating post status: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/api/simple-repurpose", response_model=schemas.SuccessResponse, tags=["Generation"])
 async def simple_repurpose_endpoint(request_data: schemas.SimpleRepurposeRequest, background_tasks: BackgroundTasks, user: dict = Depends(check_api_key_or_jwt)):
     """

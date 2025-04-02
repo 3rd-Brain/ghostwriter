@@ -142,6 +142,11 @@ class ContentUploadRequest(BaseModel):
     status: Optional[str] = Field("Draft", description="Status of the content")
     metrics: Optional[Dict[str, int]] = Field(None, description="Engagement metrics")
 
+# Post Status Update Request
+class PostStatusUpdateRequest(BaseModel):
+    post_id: str = Field(..., description="ID of the post to update")
+    status: str = Field(..., description="New status for the post (Approved or Rejected)")
+
 # Source Content
 class SourceContentRequest(BaseModel):
     topic_query: str = Field(..., description="Topic to search for in source content")
