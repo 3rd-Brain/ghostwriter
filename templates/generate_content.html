@@ -190,7 +190,7 @@
 {% block extra_js %}
 <script>
     // Store workflows data globally so we can access it when clicking on "Generation Flow" buttons
-    let workflowsData = [];
+    var workflowsData = [];
 
     // Function to fetch workflows and populate the table
     function fetchWorkflows() {
@@ -545,35 +545,180 @@
             e.preventDefault();
             // Display loading indicator or notification
             window.showNotification('Generating posts, please wait...', false);
-
-            // Add API call here
-            // For now, just simulate success after 2 seconds
-            setTimeout(() => {
-                window.showNotification('Posts generated successfully!', false);
-                createPostsModal.style.display = 'none';
-            }, 2000);
+            
+            console.log('Submitting Create Posts form...');
+            
+            // Get form data
+            const topicQuery = document.getElementById('topic-query').value;
+            const brand = document.getElementById('brand').value;
+            const postCount = parseInt(document.getElementById('post-count').value);
+            const workflowId = document.getElementById('workflow-id').value;
+            
+            if (!topicQuery || !brand || !workflowId) {
+                console.error('Missing required form fields');
+                window.showNotification('Please fill in all required fields', true);
+                return;
+            }
+            
+            console.log('Form data:', { topicQuery, brand, postCount, workflowId });
+            
+            // Create the request payload
+            const payload = {
+                topic_query: topicQuery,
+                brand: brand,
+                repurpose_count: postCount,
+                workflow_id: workflowId
+            };
+            
+            console.log('API payload:', payload);
+            
+            // Make the API call
+            fetch('/api/generate-new-content', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => {
+                console.log('API response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('API response data:', data);
+                if (data.status === 'success') {
+                    window.showNotification('Posts generated successfully! Check your generated content page.', false);
+                    createPostsModal.style.display = 'none';
+                } else {
+                    window.showNotification('Error generating posts: ' + (data.message || 'Unknown error'), true);
+                }
+            })
+            .catch(error => {
+                console.error('API call error:', error);
+                window.showNotification('Error generating posts: ' + error.message, true);
+            });
         });
 
         document.getElementById('repurpose-form').addEventListener('submit', function(e) {
             e.preventDefault();
             window.showNotification('Repurposing content, please wait...', false);
-
-            // Add API call here
-            setTimeout(() => {
-                window.showNotification('Content repurposed successfully!', false);
-                repurposeModal.style.display = 'none';
-            }, 2000);
+            
+            console.log('Submitting Repurpose Content form...');
+            
+            // Get form data
+            const query = document.getElementById('repurpose-query').value;
+            const topic = document.getElementById('repurpose-topic').value;
+            const brand = document.getElementById('repurpose-brand').value;
+            const postsToFind = parseInt(document.getElementById('posts-to-find').value);
+            const variationsPerPost = parseInt(document.getElementById('variations-per-post').value);
+            const workflowId = document.getElementById('repurpose-workflow-id').value;
+            
+            if (!query || !topic || !brand || !workflowId) {
+                console.error('Missing required form fields');
+                window.showNotification('Please fill in all required fields', true);
+                return;
+            }
+            
+            console.log('Form data:', { query, topic, brand, postsToFind, variationsPerPost, workflowId });
+            
+            // Create the request payload
+            const payload = {
+                query: query,
+                topic: topic,
+                brand: brand,
+                number_of_posts: postsToFind,
+                repurpose_count: variationsPerPost,
+                workflow_id: workflowId
+            };
+            
+            console.log('API payload:', payload);
+            
+            // Make the API call
+            fetch('/api/top-content-repurposing', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => {
+                console.log('API response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('API response data:', data);
+                if (data.status === 'success') {
+                    window.showNotification('Content repurposed successfully! Check your generated content page.', false);
+                    repurposeModal.style.display = 'none';
+                } else {
+                    window.showNotification('Error repurposing content: ' + (data.message || 'Unknown error'), true);
+                }
+            })
+            .catch(error => {
+                console.error('API call error:', error);
+                window.showNotification('Error repurposing content: ' + error.message, true);
+            });
         });
 
         document.getElementById('templates-form').addEventListener('submit', function(e) {
             e.preventDefault();
             window.showNotification('Generating posts from template, please wait...', false);
-
-            // Add API call here
-            setTimeout(() => {
-                window.showNotification('Template-based posts generated successfully!', false);
-                templatesModal.style.display = 'none';
-            }, 2000);
+            
+            console.log('Submitting Templates form...');
+            
+            // Get form data
+            const contentTopic = document.getElementById('content-topic').value;
+            const templatePost = document.getElementById('template-post').value;
+            const brand = document.getElementById('template-brand').value;
+            const workflowId = document.getElementById('template-workflow-id').value;
+            const postsCount = parseInt(document.getElementById('posts-count').value);
+            
+            if (!contentTopic || !templatePost || !brand || !workflowId) {
+                console.error('Missing required form fields');
+                window.showNotification('Please fill in all required fields', true);
+                return;
+            }
+            
+            console.log('Form data:', { contentTopic, templatePost, brand, workflowId, postsCount });
+            
+            // Create the request payload
+            const payload = {
+                content_topic_query: contentTopic,
+                template_post: templatePost,
+                brand: brand,
+                workflow_id: workflowId,
+                is_given_template_query: false,
+                number_of_posts_to_template: postsCount,
+                post_topic_query: contentTopic
+            };
+            
+            console.log('API payload:', payload);
+            
+            // Make the API call
+            fetch('/api/source-content-repurpose-with-templates', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => {
+                console.log('API response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('API response data:', data);
+                if (data.status === 'success') {
+                    window.showNotification('Template-based posts generated successfully! Check your generated content page.', false);
+                    templatesModal.style.display = 'none';
+                } else {
+                    window.showNotification('Error generating template-based posts: ' + (data.message || 'Unknown error'), true);
+                }
+            })
+            .catch(error => {
+                console.error('API call error:', error);
+                window.showNotification('Error generating template-based posts: ' + error.message, true);
+            });
         });
     });
 </script>
