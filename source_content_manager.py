@@ -32,8 +32,8 @@ def tweet_to_source_content(tweets: List[Dict]) -> List[Dict]:
         if tweet.get('isRetweet', False):
             continue
             
-        # Extract text from tweet
-        text = tweet.get('text', '')
+        # Extract text from tweet (prefer fullText if available)
+        text = tweet.get('fullText', '') or tweet.get('text', '')
         if not text:
             continue
 
@@ -56,13 +56,14 @@ def tweet_to_source_content(tweets: List[Dict]) -> List[Dict]:
             content_id = str(uuid.uuid4())
 
             # Extract metrics from tweet
-            likes = tweet.get('likes', 0)
-            shares = tweet.get('retweets', 0)
-            quotes = tweet.get('quotes', 0)
-            bookmarks = tweet.get('bookmarks', 0)
-            replies = tweet.get('replies', 0)
-            impressions = tweet.get('impressions', 0)
-            followers = tweet.get('followers', 0)
+            likes = tweet.get('likeCount', 0)
+            shares = tweet.get('retweetCount', 0)
+            quotes = tweet.get('quoteCount', 0)
+            bookmarks = tweet.get('bookmarkCount', 0)
+            replies = tweet.get('replyCount', 0)
+            impressions = tweet.get('viewCount', 0)
+            # Get followers from author object
+            followers = tweet.get('author', {}).get('followers', 0)
             
             # Calculate weighted metrics according to formulas
             # Use 1 as follower count if it's 0 to avoid division by zero
