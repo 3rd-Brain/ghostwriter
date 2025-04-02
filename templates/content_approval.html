@@ -192,9 +192,8 @@
                 <select id="content-format-filter" class="filter-select">
                     <option value="all">All</option>
                     <option value="Short Form Social">Short Form Social</option>
-                    <option value="Long Form Social">Long Form Social</option>
-                    <option value="Blog Post">Blog Post</option>
-                    <option value="Newsletter">Newsletter</option>
+                    <option value="Atomic Essay">Atomic Essay</option>
+                    <option value="Mid Form Social">Mid Form Social</option>
                 </select>
             </div>
             <div class="filter-group">
@@ -681,16 +680,27 @@ function filterContent() {
         date: dateFilter
     });
 
-    // If status filter is "all", show all posts, otherwise filter by status
-    if (statusFilter === 'all') {
-        renderFilteredData(allContentData);
-    } else {
-        const filteredData = allContentData.filter(item => {
+    // Filter the data based on selected filters
+    let filteredData = [...allContentData];
+    
+    // Filter by status if not "all"
+    if (statusFilter !== 'all') {
+        filteredData = filteredData.filter(item => {
             const itemStatus = (item.status || item.Status || 'draft').toLowerCase();
             return itemStatus === statusFilter.toLowerCase();
         });
-        renderFilteredData(filteredData);
     }
+    
+    // Filter by content format if not "all"
+    if (contentFormatFilter !== 'all') {
+        filteredData = filteredData.filter(item => {
+            const itemFormat = item.Content_Format || item.content_format || '';
+            return itemFormat === contentFormatFilter;
+        });
+    }
+    
+    // Render the filtered data
+    renderFilteredData(filteredData);
 }
 
 function renderFilteredData(filteredData) {
