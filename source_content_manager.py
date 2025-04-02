@@ -55,6 +55,24 @@ def tweet_to_source_content(tweets: List[Dict]) -> List[Dict]:
             # Generate a unique content ID
             content_id = str(uuid.uuid4())
 
+            # Extract metrics from tweet
+            likes = tweet.get('likes', 0)
+            shares = tweet.get('retweets', 0)
+            quotes = tweet.get('quotes', 0)
+            bookmarks = tweet.get('bookmarks', 0)
+            replies = tweet.get('replies', 0)
+            impressions = tweet.get('impressions', 0)
+            
+            # Calculate weighted metrics
+            weighted_likes = likes * 1.0  # You can adjust these weights as needed
+            weighted_shares = shares * 1.5
+            weighted_bookmarks = bookmarks * 0.8
+            weighted_replies = replies * 1.2
+            weighted_impressions = impressions * 0.5
+            
+            # Calculate overall score
+            score = weighted_likes + weighted_shares + weighted_bookmarks + weighted_replies + weighted_impressions
+            
             # Prepare document for upload
             document = {
                 "content_id": content_id,
@@ -63,7 +81,21 @@ def tweet_to_source_content(tweets: List[Dict]) -> List[Dict]:
                 "source": "Twitter",
                 "channel_source": "Twitter",
                 "$vector": embedding,
-                "context": "NA"
+                "context": "NA",
+                "metadata": {
+                    "likes": likes,
+                    "shares": shares,
+                    "quotes": quotes,
+                    "bookmarks": bookmarks,
+                    "replies": replies,
+                    "impressions": impressions,
+                    "weighted_likes": weighted_likes,
+                    "weighted_shares": weighted_shares,
+                    "weighted_bookmarks": weighted_bookmarks,
+                    "weighted_replies": weighted_replies,
+                    "weighted_impressions": weighted_impressions,
+                    "score": score
+                }
             }
 
             # Prepare upload payload
