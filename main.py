@@ -1296,21 +1296,57 @@ async def search_templates(request_data: schemas.MultitemplateRequest, user: dic
 
     *This endpoint supports both JWT and API key authentication.*
     """
-    if not os.getenv("OPENAI_API_KEY"):
+    print(f"\n=== Debug: Template Search Request ===")
+    print(f"User ID: {user.get('user_id')}")
+    print(f"Search Query: {request_data.content_chunk}")
+    print(f"Template Count: {request_data.template_count}")
+    print(f"DB to Access: {request_data.db_to_access}")
+    
+    # Check environment variables
+    openai_key = os.getenv("OPENAI_API_KEY")
+    astra_token = os.getenv("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+    
+    print(f"OPENAI_API_KEY configured: {bool(openai_key)}")
+    print(f"ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER configured: {bool(astra_token)}")
+    
+    if not openai_key:
+        print("Error: OPENAI_API_KEY not configured")
         raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
-    if not os.getenv("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER"):
+    if not astra_token:
+        print("Error: ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
         raise HTTPException(status_code=500, detail="ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
 
     try:
         from social_writer import template_search
+        
+        # Get category parameter if it exists
+        category = "Short Form"
+        if hasattr(request_data, 'category'):
+            category = request_data.category
+        
+        # Set default db_to_access if not provided
+        db_to_access = request_data.db_to_access
+        if not db_to_access:
+            db_to_access = "all"
+            
+        print(f"Using category: {category}")
+        print(f"Using db_to_access: {db_to_access}")
+        
         result = template_search(
             text_query=request_data.content_chunk, 
             template_count=request_data.template_count,
-            db_to_access=request_data.db_to_access,
-            category=request_data.category if hasattr(request_data, 'category') else "Short Form"
+            db_to_access=db_to_access,
+            category=category
         )
+        
+        print(f"Search completed successfully")
+        print(f"Result document count: {len(result.get('data', {}).get('documents', []))}")
         return result
     except Exception as e:
+        import traceback
+        error_traceback = traceback.format_exc()
+        print(f"Error in template search: {str(e)}")
+        print(f"Error traceback: {error_traceback}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/source-content-repurpose-with-templates", response_model=schemas.SuccessResponse, tags=["Generation"])

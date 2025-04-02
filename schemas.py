@@ -82,8 +82,8 @@ class TemplatizerResponse(BaseModel):
 # Multitemplate schemas
 class MultitemplateRequest(BaseModel):
     content_chunk: str = Field(..., description="Content chunk to find templates for")
-    template_count: int = Field(5, description="Number of templates to retrieve")
-    db_to_access: str = Field("sys", description="Which databases to access ('sys', 'user', or 'both')")
+    template_count: int = Field(3, description="Number of templates to retrieve")
+    db_to_access: str = Field("all", description="Which databases to access ('sys', 'user', or 'both')")
     category: str = Field("Short Form", description="Template category to filter by ('Short Form', 'Atomic', or 'Mid Form')")
 
 # Repurpose with Templates schemas
@@ -98,7 +98,7 @@ class RepurposeWithTemplatesRequest(BaseModel):
 
 # Source Content Repurpose with Templates schemas
 class SourceContentRepurposeWithTemplatesRequest(BaseModel):
-    content_topic_query: str = Field(..., description="Topic query for content")
+    content_topic_query: str = Field(..., description="Topic query for source content")
     template_post: str = Field(..., description="Template post to use")
     brand: str = Field(..., description="Brand name for content style")
     workflow_id: str = Field("Legacy Generation Flow", description="Workflow ID to use")
