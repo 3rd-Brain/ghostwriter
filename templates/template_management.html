@@ -337,8 +337,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const searchQuery = templateSearchInput.value.trim() || currentSearchQuery;
         currentSearchQuery = searchQuery;
         
-        console.log('Sending template search request with query:', searchQuery);
-        
         // Make API call to search templates
         fetch('/api/template-search', {
             method: 'POST',
@@ -347,19 +345,12 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             body: JSON.stringify({ 
                 content_chunk: searchQuery,
-                template_count: 50, // Request more to support pagination
-                db_to_access: "all" // Explicitly specify to search all databases
+                template_count: 50 // Request more to support pagination
             })
         })
         .then(response => {
-            console.log('Template search response status:', response.status);
-            console.log('Template search response headers:', Array.from(response.headers.entries()));
-            
             if (!response.ok) {
-                return response.text().then(text => {
-                    console.error('Error response body:', text);
-                    throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
-                });
+                throw new Error('Network response was not ok');
             }
             return response.json();
         })
@@ -439,10 +430,8 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => {
             console.error('Error loading templates:', error);
-            // Log the full error details
-            console.error('Error details:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
             templatesLoading.style.display = 'none';
-            templatesTableBody.innerHTML = `<tr><td colspan="3" class="text-center">Error loading templates: ${error.message}</td></tr>`;
+            templatesTableBody.innerHTML = '<tr><td colspan="3" class="text-center">Error loading templates</td></tr>';
         });
     }
     
