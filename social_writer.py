@@ -577,7 +577,9 @@ def short_form_social_repurposing(topic_query: str, brand: str, repurpose_count:
             )
 
             print(f"\n--- Content Generated Using Template ---")
-            print(f"Template: {template['content']}")
+            # Use the correct key for template content (template or content)
+            template_display = template.get("template") if "template" in template else template.get("content", "Unknown template")
+            print(f"Template: {template_display}")
             print(f"Generated Content: {generated_content}")
 
             content_result = {
