@@ -873,7 +873,7 @@ def Templatizer(social_post: str) -> str:
 
     return template
 
-def top_content_to_repurposing(query: str, topic: str, brand: str, numberOfPostsToRepurpose: int = 5, repurpose_count: int = 1, workflow_id: str = "Legacy Generation Flow with Claude") -> Dict:
+def top_content_to_repurposing(query: str, topic: str, brand: str, numberOfPostsToRepurpose: int = 5, repurpose_count: int = 1, workflow_id: str = "Legacy Generation Flow") -> Dict:
     """
     Get top posts and repurpose each one multiple times using short_form_social_repurposing
     Args:
