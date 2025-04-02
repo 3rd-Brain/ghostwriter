@@ -318,33 +318,37 @@ function fetchContentData() {
             if (responseData.status === 'success' && Array.isArray(responseData.posts)) {
                 // Transform the API response to the expected format for rendering
                 const transformedData = responseData.posts.map(item => {
+                    // Debug log to see actual field names
+                    console.log("Sample data item:", item);
+                    
+                    // Map the fields properly, handle both camelCase and snake_case names
                     return {
                         _id: item._id,
-                        First_Draft: item.First_Draft || '',
-                        Status: (item.Status || 'draft').toLowerCase(),
-                        Source_Chunk: item.Source_Chunk || '',
-                        Template: item.Template || '',
-                        Tag: item.Tag || '',
-                        Content_Format: item.Content_Format || 'Short Form Social',
-                        Content_Author: item.Content_Author || 'AI Generated',
-                        Created_Time: item.Created_Time || '',
-                        Approval_Date: item.Approval_Date || '',
-                        Publish_Date: item.Publish_Date || '',
-                        Post_ID: item.Post_ID || '',
-                        Post_Channel: item.Post_Channel || '',
-                        Likes: item.Likes || 0,
-                        Shares: item.Shares || 0,
-                        Quotes: item.Quotes || 0,
-                        Bookmarks: item.Bookmarks || 0,
-                        Replies: item.Replies || 0,
-                        Impressions: item.Impressions || 0,
-                        Weighted_Impressions: item.Weighted_Impressions || 0,
-                        Weighted_Replies: item.Weighted_Replies || 0,
-                        Weighted_Bookmarks: item.Weighted_Bookmarks || 0,
-                        Weighted_Shares: item.Weighted_Shares || 0,
-                        Weighted_Likes: item.Weighted_Likes || 0,
-                        Followers: item.Followers || 0,
-                        Score: item.Score || 0
+                        First_Draft: item.First_Draft || item.first_draft || '',
+                        Status: (item.Status || item.status || 'draft').toLowerCase(),
+                        Source_Chunk: item.Source_Chunk || item.source_chunks || item.source_chunk || '',
+                        Template: item.Template || item.template || '',
+                        Tag: item.Tag || item.tag || '',
+                        Content_Format: item.Content_Format || item.content_format || 'Short Form Social',
+                        Content_Author: item.Content_Author || item.content_author || 'AI Generated',
+                        Created_Time: item.Created_Time || item.created_at || item.created_time || '',
+                        Approval_Date: item.Approval_Date || item.approval_date || '',
+                        Publish_Date: item.Publish_Date || item.publish_date || '',
+                        Post_ID: item.Post_ID || item.post_id || '',
+                        Post_Channel: item.Post_Channel || item.post_channel || '',
+                        Likes: item.Likes || (item.metrics && item.metrics.likes) || 0,
+                        Shares: item.Shares || (item.metrics && item.metrics.shares) || 0,
+                        Quotes: item.Quotes || (item.metrics && item.metrics.quotes) || 0,
+                        Bookmarks: item.Bookmarks || (item.metrics && item.metrics.bookmarks) || 0,
+                        Replies: item.Replies || (item.metrics && item.metrics.replies) || 0,
+                        Impressions: item.Impressions || (item.metrics && item.metrics.impressions) || 0,
+                        Weighted_Impressions: item.Weighted_Impressions || (item.weighted_metrics && item.weighted_metrics.weighted_impressions) || 0,
+                        Weighted_Replies: item.Weighted_Replies || (item.weighted_metrics && item.weighted_metrics.weighted_replies) || 0,
+                        Weighted_Bookmarks: item.Weighted_Bookmarks || (item.weighted_metrics && item.weighted_metrics.weighted_bookmarks) || 0,
+                        Weighted_Shares: item.Weighted_Shares || (item.weighted_metrics && item.weighted_metrics.weighted_shares) || 0,
+                        Weighted_Likes: item.Weighted_Likes || (item.weighted_metrics && item.weighted_metrics.weighted_likes) || 0,
+                        Followers: item.Followers || item.followers || 0,
+                        Score: item.Score || item.score || 0
                     };
                 });
 
@@ -362,6 +366,10 @@ function fetchContentData() {
         })
         .catch(error => {
             console.error('Error fetching content data:', error);
+            // Log more details for debugging
+            if (responseData) {
+                console.error('Response data:', responseData);
+            }
             tableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 20px; color: #f44336;">Error: ${error.message}</td></tr>`;
             document.getElementById('pagination-controls').style.display = 'none';
         });
