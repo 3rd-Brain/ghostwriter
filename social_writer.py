@@ -562,10 +562,17 @@ def short_form_social_repurposing(topic_query: str, brand: str, repurpose_count:
         for template in templates:
             from social_dynamic_generation_flow import social_post_generation_with_json
 
+            # Determine the correct template content key (template or content)
+            template_content = template.get("template") if "template" in template else template.get("content", "")
+            
+            if not template_content:
+                print(f"Warning: Could not find template content in: {template}")
+                continue
+
             generated_content = social_post_generation_with_json(
                 workflow_id=workflow_id,
                 client_brief=brand_voice["brand_voice"],
-                template=template["content"],
+                template=template_content,
                 content_chunks=combined_chunks
             )
 
@@ -580,7 +587,7 @@ def short_form_social_repurposing(topic_query: str, brand: str, repurpose_count:
             }
 
             # Extract template without variations by splitting on "|" and taking first part
-            template_base = template["content"].split("|")[0].strip()
+            template_base = template_content.split("|")[0].strip()
 
             # Prepare content data for upload
             content_data = {
