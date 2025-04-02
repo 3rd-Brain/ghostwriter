@@ -253,14 +253,39 @@ async def dashboard(request: Request, current_user: dict = Depends(get_current_u
     response = requests.post(url, headers=headers, json=payload)
     has_source_content = bool(response.json().get("data", {}).get("documents", []))
 
-    print(f"User data loaded for {current_user['username']}, has_source_content: {has_source_content}")
+    # Get source content count
+    from source_content_manager import count_user_documents
+    doc_count = count_user_documents(current_user["user_id"])
+    
+    # Get draft content count
+    draft_count = 0
+    try:
+        generated_content_url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/generated_content"
+        draft_payload = {
+            "countDocuments": {
+                "filter": {
+                    "user_id": current_user["user_id"],
+                    "status": "Draft"
+                }
+            }
+        }
+        
+        draft_response = requests.post(generated_content_url, headers=headers, json=draft_payload)
+        if draft_response.status_code == 200:
+            draft_count = draft_response.json().get("status", {}).get("count", 0)
+    except Exception as e:
+        print(f"Error counting draft content: {str(e)}")
+
+    print(f"User data loaded for {current_user['username']}, has_source_content: {has_source_content}, doc_count: {doc_count}, draft_count: {draft_count}")
 
     return templates.TemplateResponse("dashboard.html", {
         "request": request,
         "username": current_user["username"],
         "user_id": current_user["user_id"],
         "current_page": "dashboard",
-        "show_onboarding": not has_source_content
+        "show_onboarding": not has_source_content,
+        "doc_count": doc_count,
+        "draft_count": draft_count
     })
 
 @app.get("/generation/repurpose", response_class=HTMLResponse, include_in_schema=False)

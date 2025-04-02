@@ -77,30 +77,30 @@ window.addEventListener('DOMContentLoaded', (event) => {
                 <i data-lucide="info"></i>
             </div>
         </div>
-        <div class="metric-large">0</div>
-        <div class="metric-label">Total content pieces</div>
+        <div class="metric-large">{{ doc_count }}</div>
+        <div class="metric-label">Total chunks from source content</div>
     </div>
 
     <div class="card">
         <div class="card-header">
             <div class="card-title">
-                <span>Active Campaigns</span>
+                <span>Content Waiting for Approval</span>
                 <i data-lucide="info"></i>
             </div>
         </div>
-        <div class="metric-large">0</div>
-        <div class="metric-label">Current active campaigns</div>
+        <div class="metric-large">{{ draft_count }}</div>
+        <div class="metric-label">Items pending approval</div>
     </div>
 
     <div class="card">
         <div class="card-header">
             <div class="card-title">
-                <span>Engagement Rate</span>
+                <span>Followers</span>
                 <i data-lucide="info"></i>
             </div>
         </div>
-        <div class="metric-large">0%</div>
-        <div class="metric-label">Average engagement</div>
+        <div class="metric-large">7200</div>
+        <div class="metric-label">Total followers</div>
     </div>
 </div>
 
