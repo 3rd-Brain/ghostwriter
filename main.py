@@ -97,14 +97,14 @@ async def login(request: Request, username: str = Form(...), password: str = For
     try:
         # Check if input is email or username
         is_email = '@' in username
-
+        
         # Query the user from the database
         url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/users_keyspace/users"
         headers = {
             "Token": ASTRA_DB_APPLICATION_TOKEN,
             "Content-Type": "application/json"
         }
-
+        
         # Use different filter depending on login method
         if is_email:
             print(f"Login attempt using email: {username}")
@@ -135,7 +135,7 @@ async def login(request: Request, username: str = Form(...), password: str = For
             # Debug logging for password comparison
             print(f"Found user: {actual_username}")
             print(f"Stored hash exists: {bool(stored_hash)}")
-
+            
             # Compare plain password with stored hash
             is_password_match = False
             if stored_hash:
@@ -147,38 +147,38 @@ async def login(request: Request, username: str = Form(...), password: str = For
                     input_encoded = password.encode('utf-8')
                     print(f"Input password (encoded): {input_encoded}")
                     print(f"Input password (encoded type): {type(input_encoded)}")
-
+                    
                     print(f"\nStored hash (raw): {stored_hash}")
                     print(f"Stored hash (type): {type(stored_hash)}")
                     stored_encoded = stored_hash.encode('utf-8')
                     print(f"Stored hash (encoded): {stored_encoded}")
                     print(f"Stored hash (encoded type): {type(stored_encoded)}")
-
+                    
                     # Extract salt and manually generate hash
                     print("\nManual Hash Generation:")
                     stored_salt = stored_encoded[:29]  # bcrypt salt is always 29 chars including version
                     print(f"Extracted salt: {stored_salt}")
                     print(f"Salt (type): {type(stored_salt)}")
-
+                    
                     manual_hash = bcrypt.hashpw(input_encoded, stored_salt)
                     print(f"Manually generated hash: {manual_hash}")
                     print(f"Manual hash matches stored?: {manual_hash == stored_encoded}")
-
+                    
                     print("\nAttempting hash comparison with bcrypt.checkpw()...")
                     print("=== End Debug Section ===\n")
                     # --End delete section--
-
+                    
                     is_password_match = bcrypt.checkpw(input_encoded, stored_encoded)
                     print(f"Password comparison result: {is_password_match}")
                 except Exception as e:
                     print(f"Error during password comparison: {str(e)}")
-
+                    
             if is_password_match:
                 print(f"Login successful for user: {actual_username}")
                 # Set the username and user_id as environment variables
                 os.environ["CURRENT_USERNAME"] = actual_username
                 os.environ["CURRENT_USER_ID"] = user_id
-
+                
                 # Create an access token that includes both username and user_id
                 access_token = create_access_token(
                     data={"sub": actual_username, "user_id": user_id},
@@ -242,7 +242,7 @@ async def dashboard(request: Request, current_user: dict = Depends(get_current_u
         "Token": ASTRA_DB_APPLICATION_TOKEN,
         "Content-Type": "application/json"
     }
-
+    
     payload = {
         "find": {
             "filter": {"user_id": current_user["user_id"]},
@@ -314,7 +314,7 @@ async def get_workflows(user: dict = Depends(check_api_key_or_jwt)):
     * **List all available workflows** for user selection
     * Get an overview of configured generation processes
     * Select a workflow for content generation
-
+    
     *This endpoint supports both JWT and API key authentication.*
     """
     ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
@@ -450,18 +450,18 @@ async def get_user_brands(user: dict = Depends(check_api_key_or_jwt)):
         print(f"Sending request to AstraDB...")
         response = requests.post(url, headers=headers, json=payload)
         print(f"Response status code: {response.status_code}")
-
+        
         # Log truncated response for debugging
         response_text = response.text
         print(f"Response preview: {response_text[:200]}{'...' if len(response_text) > 200 else ''}")
-
+        
         response.raise_for_status()
         result = response.json()
-
+        
         brands = result.get("data", {}).get("documents", [])
         print(f"Found {len(brands)} brands for user {user_id}")
         print(f"=== Debug: User Brands Request Completed ===\n")
-
+        
         return {
             "status": "success",
             "brands": brands
@@ -483,7 +483,7 @@ async def source_content_management(request: Request, current_user: dict = Depen
     # Get user data from AstraDB
     ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
     ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
-
+    
     url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/users_keyspace/users"
     headers = {
         "Token": ASTRA_DB_APPLICATION_TOKEN,
@@ -494,24 +494,24 @@ async def source_content_management(request: Request, current_user: dict = Depen
             "filter": {"user_id": current_user["user_id"]}
         }
     }
-
+    
     try:
         response = requests.post(url, headers=headers, json=payload)
         response.raise_for_status()
         user_data = response.json()
-
+        
         # Count social media accounts
         socials = user_data.get("data", {}).get("document", {}).get("profile", {}).get("socials", {})
         social_count = sum(1 for value in socials.values() if value)
     except Exception as e:
         print(f"Error fetching user data: {str(e)}")
         social_count = 0
-
+    
     from source_content_manager import count_user_documents
-
+    
     # Get document count
     doc_count = count_user_documents(current_user["user_id"])
-
+    
     return templates.TemplateResponse("source_content_management.html", {
         "request": request,
         "username": current_user["username"],
@@ -711,15 +711,15 @@ async def upload_file(
 ):
     """
     **Upload a file (PDF or Markdown) for processing into source content**
-
+    
     This endpoint allows users to upload document files that will be processed into source content chunks.
-
+    
     ## When to use
     Use this endpoint when you need to:
     * Add new content sources to your knowledge base
     * Process documents into AI-ready content chunks
     * Import external content into your content generation system
-
+    
     *This endpoint supports both JWT and API key authentication.*
     """
     print("\n=== File Upload Debug ===")
@@ -727,19 +727,19 @@ async def upload_file(
     print(f"Content type: {file.content_type}")
     print(f"User ID: {user['user_id']}")
     print(f"Auth method: {user.get('auth_source', 'unknown')}")
-
+    
     # Validate file type
     if not (file.filename.lower().endswith('.pdf') or file.filename.lower().endswith('.md')):
         print("File type validation failed")
         raise HTTPException(status_code=400, detail="Only PDF and Markdown files are supported")
-
+    
     try:
         print("Creating DocumentProcessor instance...")
         processor = DocumentProcessor()
-
+        
         print("Processing file...")
         result = await processor.process_file(file.file, file.filename, user["user_id"])
-
+        
         print(f"Processing complete. File ID: {result['file_id']}, Chunks: {len(result['chunks'])}")
         return {"status": "success", "file_id": result["file_id"], "chunks": len(result["chunks"])}
     except Exception as e:
@@ -872,12 +872,12 @@ async def get_brand_voice(request_data: schemas.BrandVoiceRequest, user: dict = 
         # Get the user ID from the authenticated user or from request data
         user_id = request_data.user_id or user.get("user_id")
         brand = request_data.brand
-
+        
         # Print debugging information before calling get_client_brand_voice
         auth_method = user.get("auth_source", "unknown")
         print(f"\n=== Debug: Calling get_client_brand_voice for brand: {brand}, user ID: {user_id} ===")
         print(f"=== Debug: Authenticated using: {auth_method} ===")
-
+        
         result = get_client_brand_voice(brand, user_id)
         print(f"=== Debug: API Response: {result} ===\n")
         return result
@@ -1268,7 +1268,7 @@ async def search_templates(request_data: schemas.MultitemplateRequest, user: dic
     * **Directly search templates** without additional processing
     * Perform faster template searches for performance-sensitive applications
     * Access templates from system database, user database, or both
-
+    
     *This endpoint supports both JWT and API key authentication.*
     """
     if not os.getenv("OPENAI_API_KEY"):
@@ -1279,10 +1279,9 @@ async def search_templates(request_data: schemas.MultitemplateRequest, user: dic
     try:
         from social_writer import template_search
         result = template_search(
-            text_query=request_data.content_chunk, 
-            template_count=request_data.template_count,
-            db_to_access=request_data.db_to_access,
-            category=request_data.category if hasattr(request_data, 'category') else "Short Form"
+            request_data.content_chunk, 
+            request_data.template_count,
+            request_data.db_to_access
         )
         return result
     except Exception as e:
@@ -1379,7 +1378,7 @@ async def get_latest_generated_posts(user: dict = Depends(check_api_key_or_jwt))
     * View your most recently generated posts
     * Track your latest post generation activities
     * Retrieve posts for editing or review
-
+    
     *This endpoint supports both JWT and API key authentication.*
     """
     try:
@@ -1443,7 +1442,7 @@ async def delete_post(post_id: str, user: dict = Depends(check_api_key_or_jwt)):
     * Clean up your posts repository
     * Delete test posts after development
 
-    *This action cannot beundone, and posts will be permanently removed.*
+    *This action cannot be undone, and posts will be permanently removed.*
     *This endpoint supports both JWT and API key authentication.*
     """
     try:

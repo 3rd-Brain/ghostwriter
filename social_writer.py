@@ -285,7 +285,7 @@ def vector_search_for_published_content(metadata_filter: Dict, text_to_vectorize
         return response_data
     except requests.exceptions.RequestException as e:
         raise Exception(f"Failed to perform vector search: {str(e)}")
-
+        
 def metric_sorter(published_content: Dict, sort_metric: str) -> Dict:
     """
     Sort published content by specified metric in descending order
@@ -379,14 +379,13 @@ def top_content_retriever(query: str, topic: str) -> Dict:
         return metric_sorter(search_result, setup_result["metric_sort"])
     return search_result
 
-def multitemplate_retriever(content_chunk: str, template_count_to_retrieve: int = 5, db_to_access: str = "sys", category: str = "Short Form") -> Dict:
+def multitemplate_retriever(content_chunk: str, template_count_to_retrieve: int = 5, db_to_access: str = "sys") -> Dict:
     """
     Retrieve template documents based on content chunk using vector search
     Args:
         content_chunk: String containing the content to find templates for
         template_count_to_retrieve: The number of templates to retrieve
         db_to_access: Which databases to access ("sys", "user", or "both")
-        category: The category of templates to retrieve (Short Form, Atomic, Mid Form)
     Returns:
         Dictionary containing template search results
     """
@@ -441,8 +440,7 @@ def multitemplate_retriever(content_chunk: str, template_count_to_retrieve: int 
             ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
             vector, 
             "sys_keyspace/templates", 
-            count_per_db,
-            category
+            count_per_db
         )
 
         # Get templates from user database
@@ -451,8 +449,7 @@ def multitemplate_retriever(content_chunk: str, template_count_to_retrieve: int 
             ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
             vector, 
             "user_content_keyspace/user_templates", 
-            remaining_count,
-            category
+            remaining_count
         )
 
         # Combine results from both databases
@@ -475,8 +472,7 @@ def multitemplate_retriever(content_chunk: str, template_count_to_retrieve: int 
             ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
             vector, 
             "user_content_keyspace/user_templates", 
-            template_count_to_retrieve,
-            category
+            template_count_to_retrieve
         )
     else:
         # Default - access only system templates
@@ -485,11 +481,10 @@ def multitemplate_retriever(content_chunk: str, template_count_to_retrieve: int 
             ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
             vector, 
             "sys_keyspace/templates", 
-            template_count_to_retrieve,
-            category
+            template_count_to_retrieve
         )
 
-def search_templates_in_db(api_endpoint: str, api_token: str, vector: List[float], db_path: str, count: int, category: str) -> Dict:
+def search_templates_in_db(api_endpoint: str, api_token: str, vector: List[float], db_path: str, count: int) -> Dict:
     """
     Helper function to search templates in a specific database
 
@@ -499,7 +494,6 @@ def search_templates_in_db(api_endpoint: str, api_token: str, vector: List[float
         vector: The embedding vector for similarity search
         db_path: The database path to search in (e.g., "sys_keyspace/templates")
         count: The number of templates to retrieve
-        category: The category of templates to retrieve
 
     Returns:
         Dictionary containing template search results
@@ -514,7 +508,6 @@ def search_templates_in_db(api_endpoint: str, api_token: str, vector: List[float
     payload = {
         "find": {
             "sort": {"$vector": vector},
-            "filter": {"category": category},
             "options": {
                 "limit": count
             }
@@ -555,7 +548,7 @@ def short_form_social_repurposing(topic_query: str, brand: str, repurpose_count:
 
     # Step 2: Get templates based on repurpose count
     template_results = multitemplate_retriever(combined_chunks, template_count_to_retrieve=repurpose_count)
-
+    
     # Debug logging for template retrieval
     print("\n=== Debug: Template Retrieval Results ===")
     template_count = len(template_results.get("data", {}).get("documents", []))
@@ -578,7 +571,7 @@ def short_form_social_repurposing(topic_query: str, brand: str, repurpose_count:
     if template_results.get("data", {}).get("documents"):
         templates = template_results["data"]["documents"][:repurpose_count]  # Get templates based on repurpose count
         print(f"\n=== Debug: Using {len(templates)} templates for content generation ===")
-
+        
         # Log each template being used
         for i, template in enumerate(templates, 1):
             template_content = template.get("template") if "template" in template else template.get("content", "")
@@ -798,7 +791,8 @@ def repurposer_using_posts_as_templates(
 ) -> Dict:
     """
     Repurpose content using social posts as templates
-    Args:        content_chunks: String containing content to supply generation
+    Args:
+        content_chunks: String containing content to supply generation
         template_post: String of a social post to inherit / String of a query to grab social posts
         brand: String containing brand name
         workflow_id: String containing workflow ID for generation (default: Legacy Generation Flow with Claude)
@@ -1220,7 +1214,7 @@ def delete_user_account(identifier: str, delete_by: str = "username") -> dict:
     return response.json()
 
 
-def template_search(text_query: str, template_count: int = 5, db_to_access: str = "sys", category: str = "Short Form") -> Dict:
+def template_search(text_query: str, template_count: int = 5, db_to_access: str = "sys") -> Dict:
     """
     Search for templates using vector embedding of the provided text
 
@@ -1228,7 +1222,6 @@ def template_search(text_query: str, template_count: int = 5, db_to_access: str 
         text_query: String containing the text to find templates for
         template_count: The number of templates to retrieve (default: 5)
         db_to_access: Which databases to access ("sys", "user", or "both")
-        category: The category of templates to retrieve
 
     Returns:
         Dictionary containing template search results
@@ -1263,8 +1256,7 @@ def template_search(text_query: str, template_count: int = 5, db_to_access: str 
             ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
             vector, 
             "sys_keyspace/templates", 
-            count_per_db,
-            category
+            count_per_db
         )
 
         # Get templates from user database
@@ -1273,8 +1265,7 @@ def template_search(text_query: str, template_count: int = 5, db_to_access: str 
             ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
             vector, 
             "user_content_keyspace/user_templates", 
-            remaining_count,
-            category
+            remaining_count
         )
 
         # Combine results from both databases
@@ -1297,8 +1288,7 @@ def template_search(text_query: str, template_count: int = 5, db_to_access: str 
             ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
             vector, 
             "user_content_keyspace/user_templates", 
-            template_count,
-            category
+            template_count
         )
     else:
         # Default - access only system templates
@@ -1307,6 +1297,5 @@ def template_search(text_query: str, template_count: int = 5, db_to_access: str 
             ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
             vector, 
             "sys_keyspace/templates", 
-            template_count,
-            category
+            template_count
         )
