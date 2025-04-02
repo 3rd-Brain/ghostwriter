@@ -188,15 +188,17 @@
             </div>
             
             <div class="filter-group">
-                <label for="channel-filter">Channel:</label>
-                <select id="channel-filter" class="filter-select">
+                <label for="content-format-filter">Content Format:</label>
+                <select id="content-format-filter" class="filter-select">
                     <option value="all">All</option>
-                    <option value="twitter">Twitter</option>
-                    <option value="linkedin">LinkedIn</option>
+                    <option value="Short Form Social">Short Form Social</option>
+                    <option value="Long Form Social">Long Form Social</option>
+                    <option value="Blog Post">Blog Post</option>
+                    <option value="Newsletter">Newsletter</option>
                 </select>
             </div>
             <div class="filter-group">
-                <label for="date-range">Date Range:</label>
+                <label for="date-range">Creation Date Range:</label>
                 <select id="date-range" class="filter-select">
                     <option value="all">All Time</option>
                     <option value="today">Today</option>
@@ -278,8 +280,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('approve-selected').addEventListener('click', approveSelected);
     document.getElementById('reject-selected').addEventListener('click', rejectSelected);
     document.getElementById('status-filter').addEventListener('change', filterContent);
-    
-    document.getElementById('channel-filter').addEventListener('change', filterContent);
+    document.getElementById('content-format-filter').addEventListener('change', filterContent);
     document.getElementById('date-range').addEventListener('change', filterContent);
 
     // Modal close buttons
@@ -671,18 +672,89 @@ async function updatePostStatus(postId, newStatus) {
 function filterContent() {
     // Get filter values
     const statusFilter = document.getElementById('status-filter').value;
-    const channelFilter = document.getElementById('channel-filter').value;
+    const contentFormatFilter = document.getElementById('content-format-filter').value;
     const dateFilter = document.getElementById('date-range').value;
 
     console.log('Filtering content with:', {
         status: statusFilter,
-        channel: channelFilter,
+        contentFormat: contentFormatFilter,
         date: dateFilter
     });
 
-    // In a future implementation, these filters would be sent to the backend
-    // For now, just refresh with all data
-    fetchContentData();
+    // If status filter is "all", show all posts, otherwise filter by status
+    if (statusFilter === 'all') {
+        renderFilteredData(allContentData);
+    } else {
+        const filteredData = allContentData.filter(item => {
+            const itemStatus = (item.status || item.Status || 'draft').toLowerCase();
+            return itemStatus === statusFilter.toLowerCase();
+        });
+        renderFilteredData(filteredData);
+    }
+}
+
+function renderFilteredData(filteredData) {
+    // Save the filtered data for pagination
+    const filteredContent = [...filteredData];
+    
+    // Reset pagination to first page
+    currentPage = 1;
+    
+    // Render the table with filtered data
+    const tableBody = document.getElementById('approval-table-body');
+    tableBody.innerHTML = '';
+    
+    if (filteredContent.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px;">No content matches the selected filters</td></tr>';
+        document.getElementById('pagination-controls').style.display = 'none';
+        return;
+    }
+    
+    // Set up pagination with the filtered data length
+    setupPagination(filteredContent.length);
+    
+    // Calculate start and end indices for the current page
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = Math.min(startIndex + itemsPerPage, filteredContent.length);
+    
+    // Get data for the current page
+    const currentPageData = filteredContent.slice(startIndex, endIndex);
+    
+    currentPageData.forEach(item => {
+        const row = document.createElement('tr');
+        
+        // Ensure status is available and properly formatted
+        const status = (item.status || item.Status || 'draft').toLowerCase();
+        const displayStatus = status.charAt(0).toUpperCase() + status.slice(1);
+
+        row.innerHTML = `
+            <td><input type="checkbox" class="content-checkbox" data-id="${item._id}"></td>
+            <td class="first-draft-cell">${item.First_Draft || item.first_draft || ''}</td>
+            <td><span class="status-badge status-${status}">${displayStatus}</span></td>
+            <td><button class="btn-small view-source" data-source="${encodeURIComponent(item.Source_Chunk || item.source_chunk || '')}">View</button></td>
+            <td><button class="btn-small view-template" data-template="${encodeURIComponent(item.Template || item.template || '')}">View</button></td>
+        `;
+
+        tableBody.appendChild(row);
+    });
+
+    // Add event listeners for view buttons
+    document.querySelectorAll('.view-source').forEach(button => {
+        button.addEventListener('click', function() {
+            const sourceContent = decodeURIComponent(this.getAttribute('data-source'));
+            document.getElementById('source-content').textContent = sourceContent;
+            document.getElementById('source-modal').style.display = 'block';
+        });
+    });
+
+    document.querySelectorAll('.view-template').forEach(button => {
+        button.addEventListener('click', function() {
+            const templateContent = decodeURIComponent(this.getAttribute('data-template'));
+            document.getElementById('template-content').textContent = templateContent;
+            document.getElementById('template-modal').style.display = 'block';
+        });
+    });
+    updateActivePaginationButton();
 }
 
 // Function to show notification messages to the user
