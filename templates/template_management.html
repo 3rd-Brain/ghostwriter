@@ -345,7 +345,8 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             body: JSON.stringify({ 
                 content_chunk: searchQuery,
-                template_count: 50 // Request more to support pagination
+                template_count: 50, // Request more to support pagination
+                db_to_access: "both" // Search in both system and user templates
             })
         })
         .then(response => {
