@@ -589,6 +589,15 @@ async def create_templatizer(request: Request, current_user: str = Depends(get_c
         "current_page": "create_templatizer"
     })
 
+@app.get("/settings", response_class=HTMLResponse, include_in_schema=False)
+async def settings_page(request: Request, current_user: dict = Depends(get_current_user)):
+    return templates.TemplateResponse("settings.html", {
+        "request": request,
+        "username": current_user["username"],
+        "user_id": current_user["user_id"],
+        "current_page": "settings"
+    })
+
 @app.get("/create/generation-flow", response_class=HTMLResponse, include_in_schema=False)
 async def create_generation_flow(request: Request, current_user: str = Depends(get_current_user)):
     return templates.TemplateResponse("generation_flow.html", {

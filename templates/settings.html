@@ -1,0 +1,544 @@
+
+{% extends "base.html" %}
+
+{% block title %}Settings | Ghostwriter API{% endblock %}
+
+{% block page_title %}Settings{% endblock %}
+{% block page_subtitle %}Manage your account and API keys{% endblock %}
+
+{% block extra_css %}
+<style>
+    .settings-tabs {
+        display: flex;
+        border-bottom: 1px solid #e2e8f0;
+        margin-bottom: 24px;
+    }
+    
+    .settings-tab {
+        padding: 12px 24px;
+        cursor: pointer;
+        font-weight: 500;
+        color: #718096;
+        border-bottom: 2px solid transparent;
+    }
+    
+    .settings-tab.active {
+        color: #6b35ff;
+        border-bottom: 2px solid #6b35ff;
+    }
+    
+    .settings-section {
+        display: none;
+    }
+    
+    .settings-section.active {
+        display: block;
+    }
+    
+    .api-key-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 24px;
+    }
+    
+    .api-key-table th,
+    .api-key-table td {
+        padding: 12px 16px;
+        text-align: left;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .api-key-table th {
+        font-weight: 600;
+        color: #4a5568;
+        background-color: #f7fafc;
+    }
+    
+    .api-key-item {
+        display: flex;
+        align-items: center;
+    }
+    
+    .api-key-prefix {
+        font-family: monospace;
+        background-color: #edf2f7;
+        padding: 2px 6px;
+        border-radius: 4px;
+    }
+    
+    .key-actions {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .key-actions button {
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 14px;
+        cursor: pointer;
+        border: none;
+    }
+    
+    .revoke-key {
+        background-color: #fed7d7;
+        color: #c53030;
+    }
+    
+    .delete-key {
+        background-color: #fff5f5;
+        color: #e53e3e;
+    }
+    
+    .api-key-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .api-key-modal.active {
+        display: flex;
+    }
+    
+    .modal-content {
+        background-color: white;
+        border-radius: 8px;
+        width: 500px;
+        max-width: 90%;
+        padding: 24px;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+    
+    .modal-header h3 {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0;
+    }
+    
+    .close-modal {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 20px;
+    }
+    
+    .new-key-form {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .form-group label {
+        font-weight: 500;
+    }
+    
+    .form-group input,
+    .form-group select {
+        padding: 10px 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 4px;
+    }
+    
+    .new-key-result {
+        display: none;
+        margin-top: 16px;
+        padding: 16px;
+        background-color: #f0fff4;
+        border: 1px solid #c6f6d5;
+        border-radius: 4px;
+    }
+    
+    .key-display {
+        font-family: monospace;
+        word-break: break-all;
+        background-color: #edf2f7;
+        padding: 8px;
+        border-radius: 4px;
+        margin: 8px 0;
+    }
+    
+    .key-warning {
+        color: #c53030;
+        font-weight: 500;
+        margin-top: 8px;
+    }
+    
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        margin-top: 16px;
+    }
+    
+    .no-keys-message {
+        text-align: center;
+        padding: 32px;
+        color: #718096;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="settings-container">
+    <div class="settings-tabs">
+        <div class="settings-tab active" data-tab="api-keys">API Key Management</div>
+        <div class="settings-tab" data-tab="profile">Profile Settings</div>
+        <div class="settings-tab" data-tab="account">Account Management</div>
+    </div>
+
+    <!-- API Keys Section -->
+    <div class="settings-section active" id="api-keys-section">
+        <div class="section-header">
+            <div class="section-actions">
+                <button class="form-button" id="create-api-key-btn">Create New API Key</button>
+            </div>
+        </div>
+        
+        <div class="api-keys-container">
+            <table class="api-key-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Key</th>
+                        <th>Scope</th>
+                        <th>Created</th>
+                        <th>Last Used</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="api-keys-list">
+                    <!-- API keys will be loaded here dynamically -->
+                </tbody>
+            </table>
+            
+            <div id="no-keys-message" class="no-keys-message" style="display: none;">
+                <p>You don't have any API keys yet. Create one to get started.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Section (Placeholder) -->
+    <div class="settings-section" id="profile-section">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <span>Profile Settings</span>
+                </div>
+            </div>
+            <div class="card-content">
+                <p>Profile settings will be available soon.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account Section (Placeholder) -->
+    <div class="settings-section" id="account-section">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <span>Account Management</span>
+                </div>
+            </div>
+            <div class="card-content">
+                <p>Account management settings will be available soon.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create API Key Modal -->
+<div class="api-key-modal" id="api-key-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Create New API Key</h3>
+            <button class="close-modal" id="close-modal">&times;</button>
+        </div>
+        
+        <div class="new-key-form" id="create-key-form">
+            <div class="form-group">
+                <label for="key-name">Key Name</label>
+                <input type="text" id="key-name" placeholder="e.g., Development API Key" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="key-scope">Key Scope</label>
+                <select id="key-scope">
+                    <option value="user">User (Standard access)</option>
+                    <option value="admin">Admin (Full access)</option>
+                </select>
+            </div>
+            
+            <div class="form-actions">
+                <button class="form-button secondary" id="cancel-create-key">Cancel</button>
+                <button class="form-button" id="submit-create-key">Create Key</button>
+            </div>
+        </div>
+        
+        <div class="new-key-result" id="key-result">
+            <h4>Your new API key has been created</h4>
+            <p>Please copy your API key now. You won't be able to see it again!</p>
+            
+            <div class="key-display" id="new-key-value"></div>
+            
+            <button class="form-button" id="copy-key">Copy to Clipboard</button>
+            
+            <p class="key-warning">Make sure to store this key securely. It provides access to your account and data.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tabs
+    const tabs = document.querySelectorAll('.settings-tab');
+    const sections = document.querySelectorAll('.settings-section');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const targetTab = this.getAttribute('data-tab');
+            
+            // Update active tab
+            tabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Update active section
+            sections.forEach(section => {
+                section.classList.remove('active');
+                if (section.id === `${targetTab}-section`) {
+                    section.classList.add('active');
+                }
+            });
+        });
+    });
+    
+    // Load API keys
+    loadApiKeys();
+    
+    // API Key creation modal handling
+    const modal = document.getElementById('api-key-modal');
+    const createKeyBtn = document.getElementById('create-api-key-btn');
+    const closeModalBtn = document.getElementById('close-modal');
+    const cancelCreateKeyBtn = document.getElementById('cancel-create-key');
+    const createKeyForm = document.getElementById('create-key-form');
+    const keyResult = document.getElementById('key-result');
+    
+    function showModal() {
+        modal.classList.add('active');
+        createKeyForm.style.display = 'flex';
+        keyResult.style.display = 'none';
+    }
+    
+    function hideModal() {
+        modal.classList.remove('active');
+        // Reset form
+        document.getElementById('key-name').value = '';
+        document.getElementById('key-scope').value = 'user';
+    }
+    
+    createKeyBtn.addEventListener('click', showModal);
+    closeModalBtn.addEventListener('click', hideModal);
+    cancelCreateKeyBtn.addEventListener('click', hideModal);
+    
+    // Create API Key submission
+    const submitCreateKeyBtn = document.getElementById('submit-create-key');
+    submitCreateKeyBtn.addEventListener('click', createApiKey);
+    
+    // Copy API Key to clipboard
+    const copyKeyBtn = document.getElementById('copy-key');
+    copyKeyBtn.addEventListener('click', function() {
+        const keyValue = document.getElementById('new-key-value').textContent;
+        navigator.clipboard.writeText(keyValue).then(() => {
+            copyKeyBtn.textContent = 'Copied!';
+            setTimeout(() => {
+                copyKeyBtn.textContent = 'Copy to Clipboard';
+            }, 2000);
+        });
+    });
+    
+    // Revoke and Delete key event handlers
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('revoke-key')) {
+            const keyId = e.target.getAttribute('data-key-id');
+            if (confirm('Are you sure you want to revoke this API key? This action will make the key inactive.')) {
+                revokeApiKey(keyId);
+            }
+        }
+        
+        if (e.target.classList.contains('delete-key')) {
+            const keyId = e.target.getAttribute('data-key-id');
+            if (confirm('Are you sure you want to permanently delete this API key? This action cannot be undone.')) {
+                deleteApiKey(keyId);
+            }
+        }
+    });
+});
+
+// Function to load API keys
+function loadApiKeys() {
+    fetch('/api/keys')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to load API keys');
+            }
+            return response.json();
+        })
+        .then(data => {
+            displayApiKeys(data.keys);
+        })
+        .catch(error => {
+            console.error('Error loading API keys:', error);
+            showNotification('Error loading API keys', true);
+        });
+}
+
+// Function to display API keys
+function displayApiKeys(keys) {
+    const apiKeysList = document.getElementById('api-keys-list');
+    const noKeysMessage = document.getElementById('no-keys-message');
+    
+    apiKeysList.innerHTML = '';
+    
+    if (keys && keys.length > 0) {
+        noKeysMessage.style.display = 'none';
+        
+        keys.forEach(key => {
+            const row = document.createElement('tr');
+            
+            // Format date strings
+            const createdDate = key.created_at ? new Date(key.created_at).toLocaleDateString() : 'N/A';
+            const lastUsedDate = key.last_used ? new Date(key.last_used).toLocaleDateString() : 'Never';
+            
+            row.innerHTML = `
+                <td>${key.name}</td>
+                <td>
+                    <div class="api-key-item">
+                        <span class="api-key-prefix">${key.prefix}...</span>
+                    </div>
+                </td>
+                <td>${key.scope}</td>
+                <td>${createdDate}</td>
+                <td>${lastUsedDate}</td>
+                <td>${key.is_active ? '<span class="status-active">Active</span>' : '<span class="status-inactive">Inactive</span>'}</td>
+                <td>
+                    <div class="key-actions">
+                        <button class="revoke-key" data-key-id="${key.id}">Revoke</button>
+                        <button class="delete-key" data-key-id="${key.id}">Delete</button>
+                    </div>
+                </td>
+            `;
+            
+            apiKeysList.appendChild(row);
+        });
+    } else {
+        noKeysMessage.style.display = 'block';
+    }
+}
+
+// Function to create API key
+function createApiKey() {
+    const name = document.getElementById('key-name').value;
+    const scope = document.getElementById('key-scope').value;
+    
+    if (!name) {
+        showNotification('Please enter a name for your API key', true);
+        return;
+    }
+    
+    const requestData = {
+        name: name,
+        scope: scope
+    };
+    
+    fetch('/api/keys', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestData)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to create API key');
+        }
+        return response.json();
+    })
+    .then(data => {
+        // Display the new API key
+        document.getElementById('create-key-form').style.display = 'none';
+        document.getElementById('key-result').style.display = 'block';
+        document.getElementById('new-key-value').textContent = data.api_key;
+        
+        // Refresh the API keys list
+        loadApiKeys();
+    })
+    .catch(error => {
+        console.error('Error creating API key:', error);
+        showNotification('Error creating API key', true);
+    });
+}
+
+// Function to revoke API key
+function revokeApiKey(keyId) {
+    fetch(`/api/keys/${keyId}`, {
+        method: 'DELETE'
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to revoke API key');
+        }
+        return response.json();
+    })
+    .then(data => {
+        showNotification('API key revoked successfully');
+        loadApiKeys();
+    })
+    .catch(error => {
+        console.error('Error revoking API key:', error);
+        showNotification('Error revoking API key', true);
+    });
+}
+
+// Function to permanently delete API key
+function deleteApiKey(keyId) {
+    fetch(`/api/keys/${keyId}/permanent`, {
+        method: 'DELETE'
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to delete API key');
+        }
+        return response.json();
+    })
+    .then(data => {
+        showNotification('API key deleted successfully');
+        loadApiKeys();
+    })
+    .catch(error => {
+        console.error('Error deleting API key:', error);
+        showNotification('Error deleting API key', true);
+    });
+}
+</script>
+{% endblock %}
