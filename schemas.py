@@ -83,7 +83,7 @@ class TemplatizerResponse(BaseModel):
 class MultitemplateRequest(BaseModel):
     content_chunk: str = Field(..., description="Content chunk to find templates for")
     template_count: int = Field(5, description="Number of templates to retrieve")
-    db_to_access: str = Field("sys", description="Which databases to access ('sys', 'user', or 'both')")
+    db_to_access: Optional[str] = Field("sys", description="Which databases to access ('sys', 'user', or 'both')")
     category: Optional[str] = Field("Short Form", description="Template category to filter by ('Short Form', 'Atomic', or 'Mid Form')")
 
 # Repurpose with Templates schemas
