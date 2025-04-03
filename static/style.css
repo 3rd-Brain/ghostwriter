@@ -959,7 +959,7 @@ textarea.form-control {
 }
 
 .simple-search-container {
-    flex: 1;
+    flex: 2; /* Doubled width proportion */
 }
 
 .simple-search-button {

@@ -346,6 +346,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Get selected database filter
         const databaseFilter = document.getElementById('template-database-filter').value;
 
+        // Log the filter for debugging
+        console.log('Using database filter:', databaseFilter);
+        
         // Make API call to search templates
         fetch('/api/template-search', {
             method: 'POST',
@@ -357,6 +360,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 template_count: 50, // Request more to support pagination
                 db_to_access: databaseFilter // Use selected database filter
             })
+        })
+        .then(response => {
+            console.log('Database filter response status:', response.status);
+            return response;
         })
         .then(response => {
             if (!response.ok) {
