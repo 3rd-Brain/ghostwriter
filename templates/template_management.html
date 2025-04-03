@@ -75,16 +75,18 @@
 
             <!-- Search bar -->
             <div class="search-container mb-lg">
-                <div class="simple-search-container">
-                    <input type="text" id="template-search-input" class="simple-search-input" placeholder="Search templates..." value="step by step transformation guides">
-                    <select id="template-database-filter">
-                        <option value="sys">Ghostwriter Templates ("sys")</option>
-                        <option value="user">My Templates ("user")</option>
-                        <option value="both" selected>All Templates ("both")</option>
+                <div class="search-filter-container">
+                    <div class="simple-search-container">
+                        <input type="text" id="template-search-input" class="simple-search-input" placeholder="Search templates..." value="step by step transformation guides">
+                        <button id="template-search-button" class="simple-search-button">
+                            <i data-lucide="search"></i>
+                        </button>
+                    </div>
+                    <select id="template-database-filter" class="database-filter">
+                        <option value="sys">Ghostwriter Templates</option>
+                        <option value="user">My Templates</option>
+                        <option value="both" selected>All Templates</option>
                     </select>
-                    <button id="template-search-button" class="simple-search-button">
-                        <i data-lucide="search"></i>
-                    </button>
                 </div>
             </div>
 
@@ -468,6 +470,12 @@ document.addEventListener('DOMContentLoaded', function() {
             currentPage = 1;
             loadTemplates(currentPage);
         }
+    });
+    
+    // Database filter change handler
+    document.getElementById('template-database-filter').addEventListener('change', function() {
+        currentPage = 1;
+        loadTemplates(currentPage);
     });
 
     // Pagination button handlers

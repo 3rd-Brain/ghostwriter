@@ -930,7 +930,7 @@ textarea.form-control {
     outline: none;
 }
 
-/* New styles for search filter container */
+/* Styles for search filter container */
 .search-filter-container {
     display: flex;
     gap: 10px;
@@ -944,8 +944,8 @@ textarea.form-control {
 }
 
 .database-filter {
-    width: 100%;
-    padding: 8px 10px;
+    min-width: 160px;
+    padding: 10px 12px;
     border-radius: 8px;
     border: 1px solid var(--border);
     background-color: var(--input-bg);
@@ -956,6 +956,10 @@ textarea.form-control {
 
 .database-filter:focus {
     border-color: var(--primary);
+}
+
+.simple-search-container {
+    flex: 1;
 }
 
 .simple-search-button {
