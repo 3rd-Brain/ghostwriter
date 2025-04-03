@@ -700,7 +700,7 @@
             .then(data => {
                 console.log('API response data:', data);
                 if (data.status === 'success') {
-                    window.showNotification('Posts generated successfully! Check your generated content page.', false);
+                    window.showNotification('Posts are currently being generated! Check your generated content page in a while.', false);
                     createPostsModal.style.display = 'none';
                 } else {
                     window.showNotification('Error generating posts: ' + (data.message || 'Unknown error'), true);
