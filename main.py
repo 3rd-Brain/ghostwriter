@@ -1306,7 +1306,7 @@ async def search_templates(request_data: schemas.MultitemplateRequest, user: dic
         result = template_search(
             text_query=request_data.content_chunk, 
             template_count=request_data.template_count,
-            db_to_access=request_data.db_to_access,
+            db_to_access=request_data.db_to_access if hasattr(request_data, 'db_to_access') else "sys",
             category=request_data.category if hasattr(request_data, 'category') else "Short Form"
         )
         return result
