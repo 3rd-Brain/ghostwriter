@@ -1516,8 +1516,8 @@ async def update_post_status(request_data: schemas.PostStatusUpdateRequest, user
     new_status = request_data.status
 
     # Validate status
-    if new_status not in ["Approved", "Rejected"]:
-        raise HTTPException(status_code=400, detail="Status must be 'Approved' or 'Rejected'")
+    if new_status not in ["Approved", "Rejected", "Published"]:
+        raise HTTPException(status_code=400, detail="Status must be 'Approved', 'Rejected', or 'Published'")
 
     # Get the current user's ID from the authenticated user
     user_id = user.get("user_id")
