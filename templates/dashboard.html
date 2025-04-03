@@ -5,6 +5,31 @@
 {% block page_title %}Dashboard{% endblock %}
 {% block page_subtitle %}Track your content generation and performance{% endblock %}
 
+{% block extra_css %}
+<style>
+.card-content-metrics {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px 0;
+}
+
+.metric-pair {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+}
+
+.card .metric-large {
+    margin-top: 10px;
+}
+
+.card .metric-label {
+    margin-bottom: 10px;
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <!-- First Login Modal -->
 <div id="firstLoginModal" class="modal">
@@ -73,7 +98,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
     <div class="card">
         <div class="card-header">
             <div class="card-title">
-                <span>Content Overview</span>
+                <span>Source Content Overview</span>
                 <i data-lucide="info"></i>
             </div>
         </div>
@@ -84,12 +109,24 @@ window.addEventListener('DOMContentLoaded', (event) => {
     <div class="card">
         <div class="card-header">
             <div class="card-title">
-                <span>Content Waiting for Approval</span>
+                <span>Generated Content Overview</span>
                 <i data-lucide="info"></i>
             </div>
         </div>
-        <div class="metric-large">{{ draft_count }}</div>
-        <div class="metric-label">Items pending approval</div>
+        <div class="card-content-metrics">
+            <div class="metric-pair">
+                <div class="metric-large">{{ draft_count }}</div>
+                <div class="metric-label">Posts pending approval</div>
+            </div>
+            <div class="metric-pair">
+                <div class="metric-large">{{ awaiting_publishing_count|default(0) }}</div>
+                <div class="metric-label">Posts awaiting publishing</div>
+            </div>
+            <div class="metric-pair">
+                <div class="metric-large">{{ published_count|default(0) }}</div>
+                <div class="metric-label">Posts published</div>
+            </div>
+        </div>
     </div>
 
     <div class="card">

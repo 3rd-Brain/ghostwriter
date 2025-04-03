@@ -257,10 +257,14 @@ async def dashboard(request: Request, current_user: dict = Depends(get_current_u
     from source_content_manager import count_user_documents
     doc_count = count_user_documents(current_user["user_id"])
     
-    # Get draft content count
+    # Get content counts by status
     draft_count = 0
+    awaiting_publishing_count = 0
+    published_count = 0
     try:
         generated_content_url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/generated_content"
+        
+        # Count draft content
         draft_payload = {
             "countDocuments": {
                 "filter": {
@@ -273,10 +277,39 @@ async def dashboard(request: Request, current_user: dict = Depends(get_current_u
         draft_response = requests.post(generated_content_url, headers=headers, json=draft_payload)
         if draft_response.status_code == 200:
             draft_count = draft_response.json().get("status", {}).get("count", 0)
+            
+        # Count awaiting publishing content
+        awaiting_payload = {
+            "countDocuments": {
+                "filter": {
+                    "user_id": current_user["user_id"],
+                    "status": "Approved"
+                }
+            }
+        }
+        
+        awaiting_response = requests.post(generated_content_url, headers=headers, json=awaiting_payload)
+        if awaiting_response.status_code == 200:
+            awaiting_publishing_count = awaiting_response.json().get("status", {}).get("count", 0)
+            
+        # Count published content
+        published_payload = {
+            "countDocuments": {
+                "filter": {
+                    "user_id": current_user["user_id"],
+                    "status": "Published"
+                }
+            }
+        }
+        
+        published_response = requests.post(generated_content_url, headers=headers, json=published_payload)
+        if published_response.status_code == 200:
+            published_count = published_response.json().get("status", {}).get("count", 0)
+            
     except Exception as e:
-        print(f"Error counting draft content: {str(e)}")
+        print(f"Error counting content: {str(e)}")
 
-    print(f"User data loaded for {current_user['username']}, has_source_content: {has_source_content}, doc_count: {doc_count}, draft_count: {draft_count}")
+    print(f"User data loaded for {current_user['username']}, has_source_content: {has_source_content}, doc_count: {doc_count}, draft_count: {draft_count}, awaiting_publishing_count: {awaiting_publishing_count}, published_count: {published_count}")
 
     return templates.TemplateResponse("dashboard.html", {
         "request": request,
@@ -285,7 +318,9 @@ async def dashboard(request: Request, current_user: dict = Depends(get_current_u
         "current_page": "dashboard",
         "show_onboarding": not has_source_content,
         "doc_count": doc_count,
-        "draft_count": draft_count
+        "draft_count": draft_count,
+        "awaiting_publishing_count": awaiting_publishing_count,
+        "published_count": published_count
     })
 
 @app.get("/generation/repurpose", response_class=HTMLResponse, include_in_schema=False)
