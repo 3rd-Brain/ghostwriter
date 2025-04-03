@@ -1301,6 +1301,9 @@ async def search_templates(request_data: schemas.MultitemplateRequest, user: dic
     if not os.getenv("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER"):
         raise HTTPException(status_code=500, detail="ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
 
+    print("Performing template search...")
+    print("Received request data:", request_data)   
+    
     try:
         from social_writer import template_search
         result = template_search(

@@ -1251,9 +1251,16 @@ def template_search(text_query: str, template_count: int = 5, db_to_access: str 
     )
     vector = response.data[0].embedding
 
+    print("Received the following inputs:")
+    print(f"Text query: {text_query}")
+    print(f"Template count: {template_count}")
+    print(f"DB to access: {db_to_access}")
+    print(f"Category: {category}")
+    
     # Configure search based on db_to_access parameter
     if db_to_access.lower() == "both":
         # If accessing both databases, split the count between them
+        print("Accessing both template databases")
         count_per_db = template_count // 2
         remaining_count = template_count - count_per_db
 
@@ -1292,6 +1299,7 @@ def template_search(text_query: str, template_count: int = 5, db_to_access: str 
 
     elif db_to_access.lower() == "user":
         # Access only user templates
+        print("Accessing user templates only")
         return search_templates_in_db(
             ASTRA_DB_API_ENDPOINT, 
             ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
@@ -1302,6 +1310,7 @@ def template_search(text_query: str, template_count: int = 5, db_to_access: str 
         )
     else:
         # Default - access only system templates
+        print("Accessing system templates only")
         return search_templates_in_db(
             ASTRA_DB_API_ENDPOINT, 
             ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
