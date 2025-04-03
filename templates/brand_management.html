@@ -1,0 +1,506 @@
+
+{% extends "base.html" %}
+
+{% block title %}Brand Management{% endblock %}
+
+{% block head %}
+{{ super() }}
+<style>
+  .brand-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+  
+  .brand-table th, .brand-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .brand-table th {
+    background-color: rgba(255, 255, 255, 0.05);
+    font-weight: 500;
+  }
+  
+  .brand-table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+  }
+  
+  .action-column {
+    width: 150px;
+  }
+  
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+  }
+  
+  .modal-content {
+    background-color: #222;
+    margin: 5% auto;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 600px;
+    width: 90%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .modal-form textarea {
+    min-height: 150px;
+  }
+  
+  .close {
+    float: right;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  
+  .btn-container {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  
+  .loading-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+  }
+  
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="content">
+    <div class="header">
+      <h1>Brand Management</h1>
+      <p>Create and manage your brand voices for consistent content generation</p>
+    </div>
+    
+    <div class="btn-container">
+      <button id="create-brand-btn" class="btn btn-primary">Create New Brand</button>
+      <div class="search-container">
+        <input type="text" id="brand-search" placeholder="Search brands..." class="form-control">
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="card-body">
+        <table class="brand-table" id="brand-table">
+          <thead>
+            <tr>
+              <th>Brand Name</th>
+              <th>Created</th>
+              <th>Updated</th>
+              <th class="action-column">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="brand-table-body">
+            <tr>
+              <td colspan="4" class="text-center">Loading brands...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Create Brand Modal -->
+<div id="create-brand-modal" class="modal">
+  <div class="modal-content">
+    <span class="close" id="close-create-modal">&times;</span>
+    <h2>Create New Brand</h2>
+    
+    <form id="create-brand-form" class="modal-form">
+      <div class="form-group">
+        <label for="brand-name">Brand Name</label>
+        <input type="text" id="brand-name" name="brand_name" class="form-control" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="brand-voice">Brand Voice</label>
+        <textarea id="brand-voice" name="brand_voice" class="form-control" required placeholder="Describe your brand's tone, style, and voice in detail..."></textarea>
+      </div>
+      
+      <div class="form-group">
+        <label for="sample-content">Sample Content (Optional)</label>
+        <textarea id="sample-content" name="sample_content" class="form-control" placeholder="Provide sample content that represents your brand's voice..."></textarea>
+      </div>
+      
+      <div class="form-group" style="text-align: right; margin-top: 20px;">
+        <button type="button" class="btn btn-secondary" id="cancel-create">Cancel</button>
+        <button type="submit" class="btn btn-primary">Create Brand</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- View Brand Modal -->
+<div id="view-brand-modal" class="modal">
+  <div class="modal-content">
+    <span class="close" id="close-view-modal">&times;</span>
+    <h2 id="view-brand-name">Brand Details</h2>
+    
+    <div id="brand-details">
+      <h3>Brand Voice</h3>
+      <div id="view-brand-voice" class="card-body"></div>
+      
+      <h3>Sample Content</h3>
+      <div id="view-sample-content" class="card-body">
+        <em>No sample content provided</em>
+      </div>
+    </div>
+    
+    <div class="form-group" style="text-align: right; margin-top: 20px;">
+      <button type="button" class="btn btn-secondary" id="close-view-btn">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div id="confirm-modal" class="modal">
+  <div class="modal-content" style="max-width: 400px;">
+    <h3>Confirm Deletion</h3>
+    <p>Are you sure you want to delete this brand? This action cannot be undone.</p>
+    
+    <div class="form-group" style="text-align: right; margin-top: 20px;">
+      <button type="button" class="btn btn-secondary" id="cancel-delete">Cancel</button>
+      <button type="button" class="btn btn-danger" id="confirm-delete">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const user_id = "{{ user_id }}";
+    let brands = [];
+    let brandToDelete = null;
+    
+    // DOM Elements
+    const createBrandBtn = document.getElementById('create-brand-btn');
+    const createBrandModal = document.getElementById('create-brand-modal');
+    const closeCreateModal = document.getElementById('close-create-modal');
+    const cancelCreate = document.getElementById('cancel-create');
+    const createBrandForm = document.getElementById('create-brand-form');
+    const brandTableBody = document.getElementById('brand-table-body');
+    const viewBrandModal = document.getElementById('view-brand-modal');
+    const closeViewModal = document.getElementById('close-view-modal');
+    const closeViewBtn = document.getElementById('close-view-btn');
+    const confirmModal = document.getElementById('confirm-modal');
+    const cancelDelete = document.getElementById('cancel-delete');
+    const confirmDelete = document.getElementById('confirm-delete');
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const brandSearch = document.getElementById('brand-search');
+    
+    // Fetch brands
+    function fetchBrands() {
+      showLoading();
+      fetch('/api/user-brands')
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Failed to fetch brands');
+          }
+          return response.json();
+        })
+        .then(data => {
+          hideLoading();
+          if (data.status === 'success' && data.brands) {
+            brands = data.brands;
+            renderBrands(brands);
+          } else {
+            showNotification('No brands found or error loading brands', true);
+            renderEmptyTable();
+          }
+        })
+        .catch(error => {
+          hideLoading();
+          console.error('Error fetching brands:', error);
+          showNotification('Error loading brands', true);
+          renderEmptyTable();
+        });
+    }
+    
+    // Render brands in table
+    function renderBrands(brandsToRender) {
+      if (brandsToRender.length === 0) {
+        renderEmptyTable();
+        return;
+      }
+      
+      brandTableBody.innerHTML = '';
+      brandsToRender.forEach(brand => {
+        const row = document.createElement('tr');
+        
+        // Format dates
+        const createdDate = brand.created_at ? new Date(brand.created_at).toLocaleDateString() : 'N/A';
+        const updatedDate = brand.updated_at ? new Date(brand.updated_at).toLocaleDateString() : 'N/A';
+        
+        row.innerHTML = `
+          <td>${brand.brand_name}</td>
+          <td>${createdDate}</td>
+          <td>${updatedDate}</td>
+          <td class="action-column">
+            <button class="btn btn-sm btn-outline-primary view-brand" data-id="${brand.brand_id}">View</button>
+            <button class="btn btn-sm btn-outline-danger delete-brand" data-id="${brand.brand_id}" data-name="${brand.brand_name}">Delete</button>
+          </td>
+        `;
+        
+        brandTableBody.appendChild(row);
+      });
+      
+      // Add event listeners to buttons
+      document.querySelectorAll('.view-brand').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const brandId = this.getAttribute('data-id');
+          viewBrand(brandId);
+        });
+      });
+      
+      document.querySelectorAll('.delete-brand').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const brandId = this.getAttribute('data-id');
+          const brandName = this.getAttribute('data-name');
+          showDeleteConfirmation(brandId, brandName);
+        });
+      });
+    }
+    
+    // Render empty table
+    function renderEmptyTable() {
+      brandTableBody.innerHTML = `
+        <tr>
+          <td colspan="4" class="text-center">
+            No brands found. Click "Create New Brand" to get started.
+          </td>
+        </tr>
+      `;
+    }
+    
+    // View brand details
+    function viewBrand(brandId) {
+      showLoading();
+      fetch(`/api/brand/${brandId}`)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Failed to fetch brand details');
+          }
+          return response.json();
+        })
+        .then(data => {
+          hideLoading();
+          if (data.status === 'success' && data.brand) {
+            const brand = data.brand;
+            document.getElementById('view-brand-name').textContent = brand.brand_name;
+            document.getElementById('view-brand-voice').textContent = brand.brand_voice;
+            
+            const sampleContentEl = document.getElementById('view-sample-content');
+            if (brand.sample_content && brand.sample_content.trim()) {
+              sampleContentEl.textContent = brand.sample_content;
+            } else {
+              sampleContentEl.innerHTML = '<em>No sample content provided</em>';
+            }
+            
+            viewBrandModal.style.display = 'block';
+          } else {
+            showNotification('Error loading brand details', true);
+          }
+        })
+        .catch(error => {
+          hideLoading();
+          console.error('Error fetching brand details:', error);
+          showNotification('Error loading brand details', true);
+        });
+    }
+    
+    // Show delete confirmation
+    function showDeleteConfirmation(brandId, brandName) {
+      brandToDelete = brandId;
+      confirmModal.querySelector('p').textContent = `Are you sure you want to delete the brand "${brandName}"? This action cannot be undone.`;
+      confirmModal.style.display = 'block';
+    }
+    
+    // Delete brand
+    function deleteBrand(brandId) {
+      showLoading();
+      fetch(`/api/delete-brand/${brandId}`, {
+        method: 'DELETE'
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Failed to delete brand');
+          }
+          return response.json();
+        })
+        .then(data => {
+          hideLoading();
+          if (data.status === 'success') {
+            showNotification('Brand deleted successfully');
+            fetchBrands();
+          } else {
+            showNotification(data.message || 'Error deleting brand', true);
+          }
+        })
+        .catch(error => {
+          hideLoading();
+          console.error('Error deleting brand:', error);
+          showNotification('Error deleting brand', true);
+        });
+    }
+    
+    // Create new brand
+    createBrandForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(createBrandForm);
+      
+      showLoading();
+      fetch('/api/create-brand', {
+        method: 'POST',
+        body: formData
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Failed to create brand');
+          }
+          return response.json();
+        })
+        .then(data => {
+          hideLoading();
+          if (data.status === 'success') {
+            createBrandModal.style.display = 'none';
+            createBrandForm.reset();
+            showNotification('Brand created successfully');
+            fetchBrands();
+          } else {
+            showNotification(data.message || 'Error creating brand', true);
+          }
+        })
+        .catch(error => {
+          hideLoading();
+          console.error('Error creating brand:', error);
+          showNotification('Error creating brand', true);
+        });
+    });
+    
+    // Search functionality
+    brandSearch.addEventListener('input', function() {
+      const searchTerm = this.value.toLowerCase().trim();
+      
+      if (searchTerm === '') {
+        renderBrands(brands);
+        return;
+      }
+      
+      const filteredBrands = brands.filter(brand => 
+        brand.brand_name.toLowerCase().includes(searchTerm)
+      );
+      
+      renderBrands(filteredBrands);
+    });
+    
+    // Show loading overlay
+    function showLoading() {
+      loadingOverlay.style.display = 'flex';
+    }
+    
+    // Hide loading overlay
+    function hideLoading() {
+      loadingOverlay.style.display = 'none';
+    }
+    
+    // Show notification
+    function showNotification(message, isError = false) {
+      if (window.showNotification) {
+        window.showNotification(message, isError);
+      } else {
+        alert(message);
+      }
+    }
+    
+    // Open create brand modal
+    createBrandBtn.addEventListener('click', function() {
+      createBrandForm.reset();
+      createBrandModal.style.display = 'block';
+    });
+    
+    // Close modals
+    closeCreateModal.addEventListener('click', function() {
+      createBrandModal.style.display = 'none';
+    });
+    
+    cancelCreate.addEventListener('click', function() {
+      createBrandModal.style.display = 'none';
+    });
+    
+    closeViewModal.addEventListener('click', function() {
+      viewBrandModal.style.display = 'none';
+    });
+    
+    closeViewBtn.addEventListener('click', function() {
+      viewBrandModal.style.display = 'none';
+    });
+    
+    cancelDelete.addEventListener('click', function() {
+      confirmModal.style.display = 'none';
+      brandToDelete = null;
+    });
+    
+    confirmDelete.addEventListener('click', function() {
+      if (brandToDelete) {
+        confirmModal.style.display = 'none';
+        deleteBrand(brandToDelete);
+        brandToDelete = null;
+      }
+    });
+    
+    // Close modals when clicking outside
+    window.addEventListener('click', function(event) {
+      if (event.target === createBrandModal) {
+        createBrandModal.style.display = 'none';
+      } else if (event.target === viewBrandModal) {
+        viewBrandModal.style.display = 'none';
+      } else if (event.target === confirmModal) {
+        confirmModal.style.display = 'none';
+        brandToDelete = null;
+      }
+    });
+    
+    // Initialize
+    fetchBrands();
+  });
+</script>
+{% endblock %}

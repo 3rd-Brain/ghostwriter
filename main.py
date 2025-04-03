@@ -765,9 +765,11 @@ app.include_router(onboarding_router)
 # Import and include API routes
 from api_routes import router as api_router
 from api_key_routes import router as api_key_router
+from brand_management import router as brand_management_router
 
 app.include_router(api_router)
 app.include_router(api_key_router)
+app.include_router(brand_management_router)
 
 @app.get("/", include_in_schema=False)
 def read_root():
