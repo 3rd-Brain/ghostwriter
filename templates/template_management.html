@@ -164,8 +164,12 @@
         <div class="modal-body">
             <form id="upload-template-form">
                 <div class="form-group">
-                    <label for="template-name" class="form-label">Template Name</label>
-                    <input type="text" id="template-name" name="template-name" class="form-control" placeholder="Enter a descriptive name for your template">
+                    <label for="template-category" class="form-label">Template Category</label>
+                    <select id="template-category" name="template-category" class="form-control">
+                        <option value="Short Form">Short Form</option>
+                        <option value="Atomic">Atomic</option>
+                        <option value="Mid Form">Mid Form</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="template-content" class="form-label">Template Content</label>
@@ -260,7 +264,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const uploadForm = document.getElementById('upload-template-form');
     uploadForm.addEventListener('submit', function(e) {
         e.preventDefault();
-        const templateName = document.getElementById('template-name').value;
+        const templateCategory = document.getElementById('template-category').value;
         const templateContent = document.getElementById('template-content').value;
 
         // Show loading state
@@ -275,7 +279,10 @@ document.addEventListener('DOMContentLoaded', function() {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ template: templateContent })
+            body: JSON.stringify({ 
+                template: templateContent,
+                category: templateCategory 
+            })
         })
         .then(response => response.json())
         .then(data => {

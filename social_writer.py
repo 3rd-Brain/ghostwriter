@@ -694,16 +694,18 @@ def source_content_retriever(topic_query: str) -> str:
         print(f"Request Payload: {payload}")
         raise Exception(f"Failed to retrieve user source content: {str(e)}")
 
-def template_context_and_uploader(template: str) -> Dict:
+def template_context_and_uploader(template: str, category: str = "Short Form") -> Dict:
     """
     Process a template by generating a description with Claude and creating a vector embedding
     Args:
         template: String containing the template for a short form social post
+        category: Template category (Short Form, Atomic, or Mid Form)
     Returns:
         Dictionary with vector embedding and combined text
     """
     print("\n=== Starting Template Processing ===")
     print(f"Input template: {template}")
+    print(f"Template category: {category}")
 
     # Get the current user's ID from environment
     user_id = os.environ.get("CURRENT_USER_ID")
@@ -761,6 +763,7 @@ def template_context_and_uploader(template: str) -> Dict:
                 "user_id": user_id,
                 "template": template,
                 "description": template_description,
+                "category": category,
                 "$vector": vector,
                 "metadata": {
                     "timestamp": timestamp

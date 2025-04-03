@@ -62,6 +62,7 @@ class TemplateContextRequest(BaseModel):
     template: str = Field(..., description="Template to create embedding for")
     template_id: Optional[str] = Field(None, description="Optional template ID for updates")
     description: Optional[str] = Field(None, description="Optional pre-defined description")
+    category: str = Field("Short Form", description="Template category (Short Form, Atomic, or Mid Form)")
 
 # Content Upload schemas
 class ContentUploadRequest(BaseModel):

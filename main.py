@@ -1144,7 +1144,10 @@ async def create_template_embedding(request_data: schemas.TemplateContextRequest
         raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY not configured")
 
     try:
-        result = template_context_and_uploader(request_data.template)
+        result = template_context_and_uploader(
+            template=request_data.template,
+            category=request_data.category
+        )
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
