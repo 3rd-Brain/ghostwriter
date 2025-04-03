@@ -210,6 +210,7 @@
         <div class="approval-actions">
             <button class="btn-approve" id="approve-selected">Approve Selected</button>
             <button class="btn-reject" id="reject-selected">Reject Selected</button>
+            <button class="btn-publish" id="publish-selected" style="background-color: #0046a6; color: white;">Publish Selected</button>
         </div>
 
         <div class="approval-table-container">
@@ -278,6 +279,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('select-all').addEventListener('change', toggleSelectAll);
     document.getElementById('approve-selected').addEventListener('click', approveSelected);
     document.getElementById('reject-selected').addEventListener('click', rejectSelected);
+    document.getElementById('publish-selected').addEventListener('click', publishSelected);
     document.getElementById('status-filter').addEventListener('change', filterContent);
     document.getElementById('content-format-filter').addEventListener('change', filterContent);
     document.getElementById('date-range').addEventListener('change', filterContent);
@@ -627,6 +629,50 @@ function rejectSelected() {
                         showNotification(`${successCount} items rejected, ${failCount} failed`, failCount > 0);
                     } else {
                         showNotification(`${successCount} items rejected successfully`);
+                    }
+                    fetchContentData(); // Refresh the table
+                }
+            });
+    });
+}
+
+function publishSelected() {
+    const selectedItems = getSelectedItems();
+    if (selectedItems.length === 0) {
+        showNotification('No items selected', true);
+        return;
+    }
+
+    // Display loading notification
+    showNotification(`Publishing ${selectedItems.length} items...`);
+    
+    // Track successful and failed operations
+    let successCount = 0;
+    let failCount = 0;
+    let completedCount = 0;
+    
+    // Process each selected item
+    selectedItems.forEach(postId => {
+        updatePostStatus(postId, "Published")
+            .then(success => {
+                if (success) {
+                    successCount++;
+                } else {
+                    failCount++;
+                }
+            })
+            .catch(() => {
+                failCount++;
+            })
+            .finally(() => {
+                completedCount++;
+                
+                // When all operations complete, show result and refresh
+                if (completedCount === selectedItems.length) {
+                    if (failCount > 0) {
+                        showNotification(`${successCount} items published, ${failCount} failed`, failCount > 0);
+                    } else {
+                        showNotification(`${successCount} items published successfully`);
                     }
                     fetchContentData(); // Refresh the table
                 }
