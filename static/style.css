@@ -930,6 +930,34 @@ textarea.form-control {
     outline: none;
 }
 
+/* New styles for search filter container */
+.search-filter-container {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    width: 100%;
+    max-width: 650px;
+}
+
+.filter-dropdown {
+    min-width: 160px;
+}
+
+.database-filter {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background-color: var(--input-bg);
+    color: var(--text-primary);
+    font-size: 14px;
+    outline: none;
+}
+
+.database-filter:focus {
+    border-color: var(--primary);
+}
+
 .simple-search-button {
     background-color: var(--primary);
     color: white;
