@@ -1020,14 +1020,14 @@ def get_latest_generated_content(username: str) -> Dict:
         "Content-Type": "application/json"
     }
 
-    # Create the query payload with filter for user_id and sort by Created_Time in descending order (-1)
+    # Create the query payload with filter for user_id and sort by created_at in descending order (-1)
     payload = {
         "find": {
             "filter": {
                 "user_id": user_id
             },
             "sort": {
-                "Created_Time": -1  # -1 for descending order (newest first)
+                "created_at": -1  # -1 for descending order (newest first)
             }
         }
     }
