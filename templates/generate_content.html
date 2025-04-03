@@ -618,7 +618,20 @@
         const closeRepurposeBtn = document.getElementById('close-repurpose-modal');
 
         openRepurposeBtn.addEventListener('click', function() {
-            repurposeModal.style.display = 'block';
+            // First check if user has connected their Twitter account
+            fetch('/api/user-profile')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.twitter_processed === true) {
+                        repurposeModal.style.display = 'block';
+                    } else {
+                        window.showNotification('Please connect your Twitter account in Source Content Management first', true);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking Twitter connection:', error);
+                    window.showNotification('Error checking profile. Please try again.', true);
+                });
         });
 
         closeRepurposeBtn.addEventListener('click', function() {

@@ -1,7 +1,8 @@
-
 from fastapi import APIRouter, Depends, HTTPException
 from api_middleware import get_current_api_user, get_admin_api_user, check_api_key_or_jwt
 from schemas import SuccessResponse
+import os
+import requests
 
 router = APIRouter(prefix="/api", tags=["API"])
 
@@ -9,7 +10,7 @@ router = APIRouter(prefix="/api", tags=["API"])
 async def protected_endpoint(current_user: dict = Depends(get_current_api_user)):
     """
     A protected endpoint that requires a valid API key.
-    
+
     This endpoint demonstrates basic API key authentication.
     The user must provide a valid API key in the X-API-Key header.
     """
@@ -22,7 +23,7 @@ async def protected_endpoint(current_user: dict = Depends(get_current_api_user))
 async def admin_endpoint(admin_user: dict = Depends(get_admin_api_user)):
     """
     An admin-only endpoint that requires an API key with admin scope.
-    
+
     This endpoint demonstrates role-based API key authentication.
     The user must provide a valid API key with 'admin' scope in the X-API-Key header.
     """
@@ -35,7 +36,7 @@ async def admin_endpoint(admin_user: dict = Depends(get_admin_api_user)):
 async def flexible_auth_endpoint(user: dict = Depends(check_api_key_or_jwt)):
     """
     An endpoint that accepts either API key or JWT authentication.
-    
+
     This endpoint demonstrates flexible authentication.
     The user can authenticate with either an API key or a JWT token.
     """
@@ -44,3 +45,38 @@ async def flexible_auth_endpoint(user: dict = Depends(check_api_key_or_jwt)):
         "status": "success",
         "message": f"Authenticated as user {user.get('user_id')} using {auth_method}"
     }
+
+@router.get("/user/profile")
+async def get_user_profile(current_user: dict = Depends(get_current_api_user)):
+    """Retrieves the user's profile information, including Twitter connection status."""
+    try:
+        # Get user data from AstraDB
+        ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+        ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+
+        url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/users_keyspace/users"
+        headers = {
+            "Token": ASTRA_DB_APPLICATION_TOKEN,
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "findOne": {
+                "filter": {"user_id": current_user["user_id"]}
+            }
+        }
+
+        response = requests.post(url, headers=headers, json=payload)
+        response.raise_for_status()
+        user_data = response.json()
+
+        # Extract relevant user profile data including twitter_processed status
+        profile_data = user_data.get("data", {}).get("document", {}).get("profile", {})
+        twitter_processed = profile_data.get("twitter_processed", False)
+
+        return {
+            "user_id": current_user["user_id"],
+            "username": current_user.get("username"),
+            "twitter_processed": twitter_processed
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving user profile: {e}")
