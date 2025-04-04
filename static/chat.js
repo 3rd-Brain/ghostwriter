@@ -316,4 +316,17 @@ document.addEventListener('DOMContentLoaded', function() {
   if (minimizeButton) {
     minimizeButton.addEventListener('click', toggleChatVisibility);
   }
+  
+  // Ensure chat starts minimized with bubble visible
+  const chatboxContainer = document.querySelector('.chatbox-container');
+  if (chatboxContainer) {
+    chatboxContainer.classList.add('minimized');
+    chatboxContainer.style.opacity = '0';
+    chatboxContainer.style.transform = 'translateX(100%)';
+    
+    // Make sure chat bubble is visible
+    if (chatBubble) {
+      chatBubble.style.display = 'flex';
+    }
+  }
 });
