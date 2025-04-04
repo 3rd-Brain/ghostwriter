@@ -268,6 +268,18 @@ function addRetryButton(originalMessage) {
 }
 
 // Initialize when DOM is loaded
+// Toggle chat visibility
+function toggleChat() {
+  const chatContainer = document.getElementById('chatbox-container');
+  const contentContainer = document.querySelector('.content-container');
+  
+  chatContainer.classList.toggle('hidden');
+  contentContainer.classList.toggle('expanded');
+  
+  // Save state to localStorage
+  localStorage.setItem('chatHidden', chatContainer.classList.contains('hidden'));
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   initChat();
   
@@ -275,5 +287,19 @@ document.addEventListener('DOMContentLoaded', function() {
   const resetButton = document.getElementById('reset-chat');
   if (resetButton) {
     resetButton.addEventListener('click', resetChatSession);
+  }
+  
+  // Set up toggle chat button
+  const toggleButton = document.getElementById('toggle-chat');
+  if (toggleButton) {
+    toggleButton.addEventListener('click', toggleChat);
+    
+    // Check if chat was previously hidden
+    const wasChatHidden = localStorage.getItem('chatHidden') === 'true';
+    if (wasChatHidden) {
+      // Initialize as hidden
+      document.getElementById('chatbox-container').classList.add('hidden');
+      document.querySelector('.content-container').classList.add('expanded');
+    }
   }
 });
