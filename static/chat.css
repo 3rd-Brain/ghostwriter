@@ -312,12 +312,6 @@
 .chatbox-container {
   transition: transform 0.3s ease;
   transform: translateX(0);
-  /* Make invisible initially until fully loaded */
-  opacity: 0;
-}
-
-.chatbox-container.loaded {
-  opacity: 1;
 }
 
 .chatbox-container.hidden {
@@ -330,5 +324,5 @@
 }
 
 .content-container.expanded {
-  margin-right: 0 !important; /* Override any inline styles */
+  margin-right: 0;
 }
