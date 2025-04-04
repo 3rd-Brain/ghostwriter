@@ -21,7 +21,7 @@ function initChat() {
   const messagesContainer = document.getElementById('chatbox-messages');
   
   // Add a welcome message
-  addMessageToChat('bot', 'Hello! How can I assist you today?');
+  addMessageToChat('bot', 'Hello! How can I assist you today? You can minimize this chat using the minimize button in the top-right corner, and bring it back by clicking the chat bubble.');
   
   // Send message on button click
   sendButton.addEventListener('click', function() {
@@ -278,6 +278,9 @@ function toggleChatVisibility() {
     chatboxContainer.style.opacity = '1';
     chatboxContainer.style.transform = 'translateX(0)';
     
+    // Hide chat bubble when chat is visible
+    chatBubble.style.display = 'none';
+    
     // Scroll to the latest message
     const messagesContainer = document.getElementById('chatbox-messages');
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -286,6 +289,9 @@ function toggleChatVisibility() {
     chatboxContainer.classList.add('minimized');
     chatboxContainer.style.opacity = '0';
     chatboxContainer.style.transform = 'translateX(100%)';
+    
+    // Show chat bubble when chat is minimized
+    chatBubble.style.display = 'flex';
   }
 }
 
