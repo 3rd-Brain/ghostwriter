@@ -919,13 +919,16 @@
             // Reset steps
             workflowSteps = [];
             
+            // Get the sidebar element
+            const sidebarEl = document.getElementById('workflow-steps-sidebar');
+            
             // Clear the sidebar (except the add button container)
-            Array.from(stepsSidebar.querySelectorAll('.workflow-step-item')).forEach(item => {
-                stepsSidebar.removeChild(item);
+            Array.from(sidebarEl.querySelectorAll('.workflow-step-item')).forEach(item => {
+                sidebarEl.removeChild(item);
             });
             
             // Reset the editor
-            stepEditor.innerHTML = `
+            document.getElementById('workflow-step-editor').innerHTML = `
                 <div class="workflow-step-placeholder">
                     <p>No steps defined. Click "Add Step" to begin.</p>
                 </div>
