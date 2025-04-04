@@ -312,14 +312,15 @@
             const chatboxContainer = document.querySelector('.chatbox-container');
             const contentContainer = document.querySelector('.content-container');
             
-            // Check if chatbot was previously hidden (using localStorage)
-            const chatbotHidden = localStorage.getItem('chatbotHidden') === 'true';
+            // Set the default state to hidden, and use localStorage if available
+            const chatbotHidden = localStorage.getItem('chatbotHidden');
             
-            // Set initial state based on localStorage
-            if (chatbotHidden) {
-                hideChatbot();
-            } else {
+            // If there's no stored preference, hide by default
+            // If there is a preference, follow it (but default to hidden if null or not 'false')
+            if (chatbotHidden === 'false') {
                 showChatbot();
+            } else {
+                hideChatbot();
             }
             
             // Toggle chatbot when button is clicked
