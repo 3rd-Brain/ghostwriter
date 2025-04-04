@@ -459,6 +459,12 @@ async def complete_onboarding(request: OnboardingCompleteRequest, session_data=D
         from datetime import timedelta
         from main import create_access_token
 
+        # Set the username and user_id as environment variables
+        os.environ["CURRENT_USERNAME"] = username
+        os.environ["CURRENT_USER_ID"] = user_id
+        print(f"Set CURRENT_USER_ID env var to: {user_id} after onboarding completion")
+        print(f"Set CURRENT_USERNAME env var to: {username} after onboarding completion")
+
         access_token = create_access_token(
             data={"sub": username, "user_id": user_id},
             expires_delta=timedelta(minutes=30)
