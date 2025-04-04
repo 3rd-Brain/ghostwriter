@@ -272,12 +272,20 @@ function toggleChatVisibility() {
   const chatboxContainer = document.querySelector('.chatbox-container');
   const chatBubble = document.getElementById('chat-bubble');
   
-  chatboxContainer.classList.toggle('minimized');
-  
-  // If we're opening the chat, scroll to the latest message
-  if (!chatboxContainer.classList.contains('minimized')) {
+  if (chatboxContainer.classList.contains('minimized')) {
+    // Show the chatbox
+    chatboxContainer.classList.remove('minimized');
+    chatboxContainer.style.opacity = '1';
+    chatboxContainer.style.transform = 'translateX(0)';
+    
+    // Scroll to the latest message
     const messagesContainer = document.getElementById('chatbox-messages');
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  } else {
+    // Hide the chatbox
+    chatboxContainer.classList.add('minimized');
+    chatboxContainer.style.opacity = '0';
+    chatboxContainer.style.transform = 'translateX(100%)';
   }
 }
 
