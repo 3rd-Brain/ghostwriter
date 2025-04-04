@@ -681,6 +681,14 @@ async def search_templates(request: Request, current_user: str = Depends(get_cur
         "current_page": "search_templates"
     })
 
+@app.get("/industry-report", response_class=HTMLResponse, include_in_schema=False)
+async def industry_report(request: Request, current_user: dict = Depends(get_current_user)):
+    return templates.TemplateResponse("industry_report.html", {
+        "request": request,
+        "username": current_user,
+        "current_page": "industry_report"
+    })
+
 @app.get("/template-management", response_class=HTMLResponse, include_in_schema=False)
 async def template_management(request: Request, current_user: str = Depends(get_current_user)):
     return templates.TemplateResponse("template_management.html", {
