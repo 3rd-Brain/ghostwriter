@@ -1137,7 +1137,8 @@
     
     // Workflow Creation System
     function initWorkflowCreation() {
-        const addStepBtn = document.getElementById('add-workflow-step');
+        console.log('Initializing workflow creation...');
+        let addStepBtn = document.getElementById('add-workflow-step');
         const stepsSidebar = document.getElementById('workflow-steps-sidebar');
         const stepEditor = document.getElementById('workflow-step-editor');
         const saveWorkflowBtn = document.getElementById('save-workflow');
@@ -1156,11 +1157,18 @@
         let workflowSteps = [];
         let currentStepIndex = null;
         
-        // Add a new step
+        // Remove any existing event listeners from the Add Step button
+        const newAddStepBtn = addStepBtn.cloneNode(true);
+        addStepBtn.parentNode.replaceChild(newAddStepBtn, addStepBtn);
+        addStepBtn = newAddStepBtn;
+        
+        // Add a new step (with a single event listener)
         addStepBtn.addEventListener('click', function() {
             // Prevent multiple rapid clicks
             addStepBtn.disabled = true;
             setTimeout(() => { addStepBtn.disabled = false; }, 500);
+            
+            console.log('Add step button clicked');
             
             // Get the next order number - base it only on existing steps
             let nextOrder = 1;
@@ -1182,6 +1190,8 @@
                 Temperature: 0.7
             };
             
+            console.log('Adding new step:', newStep);
+            
             workflowSteps.push(newStep);
             addStepToSidebar(newStep, newStepIndex);
             selectStep(newStepIndex);
@@ -1189,6 +1199,8 @@
         
         // Add a step to the sidebar
         function addStepToSidebar(step, index) {
+            console.log(`Adding step to sidebar: Step ${step.Order}, Index: ${index}`);
+            
             const stepItem = document.createElement('div');
             stepItem.className = 'workflow-step-item';
             stepItem.dataset.stepIndex = index;
@@ -1202,8 +1214,18 @@
                 selectStep(index);
             });
             
-            // Insert before the Add Step button container
-            stepsSidebar.insertBefore(stepItem, document.querySelector('.add-step-container'));
+            // Get the add step container directly within the sidebar
+            const addStepContainer = stepsSidebar.querySelector('.add-step-container');
+            
+            if (addStepContainer) {
+                console.log('Found add step container, inserting before it');
+                // Insert before the Add Step button container
+                stepsSidebar.insertBefore(stepItem, addStepContainer);
+            } else {
+                console.warn('Add step container not found, appending to sidebar');
+                // Fallback - append to sidebar
+                stepsSidebar.appendChild(stepItem);
+            }
         }
         
         // Select a step for editing
