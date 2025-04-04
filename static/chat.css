@@ -277,3 +277,76 @@
   width: 16px;
   height: 16px;
 }
+
+/* Toggle chatbox button */
+.toggle-chatbox-button {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 150;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: #6b35ff;
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.toggle-chatbox-button:hover {
+  background-color: #5425d0;
+  transform: scale(1.05);
+}
+
+.toggle-chatbox-button svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Chatbox transition */
+.chatbox-container {
+  transition: transform 0.3s ease;
+}
+
+.chatbox-container.hidden {
+  transform: translateX(340px);
+}
+
+/* Adjust content container transition */
+.content-container {
+  transition: margin-right 0.3s ease;
+}
+
+.content-container.expanded {
+  margin-right: 0;
+}
+
+/* Header actions container */
+.chatbox-header-actions {
+  display: flex;
+  align-items: center;
+}
+
+/* When toggled, change toggle button appearance */
+.toggle-chatbox-button.active {
+  background-color: #ff3547;
+}
+
+@media (max-width: 768px) {
+  .chatbox-container {
+    width: 280px;
+  }
+  
+  .chatbox-container.hidden {
+    transform: translateX(300px);
+  }
+  
+  .content-container {
+    margin-right: 0;
+  }
+}

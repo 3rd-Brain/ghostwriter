@@ -267,6 +267,20 @@ function addRetryButton(originalMessage) {
   }
 }
 
+// Toggle the chatbox visibility
+function toggleChatbox() {
+  const chatboxContainer = document.getElementById('chatbox-container');
+  const contentContainer = document.querySelector('.content-container');
+  const toggleButton = document.getElementById('toggle-chatbox');
+  
+  chatboxContainer.classList.toggle('hidden');
+  contentContainer.classList.toggle('expanded');
+  toggleButton.classList.toggle('active');
+  
+  // Store preference in localStorage
+  localStorage.setItem('chatboxHidden', chatboxContainer.classList.contains('hidden'));
+}
+
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
   initChat();
@@ -275,5 +289,18 @@ document.addEventListener('DOMContentLoaded', function() {
   const resetButton = document.getElementById('reset-chat');
   if (resetButton) {
     resetButton.addEventListener('click', resetChatSession);
+  }
+  
+  // Set up toggle chatbox button
+  const toggleButton = document.getElementById('toggle-chatbox');
+  if (toggleButton) {
+    toggleButton.addEventListener('click', toggleChatbox);
+    
+    // Check if there's a stored preference
+    const chatboxHidden = localStorage.getItem('chatboxHidden');
+    if (chatboxHidden === 'true') {
+      // Initialize as hidden if that was the last state
+      toggleChatbox();
+    }
   }
 });
