@@ -259,13 +259,18 @@
 
         </div>
     
-    <div class="chatbox-container">
+    <div class="chatbox-container minimized">
         <div class="chatbox">
             <div class="chatbox-header">
                 <h3>Ghostwriter Agent</h3>
-                <button id="reset-chat" class="reset-chat-button" title="Reset conversation">
-                    <i data-lucide="refresh-cw"></i>
-                </button>
+                <div>
+                    <button id="minimize-chat" class="reset-chat-button" title="Minimize chat">
+                        <i data-lucide="minimize-2"></i>
+                    </button>
+                    <button id="reset-chat" class="reset-chat-button" title="Reset conversation">
+                        <i data-lucide="refresh-cw"></i>
+                    </button>
+                </div>
             </div>
             <div class="chatbox-messages" id="chatbox-messages">
                 <!-- Messages will appear here -->
@@ -277,6 +282,10 @@
                 </button>
             </div>
         </div>
+    </div>
+    
+    <div class="chat-bubble" id="chat-bubble" title="Open chat">
+        <i data-lucide="message-circle"></i>
     </div>
 
     <div class="notification" id="notification"></div>

@@ -267,6 +267,20 @@ function addRetryButton(originalMessage) {
   }
 }
 
+// Toggle chat visibility
+function toggleChatVisibility() {
+  const chatboxContainer = document.querySelector('.chatbox-container');
+  const chatBubble = document.getElementById('chat-bubble');
+  
+  chatboxContainer.classList.toggle('minimized');
+  
+  // If we're opening the chat, scroll to the latest message
+  if (!chatboxContainer.classList.contains('minimized')) {
+    const messagesContainer = document.getElementById('chatbox-messages');
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  }
+}
+
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
   initChat();
@@ -275,5 +289,17 @@ document.addEventListener('DOMContentLoaded', function() {
   const resetButton = document.getElementById('reset-chat');
   if (resetButton) {
     resetButton.addEventListener('click', resetChatSession);
+  }
+  
+  // Set up chat bubble toggle
+  const chatBubble = document.getElementById('chat-bubble');
+  if (chatBubble) {
+    chatBubble.addEventListener('click', toggleChatVisibility);
+  }
+  
+  // Set up minimize button
+  const minimizeButton = document.getElementById('minimize-chat');
+  if (minimizeButton) {
+    minimizeButton.addEventListener('click', toggleChatVisibility);
   }
 });

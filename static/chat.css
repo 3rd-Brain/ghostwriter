@@ -277,3 +277,45 @@
   width: 16px;
   height: 16px;
 }
+
+/* Chat toggle button */
+.chat-bubble {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: #6b35ff;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 110;
+  transition: transform 0.2s;
+}
+
+.chat-bubble:hover {
+  transform: scale(1.05);
+}
+
+.chat-bubble svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Minimized chatbox */
+.chatbox-container.minimized {
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(100%);
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.chatbox-container {
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity 0.3s, transform 0.3s;
+}
