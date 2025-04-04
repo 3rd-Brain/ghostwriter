@@ -23,11 +23,11 @@
             flex-direction: column;
             z-index: 100;
         }
-
+        
         .main-menu, .other-menu {
             overflow-y: auto;
         }
-
+        
         .user-profile {
             position: sticky;
             bottom: 0;
@@ -35,22 +35,22 @@
             z-index: 10;
             margin-top: auto;
         }
-
+        
         .main-content {
             margin-left: 280px;
             width: calc(100% - 280px);
         }
-
+        
         /* Make sure the app container doesn't apply grid anymore since we're using fixed positioning */
         .app-container {
             display: block;
         }
-
+        
         /* Collapsed sidebar adjustments */
         .app-container.sidebar-collapsed .sidebar {
             width: 80px;
         }
-
+        
         .app-container.sidebar-collapsed .main-content {
             margin-left: 80px;
             width: calc(100% - 80px);
@@ -150,18 +150,15 @@
             z-index: 90;
             background-color: white;
         }
-
+        
         .app-container.sidebar-collapsed .content-header {
             left: 80px;
         }
 
         .content-container {
-            margin-right: 0; /* Start with no margin, will be adjusted via JavaScript */
+            margin-right: 320px; /* Add margin to prevent content overlap with chatbox */
             margin-top: 72px; /* Add margin to account for fixed header */
             padding-bottom: 20px; /* Add some padding at the bottom */
-            transition: margin-right 0.3s ease-in-out; /* Smooth transition for margin changes */
-            position: relative;
-            z-index: 1; /* Ensure content is below the chatbox when visible */
         }
     </style>
 </head>
@@ -261,8 +258,8 @@
         </main>
 
         </div>
-
-    <div class="chatbox-container hidden">
+    
+    <div class="chatbox-container">
         <div class="chatbox">
             <div class="chatbox-header">
                 <h3>Ghostwriter Agent</h3>
@@ -281,10 +278,6 @@
             </div>
         </div>
     </div>
-
-    <button class="chat-toggle-button hidden" id="chat-toggle">
-        <i data-lucide="message-circle"></i>
-    </button>
 
     <div class="notification" id="notification"></div>
 
