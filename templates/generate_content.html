@@ -6,6 +6,19 @@
 {% block page_subtitle %}Create and repurpose content for your social media{% endblock %}
 
 {% block content %}
+<style>
+    .d-flex {
+        display: flex;
+    }
+    
+    .justify-content-between {
+        justify-content: space-between;
+    }
+    
+    .mb-md {
+        margin-bottom: 1rem;
+    }
+</style>
 <!-- Main layout with three cards side by side in a single row -->
 <div class="dashboard-grid">
     <!-- Create New Posts card -->
@@ -63,6 +76,10 @@
         </div>
         <div class="card-content">
             <p class="text-secondary">View and manage your generation workflows</p>
+            <div class="d-flex justify-content-between mb-md">
+                <div></div>
+                <button class="form-button" id="create-workflow-btn">Create Workflow</button>
+            </div>
             <div class="table-container mt-md">
                 <table class="data-table">
                     <thead>
