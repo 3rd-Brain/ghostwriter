@@ -282,6 +282,18 @@ function toggleChat() {
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
+  // Hide chat by default
+  const chatboxContainer = document.getElementById('chatbox-container');
+  const contentContainer = document.querySelector('.content-container');
+  
+  // Always start with chatbox hidden and content expanded
+  chatboxContainer.classList.add('hidden');
+  contentContainer.classList.add('expanded');
+  
+  // Save this state
+  localStorage.setItem('chatHidden', 'true');
+  
+  // Initialize chat
   initChat();
   
   // Set up reset chat button
@@ -296,13 +308,8 @@ document.addEventListener('DOMContentLoaded', function() {
     chatToggle.addEventListener('click', toggleChat);
   }
   
-  // Check if chat was previously hidden
-  const wasChatHidden = localStorage.getItem('chatHidden') === 'true';
-  if (wasChatHidden) {
-    const chatboxContainer = document.getElementById('chatbox-container');
-    const contentContainer = document.querySelector('.content-container');
-    
-    chatboxContainer.classList.add('hidden');
-    contentContainer.classList.add('expanded');
-  }
+  // After a slight delay, add the loaded class for smooth transition
+  setTimeout(function() {
+    chatboxContainer.classList.add('loaded');
+  }, 100);
 });

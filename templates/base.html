@@ -159,6 +159,12 @@
             margin-right: 320px; /* Add margin to prevent content overlap with chatbox */
             margin-top: 72px; /* Add margin to account for fixed header */
             padding-bottom: 20px; /* Add some padding at the bottom */
+            transition: margin-right 0.3s ease;
+        }
+        
+        /* This ensures content expands when chat is hidden */
+        .content-container.expanded {
+            margin-right: 0 !important;
         }
     </style>
 </head>
