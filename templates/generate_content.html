@@ -425,7 +425,10 @@
                 <div class="workflow-steps-sidebar" id="workflow-steps-sidebar">
                     <!-- Step items will be added here -->
                     <div class="add-step-container">
-                        <button type="button" class="form-button" id="add-workflow-step">Add Step</button>
+                        <div style="display: flex; gap: 10px; width: 100%;">
+                            <button type="button" class="form-button" id="add-workflow-step" style="flex: 1;">Add Step</button>
+                            <button type="button" class="form-button form-button-danger" id="delete-step" style="display: none;">Delete</button>
+                        </div>
                     </div>
                 </div>
                 <div class="workflow-detail-area" id="workflow-step-editor">
@@ -1245,6 +1248,38 @@
                 selectedStep.classList.add('active');
             }
 
+            // Show delete button when a step is selected
+            const deleteBtn = document.getElementById('delete-step');
+            if (deleteBtn) {
+                deleteBtn.style.display = 'block';
+                
+                // Remove any existing click event listeners
+                const newDeleteBtn = deleteBtn.cloneNode(true);
+                deleteBtn.parentNode.replaceChild(newDeleteBtn, deleteBtn);
+                
+                // Add click event for the delete button
+                newDeleteBtn.addEventListener('click', function() {
+                    if (newDeleteBtn.classList.contains('confirm-delete')) {
+                        // If in confirmation state, delete the step
+                        deleteStep(index);
+                        newDeleteBtn.classList.remove('confirm-delete');
+                        newDeleteBtn.textContent = 'Delete';
+                    } else {
+                        // Change to confirmation state
+                        newDeleteBtn.classList.add('confirm-delete');
+                        newDeleteBtn.textContent = 'Confirm?';
+
+                        // Reset to normal state after 3 seconds if not clicked
+                        setTimeout(() => {
+                            if (newDeleteBtn.classList.contains('confirm-delete')) {
+                                newDeleteBtn.classList.remove('confirm-delete');
+                                newDeleteBtn.textContent = 'Delete';
+                            }
+                        }, 3000);
+                    }
+                });
+            }
+
             currentStepIndex = index;
             renderStepEditor(workflowSteps[index], index);
         }
@@ -1325,22 +1360,35 @@
                 </div>
             `;
 
+            // Create horizontal layout containers
+            const nameOrderRow = document.createElement('div');
+            nameOrderRow.className = 'form-row';
+            nameOrderRow.style.display = 'flex';
+            nameOrderRow.style.gap = '15px';
+            nameOrderRow.appendChild(nameGroup);
+            nameOrderRow.appendChild(orderGroup);
+            
+            const tempTokensRow = document.createElement('div');
+            tempTokensRow.className = 'form-row';
+            tempTokensRow.style.display = 'flex';
+            tempTokensRow.style.gap = '15px';
+            tempTokensRow.appendChild(tempGroup);
+            tempTokensRow.appendChild(tokensGroup);
+            
+            // Adjust form group widths for side-by-side layout
+            nameGroup.style.flex = '1';
+            orderGroup.style.flex = '1';
+            tempGroup.style.flex = '1';
+            tokensGroup.style.flex = '1';
+            
             // Add all form groups to the editor
-            editorForm.appendChild(nameGroup);
-            editorForm.appendChild(orderGroup);
+            editorForm.appendChild(nameOrderRow);
             editorForm.appendChild(modelGroup);
-            editorForm.appendChild(tempGroup);
-            editorForm.appendChild(tokensGroup);
+            editorForm.appendChild(tempTokensRow);
             editorForm.appendChild(systemPromptGroup);
             editorForm.appendChild(messagesGroup);
-
-            // Add delete button
-            const deleteGroup = document.createElement('div');
-            deleteGroup.className = 'form-group mt-md';
-            deleteGroup.innerHTML = `
-                <button type="button" class="form-button form-button-danger" id="delete-step">Delete Step</button>
-            `;
-            editorForm.appendChild(deleteGroup);
+            
+            // We don't add the delete button here anymore as it will be moved to the sidebar
 
             stepEditor.appendChild(editorForm);
 
@@ -1399,10 +1447,7 @@
 
             messageEl.innerHTML = `
                 <div class="message-role">
-                    <select class="form-control message-role-select">
-                        <option value="user" ${message.role === 'user' ? 'selected' : ''}>User</option>
-                        <option value="assistant" ${message.role === 'assistant' ? 'selected' : ''}>Assistant</option>
-                    </select>
+                    <div class="form-label">${message.role.charAt(0).toUpperCase() + message.role.slice(1)} Message</div>
                 </div>
                 <div class="message-content mt-md">
                     <textarea class="form-control message-content-textarea" rows="3" placeholder="Message content...">${message.content}</textarea>
@@ -1416,7 +1461,6 @@
 
             // Set up event listeners for this message
             const deleteBtn = messageEl.querySelector('.delete-message-btn');
-            const roleSelect = messageEl.querySelector('.message-role-select');
             const contentTextarea = messageEl.querySelector('.message-content-textarea');
 
             deleteBtn.addEventListener('click', function() {
@@ -1428,11 +1472,6 @@
                 container.querySelectorAll('.message-container').forEach((el, i) => {
                     el.dataset.messageIndex = i;
                 });
-            });
-
-            roleSelect.addEventListener('change', function() {
-                const step = workflowSteps[currentStepIndex];
-                step.Message[msgIndex].role = this.value;
             });
 
             contentTextarea.addEventListener('input', function() {
