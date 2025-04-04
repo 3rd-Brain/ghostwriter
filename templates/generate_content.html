@@ -909,7 +909,34 @@
         const createWorkflowModal = document.getElementById('create-workflow-modal');
         const closeCreateWorkflowBtn = document.getElementById('close-create-workflow-modal');
         
+        // Function to reset the workflow creation state
+        function resetWorkflowCreation() {
+            // Reset form fields
+            document.getElementById('workflow-name').value = '';
+            document.getElementById('workflow-type').value = 'social';
+            document.getElementById('workflow-description').value = '';
+            
+            // Reset steps
+            workflowSteps = [];
+            
+            // Clear the sidebar (except the add button container)
+            Array.from(stepsSidebar.querySelectorAll('.workflow-step-item')).forEach(item => {
+                stepsSidebar.removeChild(item);
+            });
+            
+            // Reset the editor
+            stepEditor.innerHTML = `
+                <div class="workflow-step-placeholder">
+                    <p>No steps defined. Click "Add Step" to begin.</p>
+                </div>
+            `;
+            
+            // Reset current step index
+            currentStepIndex = null;
+        }
+        
         createWorkflowBtn.addEventListener('click', function() {
+            resetWorkflowCreation();
             createWorkflowModal.style.display = 'block';
         });
         
@@ -1132,10 +1159,17 @@
             addStepBtn.disabled = true;
             setTimeout(() => { addStepBtn.disabled = false; }, 500);
             
+            // Get the next order number - base it only on existing steps
+            let nextOrder = 1;
+            if (workflowSteps.length > 0) {
+                // Find the highest order in the current steps
+                nextOrder = Math.max(...workflowSteps.map(step => step.Order)) + 1;
+            }
+            
             const newStepIndex = workflowSteps.length;
             const newStep = {
-                Order: newStepIndex + 1,
-                Step_name: `Step ${newStepIndex + 1}`,
+                Order: nextOrder,
+                Step_name: `Step ${nextOrder}`,
                 Model: aiModels[0].value,
                 System_prompt: '',
                 Message: [
