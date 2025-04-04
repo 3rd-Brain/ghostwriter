@@ -245,6 +245,9 @@
                     <button class="action-button">
                         <i data-lucide="bell"></i>
                     </button>
+                    <button id="toggle-chatbot" class="action-button" title="Toggle Chatbot">
+                        <i data-lucide="message-square"></i>
+                    </button>
                 </div>
             </header>
 
@@ -260,7 +263,7 @@
 
         </div>
     
-    <div class="chatbox-container" style="opacity: 0; pointer-events: none; position: absolute; visibility: hidden;">
+    <div class="chatbox-container">
         <div class="chatbox">
             <div class="chatbox-header">
                 <h3>Ghostwriter Agent</h3>
@@ -302,6 +305,60 @@
                         appContainer.classList.remove('sidebar-collapsed');
                     }
                 });
+            }
+
+            // Chatbot toggle functionality
+            const toggleChatbotBtn = document.getElementById('toggle-chatbot');
+            const chatboxContainer = document.querySelector('.chatbox-container');
+            const contentContainer = document.querySelector('.content-container');
+            
+            // Check if chatbot was previously hidden (using localStorage)
+            const chatbotHidden = localStorage.getItem('chatbotHidden') === 'true';
+            
+            // Set initial state based on localStorage
+            if (chatbotHidden) {
+                hideChatbot();
+            } else {
+                showChatbot();
+            }
+            
+            // Toggle chatbot when button is clicked
+            if (toggleChatbotBtn) {
+                toggleChatbotBtn.addEventListener('click', function() {
+                    if (chatboxContainer.style.opacity === '0') {
+                        showChatbot();
+                        localStorage.setItem('chatbotHidden', 'false');
+                    } else {
+                        hideChatbot();
+                        localStorage.setItem('chatbotHidden', 'true');
+                    }
+                });
+            }
+            
+            // Function to hide chatbot
+            function hideChatbot() {
+                chatboxContainer.style.opacity = '0';
+                chatboxContainer.style.pointerEvents = 'none';
+                chatboxContainer.style.position = 'absolute';
+                chatboxContainer.style.visibility = 'hidden';
+                contentContainer.style.marginRight = '0';
+                contentContainer.style.width = '100%';
+                
+                // Update button appearance to show it's toggled off
+                toggleChatbotBtn.classList.add('toggled-off');
+            }
+            
+            // Function to show chatbot
+            function showChatbot() {
+                chatboxContainer.style.opacity = '1';
+                chatboxContainer.style.pointerEvents = 'auto';
+                chatboxContainer.style.position = 'fixed';
+                chatboxContainer.style.visibility = 'visible';
+                contentContainer.style.marginRight = '320px';
+                contentContainer.style.width = 'calc(100% - 320px)';
+                
+                // Update button appearance to show it's toggled on
+                toggleChatbotBtn.classList.remove('toggled-off');
             }
 
             // Notification function

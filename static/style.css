@@ -1440,3 +1440,34 @@ textarea.form-control {
     border-bottom: 1px solid var(--border);
     padding-bottom: var(--spacing-xs);
 }
+
+/* Fix spacing between sections */
+.message-content h1 + ul,
+.message-content h2 + ul,
+.message-content h3 + ul,
+.message-content h1 + ol,
+.message-content h2 + ol,
+.message-content h3 + ol {
+  margin-top: 4px !important;
+}
+
+/* Chatbot toggle button styles */
+#toggle-chatbot {
+  position: relative;
+  cursor: pointer; /* Add cursor style */
+}
+
+#toggle-chatbot.toggled-off {
+  color: #a0a0a0;
+}
+
+#toggle-chatbot.toggled-off::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 25%;
+  width: 50%;
+  height: 2px;
+  background-color: #a0a0a0;
+  transform: rotate(45deg);
+}
