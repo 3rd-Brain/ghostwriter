@@ -277,3 +277,52 @@
   width: 16px;
   height: 16px;
 }
+
+/* Chat toggle button */
+.chat-toggle-button {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: #6b35ff;
+  color: white;
+  border: none;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  z-index: 150;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.chat-toggle-button:hover {
+  background-color: #5425d0;
+  transform: scale(1.05);
+}
+
+.chat-toggle-button svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Sliding animation */
+.chatbox-container {
+  transition: transform 0.3s ease;
+  transform: translateX(0);
+}
+
+.chatbox-container.hidden {
+  transform: translateX(100%);
+}
+
+/* Content container transition */
+.content-container {
+  transition: margin-right 0.3s ease;
+}
+
+.content-container.expanded {
+  margin-right: 0;
+}
