@@ -267,19 +267,6 @@ function addRetryButton(originalMessage) {
   }
 }
 
-// Function to toggle chat visibility
-function toggleChat() {
-  const chatboxContainer = document.getElementById('chatbox-container');
-  const contentContainer = document.querySelector('.content-container');
-  
-  chatboxContainer.classList.toggle('hidden');
-  contentContainer.classList.toggle('expanded');
-  
-  // Save chat state to localStorage
-  const isChatHidden = chatboxContainer.classList.contains('hidden');
-  localStorage.setItem('chatHidden', isChatHidden);
-}
-
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
   initChat();
@@ -288,21 +275,5 @@ document.addEventListener('DOMContentLoaded', function() {
   const resetButton = document.getElementById('reset-chat');
   if (resetButton) {
     resetButton.addEventListener('click', resetChatSession);
-  }
-  
-  // Set up chat toggle button
-  const chatToggle = document.getElementById('chat-toggle');
-  if (chatToggle) {
-    chatToggle.addEventListener('click', toggleChat);
-  }
-  
-  // Check if chat was previously hidden
-  const wasChatHidden = localStorage.getItem('chatHidden') === 'true';
-  if (wasChatHidden) {
-    const chatboxContainer = document.getElementById('chatbox-container');
-    const contentContainer = document.querySelector('.content-container');
-    
-    chatboxContainer.classList.add('hidden');
-    contentContainer.classList.add('expanded');
   }
 });
