@@ -916,37 +916,7 @@
         const createWorkflowModal = document.getElementById('create-workflow-modal');
         const closeCreateWorkflowBtn = document.getElementById('close-create-workflow-modal');
 
-        // Function to reset the workflow creation state
-        function resetWorkflowCreation() {
-            // Reset form fields
-            document.getElementById('workflow-name').value = '';
-            document.getElementById('workflow-type').value = 'social';
-            document.getElementById('workflow-description').value = '';
-
-            // Reset steps
-            workflowSteps = [];
-
-            // Get the sidebar element
-            const sidebarEl = document.getElementById('workflow-steps-sidebar');
-
-            // Clear the sidebar (except the add button container)
-            Array.from(sidebarEl.querySelectorAll('.workflow-step-item')).forEach(item => {
-                sidebarEl.removeChild(item);
-            });
-
-            // Reset the editor
-            document.getElementById('workflow-step-editor').innerHTML = `
-                <div class="workflow-step-placeholder">
-                    <p>No steps defined. Click "Add Step" to begin.</p>
-                </div>
-            `;
-
-            // Reset current step index
-            currentStepIndex = null;
-        }
-
         createWorkflowBtn.addEventListener('click', function() {
-            resetWorkflowCreation();
             createWorkflowModal.style.display = 'block';
         });
 
@@ -1252,11 +1222,11 @@
             const deleteBtn = document.getElementById('delete-step');
             if (deleteBtn) {
                 deleteBtn.style.display = 'block';
-                
+
                 // Reset delete button to normal state (not confirmation state)
                 deleteBtn.classList.remove('confirm-delete');
                 deleteBtn.textContent = 'Delete';
-                
+
                 // Remove any existing click event listeners by cloning
                 const newDeleteBtn = deleteBtn.cloneNode(true);
                 deleteBtn.parentNode.replaceChild(newDeleteBtn, deleteBtn);
@@ -1349,7 +1319,7 @@
             nameModelRow.style.gap = '15px';
             nameModelRow.appendChild(nameGroup);
             nameModelRow.appendChild(modelGroup);
-            
+
             const tempTokensOrderRow = document.createElement('div');
             tempTokensOrderRow.className = 'form-row';
             tempTokensOrderRow.style.display = 'flex';
@@ -1357,20 +1327,20 @@
             tempTokensOrderRow.appendChild(tempGroup);
             tempTokensOrderRow.appendChild(tokensGroup);
             tempTokensOrderRow.appendChild(orderGroup);
-            
+
             // Adjust form group widths for side-by-side layout
             nameGroup.style.flex = '1';
             modelGroup.style.flex = '1';
             tempGroup.style.flex = '1';
             tokensGroup.style.flex = '1';
             orderGroup.style.flex = '1';
-            
+
             // Add all form groups to the editor
             editorForm.appendChild(nameModelRow);
             editorForm.appendChild(tempTokensOrderRow);
             editorForm.appendChild(systemPromptGroup);
             editorForm.appendChild(messagesGroup);
-            
+
             // We don't add the delete button here anymore as it will be moved to the sidebar
 
             stepEditor.appendChild(editorForm);
