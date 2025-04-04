@@ -1253,31 +1253,13 @@
             if (deleteBtn) {
                 deleteBtn.style.display = 'block';
                 
-                // Remove any existing click event listeners
+                // Reset delete button to normal state (not confirmation state)
+                deleteBtn.classList.remove('confirm-delete');
+                deleteBtn.textContent = 'Delete';
+                
+                // Remove any existing click event listeners by cloning
                 const newDeleteBtn = deleteBtn.cloneNode(true);
                 deleteBtn.parentNode.replaceChild(newDeleteBtn, deleteBtn);
-                
-                // Add click event for the delete button
-                newDeleteBtn.addEventListener('click', function() {
-                    if (newDeleteBtn.classList.contains('confirm-delete')) {
-                        // If in confirmation state, delete the step
-                        deleteStep(index);
-                        newDeleteBtn.classList.remove('confirm-delete');
-                        newDeleteBtn.textContent = 'Delete';
-                    } else {
-                        // Change to confirmation state
-                        newDeleteBtn.classList.add('confirm-delete');
-                        newDeleteBtn.textContent = 'Confirm?';
-
-                        // Reset to normal state after 3 seconds if not clicked
-                        setTimeout(() => {
-                            if (newDeleteBtn.classList.contains('confirm-delete')) {
-                                newDeleteBtn.classList.remove('confirm-delete');
-                                newDeleteBtn.textContent = 'Delete';
-                            }
-                        }, 3000);
-                    }
-                });
             }
 
             currentStepIndex = index;
@@ -1361,30 +1343,31 @@
             `;
 
             // Create horizontal layout containers
-            const nameOrderRow = document.createElement('div');
-            nameOrderRow.className = 'form-row';
-            nameOrderRow.style.display = 'flex';
-            nameOrderRow.style.gap = '15px';
-            nameOrderRow.appendChild(nameGroup);
-            nameOrderRow.appendChild(orderGroup);
+            const nameModelRow = document.createElement('div');
+            nameModelRow.className = 'form-row';
+            nameModelRow.style.display = 'flex';
+            nameModelRow.style.gap = '15px';
+            nameModelRow.appendChild(nameGroup);
+            nameModelRow.appendChild(modelGroup);
             
-            const tempTokensRow = document.createElement('div');
-            tempTokensRow.className = 'form-row';
-            tempTokensRow.style.display = 'flex';
-            tempTokensRow.style.gap = '15px';
-            tempTokensRow.appendChild(tempGroup);
-            tempTokensRow.appendChild(tokensGroup);
+            const tempTokensOrderRow = document.createElement('div');
+            tempTokensOrderRow.className = 'form-row';
+            tempTokensOrderRow.style.display = 'flex';
+            tempTokensOrderRow.style.gap = '15px';
+            tempTokensOrderRow.appendChild(tempGroup);
+            tempTokensOrderRow.appendChild(tokensGroup);
+            tempTokensOrderRow.appendChild(orderGroup);
             
             // Adjust form group widths for side-by-side layout
             nameGroup.style.flex = '1';
-            orderGroup.style.flex = '1';
+            modelGroup.style.flex = '1';
             tempGroup.style.flex = '1';
             tokensGroup.style.flex = '1';
+            orderGroup.style.flex = '1';
             
             // Add all form groups to the editor
-            editorForm.appendChild(nameOrderRow);
-            editorForm.appendChild(modelGroup);
-            editorForm.appendChild(tempTokensRow);
+            editorForm.appendChild(nameModelRow);
+            editorForm.appendChild(tempTokensOrderRow);
             editorForm.appendChild(systemPromptGroup);
             editorForm.appendChild(messagesGroup);
             
@@ -1419,7 +1402,7 @@
                     // If in confirmation state, delete the step
                     deleteStep(index);
                     deleteBtn.classList.remove('confirm-delete');
-                    deleteBtn.textContent = 'Delete Step';
+                    deleteBtn.textContent = 'Delete';
                 } else {
                     // Change to confirmation state
                     deleteBtn.classList.add('confirm-delete');
@@ -1429,7 +1412,7 @@
                     setTimeout(() => {
                         if (deleteBtn.classList.contains('confirm-delete')) {
                             deleteBtn.classList.remove('confirm-delete');
-                            deleteBtn.textContent = 'Delete Step';
+                            deleteBtn.textContent = 'Delete';
                         }
                     }, 3000);
                 }
