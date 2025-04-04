@@ -282,6 +282,15 @@ document.addEventListener('DOMContentLoaded', function() {
   const chatboxContainer = document.querySelector('.chatbox-container');
   const contentContainer = document.querySelector('.content-container');
   
+  // Set initial state of content margin based on chat visibility
+  if (contentContainer && chatboxContainer) {
+    if (chatboxContainer.classList.contains('hidden')) {
+      contentContainer.style.marginRight = '0';
+    } else {
+      contentContainer.style.marginRight = '320px';
+    }
+  }
+  
   if (toggleButton && chatboxContainer) {
     toggleButton.addEventListener('click', function() {
       // Toggle chatbox visibility
