@@ -713,11 +713,6 @@ textarea.form-control {
     border: 1px solid var(--border);
 }
 
-/* Hide chatbot window */
-.chatbox-container {
-    display: none; /* This completely hides the chatbot */
-}
-
 .chatbox-header {
     padding: 16px;
     border-bottom: 1px solid var(--border);
