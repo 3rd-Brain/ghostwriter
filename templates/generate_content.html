@@ -426,7 +426,7 @@
                     <div class="add-step-container">
                         <div style="display: flex; gap: 10px; width: 100%;">
                             <button type="button" class="form-button" id="add-workflow-step" style="flex: 1;">Add Step</button>
-                            <button type="button" class="form-button form-button-danger" id="delete-step" style="display: none;">Delete</button>
+                            <button type="button" class="form-button form-button-danger" id="delete-step" style="display: none; min-width: 80px;">Delete</button>
                         </div>
                     </div>
                 </div>
@@ -872,7 +872,7 @@
                     }
                 })
                 .catch(error => {
-                    console.error('Error checking Twitter connection:', error);
+                    console.error('Error checkingTwitter connection:', error);
                     window.showNotification('Error checking profile. Please try again.', true);
                 });
         });
