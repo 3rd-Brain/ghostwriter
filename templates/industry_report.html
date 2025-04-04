@@ -8,15 +8,73 @@
 {% block page_subtitle %}Analyze industry trends and generate comprehensive reports{% endblock %}
 
 {% block content %}
-<div class="content-section">
+<div class="dashboard-grid">
+    <!-- Analyze Twitter Profiles card -->
     <div class="card">
         <div class="card-header">
-            <h2>Industry Reports</h2>
+            <div class="card-title">
+                <span>Analyze Twitter Profiles</span>
+                <i data-lucide="info"></i>
+            </div>
         </div>
-        <div class="card-body">
-            <p>This feature will allow you to generate comprehensive industry reports based on your data and market trends.</p>
-            <p>Coming soon!</p>
+        <div class="card-content">
+            <p class="text-secondary">Provide up to 10 user profiles to analyze their content and generate an industry report.</p>
+            <button class="form-button mt-md" id="add-profiles-btn">+ Add Profiles</button>
+        </div>
+    </div>
+
+    <!-- History Overview card -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <span>History Overview</span>
+                <i data-lucide="info"></i>
+            </div>
+        </div>
+        <div class="card-content">
+            <div class="template-stats">
+                <div class="stat-item">
+                    <div class="metric-large">0</div>
+                    <div class="metric-label">Industry Reports Generated</div>
+                </div>
+                <div class="stat-item">
+                    <div class="metric-large">0</div>
+                    <div class="metric-label">Accounts Analyzed</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Last Industry Report card -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <span>Last Industry Report</span>
+                <i data-lucide="info"></i>
+            </div>
+        </div>
+        <div class="card-content">
+            <h3>Top Performing Categories</h3>
+            <div class="empty-state">
+                <p>No reports generated yet</p>
+            </div>
+            <button class="form-button mt-md" id="show-more-btn">Show More</button>
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add event listeners for buttons
+    document.getElementById('add-profiles-btn').addEventListener('click', function() {
+        console.log('Add Profiles button clicked');
+        // Functionality to be added later
+    });
+    
+    document.getElementById('show-more-btn').addEventListener('click', function() {
+        console.log('Show More button clicked');
+        // Functionality to be added later
+    });
+});
+</script>
 {% endblock %}
