@@ -156,9 +156,10 @@
         }
 
         .content-container {
-            margin-right: 320px; /* Add margin to prevent content overlap with chatbox */
+            margin-right: 0; /* Start with no margin, will be adjusted via JavaScript */
             margin-top: 72px; /* Add margin to account for fixed header */
             padding-bottom: 20px; /* Add some padding at the bottom */
+            transition: margin-right 0.3s ease-in-out; /* Smooth transition for margin changes */
         }
     </style>
 </head>
@@ -259,7 +260,7 @@
 
         </div>
     
-    <div class="chatbox-container">
+    <div class="chatbox-container hidden">
         <div class="chatbox">
             <div class="chatbox-header">
                 <h3>Ghostwriter Agent</h3>
@@ -278,6 +279,10 @@
             </div>
         </div>
     </div>
+
+    <button class="chat-toggle-button hidden" id="chat-toggle">
+        <i data-lucide="message-circle"></i>
+    </button>
 
     <div class="notification" id="notification"></div>
 

@@ -276,4 +276,26 @@ document.addEventListener('DOMContentLoaded', function() {
   if (resetButton) {
     resetButton.addEventListener('click', resetChatSession);
   }
+  
+  // Set up chat toggle button
+  const toggleButton = document.getElementById('chat-toggle');
+  const chatboxContainer = document.querySelector('.chatbox-container');
+  const contentContainer = document.querySelector('.content-container');
+  
+  if (toggleButton && chatboxContainer) {
+    toggleButton.addEventListener('click', function() {
+      // Toggle chatbox visibility
+      chatboxContainer.classList.toggle('hidden');
+      toggleButton.classList.toggle('hidden');
+      
+      // Adjust content container margin
+      if (contentContainer) {
+        if (chatboxContainer.classList.contains('hidden')) {
+          contentContainer.style.marginRight = '0';
+        } else {
+          contentContainer.style.marginRight = '320px';
+        }
+      }
+    });
+  }
 });

@@ -698,6 +698,11 @@ textarea.form-control {
     width: 320px;
     z-index: 100;
     pointer-events: none; /* Allow scrolling through the container */
+    transition: transform 0.3s ease-in-out;
+}
+
+.chatbox-container.hidden {
+    transform: translateX(100%);
 }
 
 .chatbox {
@@ -711,6 +716,34 @@ textarea.form-control {
     overflow: hidden;
     pointer-events: auto; /* Make the chatbox itself clickable */
     border: 1px solid var(--border);
+}
+
+/* Chat toggle button */
+.chat-toggle-button {
+    position: fixed;
+    right: 328px; /* Position just to the left of the chat window */
+    bottom: 20px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: var(--primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: var(--shadow-md);
+    z-index: 99;
+    transition: right 0.3s ease-in-out;
+    border: none;
+}
+
+.chat-toggle-button.hidden {
+    right: 20px;
+}
+
+.chat-toggle-button:hover {
+    background-color: var(--primary-dark);
 }
 
 .chatbox-header {
