@@ -21,7 +21,7 @@ function initChat() {
   const messagesContainer = document.getElementById('chatbox-messages');
   
   // Add a welcome message
-  addMessageToChat('bot', 'Hello! How can I assist you today? You can minimize this chat using the minimize button in the top-right corner, and bring it back by clicking the chat bubble.');
+  addMessageToChat('bot', 'Hello! How can I assist you today?');
   
   // Send message on button click
   sendButton.addEventListener('click', function() {
@@ -267,34 +267,6 @@ function addRetryButton(originalMessage) {
   }
 }
 
-// Toggle chat visibility
-function toggleChatVisibility() {
-  const chatboxContainer = document.querySelector('.chatbox-container');
-  const chatBubble = document.getElementById('chat-bubble');
-  
-  if (chatboxContainer.classList.contains('minimized')) {
-    // Show the chatbox
-    chatboxContainer.classList.remove('minimized');
-    chatboxContainer.style.opacity = '1';
-    chatboxContainer.style.transform = 'translateX(0)';
-    
-    // Hide chat bubble when chat is visible
-    chatBubble.style.display = 'none';
-    
-    // Scroll to the latest message
-    const messagesContainer = document.getElementById('chatbox-messages');
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-  } else {
-    // Hide the chatbox
-    chatboxContainer.classList.add('minimized');
-    chatboxContainer.style.opacity = '0';
-    chatboxContainer.style.transform = 'translateX(100%)';
-    
-    // Show chat bubble when chat is minimized
-    chatBubble.style.display = 'flex';
-  }
-}
-
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
   initChat();
@@ -303,30 +275,5 @@ document.addEventListener('DOMContentLoaded', function() {
   const resetButton = document.getElementById('reset-chat');
   if (resetButton) {
     resetButton.addEventListener('click', resetChatSession);
-  }
-  
-  // Set up chat bubble toggle
-  const chatBubble = document.getElementById('chat-bubble');
-  if (chatBubble) {
-    chatBubble.addEventListener('click', toggleChatVisibility);
-  }
-  
-  // Set up minimize button
-  const minimizeButton = document.getElementById('minimize-chat');
-  if (minimizeButton) {
-    minimizeButton.addEventListener('click', toggleChatVisibility);
-  }
-  
-  // Ensure chat starts minimized with bubble visible
-  const chatboxContainer = document.querySelector('.chatbox-container');
-  if (chatboxContainer) {
-    chatboxContainer.classList.add('minimized');
-    chatboxContainer.style.opacity = '0';
-    chatboxContainer.style.transform = 'translateX(100%)';
-    
-    // Make sure chat bubble is visible
-    if (chatBubble) {
-      chatBubble.style.display = 'flex';
-    }
   }
 });
