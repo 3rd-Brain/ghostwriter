@@ -245,7 +245,7 @@
                     <button class="action-button">
                         <i data-lucide="bell"></i>
                     </button>
-                    <button id="toggle-chatbot" class="action-button" title="Toggle Chatbot">
+                    <button id="toggle-chatbot" class="action-button disabled" title="Chatbot Coming Soon" disabled>
                         <i data-lucide="message-square"></i>
                     </button>
                 </div>
@@ -323,7 +323,9 @@
                 hideChatbot();
             }
             
-            // Toggle chatbot when button is clicked
+            // Toggle button is disabled for now
+            // When re-enabling, uncomment this code:
+            /*
             if (toggleChatbotBtn) {
                 toggleChatbotBtn.addEventListener('click', function() {
                     if (chatboxContainer.style.opacity === '0') {
@@ -335,6 +337,7 @@
                     }
                 });
             }
+            */
             
             // Function to hide chatbot
             function hideChatbot() {
