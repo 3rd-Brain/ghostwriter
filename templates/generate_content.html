@@ -409,10 +409,9 @@
                 <div class="form-group">
                     <label for="workflow-type" class="form-label">Workflow Type</label>
                     <select id="workflow-type" name="workflow-type" class="form-control">
-                        <option value="social">Social Media</option>
-                        <option value="email">Email</option>
-                        <option value="blog">Blog</option>
-                        <option value="custom">Custom</option>
+                        <option value="short_form_social">Short Form Social</option>
+                        <option value="atomic_essay">Atomic Essay</option>
+                        <option value="mid_form_social">Mid Form Social</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -1122,12 +1121,8 @@
 
         // Available AI models
         const aiModels = [
-            { value: 'gpt-4o', name: 'GPT-4o' },
-            { value: 'gpt-4-turbo', name: 'GPT-4 Turbo' },
-            { value: 'claude-3-5-sonnet-20240620', name: 'Claude 3.5 Sonnet' },
-            { value: 'claude-3-opus-20240229', name: 'Claude 3 Opus' },
-            { value: 'claude-3-sonnet-20240229', name: 'Claude 3 Sonnet' },
-            { value: 'claude-3-haiku-20240307', name: 'Claude 3 Haiku' }
+            { value: 'claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet' },
+            { value: 'claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku' }
         ];
 
         // Keep track of steps
