@@ -207,6 +207,84 @@
     @keyframes spin {
         to { transform: rotate(360deg); }
     }
+    
+    /* Profile URL input styles */
+    .profile-url-input {
+        margin-bottom: 12px;
+        position: relative;
+    }
+
+    .profile-url-input .remove-profile {
+        position: absolute;
+        right: 8px;
+        top: 37px;
+        cursor: pointer;
+        color: var(--text-secondary);
+    }
+
+    .form-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 16px;
+        margin-bottom: 16px;
+    }
+
+    .profile-count {
+        color: var(--text-secondary);
+        font-size: 14px;
+    }
+
+    .form-button.secondary {
+        background-color: transparent;
+        border: 1px solid var(--border);
+        color: var(--text-primary);
+    }
+
+    .form-button {
+        padding: 8px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 500;
+    }
+    
+    .brand-result-box {
+        background-color: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 16px;
+        position: relative;
+        margin-top: 10px;
+    }
+    
+    /* Progress bar styles */
+    .progress-container {
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+
+    .progress-bar-container {
+        width: 100%;
+        height: 10px;
+        background-color: var(--background-secondary);
+        border-radius: 5px;
+        overflow: hidden;
+        margin: 10px 0;
+    }
+
+    .progress-bar {
+        height: 100%;
+        background-color: var(--primary);
+        width: 0%;
+        transition: width 0.3s ease;
+    }
+
+    .progress-status {
+        font-size: 14px;
+        color: var(--text-secondary);
+        text-align: center;
+        margin-top: 5px;
+    }
 </style>
 {% endblock %}
 
@@ -221,7 +299,7 @@
     <div class="card-content">
         <div class="content-filters">
             <div class="brand-actions">
-                <button id="create-brand-btn" class="btn-create">Create New Brand</button>
+                <button id="create-brand-btn" class="btn-create">Create Brand Voice from Twitter Profiles</button>
             </div>
             <div class="search-box">
                 <input type="text" id="brand-search" placeholder="Search brands..." class="filter-select">
@@ -252,31 +330,41 @@
 <div id="create-brand-modal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h2>Create New Brand</h2>
+            <h2>Create Brand Voice from Twitter Profiles</h2>
             <span class="close" id="close-create-modal">&times;</span>
         </div>
-        
-        <form id="create-brand-form">
-            <div class="form-group">
-                <label for="brand-name">Brand Name</label>
-                <input type="text" id="brand-name" name="brand_name" class="form-control" required>
+        <div class="modal-body">
+            <p class="text-secondary">Enter up to 5 Twitter profile URLs to analyze and generate a brand voice.</p>
+            <form id="create-brand-form">
+                <div id="profile-url-container">
+                    <div class="form-group profile-url-input">
+                        <label for="twitter-url-1" class="form-label">Twitter Profile URL</label>
+                        <input type="url" id="twitter-url-1" name="twitter-url-1" class="form-control" placeholder="https://twitter.com/username">
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="form-button secondary" id="add-another-profile">+ Add Another Profile</button>
+                    <div class="profile-count">1/5 profiles</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="brand-name">Brand Name</label>
+                    <input type="text" id="brand-name" name="brand_name" class="form-control" required placeholder="Enter the name for your brand">
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancel-create">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="generate-brand-btn">Generate Brand Voice</button>
+                </div>
+            </form>
+            <div id="brand-generation-result" class="mt-lg" style="display: none;">
+                <h3>Generated Brand Voice</h3>
+                <div class="brand-result-box">
+                    <pre id="brand-result-content"></pre>
+                </div>
             </div>
-            
-            <div class="form-group">
-                <label for="brand-voice">Brand Voice</label>
-                <textarea id="brand-voice" name="brand_voice" class="form-control" required placeholder="Describe your brand's tone, style, and voice in detail..."></textarea>
-            </div>
-            
-            <div class="form-group">
-                <label for="sample-content">Sample Content (Optional)</label>
-                <textarea id="sample-content" name="sample_content" class="form-control" placeholder="Provide sample content that represents your brand's voice..."></textarea>
-            </div>
-            
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" id="cancel-create">Cancel</button>
-                <button type="submit" class="btn btn-primary">Create Brand</button>
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 
@@ -341,6 +429,9 @@
         const closeCreateModal = document.getElementById('close-create-modal');
         const cancelCreate = document.getElementById('cancel-create');
         const createBrandForm = document.getElementById('create-brand-form');
+        const addAnotherProfileBtn = document.getElementById('add-another-profile');
+        const profileContainer = document.getElementById('profile-url-container');
+        const profileCountText = document.querySelector('.profile-count');
         const brandTableBody = document.getElementById('brand-table-body');
         const viewBrandModal = document.getElementById('view-brand-modal');
         const closeViewModal = document.getElementById('close-view-modal');
@@ -355,6 +446,7 @@
         // Store brands data and brand to delete
         let brands = [];
         let brandToDelete = null;
+        let profileCount = 1;
         
         // Fetch brands from API
         function fetchBrands() {
@@ -543,14 +635,131 @@
                 });
         }
         
-        // Create new brand
+        // Add another profile URL input
+        addAnotherProfileBtn.addEventListener('click', function() {
+            if (profileCount < 5) {
+                profileCount++;
+                
+                const newInput = document.createElement('div');
+                newInput.className = 'form-group profile-url-input';
+                newInput.innerHTML = `
+                    <label for="twitter-url-${profileCount}" class="form-label">Twitter Profile URL</label>
+                    <div style="display: flex; align-items: center;">
+                        <input type="url" id="twitter-url-${profileCount}" name="twitter-url-${profileCount}" class="form-control" placeholder="https://twitter.com/username">
+                        <span class="remove-profile" data-id="${profileCount}">✕</span>
+                    </div>
+                `;
+                
+                profileContainer.appendChild(newInput);
+                updateProfileCount();
+                
+                // Add event listener to the remove button
+                const removeBtn = newInput.querySelector('.remove-profile');
+                removeBtn.addEventListener('click', function() {
+                    newInput.remove();
+                    profileCount--;
+                    updateProfileCount();
+                });
+            }
+        });
+        
+        // Update profile count and button state
+        function updateProfileCount() {
+            profileCountText.textContent = `${profileCount}/5 profiles`;
+            addAnotherProfileBtn.disabled = profileCount >= 5;
+        }
+        
+        // Create brand from Twitter profiles
         createBrandForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
+            // Get all Twitter profile URLs
             const formData = new FormData(createBrandForm);
+            const twitterUrls = [];
             
+            for (let i = 1; i <= 5; i++) {
+                const urlValue = formData.get(`twitter-url-${i}`);
+                if (urlValue && urlValue.trim() !== '') {
+                    twitterUrls.push(urlValue);
+                }
+            }
+            
+            if (twitterUrls.length === 0) {
+                showNotification('Please enter at least one Twitter profile URL', true);
+                return;
+            }
+            
+            const brandName = formData.get('brand_name');
+            if (!brandName || brandName.trim() === '') {
+                showNotification('Please enter a brand name', true);
+                return;
+            }
+            
+            console.log('Twitter URLs to analyze:', twitterUrls);
+            
+            // Show loading state
+            const submitBtn = document.getElementById('generate-brand-btn');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Processing...';
+            submitBtn.disabled = true;
+            
+            // Create progress tracking elements if they don't exist
+            let progressContainer = document.getElementById('brand-progress-container');
+            if (!progressContainer) {
+                // Create progress container
+                progressContainer = document.createElement('div');
+                progressContainer.id = 'brand-progress-container';
+                progressContainer.className = 'progress-container mt-lg';
+                progressContainer.innerHTML = `
+                    <h3>Analyzing Profiles</h3>
+                    <div class="progress-bar-container">
+                        <div id="brand-progress-bar" class="progress-bar"></div>
+                    </div>
+                    <div id="progress-status" class="progress-status">Initializing...</div>
+                `;
+                
+                // Add it before the result div
+                const resultDiv = document.getElementById('brand-generation-result');
+                resultDiv.parentNode.insertBefore(progressContainer, resultDiv);
+            }
+            
+            // For now, we'll just show a placeholder completion since the actual API functionality will be built later
+            setTimeout(() => {
+                progressContainer.style.display = 'block';
+                const progressBar = document.getElementById('brand-progress-bar');
+                const progressStatus = document.getElementById('progress-status');
+                
+                // Simulate progress
+                progressBar.style.width = '100%';
+                progressStatus.textContent = `Profiles analyzed successfully! Brand voice generated.`;
+                
+                // Reset form and close modal after delay
+                showNotification('Brand voice generation complete. This is a placeholder - actual functionality will be implemented later.');
+                
+                // Reset button
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+                
+                // Reset the form after a delay
+                setTimeout(() => {
+                    createBrandModal.style.display = 'none';
+                    createBrandForm.reset();
+                    profileCount = 1;
+                    
+                    // Clean up additional profile fields
+                    const additionalFields = document.querySelectorAll('.profile-url-input:not(:first-child)');
+                    additionalFields.forEach(field => field.remove());
+                    
+                    updateProfileCount();
+                    progressContainer.style.display = 'none';
+                }, 3000);
+            }, 2000);
+            
+            // The real implementation would use the formData to create a brand via API call
+            // This is a placeholder for the future implementation
+            /*
             showLoading();
-            fetch('/api/create-brand', {
+            fetch('/api/create-brand-from-twitter', {
                 method: 'POST',
                 body: formData
             })
@@ -576,6 +785,7 @@
                     console.error('Error creating brand:', error);
                     showNotification('Error creating brand', true);
                 });
+            */
         });
         
         // Search functionality
@@ -651,6 +861,12 @@
         createBrandBtn.addEventListener('click', () => {
             createBrandForm.reset();
             createBrandModal.style.display = 'block';
+            // Reset profile count and fields
+            profileCount = 1;
+            // Clean up additional profile fields
+            const additionalFields = document.querySelectorAll('.profile-url-input:not(:first-child)');
+            additionalFields.forEach(field => field.remove());
+            updateProfileCount();
         });
         
         closeCreateModal.addEventListener('click', () => {
