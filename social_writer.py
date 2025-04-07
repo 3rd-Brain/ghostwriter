@@ -1267,6 +1267,83 @@ def extractProfileTopTweets(profile_url: str) -> Dict:
     }
     
     print(f"API request payload: {json.dumps(payload, indent=2)}")
+
+def topTweetsToTemplate(profile_url: str) -> Dict:
+    """
+    Extract top tweets from a Twitter/X profile, convert them to templates, and upload to template database
+    
+    Args:
+        profile_url: URL of the Twitter/X profile (e.g., "https://x.com/elonmusk")
+        
+    Returns:
+        Dictionary containing the processing results
+    """
+    print(f"\n=== Debug: Processing Top Tweets to Templates ===")
+    print(f"Profile URL: {profile_url}")
+    
+    # Step 1: Call extractProfileTopTweets to get top tweets
+    tweets_data = extractProfileTopTweets(profile_url)
+    total_tweets = len(tweets_data)
+    processed_count = 0
+    failed_count = 0
+    uploaded_templates = []
+    
+    print(f"Retrieved {total_tweets} tweets to process")
+    
+    # Step 2 & 3: Process each tweet through the templatizer
+    for tweet in tweets_data:
+        try:
+            # Skip retweets
+            if tweet.get('isRetweet', False):
+                continue
+                
+            # Get the tweet text (prefer fullText if available)
+            tweet_text = tweet.get('fullText', '') or tweet.get('text', '')
+            if not tweet_text:
+                continue
+                
+            print(f"\n--- Processing Tweet ---")
+            print(f"Tweet ID: {tweet.get('id', 'Unknown')}")
+            print(f"Tweet text: {tweet_text[:100]}{'...' if len(tweet_text) > 100 else ''}")
+            
+            # Step 3: Convert tweet to template using Templatizer
+            template = Templatizer(tweet_text)
+            print(f"Generated template: {template[:100]}{'...' if len(template) > 100 else ''}")
+            
+            # Step 4: Upload template to database
+            upload_result = template_context_and_uploader(template, category="Short Form")
+            
+            # Store the results
+            template_id = upload_result.get('data', {}).get('documentId', 'Unknown')
+            uploaded_templates.append({
+                "original_tweet_id": tweet.get('id', 'Unknown'),
+                "original_tweet": tweet_text,
+                "template": template,
+                "template_id": template_id
+            })
+            
+            processed_count += 1
+            print(f"Template uploaded successfully with ID: {template_id}")
+            
+        except Exception as e:
+            failed_count += 1
+            print(f"Failed to process tweet: {str(e)}")
+    
+    print(f"\n=== Processing Summary ===")
+    print(f"Total tweets: {total_tweets}")
+    print(f"Successfully processed: {processed_count}")
+    print(f"Failed to process: {failed_count}")
+    print(f"=== Debug: Top Tweets to Templates Processing Complete ===\n")
+    
+    return {
+        "status": "success",
+        "profile_url": profile_url,
+        "total_tweets": total_tweets,
+        "processed_count": processed_count,
+        "failed_count": failed_count,
+        "templates": uploaded_templates
+    }
+
     
     try:
         response = requests.post(url, headers=headers, json=payload)
