@@ -284,6 +284,51 @@ document.addEventListener('DOMContentLoaded', function() {
         addAnotherProfileBtn.disabled = profileCount >= 10;
     }
     
+    // Function to show notification messages
+    function showNotification(message, isError = false) {
+        // Create notification element if it doesn't exist
+        let notification = document.getElementById('notification');
+        if (!notification) {
+            notification = document.createElement('div');
+            notification.id = 'notification';
+            notification.style.position = 'fixed';
+            notification.style.bottom = '20px';
+            notification.style.right = '20px';
+            notification.style.padding = '12px 20px';
+            notification.style.borderRadius = '8px';
+            notification.style.zIndex = '1000';
+            notification.style.maxWidth = '300px';
+            notification.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+            notification.style.transition = 'opacity 0.3s ease';
+            document.body.appendChild(notification);
+        }
+
+        // Set style based on error status
+        if (isError) {
+            notification.style.backgroundColor = '#ffd2d2';
+            notification.style.color = '#7d0000';
+            notification.style.border = '1px solid #ffb8b8';
+        } else {
+            notification.style.backgroundColor = '#d1f7c4';
+            notification.style.color = '#2a6b00';
+            notification.style.border = '1px solid #b8e986';
+        }
+
+        // Set message and show notification
+        notification.textContent = message;
+        notification.style.opacity = '1';
+
+        // Hide notification after 3 seconds
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }, 3000);
+    }
+
     // Form submission
     twitterProfilesForm.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -300,11 +345,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         if (twitterUrls.length === 0) {
-            alert('Please enter at least one Twitter profile URL');
+            showNotification('Please enter at least one Twitter profile URL', true);
             return;
         }
         
         console.log('Twitter URLs to analyze:', twitterUrls);
+        
+        // Show success notification
+        showNotification('Report generation started successfully');
         
         // TODO: Submit the Twitter URLs to the backend for processing
         // Implementation for the next phase:
