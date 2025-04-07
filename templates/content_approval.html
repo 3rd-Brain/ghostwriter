@@ -88,6 +88,31 @@
         min-width: 600px;
         white-space: pre-wrap;
         overflow: hidden;
+        position: relative; /* Added for overlay positioning */
+    }
+
+    .copy-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent overlay */
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+    }
+
+    .copy-overlay:hover {
+        opacity: 1;
+    }
+
+    .copy-tooltip {
+        color: white;
+        font-size: 14px;
     }
 
     .approval-actions {
@@ -186,7 +211,7 @@
                     <option value="published">Published</option>
                 </select>
             </div>
-            
+
             <div class="filter-group">
                 <label for="content-format-filter">Content Format:</label>
                 <select id="content-format-filter" class="filter-select">
@@ -322,7 +347,7 @@ function fetchContentData() {
                 const transformedData = responseData.posts.map(item => {
                     // Debug log to see actual field names
                     console.log("Sample data item:", item);
-                    
+
                     // Map the fields properly, handle both camelCase and snake_case names
                     return {
                         _id: item._id,
@@ -398,14 +423,19 @@ function renderContentTable(page) {
 
     currentPageData.forEach(item => {
         const row = document.createElement('tr');
-        
+
         // Ensure status is available and properly formatted
         const status = (item.status || item.Status || 'draft').toLowerCase();
         const displayStatus = status.charAt(0).toUpperCase() + status.slice(1);
 
         row.innerHTML = `
             <td><input type="checkbox" class="content-checkbox" data-id="${item._id}"></td>
-            <td class="first-draft-cell">${item.First_Draft || item.first_draft || ''}</td>
+            <td class="first-draft-cell" onclick="copyToClipboard(this)">
+                <div class="copy-overlay">
+                    <span class="copy-tooltip">Click to copy</span>
+                </div>
+                ${item.First_Draft || item.first_draft || ''}
+            </td>
             <td><span class="status-badge status-${status}">${displayStatus}</span></td>
             <td><button class="btn-small view-source" data-source="${encodeURIComponent(item.Source_Chunk || item.source_chunk || '')}">View</button></td>
             <td><button class="btn-small view-template" data-template="${encodeURIComponent(item.Template || item.template || '')}">View</button></td>
@@ -557,12 +587,12 @@ function approveSelected() {
 
     // Display loading notification
     showNotification(`Approving ${selectedItems.length} items...`);
-    
+
     // Track successful and failed operations
     let successCount = 0;
     let failCount = 0;
     let completedCount = 0;
-    
+
     // Process each selected item
     selectedItems.forEach(postId => {
         updatePostStatus(postId, "Approved")
@@ -578,7 +608,7 @@ function approveSelected() {
             })
             .finally(() => {
                 completedCount++;
-                
+
                 // When all operations complete, show result and refresh
                 if (completedCount === selectedItems.length) {
                     if (failCount > 0) {
@@ -601,12 +631,12 @@ function rejectSelected() {
 
     // Display loading notification
     showNotification(`Rejecting ${selectedItems.length} items...`);
-    
+
     // Track successful and failed operations
     let successCount = 0;
     let failCount = 0;
     let completedCount = 0;
-    
+
     // Process each selected item
     selectedItems.forEach(postId => {
         updatePostStatus(postId, "Rejected")
@@ -622,7 +652,7 @@ function rejectSelected() {
             })
             .finally(() => {
                 completedCount++;
-                
+
                 // When all operations complete, show result and refresh
                 if (completedCount === selectedItems.length) {
                     if (failCount > 0) {
@@ -645,12 +675,12 @@ function publishSelected() {
 
     // Display loading notification
     showNotification(`Publishing ${selectedItems.length} items...`);
-    
+
     // Track successful and failed operations
     let successCount = 0;
     let failCount = 0;
     let completedCount = 0;
-    
+
     // Process each selected item
     selectedItems.forEach(postId => {
         updatePostStatus(postId, "Published")
@@ -666,7 +696,7 @@ function publishSelected() {
             })
             .finally(() => {
                 completedCount++;
-                
+
                 // When all operations complete, show result and refresh
                 if (completedCount === selectedItems.length) {
                     if (failCount > 0) {
@@ -728,7 +758,7 @@ function filterContent() {
 
     // Filter the data based on selected filters
     let filteredData = [...allContentData];
-    
+
     // Filter by status if not "all"
     if (statusFilter !== 'all') {
         filteredData = filteredData.filter(item => {
@@ -736,7 +766,7 @@ function filterContent() {
             return itemStatus === statusFilter.toLowerCase();
         });
     }
-    
+
     // Filter by content format if not "all"
     if (contentFormatFilter !== 'all') {
         filteredData = filteredData.filter(item => {
@@ -744,18 +774,18 @@ function filterContent() {
             return itemFormat === contentFormatFilter;
         });
     }
-    
+
     // Filter by date range if not "all"
     if (dateFilter !== 'all') {
         const now = new Date();
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        
+
         filteredData = filteredData.filter(item => {
             const createdDateStr = item.Created_Time || item.created_at || item.created_time || '';
             if (!createdDateStr) return false;
-            
+
             const createdDate = new Date(createdDateStr);
-            
+
             switch(dateFilter) {
                 case 'today':
                     return createdDate >= today;
@@ -772,7 +802,7 @@ function filterContent() {
             }
         });
     }
-    
+
     // Render the filtered data
     renderFilteredData(filteredData);
 }
@@ -780,40 +810,45 @@ function filterContent() {
 function renderFilteredData(filteredData) {
     // Save the filtered data for pagination
     const filteredContent = [...filteredData];
-    
+
     // Reset pagination to first page
     currentPage = 1;
-    
+
     // Render the table with filtered data
     const tableBody = document.getElementById('approval-table-body');
     tableBody.innerHTML = '';
-    
+
     if (filteredContent.length === 0) {
         tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px;">No content matches the selected filters</td></tr>';
         document.getElementById('pagination-controls').style.display = 'none';
         return;
     }
-    
+
     // Set up pagination with the filtered data length
     setupPagination(filteredContent.length);
-    
+
     // Calculate start and end indices for the current page
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = Math.min(startIndex + itemsPerPage, filteredContent.length);
-    
+
     // Get data for the current page
     const currentPageData = filteredContent.slice(startIndex, endIndex);
-    
+
     currentPageData.forEach(item => {
         const row = document.createElement('tr');
-        
+
         // Ensure status is available and properly formatted
         const status = (item.status || item.Status || 'draft').toLowerCase();
         const displayStatus = status.charAt(0).toUpperCase() + status.slice(1);
 
         row.innerHTML = `
             <td><input type="checkbox" class="content-checkbox" data-id="${item._id}"></td>
-            <td class="first-draft-cell">${item.First_Draft || item.first_draft || ''}</td>
+            <td class="first-draft-cell" onclick="copyToClipboard(this)">
+                <div class="copy-overlay">
+                    <span class="copy-tooltip">Click to copy</span>
+                </div>
+                ${item.First_Draft || item.first_draft || ''}
+            </td>
             <td><span class="status-badge status-${status}">${displayStatus}</span></td>
             <td><button class="btn-small view-source" data-source="${encodeURIComponent(item.Source_Chunk || item.source_chunk || '')}">View</button></td>
             <td><button class="btn-small view-template" data-template="${encodeURIComponent(item.Template || item.template || '')}">View</button></td>
@@ -879,6 +914,24 @@ function showNotification(message, isError = false) {
     setTimeout(() => {
         notification.style.opacity = '0';
     }, 3000);
+}
+
+function copyToClipboard(element) {
+    const text = element.textContent.trim();
+    navigator.clipboard.writeText(text)
+        .then(() => {
+            element.classList.add('copied');
+            element.querySelector('.copy-tooltip').textContent = 'Copied!';
+            setTimeout(() => {
+                element.classList.remove('copied');
+                element.querySelector('.copy-tooltip').textContent = 'Click to copy';
+            }, 1500);
+        })
+        .catch(err => {
+            console.error('Failed to copy: ', err);
+            // Handle copy error, maybe show a notification
+            alert('Failed to copy. Please try again.');
+        });
 }
 </script>
 {% endblock %}
