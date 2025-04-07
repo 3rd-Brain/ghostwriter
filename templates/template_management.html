@@ -239,6 +239,35 @@
     gap: 10px;
     margin-top: 24px;
 }
+
+/* Progress bar styles */
+.progress-container {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.progress-bar-container {
+    width: 100%;
+    height: 10px;
+    background-color: var(--background-secondary);
+    border-radius: 5px;
+    overflow: hidden;
+    margin: 10px 0;
+}
+
+.progress-bar {
+    height: 100%;
+    background-color: var(--primary);
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.progress-status {
+    font-size: 14px;
+    color: var(--text-secondary);
+    text-align: center;
+    margin-top: 5px;
+}
 </style>
 
 <!-- Add JavaScript for modals and template management -->
@@ -414,41 +443,114 @@ document.addEventListener('DOMContentLoaded', function() {
         const originalText = submitBtn.textContent;
         submitBtn.textContent = 'Processing...';
         submitBtn.disabled = true;
-
-        // Make API call to backend
-        fetch('/api/templatizer', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ twitter_urls: twitterUrls })
-        })
-        .then(response => response.json())
-        .then(data => {
-            // Display result
-            document.getElementById('template-result-content').textContent = data.template || 'Templates will be available in your template library once processing is complete.';
-            document.getElementById('templatizer-result').style.display = 'block';
+        
+        // Create progress tracking elements if they don't exist
+        let progressContainer = document.getElementById('template-progress-container');
+        if (!progressContainer) {
+            // Create progress container
+            progressContainer = document.createElement('div');
+            progressContainer.id = 'template-progress-container';
+            progressContainer.className = 'progress-container mt-lg';
+            progressContainer.innerHTML = `
+                <h3>Processing Profiles</h3>
+                <div class="progress-bar-container">
+                    <div id="template-progress-bar" class="progress-bar"></div>
+                </div>
+                <div id="progress-status" class="progress-status">Initializing...</div>
+            `;
             
-            // Show success notification
-            showNotification("We're creating templates from the provided Twitter profiles. This process may take a few minutes, but we'll add them to your template library when they're ready!");
-
-            // Reset button
-            submitBtn.textContent = originalText;
-            submitBtn.disabled = false;
+            // Add it before the result div
+            const resultDiv = document.getElementById('templatizer-result');
+            resultDiv.parentNode.insertBefore(progressContainer, resultDiv);
+        }
+        
+        // Show progress container
+        progressContainer.style.display = 'block';
+        
+        // Reset progress bar
+        const progressBar = document.getElementById('template-progress-bar');
+        const progressStatus = document.getElementById('progress-status');
+        progressBar.style.width = '0%';
+        progressStatus.textContent = `Processing 0 of ${twitterUrls.length} profiles...`;
+        
+        // Track processed profiles
+        let processedCount = 0;
+        const totalProfiles = twitterUrls.length;
+        const processingResults = [];
+        
+        // Process each profile sequentially
+        const processNextProfile = (index) => {
+            if (index >= twitterUrls.length) {
+                // All profiles processed
+                progressBar.style.width = '100%';
+                progressStatus.textContent = `Completed processing ${processedCount} of ${totalProfiles} profiles!`;
+                
+                // Show success notification
+                showNotification("We've completed processing the Twitter profiles. Templates are being generated in the background and will be added to your template library soon!");
+                
+                // Display results summary
+                document.getElementById('template-result-content').textContent = 
+                    `Successfully processed ${processedCount} profiles:\n${processingResults.join('\n')}`;
+                document.getElementById('templatizer-result').style.display = 'block';
+                
+                // Reset button
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+                
+                // Close the modal after delay
+                setTimeout(() => {
+                    templatizerModal.style.display = 'none';
+                }, 5000);
+                
+                return;
+            }
             
-            // Close the modal after delay
-            setTimeout(() => {
-                templatizerModal.style.display = 'none';
-            }, 3000);
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showNotification('An error occurred while processing the Twitter profiles', true);
-
-            // Reset button
-            submitBtn.textContent = originalText;
-            submitBtn.disabled = false;
-        });
+            const profileUrl = twitterUrls[index];
+            progressStatus.textContent = `Processing profile ${index + 1} of ${totalProfiles}: ${profileUrl}`;
+            
+            // Make API call for this profile
+            fetch('/api/top-tweets-to-template', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ profile_url: profileUrl })
+            })
+            .then(response => response.json())
+            .then(data => {
+                processedCount++;
+                
+                // Update progress
+                const percentage = (processedCount / totalProfiles) * 100;
+                progressBar.style.width = `${percentage}%`;
+                progressStatus.textContent = `Processed ${processedCount} of ${totalProfiles} profiles...`;
+                
+                // Store result
+                const resultText = `${data.profile_url}: ${data.total_tweets} tweets queued for template generation`;
+                processingResults.push(resultText);
+                
+                // Process next profile
+                processNextProfile(index + 1);
+            })
+            .catch(error => {
+                console.error('Error processing profile:', profileUrl, error);
+                
+                // Update progress
+                processedCount++;
+                const percentage = (processedCount / totalProfiles) * 100;
+                progressBar.style.width = `${percentage}%`;
+                progressStatus.textContent = `Error with profile ${index + 1}. Processing ${processedCount} of ${totalProfiles}...`;
+                
+                // Store error result
+                processingResults.push(`${profileUrl}: Failed to process (${error.message})`);
+                
+                // Continue with next profile
+                processNextProfile(index + 1);
+            });
+        };
+        
+        // Start processing the first profile
+        processNextProfile(0);
     });
 
     // Handle template upload form submission
