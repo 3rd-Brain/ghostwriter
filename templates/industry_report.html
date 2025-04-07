@@ -286,23 +286,26 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Function to show notification messages
     function showNotification(message, isError = false) {
-        // Create notification element if it doesn't exist
-        let notification = document.getElementById('notification');
-        if (!notification) {
-            notification = document.createElement('div');
-            notification.id = 'notification';
-            notification.style.position = 'fixed';
-            notification.style.bottom = '20px';
-            notification.style.right = '20px';
-            notification.style.padding = '12px 20px';
-            notification.style.borderRadius = '8px';
-            notification.style.zIndex = '1000';
-            notification.style.maxWidth = '300px';
-            notification.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-            notification.style.transition = 'opacity 0.3s ease';
-            document.body.appendChild(notification);
+        // Always remove any existing notification first
+        const existingNotification = document.getElementById('notification');
+        if (existingNotification) {
+            existingNotification.remove();
         }
-
+        
+        // Create a fresh notification element
+        const notification = document.createElement('div');
+        notification.id = 'notification';
+        notification.style.position = 'fixed';
+        notification.style.bottom = '20px';
+        notification.style.right = '20px';
+        notification.style.padding = '12px 20px';
+        notification.style.borderRadius = '8px';
+        notification.style.zIndex = '1000';
+        notification.style.maxWidth = '300px';
+        notification.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+        notification.style.transition = 'opacity 0.3s ease';
+        notification.style.opacity = '0'; // Start with opacity 0
+        
         // Set style based on error status
         if (isError) {
             notification.style.backgroundColor = '#ffd2d2';
@@ -313,11 +316,17 @@ document.addEventListener('DOMContentLoaded', function() {
             notification.style.color = '#2a6b00';
             notification.style.border = '1px solid #b8e986';
         }
-
-        // Set message and show notification
+        
+        // Set message and add to DOM
         notification.textContent = message;
+        document.body.appendChild(notification);
+        
+        // Force a browser reflow before changing opacity
+        void notification.offsetWidth;
+        
+        // Now make it visible
         notification.style.opacity = '1';
-
+        
         // Hide notification after 3 seconds
         setTimeout(() => {
             notification.style.opacity = '0';
