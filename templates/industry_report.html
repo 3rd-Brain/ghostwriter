@@ -301,7 +301,7 @@ document.addEventListener('DOMContentLoaded', function() {
         notification.style.padding = '12px 20px';
         notification.style.borderRadius = '8px';
         notification.style.zIndex = '1000';
-        notification.style.maxWidth = '300px';
+        notification.style.maxWidth = isError ? '300px' : '450px'; // Wider for success messages
         notification.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
         notification.style.transition = 'opacity 0.3s ease';
         notification.style.opacity = '0'; // Start with opacity 0
@@ -327,7 +327,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // Now make it visible
         notification.style.opacity = '1';
         
-        // Hide notification after 3 seconds
+        // Hide notification after longer time for success messages, shorter for errors
+        const displayTime = isError ? 3000 : 6000; // 3 seconds for errors, 6 seconds for success
         setTimeout(() => {
             notification.style.opacity = '0';
             setTimeout(() => {
@@ -335,7 +336,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     notification.parentNode.removeChild(notification);
                 }
             }, 300);
-        }, 3000);
+        }, displayTime);
     }
 
     // Form submission
