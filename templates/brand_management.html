@@ -73,6 +73,12 @@
     .btn-create {
         background-color: var(--primary);
         color: white;
+        padding: 10px 16px;
+        height: 40px;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        border-radius: 8px;
     }
 
     .content-filters {
@@ -298,9 +304,7 @@
     </div>
     <div class="card-content">
         <div class="content-filters">
-            <div class="brand-actions">
-                <button id="create-brand-btn" class="btn-create">Create Brand Voice from Twitter Profiles</button>
-            </div>
+            <button id="create-brand-btn" class="btn-create">Create Brand Voice from Twitter Profiles</button>
             <div class="search-box">
                 <input type="text" id="brand-search" placeholder="Search brands..." class="filter-select">
             </div>
@@ -348,14 +352,9 @@
                     <div class="profile-count">1/5 profiles</div>
                 </div>
                 
-                <div class="form-group">
-                    <label for="brand-name">Brand Name</label>
-                    <input type="text" id="brand-name" name="brand_name" class="form-control" required placeholder="Enter the name for your brand">
-                </div>
-                
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" id="cancel-create">Cancel</button>
-                    <button type="submit" class="btn btn-primary" id="generate-brand-btn">Generate Brand Voice</button>
+                    <button type="button" class="form-button" id="cancel-create" style="padding: 12px 20px; border-radius: var(--radius-md); font-size: 16px; font-weight: 500; border: 1px solid var(--border);">Cancel</button>
+                    <button type="submit" class="form-button primary" id="generate-brand-btn" style="display: inline-block; background-color: var(--primary); color: white; padding: 12px 20px; border-radius: var(--radius-md); font-size: 16px; font-weight: 500;">Generate Brand Voice</button>
                 </div>
             </form>
             <div id="brand-generation-result" class="mt-lg" style="display: none;">
