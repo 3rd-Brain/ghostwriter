@@ -87,7 +87,7 @@ async def extract_top_tweets(request: ProfileURLRequest, user: dict = Depends(ch
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/top-tweets-to-template", tags=["Utility"])
+@router.post("/top-tweets-to-template", tags=["Brand Management"])
 async def top_tweets_to_template(request: ProfileURLRequest, background_tasks: BackgroundTasks, user: dict = Depends(check_api_key_or_jwt)):
     """
     **Convert top tweets from a Twitter/X profile into templates**
