@@ -115,6 +115,13 @@
         font-size: 14px;
     }
 
+    .first-draft-content {
+        white-space: pre-wrap; /* Preserve whitespace and line breaks */
+        margin: 0; /* Remove default margin */
+        padding: 0; /* Remove default padding */
+    }
+
+
     .approval-actions {
         display: flex;
         gap: 8px;
@@ -430,11 +437,11 @@ function renderContentTable(page) {
 
         row.innerHTML = `
             <td><input type="checkbox" class="content-checkbox" data-id="${item._id}"></td>
-            <td class="first-draft-cell" onclick="copyToClipboard(this)">
-                <div class="copy-overlay">
+            <td class="first-draft-cell">
+                <div class="copy-overlay" onclick="copyToClipboard(this.parentElement)">
                     <span class="copy-tooltip">Click to copy</span>
                 </div>
-                ${item.First_Draft || item.first_draft || ''}
+                <div class="first-draft-content">${item.First_Draft || item.first_draft || ''}</div>
             </td>
             <td><span class="status-badge status-${status}">${displayStatus}</span></td>
             <td><button class="btn-small view-source" data-source="${encodeURIComponent(item.Source_Chunk || item.source_chunk || '')}">View</button></td>
@@ -843,11 +850,11 @@ function renderFilteredData(filteredData) {
 
         row.innerHTML = `
             <td><input type="checkbox" class="content-checkbox" data-id="${item._id}"></td>
-            <td class="first-draft-cell" onclick="copyToClipboard(this)">
-                <div class="copy-overlay">
+            <td class="first-draft-cell">
+                <div class="copy-overlay" onclick="copyToClipboard(this.parentElement)">
                     <span class="copy-tooltip">Click to copy</span>
                 </div>
-                ${item.First_Draft || item.first_draft || ''}
+                <div class="first-draft-content">${item.First_Draft || item.first_draft || ''}</div>
             </td>
             <td><span class="status-badge status-${status}">${displayStatus}</span></td>
             <td><button class="btn-small view-source" data-source="${encodeURIComponent(item.Source_Chunk || item.source_chunk || '')}">View</button></td>
@@ -903,7 +910,7 @@ function showNotification(message, isError = false) {
     } else {
         notification.style.backgroundColor = '#d1f7c4';
         notification.style.color = '#2a6b00';
-        notification.style.border = '1px solid #b8e986';
+        notification.style.border = ''1px solid #b8e986';
     }
 
     // Set message and show notification
@@ -917,7 +924,7 @@ function showNotification(message, isError = false) {
 }
 
 function copyToClipboard(element) {
-    const text = element.textContent.trim();
+    const text = element.querySelector('.first-draft-content').textContent.trim();
     navigator.clipboard.writeText(text)
         .then(() => {
             element.classList.add('copied');
