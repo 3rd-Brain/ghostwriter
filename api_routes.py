@@ -3,6 +3,11 @@ from api_middleware import get_current_api_user, get_admin_api_user, check_api_k
 from schemas import SuccessResponse
 import os
 import requests
+from pydantic import BaseModel
+from social_writer import extractProfileTopTweets
+
+class ProfileURLRequest(BaseModel):
+    profile_url: str
 
 router = APIRouter(prefix="/api", tags=["API"])
 
@@ -45,6 +50,42 @@ async def flexible_auth_endpoint(user: dict = Depends(check_api_key_or_jwt)):
         "status": "success",
         "message": f"Authenticated as user {user.get('user_id')} using {auth_method}"
     }
+
+@router.post("/extract-top-tweets", tags=["Utility"])
+async def extract_top_tweets(request: ProfileURLRequest, user: dict = Depends(check_api_key_or_jwt)):
+    """
+    **Extract top tweets from a Twitter/X profile**
+    
+    This endpoint extracts top tweets from a Twitter/X profile by their engagement metrics.
+    
+    ## When to use
+    Use this endpoint when you need to:
+    * Analyze a Twitter/X user's best performing content
+    * Research content strategy for a Twitter/X profile
+    * Find popular tweets from specific accounts
+    
+    ## Required Input
+    * `profile_url`: A valid Twitter/X profile URL (e.g., "https://x.com/elonmusk")
+    
+    *This endpoint supports both JWT and API key authentication.*
+    """
+    try:
+        # Check for APIFY API token
+        if not os.environ.get("APIFY_API_TOKEN"):
+            raise HTTPException(status_code=500, detail="APIFY_API_TOKEN not configured in environment")
+        
+        # Call the extractProfileTopTweets function
+        result = extractProfileTopTweets(request.profile_url)
+        
+        # Return the results
+        return {
+            "status": "success",
+            "profile_url": request.profile_url,
+            "tweet_count": len(result),
+            "tweets": result
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/user/profile")
 async def get_user_profile(current_user: dict = Depends(get_current_api_user)):
