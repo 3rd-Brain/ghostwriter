@@ -4,7 +4,7 @@ from schemas import SuccessResponse
 import os
 import requests
 from pydantic import BaseModel
-from social_writer import extractProfileTopTweets
+from social_writer import extractProfileTopTweets, topTweetsToTemplate
 
 class ProfileURLRequest(BaseModel):
     profile_url: str
@@ -84,6 +84,39 @@ async def extract_top_tweets(request: ProfileURLRequest, user: dict = Depends(ch
             "tweet_count": len(result),
             "tweets": result
         }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/top-tweets-to-template", tags=["Utility"])
+async def top_tweets_to_template(request: ProfileURLRequest, user: dict = Depends(check_api_key_or_jwt)):
+    """
+    **Convert top tweets from a Twitter/X profile into templates**
+    
+    This endpoint extracts top tweets from a Twitter/X profile, converts them to templates,
+    and uploads them to the template database.
+    
+    ## When to use
+    Use this endpoint when you need to:
+    * Learn from high-performing content on Twitter/X
+    * Generate templates based on successful tweets
+    * Build a library of templates from specific content creators
+    * Analyze content patterns from influential accounts
+    
+    ## Required Input
+    * `profile_url`: A valid Twitter/X profile URL (e.g., "https://x.com/elonmusk")
+    
+    *This endpoint supports both JWT and API key authentication.*
+    """
+    try:
+        # Check for APIFY API token
+        if not os.environ.get("APIFY_API_TOKEN"):
+            raise HTTPException(status_code=500, detail="APIFY_API_TOKEN not configured in environment")
+        
+        # Call the topTweetsToTemplate function
+        result = topTweetsToTemplate(request.profile_url)
+        
+        # Return the results
+        return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
