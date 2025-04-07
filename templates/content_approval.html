@@ -115,10 +115,11 @@
         font-size: 14px;
     }
 
-    .first-draft-container {
-        padding: 12px 16px;
+    .first-draft-content-wrapper {
+        padding: 12px 16px; /* Added padding to the wrapper */
         width: 100%;
         height: 100%;
+        position: relative; /* Ensures overlay is correctly positioned */
     }
 
     .first-draft-content {
@@ -444,10 +445,10 @@ function renderContentTable(page) {
         row.innerHTML = `
             <td><input type="checkbox" class="content-checkbox" data-id="${item._id}"></td>
             <td class="first-draft-cell">
-                <div class="copy-overlay" onclick="copyToClipboard(this.parentElement)">
-                    <span class="copy-tooltip">Click to copy</span>
-                </div>
-                <div class="first-draft-container">
+                <div class="first-draft-content-wrapper">
+                    <div class="copy-overlay" onclick="copyToClipboard(this.parentElement.parentElement)">
+                        <span class="copy-tooltip">Click to copy</span>
+                    </div>
                     <div class="first-draft-content">${item.First_Draft || item.first_draft || ''}</div>
                 </div>
             </td>
@@ -859,10 +860,10 @@ function renderFilteredData(filteredData) {
         row.innerHTML = `
             <td><input type="checkbox" class="content-checkbox" data-id="${item._id}"></td>
             <td class="first-draft-cell">
-                <div class="copy-overlay" onclick="copyToClipboard(this.parentElement)">
-                    <span class="copy-tooltip">Click to copy</span>
-                </div>
-                <div class="first-draft-container">
+                <div class="first-draft-content-wrapper">
+                    <div class="copy-overlay" onclick="copyToClipboard(this.parentElement.parentElement)">
+                        <span class="copy-tooltip">Click to copy</span>
+                    </div>
                     <div class="first-draft-content">${item.First_Draft || item.first_draft || ''}</div>
                 </div>
             </td>
