@@ -1222,6 +1222,67 @@ def delete_user_account(identifier: str, delete_by: str = "username") -> dict:
     response.raise_for_status()
     return response.json()
 
+def extractProfileTopTweets(profile_url: str) -> Dict:
+    """
+    Extract top tweets from a Twitter/X profile
+    
+    Args:
+        profile_url: URL of the Twitter/X profile (e.g., "https://x.com/elonmusk")
+        
+    Returns:
+        Dictionary containing the top tweets from the profile
+    """
+    print(f"\n=== Debug: Extracting Top Tweets ===")
+    print(f"Profile URL: {profile_url}")
+    
+    # Check for API token
+    APIFY_API_TOKEN = os.environ.get("APIFY_API_TOKEN")
+    if not APIFY_API_TOKEN:
+        raise Exception("APIFY_API_TOKEN not configured in environment")
+    
+    # Extract handle from URL
+    import re
+    match = re.search(r"(twitter|x)\.com/([^/\?]+)", profile_url)
+    if not match:
+        raise Exception(f"Invalid Twitter/X profile URL: {profile_url}")
+    
+    handle = match.group(2)
+    print(f"Extracted handle: {handle}")
+    
+    # Prepare API request
+    url = "https://api.apify.com/v2/actor-tasks/N9ut2oKijxopfVt4Y/run-sync-get-dataset-items"
+    
+    headers = {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": f"Bearer {APIFY_API_TOKEN}"
+    }
+    
+    payload = {
+        "maxItems": 100,
+        "searchTerms": [
+            f"from:{handle} min_faves:50"
+        ],
+        "sort": "Top"
+    }
+    
+    print(f"API request payload: {json.dumps(payload, indent=2)}")
+    
+    try:
+        response = requests.post(url, headers=headers, json=payload)
+        print(f"API response status: {response.status_code}")
+        
+        response.raise_for_status()
+        result = response.json()
+        
+        print(f"Retrieved {len(result)} tweets")
+        print("=== Debug: Top Tweets Extraction Complete ===\n")
+        
+        return result
+    except requests.exceptions.RequestException as e:
+        print(f"API request failed: {str(e)}")
+        raise Exception(f"Failed to extract top tweets: {str(e)}")
+
 
 def template_search(text_query: str, template_count: int = 5, db_to_access: str = "sys", category: str = "Short Form") -> Dict:
     """
