@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from api_middleware import get_current_api_user, get_admin_api_user, check_api_key_or_jwt
 from schemas import SuccessResponse
 import os
@@ -88,7 +88,7 @@ async def extract_top_tweets(request: ProfileURLRequest, user: dict = Depends(ch
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/top-tweets-to-template", tags=["Utility"])
-async def top_tweets_to_template(request: ProfileURLRequest, user: dict = Depends(check_api_key_or_jwt)):
+async def top_tweets_to_template(request: ProfileURLRequest, background_tasks: BackgroundTasks, user: dict = Depends(check_api_key_or_jwt)):
     """
     **Convert top tweets from a Twitter/X profile into templates**
     
@@ -106,17 +106,27 @@ async def top_tweets_to_template(request: ProfileURLRequest, user: dict = Depend
     * `profile_url`: A valid Twitter/X profile URL (e.g., "https://x.com/elonmusk")
     
     *This endpoint supports both JWT and API key authentication.*
+    *The processing happens in the background for a better user experience.*
     """
     try:
         # Check for APIFY API token
         if not os.environ.get("APIFY_API_TOKEN"):
             raise HTTPException(status_code=500, detail="APIFY_API_TOKEN not configured in environment")
         
-        # Call the topTweetsToTemplate function
-        result = topTweetsToTemplate(request.profile_url)
+        # First, extract top tweets
+        tweets_data = extractProfileTopTweets(request.profile_url)
+        total_tweets = len(tweets_data)
         
-        # Return the results
-        return result
+        # Add the template generation task to background
+        background_tasks.add_task(topTweetsToTemplate, request.profile_url)
+        
+        # Return immediate success response
+        return {
+            "status": "success",
+            "message": f"Processing {total_tweets} tweets in the background. Template generation has started.",
+            "profile_url": request.profile_url,
+            "total_tweets": total_tweets
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
