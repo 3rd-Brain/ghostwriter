@@ -1,0 +1,83 @@
+{
+  "status": String,
+  "profile_url": String,
+  "tweet_count": Number,
+  "tweets": [
+    {
+      "type": String,
+      "id": String,
+      "url": String,
+      "twitterUrl": String,
+      "text": String,
+      "fullText": String,
+      "source": String,
+      "retweetCount": Number,
+      "replyCount": Number,
+      "likeCount": Number,
+      "quoteCount": Number,
+      "viewCount": Number,
+      "createdAt": String,
+      "lang": String,
+      "bookmarkCount": Number,
+      "isReply": Boolean,
+      "conversationId": String,
+      "possiblySensitive": Boolean,
+      "isPinned": Boolean,
+      "author": {
+        "type": String,
+        "userName": String,
+        "url": String,
+        "twitterUrl": String,
+        "id": String,
+        "name": String,
+        "isVerified": Boolean,
+        "isBlueVerified": Boolean,
+        "profilePicture": String,
+        "coverPicture": String,
+        "description": String,
+        "location": String,
+        "followers": Number,
+        "following": Number,
+        "status": String,
+        "canDm": Boolean,
+        "canMediaTag": Boolean,
+        "createdAt": String,
+        "entities": {
+          "description": {
+            "urls": Array
+          },
+          "url": {
+            "urls": Array of Objects containing display_url, expanded_url, url, indices
+          }
+        },
+        "fastFollowersCount": Number,
+        "favouritesCount": Number,
+        "hasCustomTimelines": Boolean,
+        "isTranslator": Boolean,
+        "mediaCount": Number,
+        "statusesCount": Number,
+        "withheldInCountries": Array,
+        "affiliatesHighlightedLabel": Object,
+        "possiblySensitive": Boolean,
+        "pinnedTweetIds": Array of Strings
+      },
+      "extendedEntities": {
+        "media": Array of Media Objects containing display_url, expanded_url, media information, etc.
+      },
+      "card": Object,
+      "place": Object,
+      "entities": {
+        "hashtags": Array,
+        "media": Array of Media Objects,
+        "symbols": Array,
+        "timestamps": Array,
+        "urls": Array,
+        "user_mentions": Array
+      },
+      "isRetweet": Boolean,
+      "isQuote": Boolean,
+      "media": Array of Strings (URLs),
+      "isConversationControlled": Boolean
+    }
+  ]
+}
