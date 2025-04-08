@@ -511,15 +511,46 @@ def search_templates_in_db(api_endpoint: str, api_token: str, vector: List[float
         "Content-Type": "application/json"
     }
 
-    payload = {
-        "find": {
-            "sort": {"$vector": vector},
-            "filter": {"category": category},
-            "options": {
-                "limit": count
+    # Check if we're searching in user templates, which needs user_id filter
+    if "user_content_keyspace/user_templates" in db_path:
+        # Get the current user's ID from environment
+        user_id = os.environ.get("CURRENT_USER_ID")
+        if user_id:
+            # Use $and to combine category and user_id filters
+            payload = {
+                "find": {
+                    "sort": {"$vector": vector},
+                    "filter": {"$and": [
+                        {"category": category},
+                        {"user_id": user_id}
+                    ]},
+                    "options": {
+                        "limit": count
+                    }
+                }
+            }
+        else:
+            # Fallback to just category filter if no user_id is available
+            payload = {
+                "find": {
+                    "sort": {"$vector": vector},
+                    "filter": {"category": category},
+                    "options": {
+                        "limit": count
+                    }
+                }
+            }
+    else:
+        # For system templates, just filter by category
+        payload = {
+            "find": {
+                "sort": {"$vector": vector},
+                "filter": {"category": category},
+                "options": {
+                    "limit": count
+                }
             }
         }
-    }
 
     try:
         response = requests.post(url, headers=headers, json=payload)
