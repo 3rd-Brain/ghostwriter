@@ -1527,7 +1527,7 @@ Format the output as a structured guide with clear sections and specific example
             messages=[
                 {
                     "role": "user", 
-                    "content": f"Here is a collection of social media posts from the account. Please analyze them and create a brand voice guide:\n\n{combined_content}"
+                    "content": f"Here is a collection of social media posts from the account: {brand_name}. Please analyze them and create a brand voice guide:\n\n{combined_content}"
                 }
             ],
             max_tokens=4000
