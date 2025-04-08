@@ -504,10 +504,10 @@
                 const sampleText = document.createElement('div');
                 sampleText.className = 'truncate-text';
                 
-                // Format sample content for the table view (first tweet only)
+                // Display sample content for the table view (first tweet only)
                 if (brand.sample_content) {
                     const firstTweet = brand.sample_content.split(/\n+/)[0];
-                    sampleText.textContent = firstTweet ? `Tweet 1: ${firstTweet.trim()}` : 'No sample content provided';
+                    sampleText.textContent = firstTweet ? firstTweet.trim() : 'No sample content provided';
                 } else {
                     sampleText.textContent = 'No sample content provided';
                 }
@@ -579,9 +579,9 @@
                     const tweets = brand.sample_content.split(/\n+/);
                     let formattedContent = '';
                     
-                    tweets.forEach((tweet, index) => {
+                    tweets.forEach((tweet) => {
                         if (tweet.trim()) {
-                            formattedContent += `<p><strong>Tweet ${index + 1}:</strong> ${tweet.trim()}</p>`;
+                            formattedContent += `<p>${tweet.trim()}</p>`;
                         }
                     });
                     
