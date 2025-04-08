@@ -130,6 +130,58 @@ async def top_tweets_to_template(request: ProfileURLRequest, background_tasks: B
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
+class CreateBrandRequest(BaseModel):
+    profile_url: str
+    brand_name: str = None
+
+@router.post("/create-brand-from-twitter", tags=["Brand Management"])
+async def create_brand_from_twitter(request: CreateBrandRequest, user: dict = Depends(check_api_key_or_jwt)):
+    """
+    **Create a brand voice from a Twitter/X profile**
+    
+    This endpoint extracts top tweets from a Twitter/X profile, analyzes them,
+    and generates a comprehensive brand voice guide.
+    
+    ## When to use
+    Use this endpoint when you need to:
+    * Generate a brand voice based on an existing Twitter/X personality
+    * Create writing guidelines from social media content patterns
+    * Analyze the communication style of a specific account
+    
+    ## Required Input
+    * `profile_url`: A valid Twitter/X profile URL (e.g., "https://x.com/elonmusk")
+    * `brand_name`: (Optional) Custom name for the brand
+    
+    *This endpoint supports both JWT and API key authentication.*
+    """
+    try:
+        # Check for APIFY API token
+        if not os.environ.get("APIFY_API_TOKEN"):
+            raise HTTPException(status_code=500, detail="APIFY_API_TOKEN not configured in environment")
+        
+        # Check for ANTHROPIC_API_KEY
+        if not os.environ.get("ANTHROPIC_API_KEY"):
+            raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY not configured in environment")
+        
+        # Set the current user ID in environment
+        os.environ["CURRENT_USER_ID"] = user.get("user_id")
+        
+        # Call the createBrandFromAccount function
+        from social_writer import createBrandFromAccount
+        result = createBrandFromAccount(
+            profile_url=request.profile_url,
+            brand_name=request.brand_name
+        )
+        
+        if result.get("status") == "error":
+            raise HTTPException(status_code=500, detail=result.get("message"))
+            
+        return result
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.get("/user/profile")
 async def get_user_profile(current_user: dict = Depends(get_current_api_user)):
     """Retrieves the user's profile information, including Twitter connection status."""
