@@ -377,12 +377,12 @@
         <div id="brand-details">
             <div class="form-group">
                 <label>Brand Voice</label>
-                <div id="view-brand-voice" class="form-control" style="min-height: 100px; overflow-y: auto;"></div>
+                <div id="view-brand-voice" class="form-control" style="min-height: 200px; overflow-y: auto; white-space: normal; line-height: 1.5;"></div>
             </div>
 
             <div class="form-group">
                 <label>Sample Content</label>
-                <div id="view-sample-content" class="form-control" style="min-height: 100px; overflow-y: auto;">
+                <div id="view-sample-content" class="form-control" style="min-height: 150px; overflow-y: auto; white-space: normal; line-height: 1.5;">
                     <em>No sample content provided</em>
                 </div>
             </div>
@@ -495,7 +495,7 @@
                 const voiceCell = document.createElement('td');
                 const voiceText = document.createElement('div');
                 voiceText.className = 'truncate-text';
-                voiceText.textContent = brand.brand_voice || 'No brand voice provided';
+                voiceText.textContent = brand.brand_voice ? brand.brand_voice.replace(/\n/g, ' ').trim() : 'No brand voice provided';
                 voiceCell.appendChild(voiceText);
                 row.appendChild(voiceCell);
 
@@ -503,7 +503,15 @@
                 const sampleCell = document.createElement('td');
                 const sampleText = document.createElement('div');
                 sampleText.className = 'truncate-text';
-                sampleText.textContent = brand.sample_content || 'No sample content provided';
+                
+                // Format sample content for the table view (first tweet only)
+                if (brand.sample_content) {
+                    const firstTweet = brand.sample_content.split(/\n+/)[0];
+                    sampleText.textContent = firstTweet ? `Tweet 1: ${firstTweet.trim()}` : 'No sample content provided';
+                } else {
+                    sampleText.textContent = 'No sample content provided';
+                }
+                
                 sampleCell.appendChild(sampleText);
                 row.appendChild(sampleCell);
 
@@ -551,11 +559,33 @@
 
             if (brand) {
                 document.getElementById('view-brand-name').textContent = brand.brand_name;
-                document.getElementById('view-brand-voice').textContent = brand.brand_voice || 'No brand voice provided';
+                
+                // Format brand voice with line breaks
+                const brandVoiceEl = document.getElementById('view-brand-voice');
+                if (brand.brand_voice) {
+                    // Replace markdown headers with bold text and preserve line breaks
+                    const formattedVoice = brand.brand_voice
+                        .replace(/\n/g, '<br>')
+                        .replace(/#{1,6}\s+(.*?)(?:<br>|$)/g, '<strong>$1</strong><br>');
+                    brandVoiceEl.innerHTML = formattedVoice;
+                } else {
+                    brandVoiceEl.innerHTML = '<em>No brand voice provided</em>';
+                }
 
+                // Format sample content with line breaks
                 const sampleContentEl = document.getElementById('view-sample-content');
                 if (brand.sample_content && brand.sample_content.trim()) {
-                    sampleContentEl.textContent = brand.sample_content;
+                    // Split content by newlines and format each tweet
+                    const tweets = brand.sample_content.split(/\n+/);
+                    let formattedContent = '';
+                    
+                    tweets.forEach((tweet, index) => {
+                        if (tweet.trim()) {
+                            formattedContent += `<p><strong>Tweet ${index + 1}:</strong> ${tweet.trim()}</p>`;
+                        }
+                    });
+                    
+                    sampleContentEl.innerHTML = formattedContent;
                 } else {
                     sampleContentEl.innerHTML = '<em>No sample content provided</em>';
                 }
