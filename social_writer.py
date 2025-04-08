@@ -1142,149 +1142,6 @@ def simple_repurpose(social_post: str, brand: str, repurpose_count: int = 5, wor
     brand_voice_result = get_client_brand_voice(brand, user_id)
     brand_voice = brand_voice_result["brand_voice"]
 
-def createBrandFromAccount(profile_url: str, brand_name: str = None) -> Dict:
-    """
-    Create a brand voice from a Twitter/X account
-    
-    Args:
-        profile_url: URL of the Twitter/X profile (e.g., "https://x.com/elonmusk")
-        brand_name: Optional name for the brand (if not provided, will extract from username)
-        
-    Returns:
-        Dictionary containing the brand creation results
-    """
-    print(f"\n=== Debug: Creating Brand Voice from Twitter Profile ===")
-    print(f"Profile URL: {profile_url}")
-    
-    try:
-        # Step 1: Extract top tweets from the account
-        tweets_data = extractProfileTopTweets(profile_url)
-        print(f"Retrieved {len(tweets_data)} tweets")
-        
-        # Extract handle from URL if brand name not provided
-        if not brand_name:
-            import re
-            match = re.search(r"(twitter|x)\.com/([^/\?]+)", profile_url)
-            if match:
-                brand_name = match.group(2)
-                print(f"Using brand name from profile: {brand_name}")
-            else:
-                brand_name = "Brand_" + str(uuid.uuid4())[:8]
-                print(f"Using generated brand name: {brand_name}")
-        
-        # Step 2: Create a long string of content from up to 50 tweets
-        tweet_content = []
-        for tweet in tweets_data[:50]:
-            # Skip retweets
-            if tweet.get('isRetweet', False):
-                continue
-                
-            # Get the tweet text (prefer fullText if available)
-            tweet_text = tweet.get('fullText', '') or tweet.get('text', '')
-            if tweet_text:
-                tweet_content.append(tweet_text)
-        
-        # Combine tweets into a single content string
-        combined_content = "\n\n".join(tweet_content)
-        print(f"Combined {len(tweet_content)} tweets into content string of length: {len(combined_content)}")
-        
-        # Step 3: Generate brand voice using Claude
-        print("Generating brand voice with Claude...")
-        
-        response = client.messages.create(
-            model="claude-3-haiku-20240307",
-            system="""You are a brand voice analyst. Your task is to analyze a collection of social media posts and create a comprehensive brand voice guide.
-
-The brand voice guide should include:
-1. Overall tone and personality traits
-2. Writing style characteristics and patterns
-3. Key messaging themes and topics
-4. Vocabulary preferences and distinctive phrases
-5. Content structure preferences
-6. Audience engagement style
-7. Specific do's and don'ts for writing in this voice
-
-Your output should be detailed and specific enough that another writer could effectively emulate this voice.
-Format the output as a structured guide with clear sections and specific examples taken from the source content.""",
-            messages=[
-                {
-                    "role": "user", 
-                    "content": f"Here is a collection of social media posts from the account. Please analyze them and create a brand voice guide:\n\n{combined_content}"
-                }
-            ],
-            max_tokens=4000
-        )
-        
-        brand_voice = response.content[0].text
-        print(f"Brand voice generated successfully: {len(brand_voice)} characters")
-        
-        # Step 4: Upload to brands database
-        # Get the current user's ID from environment
-        user_id = os.environ.get("CURRENT_USER_ID")
-        if not user_id:
-            raise Exception("CURRENT_USER_ID not configured in environment")
-        
-        # Configure AstraDB connection
-        ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
-        ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
-        
-        if not ASTRA_DB_API_ENDPOINT:
-            raise Exception("ASTRA_DB_API_ENDPOINT not configured")
-        if not ASTRA_DB_APPLICATION_TOKEN:
-            raise Exception("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
-        
-        # Generate a unique ID for the brand
-        brand_id = str(uuid.uuid4())
-        
-        # Create document for AstraDB
-        document = {
-            "_id": str(uuid.uuid4()),
-            "brand_id": brand_id,
-            "user_id": user_id,
-            "brand_name": brand_name,
-            "brand_voice": brand_voice,
-            "sample_content": combined_content[:500],  # Store a sample of the content
-            "created_at": datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"),
-            "updated_at": datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"),
-            "source_type": "twitter",
-            "source_url": profile_url
-        }
-        
-        # Upload to AstraDB
-        url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/brands"
-        
-        headers = {
-            "Token": ASTRA_DB_APPLICATION_TOKEN,
-            "Content-Type": "application/json"
-        }
-        
-        payload = {
-            "insertOne": {
-                "document": document
-            }
-        }
-        
-        print(f"Uploading brand to database...")
-        response = requests.post(url, headers=headers, json=payload)
-        response.raise_for_status()
-        result = response.json()
-        
-        print(f"Brand '{brand_name}' created successfully with ID: {brand_id}")
-        return {
-            "status": "success",
-            "brand_id": brand_id,
-            "brand_name": brand_name,
-            "message": f"Brand voice generated successfully from {len(tweet_content)} tweets"
-        }
-        
-    except Exception as e:
-        print(f"Error creating brand from Twitter profile: {str(e)}")
-        return {
-            "status": "error",
-            "message": f"Failed to create brand voice: {str(e)}"
-        }
-
-
     # Step 3: Generate content for each template
     generated_results = []
 
@@ -1602,3 +1459,145 @@ def topTweetsToTemplate(profile_url: str) -> Dict:
         "failed_count": failed_count,
         "templates": uploaded_templates
     }
+
+def createBrandFromAccount(profile_url: str, brand_name: str = None) -> Dict:
+    """
+    Create a brand voice from a Twitter/X account
+
+    Args:
+        profile_url: URL of the Twitter/X profile (e.g., "https://x.com/elonmusk")
+        brand_name: Optional name for the brand (if not provided, will extract from username)
+
+    Returns:
+        Dictionary containing the brand creation results
+    """
+    print(f"\n=== Debug: Creating Brand Voice from Twitter Profile ===")
+    print(f"Profile URL: {profile_url}")
+
+    try:
+        # Step 1: Extract top tweets from the account
+        tweets_data = extractProfileTopTweets(profile_url)
+        print(f"Retrieved {len(tweets_data)} tweets")
+
+        # Extract handle from URL if brand name not provided
+        if not brand_name:
+            import re
+            match = re.search(r"(twitter|x)\.com/([^/\?]+)", profile_url)
+            if match:
+                brand_name = match.group(2)
+                print(f"Using brand name from profile: {brand_name}")
+            else:
+                brand_name = "Brand_" + str(uuid.uuid4())[:8]
+                print(f"Using generated brand name: {brand_name}")
+
+        # Step 2: Create a long string of content from up to 50 tweets
+        tweet_content = []
+        for tweet in tweets_data[:50]:
+            # Skip retweets
+            if tweet.get('isRetweet', False):
+                continue
+
+            # Get the tweet text (prefer fullText if available)
+            tweet_text = tweet.get('fullText', '') or tweet.get('text', '')
+            if tweet_text:
+                tweet_content.append(tweet_text)
+
+        # Combine tweets into a single content string
+        combined_content = "\n\n".join(tweet_content)
+        print(f"Combined {len(tweet_content)} tweets into content string of length: {len(combined_content)}")
+
+        # Step 3: Generate brand voice using Claude
+        print("Generating brand voice with Claude...")
+
+        response = client.messages.create(
+            model="claude-3-7-sonnet-latest",
+            system="""You are a brand voice analyst. Your task is to analyze a collection of social media posts and create a comprehensive brand voice guide.
+
+The brand voice guide should include:
+1. Overall tone and personality traits
+2. Writing style characteristics and patterns
+3. Key messaging themes and topics
+4. Vocabulary preferences and distinctive phrases
+5. Content structure preferences
+6. Audience engagement style
+7. Specific do's and don'ts for writing in this voice
+
+Your output should be detailed and specific enough that another writer could effectively emulate this voice.
+Format the output as a structured guide with clear sections and specific examples taken from the source content.""",
+            messages=[
+                {
+                    "role": "user", 
+                    "content": f"Here is a collection of social media posts from the account. Please analyze them and create a brand voice guide:\n\n{combined_content}"
+                }
+            ],
+            max_tokens=4000
+        )
+
+        brand_voice = response.content[0].text
+        print(f"Brand voice generated successfully: {len(brand_voice)} characters")
+
+        # Step 4: Upload to brands database
+        # Get the current user's ID from environment
+        user_id = os.environ.get("CURRENT_USER_ID")
+        if not user_id:
+            raise Exception("CURRENT_USER_ID not configured in environment")
+
+        # Configure AstraDB connection
+        ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+        ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+
+        if not ASTRA_DB_API_ENDPOINT:
+            raise Exception("ASTRA_DB_API_ENDPOINT not configured")
+        if not ASTRA_DB_APPLICATION_TOKEN:
+            raise Exception("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
+
+        # Generate a unique ID for the brand
+        brand_id = str(uuid.uuid4())
+
+        # Create document for AstraDB
+        document = {
+            "_id": str(uuid.uuid4()),
+            "brand_id": brand_id,
+            "user_id": user_id,
+            "brand_name": brand_name,
+            "brand_voice": brand_voice,
+            "sample_content": combined_content[:500],  # Store a sample of the content
+            "created_at": datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"),
+            "updated_at": datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"),
+            "source_type": "twitter",
+            "source_url": profile_url
+        }
+
+        # Upload to AstraDB
+        url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/brands"
+
+        headers = {
+            "Token": ASTRA_DB_APPLICATION_TOKEN,
+            "Content-Type": "application/json"
+        }
+
+        payload = {
+            "insertOne": {
+                "document": document
+            }
+        }
+
+        print(f"Uploading brand to database...")
+        response = requests.post(url, headers=headers, json=payload)
+        response.raise_for_status()
+        result = response.json()
+
+        print(f"Brand '{brand_name}' created successfully with ID: {brand_id}")
+        return {
+            "status": "success",
+            "brand_id": brand_id,
+            "brand_name": brand_name,
+            "message": f"Brand voice generated successfully from {len(tweet_content)} tweets"
+        }
+
+    except Exception as e:
+        print(f"Error creating brand from Twitter profile: {str(e)}")
+        return {
+            "status": "error",
+            "message": f"Failed to create brand voice: {str(e)}"
+        }
