@@ -1490,9 +1490,9 @@ def createBrandFromAccount(profile_url: str, brand_name: str = None) -> Dict:
                 brand_name = "Brand_" + str(uuid.uuid4())[:8]
                 print(f"Using generated brand name: {brand_name}")
 
-        # Step 2: Create a long string of content from up to 50 tweets
+        # Step 2: Create a long string of content from up to 50 tweets with proper formatting
         tweet_content = []
-        for tweet in tweets_data[:50]:
+        for index, tweet in enumerate(tweets_data[:50], 1):
             # Skip retweets
             if tweet.get('isRetweet', False):
                 continue
@@ -1500,7 +1500,9 @@ def createBrandFromAccount(profile_url: str, brand_name: str = None) -> Dict:
             # Get the tweet text (prefer fullText if available)
             tweet_text = tweet.get('fullText', '') or tweet.get('text', '')
             if tweet_text:
-                tweet_content.append(tweet_text)
+                # Format each tweet with a number
+                formatted_tweet = f"Tweet #{index}: {tweet_text}"
+                tweet_content.append(formatted_tweet)
 
         # Combine tweets into a single content string
         combined_content = "\n\n".join(tweet_content)
@@ -1561,7 +1563,7 @@ Format the output as a structured guide with clear sections and specific example
             "user_id": user_id,
             "brand_name": brand_name,
             "brand_voice": brand_voice,
-            "sample_content": combined_content[:500],  # Store a sample of the content
+            "sample_content": combined_content[:500],  # Store a sample of the formatted content
             "created_at": datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"),
             "updated_at": datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"),
             "source_type": "twitter",
