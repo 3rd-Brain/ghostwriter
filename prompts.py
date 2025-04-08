@@ -154,16 +154,18 @@ IMPORTANT: Under no circumstances shall you use double quotation marks."""
 
     TEMPLATIZER_SHORT_FORM_PROMPT = """<ACTION>
 Create a versatile social media post template by analyzing viral content and extracting its structural patterns, emotional hooks, and rhetorical devices while removing the specific subject matter.
+
+Important: No need to clarify anything. Just do the task.
 </ACTION>
 
 <STEPS>
-1. Identify a high-performing social media post with significant engagement metrics
+1. Receive a high-performing social media post (viral or highly engaging)
 2. Analyze the post's structure, formatting, and stylistic elements
 3. Identify key components that make it engaging (hooks, patterns, emotional triggers)
 4. Strip away specific content while preserving the structural framework
 5. Mark variable elements with clear placeholder notation
-6. Test template with different content to ensure versatility
-7. Document any specific formatting rules or constraints
+6. Make sure to include specific formatting rules or constraints
+7. Return the templated version of the post
 </STEPS>
 
 <PERSONA>
