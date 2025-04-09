@@ -307,7 +307,7 @@ document.addEventListener('DOMContentLoaded', function() {
         uploadFiles.innerHTML = '';
         
         // Calculate progress increment based on file count
-        const progressIncrement = 100 / (files.length + 1); // +1 for the final "processing" state
+        const progressIncrement = 100 / files.length;
         let currentProgress = 0;
         
         // Update initial progress
@@ -364,15 +364,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Mark file as uploaded
                 fileDiv.querySelector('.file-status').textContent = 'Uploaded';
                 
-                // Add processing message
-                const processingDiv = document.createElement('div');
-                processingDiv.className = 'processing-note';
-                processingDiv.textContent = 'File is being processed in the background. You can continue working.';
-                processingDiv.style.color = '#666';
-                processingDiv.style.fontSize = '0.85em';
-                processingDiv.style.marginTop = '5px';
-                fileDiv.appendChild(processingDiv);
-                
                 // Handle the actual response in the background
                 fetchPromise.then(response => {
                     if (!response.ok) {
@@ -398,7 +389,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Final update to 100%
         progressFill.style.width = '100%';
-        progressText.textContent = 'Upload complete! Processing in background...';
+        progressText.textContent = 'Upload complete!';
         
         // Reset file input to allow for more uploads
         fileInput.value = '';
