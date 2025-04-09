@@ -261,7 +261,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Modal controls
     openUploadBtn.addEventListener('click', () => uploadModal.style.display = 'block');
-    
+
     // Reset upload area when closing modal
     const resetUploadArea = () => {
         uploadModal.style.display = 'none';
@@ -272,7 +272,7 @@ document.addEventListener('DOMContentLoaded', function() {
         progressText.textContent = 'Drag and drop files here, or click to select';
         uploadFiles.innerHTML = '';
     };
-    
+
     closeUploadBtn.addEventListener('click', resetUploadArea);
     window.addEventListener('click', (e) => {
         if (e.target === uploadModal) resetUploadArea();
@@ -280,7 +280,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // File upload handling
     uploadArea.addEventListener('click', () => fileInput.click());
-    
+
     uploadArea.addEventListener('dragover', (e) => {
         e.preventDefault();
         uploadArea.classList.add('drag-over');
@@ -305,7 +305,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         uploadProgress.style.display = 'block';
         uploadFiles.innerHTML = '';
-        
+
         for (const file of files) {
             // Validate file type
             if (!file.name.toLowerCase().endsWith('.pdf') && !file.name.toLowerCase().endsWith('.md')) {
@@ -320,7 +320,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <span class="file-status">Uploading...</span>
             `;
             uploadFiles.appendChild(fileDiv);
-            
+
             const formData = new FormData();
             formData.append('file', file);
 
@@ -329,44 +329,49 @@ document.addEventListener('DOMContentLoaded', function() {
                 fileDiv.querySelector('.file-status').textContent = 'Uploading...';
                 progressFill.style.width = '50%';
                 progressText.textContent = 'Uploading file...';
-                fileDiv.querySelector('.file-status').textContent = 'Uploading...';
-                
-                const response = await fetch('/api/upload-file', {
+
+                // Create the fetch request but don't await its completion
+                const fetchPromise = fetch('/api/upload-file', {
                     method: 'POST',
                     body: formData
                 });
 
-                if (!response.ok) {
-                    throw new Error(`Upload failed: ${response.statusText}`);
-                }
-
-                // Update UI immediately after getting response, don't wait for JSON parsing
-                fileDiv.querySelector('.file-status').textContent = 'Uploaded';
-                progressFill.style.width = '100%';
-                progressText.textContent = 'Upload complete! Processing in background...';
-                
-                // Parse JSON response after UI is updated
-                const result = await response.json();
-                progressText.textContent = 'File uploaded successfully! Processing in background...';
-                
-                console.log('Upload success:', result);
-                
-                // Add processing message
-                const processingDiv = document.createElement('div');
-                processingDiv.className = 'processing-note';
-                processingDiv.textContent = 'File is being processed in the background. You can continue working.';
-                processingDiv.style.color = '#666';
-                processingDiv.style.fontSize = '0.85em';
-                processingDiv.style.marginTop = '5px';
-                fileDiv.appendChild(processingDiv);
-                
-                // Allow users to continue uploading without needing a button
-                // Reset the file input after a short delay
+                // Set a timeout to update UI after a brief delay, regardless of server response
                 setTimeout(() => {
+                    fileDiv.querySelector('.file-status').textContent = 'Uploaded';
+                    progressFill.style.width = '100%';
+                    progressText.textContent = 'Upload complete! Processing in background...';
+
+                    // Add processing message
+                    const processingDiv = document.createElement('div');
+                    processingDiv.className = 'processing-note';
+                    processingDiv.textContent = 'File is being processed in the background. You can continue working.';
+                    processingDiv.style.color = '#666';
+                    processingDiv.style.fontSize = '0.85em';
+                    processingDiv.style.marginTop = '5px';
+                    fileDiv.appendChild(processingDiv);
+
+                    // Reset file input and show upload area again
                     fileInput.value = '';
                     uploadArea.style.display = 'block';
-                }, 1500);
-                
+                }, 1000); // Update UI after 1 second
+
+                // Handle the actual response in the background
+                fetchPromise.then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Upload failed: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(result => {
+                    console.log('Upload success:', result);
+                })
+                .catch(error => {
+                    console.error('Upload error:', error);
+                    fileDiv.querySelector('.file-status').textContent = 'Failed';
+                    fileDiv.className = 'file-item error';
+                });
+
             } catch (error) {
                 console.error('Upload error:', error);
                 fileDiv.querySelector('.file-status').textContent = 'Failed';
@@ -514,6 +519,5 @@ function updatePagination(total, currentPage, totalPages) {
         lucide.createIcons();
     }
 }
-</script>
 </script>
 {% endblock %}
