@@ -705,6 +705,15 @@ async def content_approval(request: Request, current_user: str = Depends(get_cur
         "current_page": "content_approval"
     })
 
+@app.get("/publish-history", response_class=HTMLResponse, include_in_schema=False)
+async def publish_history(request: Request, current_user: dict = Depends(get_current_user)):
+    return templates.TemplateResponse("publish_history.html", {
+        "request": request,
+        "username": current_user["username"],
+        "user_id": current_user["user_id"],
+        "current_page": "publish_history"
+    })
+
 @app.get("/api-keys", response_class=HTMLResponse, include_in_schema=False)
 async def api_keys_page(request: Request, current_user: dict = Depends(get_current_user)):
     return templates.TemplateResponse("api_keys.html", {
