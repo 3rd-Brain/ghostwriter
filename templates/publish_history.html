@@ -15,24 +15,30 @@
         </div>
     </div>
     <div class="card-content">
-        <div class="content-filters">
-            <div class="search-box">
-                <input type="text" id="content-search" placeholder="Search published content..." class="filter-select">
-            </div>
-            <div class="filter-group">
-                <select id="date-filter" class="filter-select">
-                    <option value="all">All Time</option>
-                    <option value="today">Today</option>
-                    <option value="week">This Week</option>
-                    <option value="month">This Month</option>
-                    <option value="quarter">Last 3 Months</option>
-                </select>
-            </div>
-        </div>
-
         <div class="publish-history-container">
-            <!-- Content will be loaded dynamically -->
-            <div class="empty-state">
+            <!-- Table for published content -->
+            <div class="history-table-container">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Content</th>
+                            <th>Publish Date</th>
+                            <th>Impressions</th>
+                            <th>Likes</th>
+                            <th>Shares</th>
+                            <th>Quotes</th>
+                            <th>Bookmarks</th>
+                            <th>Replies</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-table-body">
+                        <!-- Table content will be populated via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Empty state message when no data is available -->
+            <div id="empty-state" class="empty-state">
                 <i data-lucide="history" class="empty-icon"></i>
                 <h3>No publishing history found</h3>
                 <p>Your published content will appear here</p>
@@ -42,13 +48,156 @@
 </div>
 {% endblock %}
 
+{% block extra_css %}
+<style>
+    .history-table-container {
+        width: 100%;
+        overflow-x: auto;
+        margin-top: 1.5rem;
+        border-radius: 12px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .history-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+
+    .history-table th {
+        padding: 12px 16px;
+        text-align: left;
+        background-color: #f8f9fa;
+        color: var(--text-secondary);
+        font-weight: 600;
+        border-bottom: 1px solid var(--border);
+        position: sticky;
+        top: 0;
+    }
+
+    .history-table td {
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--border);
+        vertical-align: top;
+    }
+
+    .history-table tbody tr:hover {
+        background-color: rgba(107, 53, 255, 0.04);
+    }
+
+    .content-cell {
+        max-width: 300px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .metric-value {
+        font-weight: 500;
+        text-align: center;
+    }
+
+    .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem 1rem;
+        color: var(--text-secondary);
+    }
+
+    .empty-icon {
+        width: 48px;
+        height: 48px;
+        margin-bottom: 1rem;
+        color: var(--text-tertiary);
+    }
+</style>
+{% endblock %}
+
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize the page
         console.log('Publish History page loaded');
         
-        // Future JavaScript code for fetching and displaying publish history will go here
+        // Function to fetch published content
+        function fetchPublishedContent() {
+            // Hide the table and show empty state initially
+            document.querySelector('.history-table-container').style.display = 'none';
+            document.getElementById('empty-state').style.display = 'flex';
+            
+            // Here you would fetch data from your backend API
+            // For now, let's add placeholder data for testing
+            const dummyData = [
+                {
+                    content: "AI won't replace writers. It'll replace writers who don't use AI. Here's how to stay ahead of the curve...",
+                    publishDate: "2024-07-01",
+                    impressions: 3245,
+                    likes: 127,
+                    shares: 42,
+                    quotes: 5,
+                    bookmarks: 18,
+                    replies: 22
+                },
+                {
+                    content: "3 content marketing tactics that are working right now: 1. Thoughtful storytelling 2. Case studies with real metrics 3. Industry-specific how-to guides",
+                    publishDate: "2024-06-28",
+                    impressions: 4587,
+                    likes: 213,
+                    shares: 78,
+                    quotes: 12,
+                    bookmarks: 31,
+                    replies: 45
+                }
+            ];
+            
+            // If we have data, show it
+            if (dummyData.length > 0) {
+                renderPublishedContent(dummyData);
+            }
+        }
+        
+        // Function to render published content in the table
+        function renderPublishedContent(data) {
+            const tableBody = document.getElementById('history-table-body');
+            tableBody.innerHTML = ''; // Clear existing rows
+            
+            // Show the table and hide empty state
+            document.querySelector('.history-table-container').style.display = 'block';
+            document.getElementById('empty-state').style.display = 'none';
+            
+            // Add a row for each published content item
+            data.forEach(item => {
+                const row = document.createElement('tr');
+                
+                // Content cell
+                const contentCell = document.createElement('td');
+                contentCell.className = 'content-cell';
+                contentCell.textContent = item.content;
+                contentCell.title = item.content; // Show full content on hover
+                row.appendChild(contentCell);
+                
+                // Publish Date cell
+                const dateCell = document.createElement('td');
+                dateCell.textContent = item.publishDate;
+                row.appendChild(dateCell);
+                
+                // Metrics cells
+                const metrics = ['impressions', 'likes', 'shares', 'quotes', 'bookmarks', 'replies'];
+                metrics.forEach(metric => {
+                    const cell = document.createElement('td');
+                    cell.className = 'metric-value';
+                    cell.textContent = item[metric].toLocaleString();
+                    row.appendChild(cell);
+                });
+                
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // Initial load
+        fetchPublishedContent();
     });
 </script>
 {% endblock %}
