@@ -714,6 +714,68 @@ async def publish_history(request: Request, current_user: dict = Depends(get_cur
         "current_page": "publish_history"
     })
 
+@app.get("/api/user-publications", tags=["Content Management"])
+async def get_user_publications(user: dict = Depends(check_api_key_or_jwt)):
+    """
+    **Retrieve published content for the current user**
+    
+    This endpoint fetches all publications created by the current user,
+    including metrics and status information.
+    
+    ## When to use
+    Use this endpoint when you need to:
+    * View your publication history
+    * Track performance metrics across publications
+    * Analyze content effectiveness
+    
+    *This endpoint supports both JWT and API key authentication.*
+    """
+    try:
+        from publish_history_manager import retrievePublications
+        
+        # Get user ID from authenticated user
+        user_id = user.get("user_id")
+        if not user_id:
+            raise HTTPException(status_code=401, detail="User ID not found in authentication context")
+            
+        result = retrievePublications(user_id)
+        
+        if result.get("status") == "error":
+            raise HTTPException(status_code=500, detail=result.get("message"))
+            
+        return result
+    except Exception as e:
+        print(f"Error fetching user publications: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/publication-metrics/{publication_id}", tags=["Content Management"])
+async def get_publication_metrics(publication_id: str, user: dict = Depends(check_api_key_or_jwt)):
+    """
+    **Retrieve detailed metrics for a specific publication**
+    
+    This endpoint fetches comprehensive performance metrics for a single publication.
+    
+    ## When to use
+    Use this endpoint when you need to:
+    * Analyze detailed metrics for a specific post
+    * Compare weighted and raw metrics
+    * Access performance score information
+    
+    *This endpoint supports both JWT and API key authentication.*
+    """
+    try:
+        from publish_history_manager import getPublicationMetrics
+        
+        result = getPublicationMetrics(publication_id)
+        
+        if result.get("status") == "error":
+            raise HTTPException(status_code=500, detail=result.get("message"))
+            
+        return result
+    except Exception as e:
+        print(f"Error fetching publication metrics: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/api-keys", response_class=HTMLResponse, include_in_schema=False)
 async def api_keys_page(request: Request, current_user: dict = Depends(get_current_user)):
     return templates.TemplateResponse("api_keys.html", {
