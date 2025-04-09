@@ -313,6 +313,11 @@ document.addEventListener('DOMContentLoaded', function() {
             formData.append('file', file);
 
             try {
+                // Update UI to show upload in progress
+                fileDiv.querySelector('.file-status').textContent = 'Uploading...';
+                progressFill.style.width = '50%';
+                progressText.textContent = 'Uploading file...';
+                
                 const response = await fetch('/api/upload-file', {
                     method: 'POST',
                     body: formData
@@ -322,6 +327,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     throw new Error(`Upload failed: ${response.statusText}`);
                 }
 
+                // As soon as we get a response, update the UI to show success
+                // regardless of background processing status
                 const result = await response.json();
                 fileDiv.querySelector('.file-status').textContent = 'Uploaded';
                 progressFill.style.width = '100%';
@@ -337,6 +344,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 processingDiv.style.fontSize = '0.85em';
                 processingDiv.style.marginTop = '5px';
                 fileDiv.appendChild(processingDiv);
+                
+                // Add a "New Upload" button to allow users to continue uploading
+                const newUploadBtn = document.createElement('button');
+                newUploadBtn.className = 'new-upload-btn';
+                newUploadBtn.textContent = 'Upload Another File';
+                newUploadBtn.style.marginTop = '15px';
+                newUploadBtn.style.padding = '8px 16px';
+                newUploadBtn.onclick = () => {
+                    // Reset the file input
+                    fileInput.value = '';
+                    // Clear the progress display
+                    progressText.textContent = 'Drag and drop files here, or click to select';
+                    progressFill.style.width = '0%';
+                    uploadArea.style.display = 'block';
+                };
+                uploadProgress.appendChild(newUploadBtn);
+                
             } catch (error) {
                 console.error('Upload error:', error);
                 fileDiv.querySelector('.file-status').textContent = 'Failed';
