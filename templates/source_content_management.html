@@ -305,7 +305,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
         uploadProgress.style.display = 'block';
         uploadFiles.innerHTML = '';
-
+        
+        // Calculate progress increment based on file count
+        const progressIncrement = 100 / (files.length + 1); // +1 for the final "processing" state
+        let currentProgress = 0;
+        
+        // Update initial progress
+        progressFill.style.width = '0%';
+        progressText.textContent = 'Preparing upload...';
+        
+        // Create file divs for all files
+        const fileDivs = [];
         for (const file of files) {
             // Validate file type
             if (!file.name.toLowerCase().endsWith('.pdf') && !file.name.toLowerCase().endsWith('.md')) {
@@ -317,45 +327,52 @@ document.addEventListener('DOMContentLoaded', function() {
             fileDiv.className = 'file-item';
             fileDiv.innerHTML = `
                 <span>${file.name}</span>
-                <span class="file-status">Uploading...</span>
+                <span class="file-status">Waiting...</span>
             `;
             uploadFiles.appendChild(fileDiv);
-
+            fileDivs.push(fileDiv);
+        }
+        
+        // Process files with simulated upload time
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const fileDiv = fileDivs[i];
             const formData = new FormData();
             formData.append('file', file);
-
+            
             try {
-                // Update UI to show upload in progress
+                // Update UI to show this file is uploading
                 fileDiv.querySelector('.file-status').textContent = 'Uploading...';
-                progressFill.style.width = '50%';
-                progressText.textContent = 'Uploading file...';
-
-                // Create the fetch request but don't await its completion
+                
+                // Simulate upload progress for at least 2 seconds
+                await new Promise(resolve => {
+                    // Update progress to show this file is being worked on
+                    currentProgress += progressIncrement;
+                    progressFill.style.width = `${currentProgress}%`;
+                    progressText.textContent = `Uploading file ${i+1} of ${files.length}...`;
+                    
+                    // Wait at least 2 seconds per file for realistic upload feel
+                    setTimeout(resolve, 2000);
+                });
+                
+                // Start the actual fetch in parallel
                 const fetchPromise = fetch('/api/upload-file', {
                     method: 'POST',
                     body: formData
                 });
-
-                // Set a timeout to update UI after a brief delay, regardless of server response
-                setTimeout(() => {
-                    fileDiv.querySelector('.file-status').textContent = 'Uploaded';
-                    progressFill.style.width = '100%';
-                    progressText.textContent = 'Upload complete! Processing in background...';
-
-                    // Add processing message
-                    const processingDiv = document.createElement('div');
-                    processingDiv.className = 'processing-note';
-                    processingDiv.textContent = 'File is being processed in the background. You can continue working.';
-                    processingDiv.style.color = '#666';
-                    processingDiv.style.fontSize = '0.85em';
-                    processingDiv.style.marginTop = '5px';
-                    fileDiv.appendChild(processingDiv);
-
-                    // Reset file input and show upload area again
-                    fileInput.value = '';
-                    uploadArea.style.display = 'block';
-                }, 1000); // Update UI after 1 second
-
+                
+                // Mark file as uploaded
+                fileDiv.querySelector('.file-status').textContent = 'Uploaded';
+                
+                // Add processing message
+                const processingDiv = document.createElement('div');
+                processingDiv.className = 'processing-note';
+                processingDiv.textContent = 'File is being processed in the background. You can continue working.';
+                processingDiv.style.color = '#666';
+                processingDiv.style.fontSize = '0.85em';
+                processingDiv.style.marginTop = '5px';
+                fileDiv.appendChild(processingDiv);
+                
                 // Handle the actual response in the background
                 fetchPromise.then(response => {
                     if (!response.ok) {
@@ -371,13 +388,21 @@ document.addEventListener('DOMContentLoaded', function() {
                     fileDiv.querySelector('.file-status').textContent = 'Failed';
                     fileDiv.className = 'file-item error';
                 });
-
+                
             } catch (error) {
                 console.error('Upload error:', error);
                 fileDiv.querySelector('.file-status').textContent = 'Failed';
                 fileDiv.className = 'file-item error';
             }
         }
+        
+        // Final update to 100%
+        progressFill.style.width = '100%';
+        progressText.textContent = 'Upload complete! Processing in background...';
+        
+        // Reset file input to allow for more uploads
+        fileInput.value = '';
+        uploadArea.style.display = 'block';
     }
 });
 </script>
