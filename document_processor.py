@@ -14,14 +14,14 @@ class DocumentProcessor:
         self.storage_client = Client()
         self.openai_client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
         
-    async def process_file(self, file: BinaryIO, filename: str, user_id: str) -> Dict:
-        """Process uploaded file and store in Object Storage with chunked vector storage"""
+    async def store_file(self, file: BinaryIO, filename: str, user_id: str) -> str:
+        """Store file in Object Storage and return file ID"""
         try:
-            print("\n=== Starting file processing ===")
-            print(f"Processing file: {filename}")
+            print("\n=== Starting file storage ===")
+            print(f"Storing file: {filename}")
             print(f"User ID: {user_id}")
             
-            # Store file in Object Storage
+            # Generate a unique file ID
             file_id = str(uuid.uuid4())
             object_path = f"documents/{user_id}/{file_id}/{filename}"
             print(f"Generated object path: {object_path}")
@@ -44,34 +44,79 @@ class DocumentProcessor:
                         print("Falling back to binary storage...")
                         self.storage_client.upload_from_bytes(object_path, file_content)
                         file.seek(0)
-                        return
+                        return file_id
                 self.storage_client.upload_from_text(object_path, file_content)
             
             print("Successfully uploaded to Object Storage")
-            file.seek(0)  # Reset file pointer for subsequent operations
-        
+            file.seek(0)  # Reset file pointer
+            return file_id
+            
+        except Exception as e:
+            print("\n=== Error in file storage ===")
+            print(f"Error type: {type(e).__name__}")
+            print(f"Error message: {str(e)}")
+            print(f"Error occurred at: {e.__traceback__.tb_lineno}")
+            raise
+    
+    async def process_file_background(self, filename: str, file_id: str, user_id: str) -> Dict:
+        """Process file in background after it has been stored"""
+        try:
+            print(f"\n=== Starting background processing for file: {filename} ===")
+            print(f"File ID: {file_id}")
+            print(f"User ID: {user_id}")
+            
+            # Retrieve file from Object Storage
+            object_path = f"documents/{user_id}/{file_id}/{filename}"
+            print(f"Retrieving file from path: {object_path}")
+            
             # Extract text based on file type
-            print(f"Extracting text from file type: {filename.split('.')[-1].upper()}")
             if filename.lower().endswith('.pdf'):
-                text_content = self._extract_pdf_text(file)
-                channel_source = "PDF"
+                # For PDFs, we need to read the file from storage and process it
+                try:
+                    print("Reading PDF from storage...")
+                    file_bytes = self.storage_client.get_bytes(object_path)
+                    print(f"Retrieved {len(file_bytes)} bytes")
+                    
+                    # Create a BytesIO object to simulate a file
+                    import io
+                    file_io = io.BytesIO(file_bytes)
+                    
+                    text_content = self._extract_pdf_text(file_io)
+                    channel_source = "PDF"
+                except Exception as e:
+                    print(f"Error reading PDF from storage: {str(e)}")
+                    raise
             elif filename.lower().endswith('.md'):
-                text_content = self._extract_markdown_text(file)
-                channel_source = "Markdown"
+                try:
+                    print("Reading Markdown from storage...")
+                    file_content = self.storage_client.get_text(object_path)
+                    text_content = markdown.markdown(file_content)
+                    # Simple HTML to text conversion
+                    text_content = text_content.replace('<p>', '').replace('</p>', '\n')
+                    channel_source = "Markdown"
+                except Exception as e:
+                    print(f"Error reading Markdown from storage: {str(e)}")
+                    raise
             else:
                 raise ValueError("Unsupported file type")
+                
             print(f"Successfully extracted text, length: {len(text_content)} characters")
             
             # Chunk the content
+            print("Chunking content...")
             chunks = self._chunk_content(text_content)
+            print(f"Created {len(chunks)} chunks")
             
             # Process each chunk
             processed_chunks = []
-            for chunk in chunks:
+            for i, chunk in enumerate(chunks):
+                print(f"Processing chunk {i+1}/{len(chunks)}...")
                 chunk_id = str(uuid.uuid4())
+                
+                print(f"Generating embedding for chunk {i+1}...")
                 embedding = self._generate_embedding(chunk)
-            
-            # Store in AstraDB with the specified structure
+                
+                # Store in AstraDB with the specified structure
                 url = f"{os.environ.get('ASTRA_DB_API_ENDPOINT')}/api/json/v1/user_content_keyspace/user_source_content"
                 
                 document = {
@@ -95,22 +140,30 @@ class DocumentProcessor:
                     "Content-Type": "application/json"
                 }
                 
-                print(f"Uploading chunk {len(processed_chunks) + 1} to AstraDB...")
+                print(f"Uploading chunk {i+1} to AstraDB...")
                 response = requests.post(url, headers=headers, json=payload)
                 response.raise_for_status()
-                print(f"Successfully uploaded chunk to AstraDB. Response: {response.status_code}")
+                print(f"Successfully uploaded chunk {i+1} to AstraDB. Response: {response.status_code}")
                 
                 processed_chunks.append(document)
             
-            print(f"\nProcessing complete! Total chunks: {len(processed_chunks)}")
+            print(f"\n=== Background processing complete! ===")
+            print(f"File: {filename}")
+            print(f"Total chunks: {len(processed_chunks)}")
             return {"file_id": file_id, "chunks": processed_chunks}
             
         except Exception as e:
-            print("\n=== Error in file processing ===")
+            print("\n=== Error in background processing ===")
             print(f"Error type: {type(e).__name__}")
             print(f"Error message: {str(e)}")
             print(f"Error occurred at: {e.__traceback__.tb_lineno}")
-            raise
+            print(f"This error occurred in the background and was not sent to the user")
+    
+    # For backward compatibility
+    async def process_file(self, file: BinaryIO, filename: str, user_id: str) -> Dict:
+        """Legacy method for direct processing (not using background tasks)"""
+        file_id = await self.store_file(file, filename, user_id)
+        return await self.process_file_background(filename, file_id, user_id)
         
     def _extract_pdf_text(self, file: BinaryIO) -> str:
         """Extract text from PDF file"""

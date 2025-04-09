@@ -786,6 +786,7 @@ def read_root():
 @app.post("/api/upload-file", tags=["Content Management"])
 async def upload_file(
     file: UploadFile,
+    background_tasks: BackgroundTasks,
     user: dict = Depends(check_api_key_or_jwt)
 ):
     """
@@ -816,13 +817,24 @@ async def upload_file(
         print("Creating DocumentProcessor instance...")
         processor = DocumentProcessor()
 
-        print("Processing file...")
-        result = await processor.process_file(file.file, file.filename, user["user_id"])
+        # Store file in Object Storage first
+        file_id = await processor.store_file(file.file, file.filename, user["user_id"])
+        print(f"File stored with ID: {file_id}")
+        
+        # Schedule background processing
+        print("Scheduling background processing...")
+        background_tasks.add_task(
+            processor.process_file_background,
+            file.filename, 
+            file_id, 
+            user["user_id"]
+        )
 
-        print(f"Processing complete. File ID: {result['file_id']}, Chunks: {len(result['chunks'])}")
-        return {"status": "success", "file_id": result["file_id"], "chunks": len(result["chunks"])}
+        # Return success immediately
+        print(f"Returning success response before background processing completes")
+        return {"status": "success", "file_id": file_id, "message": "File upload successful, processing in background"}
     except Exception as e:
-        print(f"Error processing file: {str(e)}")
+        print(f"Error handling file: {str(e)}")
         print(f"Error type: {type(e).__name__}")
         print(f"Error traceback:", e.__traceback__)
         raise HTTPException(status_code=500, detail=str(e))

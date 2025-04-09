@@ -323,9 +323,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
 
                 const result = await response.json();
-                fileDiv.querySelector('.file-status').textContent = 'Complete';
+                fileDiv.querySelector('.file-status').textContent = 'Uploaded';
                 progressFill.style.width = '100%';
-                progressText.textContent = 'Upload Complete!';
+                progressText.textContent = 'File uploaded successfully! Processing in background...';
+                
+                console.log('Upload success:', result);
+                
+                // Add processing message
+                const processingDiv = document.createElement('div');
+                processingDiv.className = 'processing-note';
+                processingDiv.textContent = 'File is being processed in the background. You can continue working.';
+                processingDiv.style.color = '#666';
+                processingDiv.style.fontSize = '0.85em';
+                processingDiv.style.marginTop = '5px';
+                fileDiv.appendChild(processingDiv);
             } catch (error) {
                 console.error('Upload error:', error);
                 fileDiv.querySelector('.file-status').textContent = 'Failed';
