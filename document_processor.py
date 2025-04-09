@@ -74,7 +74,7 @@ class DocumentProcessor:
                 # For PDFs, we need to read the file from storage and process it
                 try:
                     print("Reading PDF from storage...")
-                    file_bytes = self.storage_client.get_bytes(object_path)
+                    file_bytes = self.storage_client.download_as_bytes(object_path)
                     print(f"Retrieved {len(file_bytes)} bytes")
                     
                     # Create a BytesIO object to simulate a file
@@ -89,7 +89,7 @@ class DocumentProcessor:
             elif filename.lower().endswith('.md'):
                 try:
                     print("Reading Markdown from storage...")
-                    file_content = self.storage_client.get_text(object_path)
+                    file_content = self.storage_client.download_as_text(object_path)
                     text_content = markdown.markdown(file_content)
                     # Simple HTML to text conversion
                     text_content = text_content.replace('<p>', '').replace('</p>', '\n')
