@@ -123,24 +123,37 @@
         
         // Function to fetch published content
         function fetchPublishedContent() {
+            console.log('Starting fetchPublishedContent function...');
+            
             // Hide the table and show empty state initially
             document.querySelector('.history-table-container').style.display = 'none';
             document.getElementById('empty-state').style.display = 'flex';
             
             // Fetch data from the API
+            console.log('Sending fetch request to /api/user-publications...');
             fetch('/api/user-publications')
                 .then(response => {
+                    console.log('Received API response with status:', response.status);
+                    console.log('Response headers:', Object.fromEntries([...response.headers.entries()]));
+                    
                     if (!response.ok) {
-                        throw new Error('Failed to fetch publications');
+                        console.error('Response not OK:', response.statusText);
+                        throw new Error(`Failed to fetch publications: ${response.status} ${response.statusText}`);
                     }
-                    return response.json();
+                    return response.json().catch(err => {
+                        console.error('Error parsing JSON response:', err);
+                        throw new Error('Invalid JSON in response');
+                    });
                 })
                 .then(data => {
                     console.log('Publications data:', data);
+                    console.log('Response structure:', JSON.stringify(data, null, 2));
                     
                     if (data.status === 'success' && data.publications && data.publications.length > 0) {
+                        console.log(`Found ${data.publications.length} publications, rendering content...`);
                         renderPublishedContent(data.publications);
                     } else {
+                        console.log('No publications found or empty array returned');
                         // Show empty state if no data
                         document.querySelector('.history-table-container').style.display = 'none';
                         document.getElementById('empty-state').style.display = 'flex';
@@ -148,6 +161,7 @@
                 })
                 .catch(error => {
                     console.error('Error fetching publications:', error);
+                    console.error('Error details:', error.stack || 'No stack trace available');
                     
                     // Show error message
                     document.getElementById('empty-state').innerHTML = `
@@ -161,7 +175,14 @@
         
         // Function to render published content in the table
         function renderPublishedContent(publications) {
+            console.log('renderPublishedContent called with', publications.length, 'publications');
+            
             const tableBody = document.getElementById('history-table-body');
+            if (!tableBody) {
+                console.error('Could not find history-table-body element');
+                return;
+            }
+            
             tableBody.innerHTML = ''; // Clear existing rows
             
             // Show the table and hide empty state
@@ -169,29 +190,38 @@
             document.getElementById('empty-state').style.display = 'none';
             
             // Add a row for each published content item
-            publications.forEach(item => {
+            publications.forEach((item, index) => {
+                console.log(`Processing publication ${index + 1}/${publications.length}:`, item);
+                
                 const row = document.createElement('tr');
                 row.setAttribute('data-publication-id', item.id);
                 
                 // Content cell
                 const contentCell = document.createElement('td');
                 contentCell.className = 'content-cell';
-                contentCell.textContent = item.content;
-                contentCell.title = item.content; // Show full content on hover
+                contentCell.textContent = item.content || 'No content available';
+                contentCell.title = item.content || 'No content available'; // Show full content on hover
                 row.appendChild(contentCell);
                 
                 // Publish Date cell - format the date nicely
                 const dateCell = document.createElement('td');
                 try {
-                    const dateObj = new Date(item.publish_date);
-                    dateCell.textContent = dateObj.toLocaleDateString('en-US', { 
-                        year: 'numeric', 
-                        month: 'short', 
-                        day: 'numeric' 
-                    });
+                    console.log(`Publication ${index + 1} date value:`, item.publish_date);
+                    if (item.publish_date) {
+                        const dateObj = new Date(item.publish_date);
+                        dateCell.textContent = dateObj.toLocaleDateString('en-US', { 
+                            year: 'numeric', 
+                            month: 'short', 
+                            day: 'numeric' 
+                        });
+                    } else {
+                        console.warn('Publication has no publish_date');
+                        dateCell.textContent = 'No date';
+                    }
                 } catch (e) {
+                    console.error('Error formatting date:', e, 'for date value:', item.publish_date);
                     // If date parsing fails, use the raw value
-                    dateCell.textContent = item.publish_date;
+                    dateCell.textContent = item.publish_date || 'Invalid date';
                 }
                 row.appendChild(dateCell);
                 
@@ -208,11 +238,15 @@
                 // Add row click event to show more details
                 row.addEventListener('click', function() {
                     const publicationId = this.getAttribute('data-publication-id');
+                    console.log('Row clicked, publication ID:', publicationId);
                     showPublicationDetails(publicationId);
                 });
                 
                 tableBody.appendChild(row);
+                console.log(`Added row for publication ${index + 1}`);
             });
+            
+            console.log('Finished rendering all publications');
         }
         
         // Function to show detailed metrics for a publication

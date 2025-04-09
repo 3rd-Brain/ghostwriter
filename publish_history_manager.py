@@ -14,16 +14,25 @@ def retrievePublications(user_id: str) -> Dict[str, Any]:
     Returns:
         Dictionary containing the retrieved publication documents
     """
+    print(f"\n=== DEBUG: retrievePublications started ===")
+    print(f"User ID: {user_id}")
+    
     ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
     ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
     
+    print(f"ASTRA_DB_API_ENDPOINT configured: {bool(ASTRA_DB_API_ENDPOINT)}")
+    print(f"ASTRA_DB_APPLICATION_TOKEN configured: {bool(ASTRA_DB_APPLICATION_TOKEN)}")
+    
     if not ASTRA_DB_API_ENDPOINT:
+        print("ERROR: ASTRA_DB_API_ENDPOINT not configured")
         raise Exception("ASTRA_DB_API_ENDPOINT not configured")
     if not ASTRA_DB_APPLICATION_TOKEN:
+        print("ERROR: ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
         raise Exception("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
     
     # Set up the API request
     url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/user_twitter_publications"
+    print(f"Request URL: {url}")
     
     headers = {
         "Token": ASTRA_DB_APPLICATION_TOKEN,
@@ -37,10 +46,24 @@ def retrievePublications(user_id: str) -> Dict[str, Any]:
         }
     }
     
+    print(f"Request payload: {json.dumps(payload)}")
+    
     try:
+        print("Sending request to AstraDB...")
         response = requests.post(url, headers=headers, json=payload)
+        print(f"Response status code: {response.status_code}")
+        print(f"Response headers: {dict(response.headers)}")
+        
+        # Log a preview of the response text
+        response_text = response.text
+        print(f"Response preview: {response_text[:200]}{'...' if len(response_text) > 200 else ''}")
+        
         response.raise_for_status()
         result = response.json()
+        
+        # Get document count
+        doc_count = len(result.get("data", {}).get("documents", []))
+        print(f"Documents retrieved: {doc_count}")
         
         # Process the documents to extract relevant fields for the table
         publications = []
@@ -60,13 +83,21 @@ def retrievePublications(user_id: str) -> Dict[str, Any]:
             }
             publications.append(publication)
         
+        print(f"Processed {len(publications)} publications")
+        print(f"=== DEBUG: retrievePublications completed successfully ===\n")
+        
         return {
             "status": "success",
             "publications": publications
         }
     
     except requests.exceptions.RequestException as e:
-        print(f"Error retrieving publications: {str(e)}")
+        print(f"ERROR retrieving publications: {str(e)}")
+        if hasattr(e, 'response') and e.response:
+            print(f"Error response status: {e.response.status_code}")
+            print(f"Error response text: {e.response.text[:200]}...")
+        
+        print(f"=== DEBUG: retrievePublications failed ===\n")
         return {
             "status": "error",
             "message": f"Failed to retrieve publications: {str(e)}",

@@ -730,22 +730,38 @@ async def get_user_publications(user: dict = Depends(check_api_key_or_jwt)):
     
     *This endpoint supports both JWT and API key authentication.*
     """
+    print("\n=== DEBUG: /api/user-publications endpoint called ===")
+    print(f"User context: {user}")
+    
     try:
         from publish_history_manager import retrievePublications
         
         # Get user ID from authenticated user
         user_id = user.get("user_id")
+        print(f"Extracted user_id: {user_id}")
+        
         if not user_id:
+            print("ERROR: User ID not found in authentication context")
             raise HTTPException(status_code=401, detail="User ID not found in authentication context")
             
+        print(f"Calling retrievePublications with user_id: {user_id}")
         result = retrievePublications(user_id)
         
+        print(f"Retrieved result status: {result.get('status')}")
+        print(f"Publication count: {len(result.get('publications', []))}")
+        
         if result.get("status") == "error":
+            print(f"Error in result: {result.get('message')}")
             raise HTTPException(status_code=500, detail=result.get("message"))
-            
+         
+        print("=== DEBUG: /api/user-publications completed successfully ===\n")   
         return result
     except Exception as e:
-        print(f"Error fetching user publications: {str(e)}")
+        print(f"ERROR in get_user_publications: {str(e)}")
+        print(f"Exception type: {type(e).__name__}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
+        print("=== DEBUG: /api/user-publications failed ===\n")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/publication-metrics/{publication_id}", tags=["Content Management"])
