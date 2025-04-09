@@ -86,15 +86,24 @@
     }
 
     .content-cell {
-        max-width: 300px;
+        max-width: 500px;
+        min-width: 400px;
         overflow: hidden;
         text-overflow: ellipsis;
-        white-space: nowrap;
+        white-space: pre-wrap;
+        line-height: 1.4;
     }
 
     .metric-value {
         font-weight: 500;
         text-align: center;
+        width: 80px;
+        max-width: 80px;
+    }
+    
+    .date-cell {
+        width: 120px;
+        white-space: nowrap;
     }
 
     .empty-state {
@@ -189,6 +198,14 @@
             document.querySelector('.history-table-container').style.display = 'block';
             document.getElementById('empty-state').style.display = 'none';
             
+            // Sort publications by date (newest first)
+            // This ensures proper client-side sorting regardless of API response order
+            publications.sort((a, b) => {
+                const dateA = new Date(a.publish_date || 0).getTime();
+                const dateB = new Date(b.publish_date || 0).getTime();
+                return dateB - dateA; // Descending order (newest first)
+            });
+            
             // Add a row for each published content item
             publications.forEach((item, index) => {
                 console.log(`Processing publication ${index + 1}/${publications.length}:`, item);
@@ -205,23 +222,31 @@
                 
                 // Publish Date cell - format the date nicely
                 const dateCell = document.createElement('td');
+                dateCell.className = 'date-cell';
                 try {
                     console.log(`Publication ${index + 1} date value:`, item.publish_date);
                     if (item.publish_date) {
+                        // Parse Twitter style date format: "Thu Mar 27 15:25:30 +0000 2025"
                         const dateObj = new Date(item.publish_date);
+                        // Store original date as data attribute for sorting
+                        dateCell.setAttribute('data-timestamp', dateObj.getTime());
                         dateCell.textContent = dateObj.toLocaleDateString('en-US', { 
                             year: 'numeric', 
                             month: 'short', 
-                            day: 'numeric' 
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
                         });
                     } else {
                         console.warn('Publication has no publish_date');
                         dateCell.textContent = 'No date';
+                        dateCell.setAttribute('data-timestamp', '0');
                     }
                 } catch (e) {
                     console.error('Error formatting date:', e, 'for date value:', item.publish_date);
                     // If date parsing fails, use the raw value
                     dateCell.textContent = item.publish_date || 'Invalid date';
+                    dateCell.setAttribute('data-timestamp', '0');
                 }
                 row.appendChild(dateCell);
                 
