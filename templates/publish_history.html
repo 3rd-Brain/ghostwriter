@@ -1,0 +1,54 @@
+
+{% extends "base.html" %}
+
+{% block title %}Publish History | Ghostwriter API{% endblock %}
+
+{% block page_title %}Publish History{% endblock %}
+{% block page_subtitle %}Track your content publishing history and performance{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">
+            <span>Publish History</span>
+            <i data-lucide="info"></i>
+        </div>
+    </div>
+    <div class="card-content">
+        <div class="content-filters">
+            <div class="search-box">
+                <input type="text" id="content-search" placeholder="Search published content..." class="filter-select">
+            </div>
+            <div class="filter-group">
+                <select id="date-filter" class="filter-select">
+                    <option value="all">All Time</option>
+                    <option value="today">Today</option>
+                    <option value="week">This Week</option>
+                    <option value="month">This Month</option>
+                    <option value="quarter">Last 3 Months</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="publish-history-container">
+            <!-- Content will be loaded dynamically -->
+            <div class="empty-state">
+                <i data-lucide="history" class="empty-icon"></i>
+                <h3>No publishing history found</h3>
+                <p>Your published content will appear here</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize the page
+        console.log('Publish History page loaded');
+        
+        // Future JavaScript code for fetching and displaying publish history will go here
+    });
+</script>
+{% endblock %}
