@@ -43,6 +43,11 @@
                 <h3>No publishing history found</h3>
                 <p>Your published content will appear here</p>
             </div>
+            
+            <!-- Pagination controls -->
+            <div id="pagination-controls" class="pagination-controls">
+                <!-- Pagination buttons will be added here by JavaScript -->
+            </div>
         </div>
     </div>
 </div>
@@ -121,6 +126,48 @@
         margin-bottom: 1rem;
         color: var(--text-tertiary);
     }
+    
+    /* Pagination styles */
+    .pagination-controls {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 1.5rem 0;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+    
+    .pagination-btn {
+        background-color: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 8px 16px;
+        cursor: pointer;
+        font-size: 14px;
+        color: var(--text-primary);
+    }
+    
+    .pagination-btn:hover:not(:disabled) {
+        background-color: var(--bg-tertiary);
+    }
+    
+    .pagination-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .pagination-info {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-secondary);
+        margin: 0 0.5rem;
+    }
+    
+    .pagination-item-info {
+        font-size: 12px;
+        color: var(--text-tertiary);
+        margin-left: auto;
+    }
 </style>
 {% endblock %}
 
@@ -130,6 +177,11 @@
         // Initialize the page
         console.log('Publish History page loaded');
         
+        // Pagination variables
+        let allPublications = [];
+        let currentPage = 1;
+        const itemsPerPage = 20;
+        
         // Function to fetch published content
         function fetchPublishedContent() {
             console.log('Starting fetchPublishedContent function...');
@@ -137,6 +189,7 @@
             // Hide the table and show empty state initially
             document.querySelector('.history-table-container').style.display = 'none';
             document.getElementById('empty-state').style.display = 'flex';
+            document.getElementById('pagination-controls').style.display = 'none';
             
             // Fetch data from the API
             console.log('Sending fetch request to /api/user-publications...');
@@ -160,12 +213,25 @@
                     
                     if (data.status === 'success' && data.publications && data.publications.length > 0) {
                         console.log(`Found ${data.publications.length} publications, rendering content...`);
-                        renderPublishedContent(data.publications);
+                        
+                        // Sort publications by date (newest first)
+                        allPublications = data.publications.sort((a, b) => {
+                            const dateA = new Date(a.publish_date || 0).getTime();
+                            const dateB = new Date(b.publish_date || 0).getTime();
+                            return dateB - dateA; // Descending order (newest first)
+                        });
+                        
+                        // Render first page of publications
+                        renderPublishedContent();
+                        
+                        // Set up pagination controls
+                        setupPagination();
                     } else {
                         console.log('No publications found or empty array returned');
                         // Show empty state if no data
                         document.querySelector('.history-table-container').style.display = 'none';
                         document.getElementById('empty-state').style.display = 'flex';
+                        document.getElementById('pagination-controls').style.display = 'none';
                     }
                 })
                 .catch(error => {
@@ -179,12 +245,73 @@
                         <p>${error.message}</p>
                     `;
                     document.getElementById('empty-state').style.display = 'flex';
+                    document.getElementById('pagination-controls').style.display = 'none';
                 });
         }
         
-        // Function to render published content in the table
-        function renderPublishedContent(publications) {
-            console.log('renderPublishedContent called with', publications.length, 'publications');
+        // Function to set up pagination controls
+        function setupPagination() {
+            const totalItems = allPublications.length;
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            
+            if (totalPages <= 1) {
+                // Hide pagination controls if there's only one page
+                document.getElementById('pagination-controls').style.display = 'none';
+                return;
+            }
+            
+            const paginationControls = document.getElementById('pagination-controls');
+            paginationControls.style.display = 'flex';
+            
+            // Clear existing controls
+            paginationControls.innerHTML = '';
+            
+            // Previous button
+            const prevButton = document.createElement('button');
+            prevButton.textContent = 'Previous';
+            prevButton.classList.add('pagination-btn');
+            prevButton.disabled = currentPage === 1;
+            prevButton.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderPublishedContent();
+                    setupPagination();
+                }
+            });
+            paginationControls.appendChild(prevButton);
+            
+            // Page numbers
+            const pageInfo = document.createElement('div');
+            pageInfo.classList.add('pagination-info');
+            pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+            paginationControls.appendChild(pageInfo);
+            
+            // Next button
+            const nextButton = document.createElement('button');
+            nextButton.textContent = 'Next';
+            nextButton.classList.add('pagination-btn');
+            nextButton.disabled = currentPage === totalPages;
+            nextButton.addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderPublishedContent();
+                    setupPagination();
+                }
+            });
+            paginationControls.appendChild(nextButton);
+            
+            // Page info
+            const itemInfo = document.createElement('div');
+            itemInfo.classList.add('pagination-item-info');
+            const startItem = (currentPage - 1) * itemsPerPage + 1;
+            const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+            itemInfo.textContent = `Showing ${startItem} to ${endItem} of ${totalItems} publications`;
+            paginationControls.appendChild(itemInfo);
+        }
+        
+        // Function to render published content in the table for the current page
+        function renderPublishedContent() {
+            console.log(`Rendering page ${currentPage} of publications`);
             
             const tableBody = document.getElementById('history-table-body');
             if (!tableBody) {
@@ -198,17 +325,17 @@
             document.querySelector('.history-table-container').style.display = 'block';
             document.getElementById('empty-state').style.display = 'none';
             
-            // Sort publications by date (newest first)
-            // This ensures proper client-side sorting regardless of API response order
-            publications.sort((a, b) => {
-                const dateA = new Date(a.publish_date || 0).getTime();
-                const dateB = new Date(b.publish_date || 0).getTime();
-                return dateB - dateA; // Descending order (newest first)
-            });
+            // Calculate the starting and ending indices for the current page
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, allPublications.length);
+            
+            // Get the subset of publications for this page
+            const currentPagePublications = allPublications.slice(startIndex, endIndex);
             
             // Add a row for each published content item
-            publications.forEach((item, index) => {
-                console.log(`Processing publication ${index + 1}/${publications.length}:`, item);
+            currentPagePublications.forEach((item, index) => {
+                const absoluteIndex = startIndex + index;
+                console.log(`Processing publication ${absoluteIndex + 1}/${allPublications.length}:`, item);
                 
                 const row = document.createElement('tr');
                 row.setAttribute('data-publication-id', item.id);
@@ -224,7 +351,7 @@
                 const dateCell = document.createElement('td');
                 dateCell.className = 'date-cell';
                 try {
-                    console.log(`Publication ${index + 1} date value:`, item.publish_date);
+                    console.log(`Publication ${absoluteIndex + 1} date value:`, item.publish_date);
                     if (item.publish_date) {
                         // Parse Twitter style date format: "Thu Mar 27 15:25:30 +0000 2025"
                         const dateObj = new Date(item.publish_date);
@@ -268,10 +395,10 @@
                 });
                 
                 tableBody.appendChild(row);
-                console.log(`Added row for publication ${index + 1}`);
+                console.log(`Added row for publication ${absoluteIndex + 1}`);
             });
             
-            console.log('Finished rendering all publications');
+            console.log('Finished rendering current page of publications');
         }
         
         // Function to show detailed metrics for a publication
