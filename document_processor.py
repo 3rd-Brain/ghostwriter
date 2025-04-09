@@ -29,12 +29,12 @@ class DocumentProcessor:
             print("Attempting to upload to Object Storage...")
             file_content = file.read()
             
-            # Handle binary files (like PDFs) and text files differently
-            if filename.lower().endswith('.pdf'):
-                print("Detected PDF file, storing as binary data...")
+            # Handle binary files (like PDFs and DOCX) and text files differently
+            if filename.lower().endswith(('.pdf', '.docx')):
+                print(f"Detected binary file ({filename.split('.')[-1].upper()}), storing as binary data...")
                 self.storage_client.upload_from_bytes(object_path, file_content)
             else:
-                # For text-based files like Markdown
+                # For text-based files like Markdown and TXT
                 if isinstance(file_content, bytes):
                     try:
                         print("Converting bytes to text using UTF-8 decoding...")
@@ -96,6 +96,29 @@ class DocumentProcessor:
                     channel_source = "Markdown"
                 except Exception as e:
                     print(f"Error reading Markdown from storage: {str(e)}")
+                    raise
+            elif filename.lower().endswith('.txt'):
+                try:
+                    print("Reading text file from storage...")
+                    text_content = self.storage_client.download_as_text(object_path)
+                    channel_source = "Text"
+                except Exception as e:
+                    print(f"Error reading text file from storage: {str(e)}")
+                    raise
+            elif filename.lower().endswith('.docx'):
+                try:
+                    print("Reading DOCX file from storage...")
+                    file_bytes = self.storage_client.download_as_bytes(object_path)
+                    print(f"Retrieved {len(file_bytes)} bytes")
+                    
+                    # Create a BytesIO object to simulate a file
+                    import io
+                    file_io = io.BytesIO(file_bytes)
+                    
+                    text_content = self._extract_docx_text(file_io)
+                    channel_source = "DOCX"
+                except Exception as e:
+                    print(f"Error reading DOCX from storage: {str(e)}")
                     raise
             else:
                 raise ValueError("Unsupported file type")
@@ -201,6 +224,35 @@ class DocumentProcessor:
         html = markdown.markdown(content)
         # Simple HTML to text conversion
         return html.replace('<p>', '').replace('</p>', '\n')
+    
+    def _extract_docx_text(self, file: BinaryIO) -> str:
+        """Extract text from DOCX file"""
+        try:
+            print("=== DOCX Extraction Debug ===")
+            print("Importing docx library...")
+            import docx
+            
+            print("Reading DOCX file...")
+            doc = docx.Document(file)
+            
+            print(f"DOCX has {len(doc.paragraphs)} paragraphs")
+            text = []
+            for i, para in enumerate(doc.paragraphs):
+                if para.text:
+                    print(f"Paragraph {i+1}: extracted {len(para.text)} characters")
+                    text.append(para.text)
+            
+            full_text = '\n'.join(text)
+            print(f"Total extracted text: {len(full_text)} characters")
+            print("=== DOCX Extraction Complete ===")
+            return full_text
+        except Exception as e:
+            print(f"=== DOCX Extraction Error ===")
+            print(f"Error type: {type(e).__name__}")
+            print(f"Error message: {str(e)}")
+            print(f"Error occurred at line: {e.__traceback__.tb_lineno}")
+            print("=== DOCX Extraction Error End ===")
+            raise
         
     def _generate_embedding(self, text: str) -> list:
         """Generate embedding using OpenAI API"""

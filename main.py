@@ -809,9 +809,12 @@ async def upload_file(
     print(f"Auth method: {user.get('auth_source', 'unknown')}")
 
     # Validate file type
-    if not (file.filename.lower().endswith('.pdf') or file.filename.lower().endswith('.md')):
+    if not (file.filename.lower().endswith('.pdf') or 
+            file.filename.lower().endswith('.md') or 
+            file.filename.lower().endswith('.txt') or 
+            file.filename.lower().endswith('.docx')):
         print("File type validation failed")
-        raise HTTPException(status_code=400, detail="Only PDF and Markdown files are supported")
+        raise HTTPException(status_code=400, detail="Only PDF, Markdown, TXT, and DOCX files are supported")
 
     try:
         print("Creating DocumentProcessor instance...")

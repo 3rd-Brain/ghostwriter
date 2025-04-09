@@ -318,8 +318,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const fileDivs = [];
         for (const file of files) {
             // Validate file type
-            if (!file.name.toLowerCase().endsWith('.pdf') && !file.name.toLowerCase().endsWith('.md')) {
-                alert('Only PDF and Markdown files are supported');
+            if (!file.name.toLowerCase().endsWith('.pdf') && 
+                !file.name.toLowerCase().endsWith('.md') && 
+                !file.name.toLowerCase().endsWith('.txt') && 
+                !file.name.toLowerCase().endsWith('.docx')) {
+                alert('Only PDF, Markdown, TXT, and DOCX files are supported');
                 continue;
             }
 
