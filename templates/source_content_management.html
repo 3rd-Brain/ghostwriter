@@ -112,8 +112,6 @@
                         <tr>
                             <th>Filename</th>
                             <th>Type</th>
-                            <th>Uploaded On</th>
-                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="storageFilesList">
@@ -408,15 +406,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         <tr>
                             <td>${file.name}</td>
                             <td><span class="file-type-badge file-type-${fileType}">${fileType.toUpperCase()}</span></td>
-                            <td>${new Date(file.uploaded_at).toLocaleString()}</td>
-                            <td class="file-actions">
-                                <button class="icon-button" onclick="viewFile('${file.path}')">
-                                    <i data-lucide="eye"></i>
-                                </button>
-                                <button class="icon-button" onclick="deleteFile('${file.path}')">
-                                    <i data-lucide="trash-2"></i>
-                                </button>
-                            </td>
                         </tr>
                     `;
                 }).join('');
