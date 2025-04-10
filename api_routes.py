@@ -11,6 +11,9 @@ class ProfileURLRequest(BaseModel):
 
 router = APIRouter(prefix="/api", tags=["API"])
 
+class TwitterProfilesRequest(BaseModel):
+    twitter_urls: List[str]
+
 @router.get("/protected", response_model=SuccessResponse)
 async def protected_endpoint(current_user: dict = Depends(get_current_api_user)):
     """
@@ -357,6 +360,35 @@ async def create_brand_from_twitter(request: CreateBrandRequest, user: dict = De
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/industry-report", tags=["Utility"])
+async def generate_industry_report(request: TwitterProfilesRequest, user: dict = Depends(check_api_key_or_jwt)):
+    """
+    **Generate an industry report from Twitter/X profiles**
+    
+    This endpoint analyzes multiple Twitter/X profiles and generates a comprehensive industry report.
+    
+    ## When to use
+    Use this endpoint when you need to:
+    * Analyze content patterns across multiple Twitter/X accounts
+    * Generate insights about an industry or niche based on influencer profiles
+    * Research engagement patterns across a group of accounts
+    
+    ## Required Input
+    * `twitter_urls`: A list of valid Twitter/X profile URLs (e.g., ["https://x.com/elonmusk", "https://x.com/jack"])
+    
+    *This endpoint supports both JWT and API key authentication.*
+    *Processing happens asynchronously, and you'll receive a notification when the report is ready.*
+    """
+    from industry_report import generateReport
+    
+    # Check if we received any Twitter URLs
+    if not request.twitter_urls:
+        return {"status": "error", "message": "No Twitter/X profile URLs provided"}
+    
+    # Call the generateReport function
+    result = generateReport(request.twitter_urls)
+    return result
 
 @router.get("/user/profile")
 async def get_user_profile(current_user: dict = Depends(get_current_api_user)):
