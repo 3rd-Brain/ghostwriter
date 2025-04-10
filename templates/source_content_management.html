@@ -112,6 +112,7 @@
                         <tr>
                             <th>Filename</th>
                             <th>Type</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody id="storageFilesList">
@@ -380,6 +381,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load storage files directly
     loadStorageFiles();
     
+    // Set up event delegation for delete buttons
+    document.addEventListener('click', function(e) {
+        if (e.target && e.target.classList.contains('delete-idea')) {
+            const filePath = e.target.getAttribute('data-file-path');
+            console.log('Delete Ideas clicked for file:', filePath);
+            // Placeholder for future delete functionality
+            alert('Delete Ideas functionality will be implemented later');
+        }
+    });
+    
     // Load storage files
     async function loadStorageFiles() {
         try {
@@ -406,6 +417,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         <tr>
                             <td>${file.name}</td>
                             <td><span class="file-type-badge file-type-${fileType}">${fileType.toUpperCase()}</span></td>
+                            <td>
+                                <button class="btn-small delete-idea" data-file-path="${file.path}">Delete Ideas</button>
+                            </td>
                         </tr>
                     `;
                 }).join('');
