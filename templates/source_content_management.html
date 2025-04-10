@@ -360,6 +360,21 @@
     color: #0d47a1;
     background-color: rgba(13, 71, 161, 0.1);
 }
+
+.delete-button {
+    background-color: #e53935;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.delete-button:hover {
+    background-color: #c62828;
+}
 </style>
 {% endblock %}
 
@@ -418,7 +433,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <td>${file.name}</td>
                             <td><span class="file-type-badge file-type-${fileType}">${fileType.toUpperCase()}</span></td>
                             <td>
-                                <button class="btn-small delete-idea" data-file-path="${file.path}">Delete Ideas</button>
+                                <button class="form-button delete-button delete-idea" data-file-path="${file.path}">Delete Ideas</button>
                             </td>
                         </tr>
                     `;
