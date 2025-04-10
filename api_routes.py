@@ -187,13 +187,14 @@ async def get_storage_files(user: dict = Depends(check_api_key_or_jwt)):
                     "file_id": file_id,
                     "uploaded_at": uploaded_at or obj.updated_at.isoformat() if hasattr(obj, 'updated_at') else None
                 })
-                return {
-                    "status": "success",
-                    "files": files
-                }
-                
-            except Exception as e:
-                raise HTTPException(status_code=500, detail=f"Error retrieving storage files: {str(e)}")
+        
+        return {
+            "status": "success",
+            "files": files
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving storage files: {str(e)}")
 
 @router.get("/file-preview", tags=["Storage"])
 async def get_file_preview(path: str, user: dict = Depends(check_api_key_or_jwt)):
