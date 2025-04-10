@@ -384,6 +384,9 @@ document.addEventListener('DOMContentLoaded', function() {
         loadStorageFiles();
     });
     
+    // Make loadStorageFiles available globally
+    window.loadStorageFiles = loadStorageFiles;
+    
     // Load storage files
     async function loadStorageFiles() {
         try {
@@ -786,7 +789,8 @@ function viewFile(filePath) {
 }
 
 // Function to delete a file from storage
-function deleteFile(filePath) {
+// Define global functions for file actions
+window.deleteFile = function(filePath) {
     if (confirm('Are you sure you want to delete this file? This action cannot be undone.')) {
         fetch(`/api/delete-file`, {
             method: 'DELETE',
@@ -815,6 +819,73 @@ function deleteFile(filePath) {
             alert('Error deleting file: ' + error.message);
         });
     }
+}
+
+window.viewFile = function(filePath) {
+    // Create modal for file preview
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    
+    const modalContent = document.createElement('div');
+    modalContent.className = 'modal-content';
+    
+    const modalHeader = document.createElement('div');
+    modalHeader.className = 'modal-header';
+    
+    const title = document.createElement('h2');
+    title.textContent = 'File Preview';
+    
+    const closeBtn = document.createElement('span');
+    closeBtn.className = 'close';
+    closeBtn.innerHTML = '&times;';
+    closeBtn.onclick = function() {
+        document.body.removeChild(modal);
+    };
+    
+    modalHeader.appendChild(title);
+    modalHeader.appendChild(closeBtn);
+    
+    const modalBody = document.createElement('div');
+    modalBody.className = 'modal-body';
+    modalBody.innerHTML = `<div class="loading">Loading file preview...</div>`;
+    
+    // Fetch file content
+    fetch(`/api/file-preview?path=${encodeURIComponent(filePath)}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to load file preview');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.content) {
+                const fileContent = document.createElement('pre');
+                fileContent.className = 'file-preview-content';
+                fileContent.textContent = data.content;
+                modalBody.innerHTML = '';
+                modalBody.appendChild(fileContent);
+            } else {
+                modalBody.innerHTML = `<div class="error">Preview not available for this file type</div>`;
+            }
+        })
+        .catch(error => {
+            console.error('Error loading file preview:', error);
+            modalBody.innerHTML = `<div class="error">Error loading file: ${error.message}</div>`;
+        });
+    
+    modalContent.appendChild(modalHeader);
+    modalContent.appendChild(modalBody);
+    modal.appendChild(modalContent);
+    
+    // Close when clicking outside of modal
+    window.onclick = function(event) {
+        if (event.target === modal) {
+            document.body.removeChild(modal);
+        }
+    };
+    
+    document.body.appendChild(modal);
 }
 </script>
 {% endblock %}
