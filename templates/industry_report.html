@@ -364,11 +364,25 @@ document.addEventListener('DOMContentLoaded', function() {
         // Show detailed success notification
         showNotification("We're creating your in-depth Industry Report, analyzing everything from engagement patterns to content performance.\n\nThis comprehensive analysis takes a bit of time, but we'll let you know when your detailed insights are ready!");
         
-        // TODO: Submit the Twitter URLs to the backend for processing
-        // Implementation for the next phase:
-        // 1. Send an AJAX request to the backend to analyze the Twitter profiles
-        // 2. Update the UI to show that analysis is in progress
-        // 3. Handle the response from the backend and update the UI with the results
+        // Submit the Twitter URLs to the backend for processing
+        fetch('/api/industry-report', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ twitter_urls: twitterUrls })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Industry report generation started:', data);
+            if (data.status === 'error') {
+                showNotification('Error starting report generation: ' + data.message, true);
+            }
+        })
+        .catch(error => {
+            console.error('Error calling industry report API:', error);
+            showNotification('Failed to start report generation. Please try again.', true);
+        });
         
         // Close the modal
         modal.style.display = 'none';

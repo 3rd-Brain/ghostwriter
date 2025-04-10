@@ -3,6 +3,7 @@ from api_middleware import get_current_api_user, get_admin_api_user, check_api_k
 from schemas import SuccessResponse
 import os
 import requests
+from typing import List
 from pydantic import BaseModel
 from social_writer import extractProfileTopTweets, topTweetsToTemplate
 
