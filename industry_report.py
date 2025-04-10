@@ -24,12 +24,13 @@ def extract_handle_from_url(url: str) -> str:
     return handle_match.group(1) if handle_match else ""
 
 
-def generateReport(twitter_urls: List[str]) -> Dict[str, Any]:
+def generateReport(twitter_urls: List[str], user_id: str = None) -> Dict[str, Any]:
     """
     Generate an industry report based on provided Twitter/X profile URLs.
     
     Args:
         twitter_urls (List[str]): List of Twitter/X profile URLs to analyze
+        user_id (str, optional): ID of the currently logged in user
         
     Returns:
         Dict: Response from the webhook API
@@ -37,20 +38,24 @@ def generateReport(twitter_urls: List[str]) -> Dict[str, Any]:
     print(f"Generating report for {len(twitter_urls)} Twitter/X profiles")
     
     # Prepare the payload
-    payload = []
+    payload = {
+        "user_id": user_id,
+        "profiles": []
+    }
+    
     for url in twitter_urls:
         handle = extract_handle_from_url(url)
         if handle:
-            payload.append({
+            payload["profiles"].append({
                 "url": url,
                 "handle": handle
             })
     
     # Only proceed if we have valid profiles
-    if not payload:
+    if not payload["profiles"]:
         return {"status": "error", "message": "No valid Twitter/X profiles provided"}
     
-    print(f"Prepared payload with {len(payload)} profiles")
+    print(f"Prepared payload with {len(payload['profiles'])} profiles for user {payload['user_id']}")
     
     # Make the API call to the webhook
     try:

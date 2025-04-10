@@ -387,8 +387,13 @@ async def generate_industry_report(request: TwitterProfilesRequest, user: dict =
     if not request.twitter_urls:
         return {"status": "error", "message": "No Twitter/X profile URLs provided"}
     
-    # Call the generateReport function
-    result = generateReport(request.twitter_urls)
+    # Get the user ID from the authenticated user
+    user_id = user.get("user_id")
+    if not user_id:
+        return {"status": "error", "message": "User ID not found in authentication context"}
+    
+    # Call the generateReport function with the user_id
+    result = generateReport(request.twitter_urls, user_id)
     return result
 
 @router.get("/user/profile")
