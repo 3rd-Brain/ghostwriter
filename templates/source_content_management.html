@@ -106,38 +106,20 @@
         <div class="card-content">
             <p class="text-secondary">View and manage your source content</p>
             <!-- Tabs for different content views -->
-            <div class="tab-container mt-md">
-                <div class="tab-buttons">
-                    <button class="tab-button active" data-tab="processed-content">Processed Content</button>
-                    <button class="tab-button" data-tab="storage-files">Storage Files</button>
-                </div>
-                <div class="tab-content">
-                    <div id="processed-content" class="tab-pane active">
-                        <div id="contentList" class="content-list">
-                            <!-- Processed content items will be populated here -->
-                        </div>
-                        <div id="pagination" class="pagination-container">
-                            <!-- Pagination controls will be added here -->
-                        </div>
-                    </div>
-                    <div id="storage-files" class="tab-pane">
-                        <div class="file-list-container">
-                            <table class="file-table">
-                                <thead>
-                                    <tr>
-                                        <th>Filename</th>
-                                        <th>Type</th>
-                                        <th>Uploaded On</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="storageFilesList">
-                                    <!-- Storage files will be populated here -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+            <div class="file-list-container">
+                <table class="file-table">
+                    <thead>
+                        <tr>
+                            <th>Filename</th>
+                            <th>Type</th>
+                            <th>Uploaded On</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="storageFilesList">
+                        <!-- Storage files will be populated here -->
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -397,23 +379,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const tabButtons = document.querySelectorAll('.tab-button');
     const tabPanes = document.querySelectorAll('.tab-pane');
 
-    // Tab functionality
-    tabButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            // Remove active class from all buttons and panes
-            tabButtons.forEach(btn => btn.classList.remove('active'));
-            tabPanes.forEach(pane => pane.classList.remove('active'));
-            
-            // Add active class to clicked button and corresponding pane
-            button.classList.add('active');
-            const tabId = button.getAttribute('data-tab');
-            document.getElementById(tabId).classList.add('active');
-            
-            // Load storage files if that tab is selected
-            if (tabId === 'storage-files') {
-                loadStorageFiles();
-            }
-        });
+    // Load storage files on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        loadStorageFiles();
     });
     
     // Load storage files
