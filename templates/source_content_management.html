@@ -100,11 +100,39 @@
         </div>
         <div class="card-content">
             <p class="text-secondary">View and manage your source content</p>
-            <div id="contentList" class="content-list mt-md">
-                <!-- Content items will be populated here -->
-            </div>
-            <div id="pagination" class="pagination-container">
-                <!-- Pagination controls will be added here -->
+            <!-- Tabs for different content views -->
+            <div class="tab-container mt-md">
+                <div class="tab-buttons">
+                    <button class="tab-button active" data-tab="processed-content">Processed Content</button>
+                    <button class="tab-button" data-tab="storage-files">Storage Files</button>
+                </div>
+                <div class="tab-content">
+                    <div id="processed-content" class="tab-pane active">
+                        <div id="contentList" class="content-list">
+                            <!-- Processed content items will be populated here -->
+                        </div>
+                        <div id="pagination" class="pagination-container">
+                            <!-- Pagination controls will be added here -->
+                        </div>
+                    </div>
+                    <div id="storage-files" class="tab-pane">
+                        <div class="file-list-container">
+                            <table class="file-table">
+                                <thead>
+                                    <tr>
+                                        <th>Filename</th>
+                                        <th>Type</th>
+                                        <th>Uploaded On</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="storageFilesList">
+                                    <!-- Storage files will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -243,6 +271,109 @@
     display: flex;
     gap: var(--spacing-sm);
 }
+
+/* Tabs styling */
+.tab-container {
+    width: 100%;
+}
+
+.tab-buttons {
+    display: flex;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.tab-button {
+    padding: 0.75rem 1.5rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text);
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.tab-button.active {
+    color: var(--primary);
+    border-bottom: 2px solid var(--primary);
+}
+
+.tab-button:hover:not(.active) {
+    color: var(--primary-alt);
+    background-color: var(--surface-hover);
+}
+
+.tab-content {
+    margin-top: 1rem;
+}
+
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+/* File table styling */
+.file-list-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.file-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.file-table th, 
+.file-table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+.file-table th {
+    font-weight: 600;
+    background-color: var(--surface-alt);
+}
+
+.file-table tr:hover {
+    background-color: var(--surface-hover);
+}
+
+.file-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.file-type-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    border-radius: var(--radius-sm);
+    background-color: var(--surface-alt);
+}
+
+.file-type-pdf {
+    color: #e53935;
+    background-color: rgba(229, 57, 53, 0.1);
+}
+
+.file-type-md {
+    color: #1976d2;
+    background-color: rgba(25, 118, 210, 0.1);
+}
+
+.file-type-txt {
+    color: #388e3c;
+    background-color: rgba(56, 142, 60, 0.1);
+}
+
+.file-type-docx {
+    color: #0d47a1;
+    background-color: rgba(13, 71, 161, 0.1);
+}
 </style>
 {% endblock %}
 
@@ -258,7 +389,81 @@ document.addEventListener('DOMContentLoaded', function() {
     const progressText = document.getElementById('progress-text');
     const progressFill = document.getElementById('progress-fill');
     const uploadFiles = document.getElementById('upload-files');
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabPanes = document.querySelectorAll('.tab-pane');
 
+    // Tab functionality
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Remove active class from all buttons and panes
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabPanes.forEach(pane => pane.classList.remove('active'));
+            
+            // Add active class to clicked button and corresponding pane
+            button.classList.add('active');
+            const tabId = button.getAttribute('data-tab');
+            document.getElementById(tabId).classList.add('active');
+            
+            // Load storage files if that tab is selected
+            if (tabId === 'storage-files') {
+                loadStorageFiles();
+            }
+        });
+    });
+    
+    // Load storage files
+    async function loadStorageFiles() {
+        try {
+            const storageFilesList = document.getElementById('storageFilesList');
+            storageFilesList.innerHTML = '<tr><td colspan="4" class="text-center">Loading files...</td></tr>';
+            
+            const response = await fetch('/api/storage-files');
+            if (!response.ok) {
+                throw new Error('Failed to fetch storage files');
+            }
+            
+            const data = await response.json();
+            
+            if (data.files && data.files.length > 0) {
+                storageFilesList.innerHTML = data.files.map(file => {
+                    // Determine file type for styling
+                    let fileType = 'default';
+                    if (file.name.toLowerCase().endsWith('.pdf')) fileType = 'pdf';
+                    else if (file.name.toLowerCase().endsWith('.md')) fileType = 'md';
+                    else if (file.name.toLowerCase().endsWith('.txt')) fileType = 'txt';
+                    else if (file.name.toLowerCase().endsWith('.docx')) fileType = 'docx';
+                    
+                    return `
+                        <tr>
+                            <td>${file.name}</td>
+                            <td><span class="file-type-badge file-type-${fileType}">${fileType.toUpperCase()}</span></td>
+                            <td>${new Date(file.uploaded_at).toLocaleString()}</td>
+                            <td class="file-actions">
+                                <button class="icon-button" onclick="viewFile('${file.path}')">
+                                    <i data-lucide="eye"></i>
+                                </button>
+                                <button class="icon-button" onclick="deleteFile('${file.path}')">
+                                    <i data-lucide="trash-2"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+                
+                // Reinitialize Lucide icons for new content
+                if (window.lucide) {
+                    lucide.createIcons();
+                }
+            } else {
+                storageFilesList.innerHTML = '<tr><td colspan="4" class="text-center">No files found in storage</td></tr>';
+            }
+        } catch (error) {
+            console.error('Error loading storage files:', error);
+            document.getElementById('storageFilesList').innerHTML = 
+                '<tr><td colspan="4" class="text-center text-error">Error loading files</td></tr>';
+        }
+    }
+    
     // Modal controls
     openUploadBtn.addEventListener('click', () => uploadModal.style.display = 'block');
 
@@ -536,6 +741,106 @@ function updatePagination(total, currentPage, totalPages) {
     // Reinitialize Lucide icons for pagination
     if (window.lucide) {
         lucide.createIcons();
+    }
+}
+
+// Function to view a file from storage
+function viewFile(filePath) {
+    // Create modal for file preview
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    
+    const modalContent = document.createElement('div');
+    modalContent.className = 'modal-content';
+    
+    const modalHeader = document.createElement('div');
+    modalHeader.className = 'modal-header';
+    
+    const title = document.createElement('h2');
+    title.textContent = 'File Preview';
+    
+    const closeBtn = document.createElement('span');
+    closeBtn.className = 'close';
+    closeBtn.innerHTML = '&times;';
+    closeBtn.onclick = function() {
+        document.body.removeChild(modal);
+    };
+    
+    modalHeader.appendChild(title);
+    modalHeader.appendChild(closeBtn);
+    
+    const modalBody = document.createElement('div');
+    modalBody.className = 'modal-body';
+    modalBody.innerHTML = `<div class="loading">Loading file preview...</div>`;
+    
+    // Fetch file content
+    fetch(`/api/file-preview?path=${encodeURIComponent(filePath)}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to load file preview');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.content) {
+                const fileContent = document.createElement('pre');
+                fileContent.className = 'file-preview-content';
+                fileContent.textContent = data.content;
+                modalBody.innerHTML = '';
+                modalBody.appendChild(fileContent);
+            } else {
+                modalBody.innerHTML = `<div class="error">Preview not available for this file type</div>`;
+            }
+        })
+        .catch(error => {
+            console.error('Error loading file preview:', error);
+            modalBody.innerHTML = `<div class="error">Error loading file: ${error.message}</div>`;
+        });
+    
+    modalContent.appendChild(modalHeader);
+    modalContent.appendChild(modalBody);
+    modal.appendChild(modalContent);
+    
+    // Close when clicking outside of modal
+    window.onclick = function(event) {
+        if (event.target === modal) {
+            document.body.removeChild(modal);
+        }
+    };
+    
+    document.body.appendChild(modal);
+}
+
+// Function to delete a file from storage
+function deleteFile(filePath) {
+    if (confirm('Are you sure you want to delete this file? This action cannot be undone.')) {
+        fetch(`/api/delete-file`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ path: filePath })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to delete file');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.status === 'success') {
+                alert('File deleted successfully');
+                // Reload the file list
+                loadStorageFiles();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error deleting file:', error);
+            alert('Error deleting file: ' + error.message);
+        });
     }
 }
 </script>

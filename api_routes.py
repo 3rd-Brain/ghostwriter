@@ -133,6 +133,182 @@ async def top_tweets_to_template(request: ProfileURLRequest, background_tasks: B
 
 class CreateBrandRequest(BaseModel):
     profile_url: str
+
+
+@router.get("/storage-files", tags=["Storage"])
+async def get_storage_files(user: dict = Depends(check_api_key_or_jwt)):
+    """
+    **Get files from Object Storage for the current user**
+    
+    This endpoint retrieves a list of files stored in the user's object storage directory.
+    
+    ## When to use
+    Use this endpoint when you need to:
+    * View all files uploaded to object storage
+    * Manage your uploaded documents
+    
+    *This endpoint supports both JWT and API key authentication.*
+    """
+    try:
+        from replit.object_storage import Client
+        
+        # Initialize the storage client
+        storage_client = Client()
+        user_id = user.get("user_id")
+        
+        # List all objects with prefix for user's directory
+        prefix = f"documents/{user_id}/"
+        objects = storage_client.list(prefix=prefix)
+        
+        # Process the objects to create a file list
+        files = []
+        for obj in objects:
+            # Skip directory markers or empty items
+            if obj.name.endswith('/') or not obj.name:
+                continue
+                
+            # Extract filename from path
+            path_parts = obj.name.split('/')
+            if len(path_parts) >= 3:  # Format is documents/user_id/file_id/filename
+                file_id = path_parts[2]
+                filename = path_parts[3] if len(path_parts) > 3 else file_id
+                
+                # Get metadata if available
+                try:
+                    metadata = storage_client.get_metadata(obj.name)
+                    uploaded_at = metadata.get('created', None)
+                except:
+                    uploaded_at = None
+                
+                files.append({
+                    "name": filename,
+                    "path": obj.name,
+                    "file_id": file_id,
+                    "uploaded_at": uploaded_at or obj.updated_at.isoformat() if hasattr(obj, 'updated_at') else None
+                })
+        
+
+
+@router.get("/file-preview", tags=["Storage"])
+async def get_file_preview(path: str, user: dict = Depends(check_api_key_or_jwt)):
+    """
+    **Get a preview of a file from Object Storage**
+    
+    This endpoint retrieves the content of a file for preview purposes.
+    
+    ## When to use
+    Use this endpoint when you need to:
+    * Preview a file's contents before processing
+    * View the raw text of uploaded files
+    
+    *This endpoint supports both JWT and API key authentication.*
+    """
+    try:
+        from replit.object_storage import Client
+        
+        # Initialize the storage client
+        storage_client = Client()
+        user_id = user.get("user_id")
+        
+        # Verify the file belongs to the user (security check)
+        if not path.startswith(f"documents/{user_id}/"):
+            raise HTTPException(status_code=403, detail="Access denied to this file")
+        
+        # Get the content based on file type
+        file_extension = path.split('.')[-1].lower() if '.' in path else ''
+        
+        if file_extension in ['txt', 'md']:
+            # Text files can be displayed directly
+            content = storage_client.download_as_text(path)
+        elif file_extension == 'pdf':
+            # PDF files need text extraction
+            import io
+            import fitz  # PyMuPDF
+            
+            file_bytes = storage_client.download_as_bytes(path)
+            pdf_file = io.BytesIO(file_bytes)
+            
+            try:
+                doc = fitz.open(stream=pdf_file, filetype="pdf")
+                content = ""
+                for page_num in range(len(doc)):
+                    page = doc.load_page(page_num)
+                    content += page.get_text()
+                doc.close()
+            except Exception as e:
+                return {"status": "error", "message": f"Failed to extract PDF text: {str(e)}"}
+        elif file_extension == 'docx':
+            # DOCX files need text extraction
+            import io
+            from docx import Document
+            
+            file_bytes = storage_client.download_as_bytes(path)
+            docx_file = io.BytesIO(file_bytes)
+            
+            try:
+                doc = Document(docx_file)
+                content = "\n".join([paragraph.text for paragraph in doc.paragraphs])
+            except Exception as e:
+                return {"status": "error", "message": f"Failed to extract DOCX text: {str(e)}"}
+        else:
+            return {"status": "error", "message": "Preview not available for this file type"}
+        
+        return {
+            "status": "success",
+            "content": content
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving file preview: {str(e)}")
+
+@router.delete("/delete-file", tags=["Storage"])
+async def delete_file(request: dict, user: dict = Depends(check_api_key_or_jwt)):
+    """
+    **Delete a file from Object Storage**
+    
+    This endpoint deletes a file from the user's storage.
+    
+    ## When to use
+    Use this endpoint when you need to:
+    * Remove unwanted files from storage
+    * Clean up your storage space
+    
+    *This endpoint supports both JWT and API key authentication.*
+    """
+    try:
+        from replit.object_storage import Client
+        
+        # Get the file path from the request
+        path = request.get("path")
+        if not path:
+            raise HTTPException(status_code=400, detail="File path is required")
+        
+        # Initialize the storage client
+        storage_client = Client()
+        user_id = user.get("user_id")
+        
+        # Verify the file belongs to the user (security check)
+        if not path.startswith(f"documents/{user_id}/"):
+            raise HTTPException(status_code=403, detail="Access denied to this file")
+        
+        # Delete the file
+        storage_client.delete(path)
+        
+        return {
+            "status": "success",
+            "message": "File deleted successfully"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error deleting file: {str(e)}")
+
+
+        return {
+            "status": "success",
+            "files": files
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving storage files: {str(e)}")
+
+
     brand_name: str = None
 
 @router.post("/create-brand-from-twitter", tags=["Brand Management"])
