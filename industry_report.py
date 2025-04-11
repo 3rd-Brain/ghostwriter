@@ -77,96 +77,100 @@ def generateReport(twitter_urls: List[str], user_id: str = None) -> Dict[str, An
             "response": result
         }
     except requests.exceptions.RequestException as e:
-
+        print(f"Error starting report generation: {str(e)}")
+        return {
+            "status": "error",
+            "message": f"Failed to start report generation: {str(e)}"
+        }
 
 def uploadIndustryReport(report_data: Dict[str, Any], user_id: Optional[str] = None) -> Dict[str, Any]:
     """
     Upload an industry report to AstraDB.
-    
+
     Args:
         report_data (Dict): The industry report data to upload
         user_id (str, optional): The user ID to associate with the report
-        
+
     Returns:
         Dict: Response from the database with upload status
     """
     print(f"\n=== Industry Report Upload Started ===")
-    
+
     # Get database credentials from environment
     ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
     ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
-    
+
     if not ASTRA_DB_API_ENDPOINT:
         raise Exception("ASTRA_DB_API_ENDPOINT not configured")
     if not ASTRA_DB_APPLICATION_TOKEN:
         raise Exception("ASTRA_DB_APPLICATION_TOKEN not configured")
-    
+
     # Add user_id to report data if provided
     if user_id:
         report_data["user_id"] = user_id
-    
+
     # Ensure report has a unique ID if not already present
     if "_id" not in report_data:
         import uuid
         report_data["_id"] = str(uuid.uuid4())
-    
+
     # Add timestamp if not present
     if "created_at" not in report_data:
         from datetime import datetime
         report_data["created_at"] = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
-    
+
     # Prepare the database request
     url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/user_industry_reports"
-    
+
     headers = {
         "Token": ASTRA_DB_APPLICATION_TOKEN,
         "Content-Type": "application/json"
     }
-    
+
     payload = {
         "insertOne": {
             "document": report_data
         }
     }
-    
+
     try:
         print(f"Uploading industry report to AstraDB...")
         print(f"Report ID: {report_data.get('_id')}")
-        
+
         response = requests.post(url, headers=headers, json=payload)
         print(f"Response status code: {response.status_code}")
-        
+
 
 
 def getIndustryReports(user_id: str) -> Dict[str, Any]:
     """
     Retrieve industry reports for a specific user.
-    
+
     Args:
         user_id (str): The user ID to retrieve reports for
-        
+
     Returns:
         Dict: Response containing the user's industry reports
     """
     print(f"\n=== Getting Industry Reports for User {user_id} ===")
-    
+
     # Get database credentials from environment
     ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
     ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
-    
+
     if not ASTRA_DB_API_ENDPOINT:
         raise Exception("ASTRA_DB_API_ENDPOINT not configured")
     if not ASTRA_DB_APPLICATION_TOKEN:
         raise Exception("ASTRA_DB_APPLICATION_TOKEN not configured")
-    
+
     # Prepare the database request
     url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/user_industry_reports"
-    
+
     headers = {
         "Token": ASTRA_DB_APPLICATION_TOKEN,
         "Content-Type": "application/json"
     }
-    
+
     payload = {
         "find": {
             "filter": {"user_id": user_id},
@@ -175,17 +179,17 @@ def getIndustryReports(user_id: str) -> Dict[str, Any]:
             }
         }
     }
-    
+
     try:
         print(f"Fetching industry reports from AstraDB...")
-        
+
         response = requests.post(url, headers=headers, json=payload)
         response.raise_for_status()
         result = response.json()
-        
+
         reports = result.get("data", {}).get("documents", [])
         print(f"Retrieved {len(reports)} industry reports for user {user_id}")
-        
+
         return {
             "status": "success",
             "reports": reports
@@ -201,12 +205,12 @@ def getIndustryReports(user_id: str) -> Dict[str, Any]:
         response_text = response.text
         preview_length = min(200, len(response_text))
         print(f"Response preview: {response_text[:preview_length]}{'...' if len(response_text) > preview_length else ''}")
-        
+
         response.raise_for_status()
         result = response.json()
-        
+
         print(f"=== Industry Report Upload Completed ===\n")
-        
+
         return {
             "status": "success",
             "message": "Industry report uploaded successfully",
@@ -218,10 +222,4 @@ def getIndustryReports(user_id: str) -> Dict[str, Any]:
         return {
             "status": "error",
             "message": f"Failed to upload industry report: {str(e)}"
-        }
-
-        print(f"Error starting report generation: {str(e)}")
-        return {
-            "status": "error",
-            "message": f"Failed to start report generation: {str(e)}"
         }
