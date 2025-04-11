@@ -18,7 +18,7 @@ class TwitterProfilesRequest(BaseModel):
 class IndustryReportUploadRequest(BaseModel):
     user_id: str = None
     IndustryInsights: Dict[str, Any]
-    OverallInsights: str
+    OverallInsights: Any  # Accept any type instead of string
     ResearchPerTweet: List[Any]
 
 
@@ -386,10 +386,6 @@ async def get_industry_reports(user: dict = Depends(check_api_key_or_jwt)):
 
     # Call the getIndustryReports function with the user_id
     result = getIndustryReports(user_id)
-    return result
-
-    # Call the uploadIndustryReport function with the user_id
-    result = uploadIndustryReport(request.report_data, user_id)
     return result
 
 @router.post("/create-brand-from-twitter", tags=["Brand Management"])
