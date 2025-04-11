@@ -17,9 +17,9 @@ class TwitterProfilesRequest(BaseModel):
 
 class IndustryReportUploadRequest(BaseModel):
     user_id: str = None
+    webViewLink: str = None
     IndustryInsights: Dict[str, Any]
     OverallInsights: Any  # Accept any type instead of string
-    ResearchPerTweet: List[Any]
 
 
 @router.get("/protected", response_model=SuccessResponse)
