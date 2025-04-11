@@ -345,6 +345,10 @@ async def upload_industry_report(request: IndustryReportUploadRequest, user: dic
     if not user_id:
         return {"status": "error", "message": "User ID not found in authentication context"}
     
+    # Call the uploadIndustryReport function with the user_id
+    result = uploadIndustryReport(request.report_data, user_id)
+    return result
+    
 
 
 @router.get("/industry-reports", tags=["Utility"])

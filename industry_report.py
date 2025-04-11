@@ -139,7 +139,29 @@ def uploadIndustryReport(report_data: Dict[str, Any], user_id: Optional[str] = N
 
         response = requests.post(url, headers=headers, json=payload)
         print(f"Response status code: {response.status_code}")
+        
+        # Check for response length before printing preview
+        response_text = response.text
+        preview_length = min(200, len(response_text))
+        print(f"Response preview: {response_text[:preview_length]}{'...' if len(response_text) > preview_length else ''}")
 
+        response.raise_for_status()
+        result = response.json()
+
+        print(f"=== Industry Report Upload Completed ===\n")
+
+        return {
+            "status": "success",
+            "message": "Industry report uploaded successfully",
+            "report_id": report_data.get("_id"),
+            "response": result
+        }
+    except requests.exceptions.RequestException as e:
+        print(f"Error uploading industry report: {str(e)}")
+        return {
+            "status": "error",
+            "message": f"Failed to upload industry report: {str(e)}"
+        }
 
 
 def getIndustryReports(user_id: str) -> Dict[str, Any]:
