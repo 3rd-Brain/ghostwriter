@@ -361,12 +361,12 @@ async def upload_industry_report(request: IndustryReportUploadRequest, user: dic
     user_id_to_use = payload_user_id if payload_user_id else auth_user_id
     
     # Set the user_id in the report_data if it's not already there
-    if not payload_user_id:
+    if not :
         report_data["user_id"] = auth_user_id
     
     # Call the uploadIndustryReport function with the report data
     # Pass the user_id from the auth context as the second parameter for verification/logging
-    result = uploadIndustryReport(report_data, auth_user_id)
+    result = uploadIndustryReport(report_data, payload_user_id)
     return result
 
 
