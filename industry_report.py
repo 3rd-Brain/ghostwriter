@@ -174,7 +174,7 @@ def getIndustryReports(user_id: str) -> Dict[str, Any]:
     Returns:
         Dict: Response containing the user's industry reports
     """
-    print(f"\n=== Getting Industry Reports for User {user_id} ===")
+    print(f"Getting industry reports for user {user_id}")
 
     # Get database credentials from environment
     ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
@@ -196,45 +196,20 @@ def getIndustryReports(user_id: str) -> Dict[str, Any]:
     # Filter for user_id
     payload = {
         "find": {
-            "filter": {"user_id": user_id}
+            "filter": {"user_id": user_id},
+            "options": {
+                "sort": {"created_at": -1}  # Sort by created_at in descending order (newest first)
+            }
         }
     }
-    
-    print(f"Using filter with user_id: {user_id}")
 
     try:
-        print(f"Fetching industry reports from AstraDB...")
-        print(f"Request URL: {url}")
-        print(f"Using filter: {payload['find']['filter']}")
-
         response = requests.post(url, headers=headers, json=payload)
         response.raise_for_status()
         result = response.json()
 
         reports = result.get("data", {}).get("documents", [])
         print(f"Retrieved {len(reports)} industry reports for user {user_id}")
-        
-        # If no reports found, try a broader search to debug
-        if not reports:
-            print("No reports found with exact user_id match, attempting debug query...")
-            debug_payload = {
-                "find": {
-                    "filter": {},  # No filter to get all documents
-                    "limit": 5     # Limit to 5 documents for safety
-                }
-            }
-            debug_response = requests.post(url, headers=headers, json=debug_payload)
-            debug_response.raise_for_status()
-            debug_result = debug_response.json()
-            debug_docs = debug_result.get("data", {}).get("documents", [])
-            
-            if debug_docs:
-                print(f"Found {len(debug_docs)} documents in the collection")
-                for doc in debug_docs:
-                    doc_user_id = doc.get("user_id", "N/A")
-                    print(f"Sample document user_id: {doc_user_id}")
-            else:
-                print("No documents found in the collection")
 
         return {
             "status": "success",
