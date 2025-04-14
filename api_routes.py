@@ -98,7 +98,7 @@ async def extract_top_tweets(request: ProfileURLRequest, user: dict = Depends(ch
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/top-tweets-to-template", tags=["Brand Management"])
+@router.post("/top-tweets-to-template", tags=["Template Management"])
 async def top_tweets_to_template(request: ProfileURLRequest, background_tasks: BackgroundTasks, user: dict = Depends(check_api_key_or_jwt)):
     """
     **Convert top tweets from a Twitter/X profile into templates**
@@ -324,7 +324,7 @@ async def delete_file(request: dict, user: dict = Depends(check_api_key_or_jwt))
 
 
 
-@router.post("/industry-report/upload", tags=["Utility"])
+@router.post("/industry-report/upload", tags=["Industry Report Management"])
 async def upload_industry_report(request: IndustryReportUploadRequest, user: dict = Depends(check_api_key_or_jwt)):
     """
     **Upload an industry report to the database**
@@ -371,7 +371,7 @@ async def upload_industry_report(request: IndustryReportUploadRequest, user: dic
 
 
 
-@router.get("/industry-reports", tags=["Utility"])
+@router.get("/industry-reports", tags=["Industry Report Management"])
 async def get_industry_reports(user: dict = Depends(check_api_key_or_jwt)):
     """
     **Retrieve industry reports for the current user**
@@ -444,7 +444,7 @@ async def create_brand_from_twitter(request: CreateBrandRequest, user: dict = De
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/industry-report", tags=["Utility"])
+@router.post("/industry-report", tags=["Industry Report Management"])
 async def generate_industry_report(request: TwitterProfilesRequest, user: dict = Depends(check_api_key_or_jwt)):
     """
     **Generate an industry report from Twitter/X profiles**

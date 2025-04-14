@@ -29,6 +29,8 @@ app = FastAPI(
         {"name": "Generation Flows", "description": "Endpoints for configuring generation workflows"},
         {"name": "Template Management", "description": "Endpoints for creating and managing templates"},
         {"name": "Generation", "description": "Endpoints for generating content"},
+        {"name": "Publishing History", "description": "Endpoints for tracking publication history and metrics"},
+        {"name": "Industry Report Management", "description": "Endpoints for generating and managing industry reports"},
         {"name": "Utility", "description": "Utility endpoints for search and analysis"},
         {"name": "Onboarding", "description": "Endpoints for user onboarding process"},
         {"name": "Other", "description": "Miscellaneous endpoints"}
@@ -714,7 +716,7 @@ async def publish_history(request: Request, current_user: dict = Depends(get_cur
         "current_page": "publish_history"
     })
 
-@app.get("/api/user-publications", tags=["Content Management"])
+@app.get("/api/user-publications", tags=["Publishing History"])
 async def get_user_publications(user: dict = Depends(check_api_key_or_jwt)):
     """
     **Retrieve published content for the current user**
@@ -764,7 +766,7 @@ async def get_user_publications(user: dict = Depends(check_api_key_or_jwt)):
         print("=== DEBUG: /api/user-publications failed ===\n")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/api/publication-metrics/{publication_id}", tags=["Content Management"])
+@app.get("/api/publication-metrics/{publication_id}", tags=["Publishing History"])
 async def get_publication_metrics(publication_id: str, user: dict = Depends(check_api_key_or_jwt)):
     """
     **Retrieve detailed metrics for a specific publication**
@@ -1553,7 +1555,7 @@ async def delete_generation_flow(workflow_id: str, user: dict = Depends(check_ap
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/api/latest-posts", tags=["Content Management"])
+@app.get("/api/latest-posts", tags=["Generation"])
 async def get_latest_generated_posts(user: dict = Depends(check_api_key_or_jwt)):
     """
     **Retrieve the latest generated posts for the current user**
@@ -1587,7 +1589,7 @@ async def get_latest_generated_posts(user: dict = Depends(check_api_key_or_jwt))
         print(f"Error fetching latest posts: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/api/latest-posts/{username}", tags=["Content Management"])
+@app.get("/api/latest-posts/{username}", tags=["Generation"])
 async def get_latest_posts_by_username(username: str):
     """
     **Retrieve the latest generated posts for a specified username**
@@ -1617,7 +1619,7 @@ async def get_latest_posts_by_username(username: str):
         print(f"Error fetching latest posts for {username}: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.delete("/api/post/{post_id}", tags=["Content Management"])
+@app.delete("/api/post/{post_id}", tags=["Generation"])
 async def delete_post(post_id: str, user: dict = Depends(check_api_key_or_jwt)):
     """
     **Delete a specific generated post entry**
@@ -1651,7 +1653,7 @@ async def delete_post(post_id: str, user: dict = Depends(check_api_key_or_jwt)):
         print(f"Error deleting post: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/api/update-post-status", tags=["Content Management"])
+@app.post("/api/update-post-status", tags=["Generation"])
 async def update_post_status(request_data: schemas.PostStatusUpdateRequest, user: dict = Depends(check_api_key_or_jwt)):
     """
     **Update the status of a generated post**

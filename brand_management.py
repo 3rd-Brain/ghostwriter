@@ -28,7 +28,7 @@ async def brand_management_page(request: Request, current_user: dict = Depends(g
         "current_page": "brand_management"
     })
 
-@router.post("/api/create-brand")
+@router.post("/api/create-brand", tags=["Brand Management"])
 async def create_brand(
     brand_name: str = Form(...),
     brand_voice: str = Form(...),
@@ -81,7 +81,7 @@ async def create_brand(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to create brand: {str(e)}")
 
-@router.delete("/api/delete-brand/{brand_id}")
+@router.delete("/api/delete-brand/{brand_id}", tags=["Brand Management"])
 async def delete_brand(brand_id: str, current_user: dict = Depends(get_current_user)):
     """
     Delete a brand by brand_id, ensuring it belongs to the current user
@@ -126,7 +126,7 @@ async def delete_brand(brand_id: str, current_user: dict = Depends(get_current_u
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to delete brand: {str(e)}")
 
-@router.get("/api/brand/{brand_id}")
+@router.get("/api/brand/{brand_id}", tags=["Brand Management"])
 async def get_brand(brand_id: str, current_user: dict = Depends(get_current_user)):
     """
     Get details of a specific brand by brand_id
