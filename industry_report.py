@@ -197,8 +197,8 @@ def getIndustryReports(user_id: str) -> Dict[str, Any]:
     payload = {
         "find": {
             "filter": {"user_id": user_id},
-            "options": {
-                "sort": {"created_at": -1}  # Sort by created_at in descending order (newest first)
+            "sort": {
+                "created_at": -1  # Sort by created_at in descending order (newest first)
             }
         }
     }
