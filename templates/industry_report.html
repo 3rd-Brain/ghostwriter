@@ -628,7 +628,49 @@ document.addEventListener('DOMContentLoaded', function() {
     // Show More button functionality
     showMoreBtn.addEventListener('click', function() {
         console.log('Show More button clicked');
-        // Functionality to be added later
+        
+        // Fetch industry reports if needed
+        fetch('/api/industry-reports')
+            .then(response => response.json())
+            .then(data => {
+                console.log('Fetched reports for Show More button:', data);
+                
+                if (data.status === 'success' && data.reports && data.reports.length > 0) {
+                    // Sort reports by date (newest first)
+                    const reports = data.reports.sort((a, b) => {
+                        return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+                    });
+                    
+                    // Get the latest report
+                    const latestReport = reports[0];
+                    
+                    // Set the current report data and display in modal
+                    currentReportData = latestReport;
+                    
+                    // Display the report data in the modal
+                    displayIndustryInsights(latestReport);
+                    displayOverallInsights(latestReport);
+                    
+                    // Show the modal
+                    industryInfoModal.style.display = 'block';
+                    
+                    // Reset to the first tab
+                    document.querySelectorAll('.tab-button').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    document.querySelector('.tab-button[data-tab="industry-insights"]').classList.add('active');
+                    document.getElementById('industry-insights').classList.add('active');
+                } else {
+                    showNotification('No industry reports found', true);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading report for Show More button:', error);
+                showNotification('Error loading report details', true);
+            });
     });
     
     // Industry Info Modal Functionality
