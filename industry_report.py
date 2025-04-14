@@ -193,21 +193,14 @@ def getIndustryReports(user_id: str) -> Dict[str, Any]:
         "Content-Type": "application/json"
     }
 
-    # Try both exact match and case-insensitive regex search for user_id
-    # This handles potential case sensitivity or format issues
+    # Simple empty filter for debugging
     payload = {
         "find": {
-            "filter": {
-                "$or": [
-                    {"user_id": user_id},  # Exact match
-                    {"user_id": {"$regex": f"^{user_id}$", "$options": "i"}}  # Case-insensitive match
-                ]
-            },
-            "options": {
-                "sort": {"created_at": -1}  # Sort by created_at in descending order (newest first)
-            }
+            "filter": {}
         }
     }
+    
+    print(f"Using simple empty filter for debugging")
 
     try:
         print(f"Fetching industry reports from AstraDB...")
