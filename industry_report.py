@@ -193,14 +193,14 @@ def getIndustryReports(user_id: str) -> Dict[str, Any]:
         "Content-Type": "application/json"
     }
 
-    # Simple empty filter for debugging
+    # Filter for user_id
     payload = {
         "find": {
-            "filter": {}
+            "filter": {"user_id": user_id}
         }
     }
     
-    print(f"Using simple empty filter for debugging")
+    print(f"Using filter with user_id: {user_id}")
 
     try:
         print(f"Fetching industry reports from AstraDB...")
