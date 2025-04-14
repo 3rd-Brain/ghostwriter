@@ -45,32 +45,7 @@
         </div>
     </div>
     
-    <!-- Industry Reports Table card -->
-    <div class="card">
-        <div class="card-header">
-            <div class="card-title">
-                <span>Industry Reports</span>
-                <i data-lucide="info"></i>
-            </div>
-        </div>
-        <div class="card-content">
-            <table id="industry-reports-table" class="reports-table">
-                <thead>
-                    <tr>
-                        <th>Generation Date</th>
-                        <th>Names under Industry Report</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="industry-reports-tbody">
-                    <!-- Table will be populated via JavaScript -->
-                    <tr class="empty-state-row">
-                        <td colspan="3" class="empty-state">No reports found</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
+    
 
     <!-- Last Industry Report card -->
     <div class="card">
@@ -86,6 +61,41 @@
                 <p>No reports generated yet</p>
             </div>
             <button class="form-button mt-md" id="show-more-btn" style="background-color: var(--primary); color: white; padding: 12px 20px; border-radius: var(--radius-md); font-size: 16px; font-weight: 500;">Show More</button>
+
+<!-- Bottom section spanning full width -->
+<div class="template-management-full-width">
+    <!-- Content card for industry reports table -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">
+                <span>Industry Reports</span>
+                <i data-lucide="info"></i>
+            </div>
+        </div>
+        <div class="card-content">
+            <p class="text-secondary">View and manage your generated industry reports</p>
+            <!-- Reports table -->
+            <div class="file-list-container mt-md">
+                <table id="industry-reports-table" class="reports-table">
+                    <thead>
+                        <tr>
+                            <th>Generation Date</th>
+                            <th>Names under Industry Report</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="industry-reports-tbody">
+                        <!-- Table will be populated via JavaScript -->
+                        <tr class="empty-state-row">
+                            <td colspan="3" class="empty-state">No reports found</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
         </div>
     </div>
 </div>
