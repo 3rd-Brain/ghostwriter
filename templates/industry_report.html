@@ -55,7 +55,7 @@
         </div>
         <div class="card-content">
             <h3>Top Performing Categories</h3>
-            <div class="empty-state">
+            <div id="last-report-content" class="empty-state">
                 <p>No reports generated yet</p>
             </div>
             <button class="form-button mt-md" id="show-more-btn" style="background-color: var(--primary); color: white; padding: 12px 20px; border-radius: var(--radius-md); font-size: 16px; font-weight: 500;">Show More</button>
@@ -427,6 +427,17 @@
     font-size: 14px;
     white-space: pre-line;
 }
+
+.top-categories-list {
+    padding-left: 20px;
+    margin-top: 10px;
+    margin-bottom: 15px;
+}
+
+.top-categories-list li {
+    margin-bottom: 5px;
+    font-weight: 500;
+}
 </style>
 
 <script>
@@ -773,6 +784,23 @@ document.addEventListener('DOMContentLoaded', function() {
         return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
     }
     
+    // Function to extract top categories from the TopPerformingCategories text
+    function extractTopCategories(text) {
+        if (!text) return 'No categories available';
+        
+        // Look for the section at the end that lists top categories
+        const match = text.match(/Top Performing Categories:\s*\n\s*1\.\s*(.*)\s*\n\s*2\.\s*(.*)\s*\n\s*3\.\s*(.*)/);
+        if (match && match.length >= 4) {
+            return `<ol class="top-categories-list">
+                <li>${match[1]}</li>
+                <li>${match[2]}</li>
+                <li>${match[3]}</li>
+            </ol>`;
+        }
+        
+        return 'No structured categories found';
+    }
+    
     // Function to load industry reports
     function loadIndustryReports() {
         const reportsTableBody = document.getElementById('industryReportsList');
@@ -782,6 +810,24 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 console.log('Fetched industry reports:', data);
+                
+                // Update the Last Industry Report card with the most recent report data
+                const lastReportContent = document.getElementById('last-report-content');
+                if (data.status === 'success' && data.reports && data.reports.length > 0) {
+                    // Sort reports by date (newest first)
+                    const reports = data.reports.sort((a, b) => {
+                        return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+                    });
+                    
+                    const latestReport = reports[0];
+                    if (latestReport && latestReport.IndustryInsights && latestReport.IndustryInsights.TopPerformingCategories) {
+                        lastReportContent.innerHTML = extractTopCategories(latestReport.IndustryInsights.TopPerformingCategories);
+                        lastReportContent.classList.remove('empty-state');
+                    } else {
+                        lastReportContent.innerHTML = '<p>No category data available</p>';
+                        lastReportContent.classList.add('empty-state');
+                    }
+                }
                 
                 if (data.status === 'success' && data.reports && data.reports.length > 0) {
                     // Sort reports by date (newest first)
