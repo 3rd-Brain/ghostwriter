@@ -10,7 +10,7 @@ from social_writer import extractProfileTopTweets, topTweetsToTemplate
 class ProfileURLRequest(BaseModel):
     profile_url: str
 
-router = APIRouter(prefix="/api", tags=["API"])
+router = APIRouter(prefix="/api")
 
 class TwitterProfilesRequest(BaseModel):
     twitter_urls: List[str]
