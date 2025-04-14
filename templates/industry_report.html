@@ -660,19 +660,19 @@ document.addEventListener('DOMContentLoaded', function() {
             const insightsHtml = `
                 <div class="insight-section">
                     <h4>Top Performing Categories</h4>
-                    <div class="insight-content">${reportData.IndustryInsights.TopPerformingCategories || 'No data available'}</div>
+                    <div class="insight-content">${formatMarkdown(reportData.IndustryInsights.TopPerformingCategories) || 'No data available'}</div>
                 </div>
                 <div class="insight-section">
                     <h4>Content Type That Works</h4>
-                    <div class="insight-content">${reportData.IndustryInsights.ContentTypeThatWorks || 'No data available'}</div>
+                    <div class="insight-content">${formatMarkdown(reportData.IndustryInsights.ContentTypeThatWorks) || 'No data available'}</div>
                 </div>
                 <div class="insight-section">
                     <h4>Optimal Posting Times</h4>
-                    <div class="insight-content">${reportData.IndustryInsights.OptimalPostingTimes || 'No data available'}</div>
+                    <div class="insight-content">${formatMarkdown(reportData.IndustryInsights.OptimalPostingTimes) || 'No data available'}</div>
                 </div>
                 <div class="insight-section">
                     <h4>Tweet Frequency</h4>
-                    <div class="insight-content">${reportData.IndustryInsights.TweetFrequency || 'No data available'}</div>
+                    <div class="insight-content">${formatMarkdown(reportData.IndustryInsights.TweetFrequency) || 'No data available'}</div>
                 </div>
             `;
             
@@ -730,19 +730,19 @@ document.addEventListener('DOMContentLoaded', function() {
             const insightsHtml = `
                 <div class="insight-section">
                     <h4>Top Performing Categories</h4>
-                    <div class="insight-content">${userInsight["Top Performing Categories "] || userInsight.TopPerformingCategories || 'No data available'}</div>
+                    <div class="insight-content">${formatMarkdown(userInsight["Top Performing Categories "] || userInsight.TopPerformingCategories) || 'No data available'}</div>
                 </div>
                 <div class="insight-section">
                     <h4>Content Type That Works</h4>
-                    <div class="insight-content">${userInsight["Content Type That Works"] || userInsight.ContentTypeThatWorks || 'No data available'}</div>
+                    <div class="insight-content">${formatMarkdown(userInsight["Content Type That Works"] || userInsight.ContentTypeThatWorks) || 'No data available'}</div>
                 </div>
                 <div class="insight-section">
                     <h4>Optimal Posting Times</h4>
-                    <div class="insight-content">${userInsight["Optimal Posting Times"] || userInsight.OptimalPostingTimes || 'No data available'}</div>
+                    <div class="insight-content">${formatMarkdown(userInsight["Optimal Posting Times"] || userInsight.OptimalPostingTimes) || 'No data available'}</div>
                 </div>
                 <div class="insight-section">
                     <h4>Tweet Frequency</h4>
-                    <div class="insight-content">${userInsight["Tweet Frequency "] || userInsight.TweetFrequency || 'No data available'}</div>
+                    <div class="insight-content">${formatMarkdown(userInsight["Tweet Frequency "] || userInsight.TweetFrequency) || 'No data available'}</div>
                 </div>
             `;
             
@@ -764,6 +764,13 @@ document.addEventListener('DOMContentLoaded', function() {
             hour: '2-digit',
             minute: '2-digit'
         });
+    }
+    
+    // Function to format markdown text (converts **text** to bold)
+    function formatMarkdown(text) {
+        if (!text) return '';
+        // Replace **text** with <strong>text</strong>
+        return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
     }
     
     // Function to load industry reports
