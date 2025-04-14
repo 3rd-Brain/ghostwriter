@@ -662,6 +662,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     <h4>Top Performing Categories</h4>
                     <div class="insight-content">${reportData.IndustryInsights.TopPerformingCategories || 'No data available'}</div>
                 </div>
+                <div class="insight-section">
+                    <h4>Content Type That Works</h4>
+                    <div class="insight-content">${reportData.IndustryInsights.ContentTypeThatWorks || 'No data available'}</div>
+                </div>
+                <div class="insight-section">
+                    <h4>Optimal Posting Times</h4>
+                    <div class="insight-content">${reportData.IndustryInsights.OptimalPostingTimes || 'No data available'}</div>
+                </div>
+                <div class="insight-section">
+                    <h4>Tweet Frequency</h4>
+                    <div class="insight-content">${reportData.IndustryInsights.TweetFrequency || 'No data available'}</div>
+                </div>
             `;
             
             industryInsightsContent.innerHTML = insightsHtml;
