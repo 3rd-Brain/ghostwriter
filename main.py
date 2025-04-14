@@ -34,7 +34,9 @@ app = FastAPI(
         {"name": "Utility", "description": "Utility endpoints for search and analysis"},
         {"name": "Onboarding", "description": "Endpoints for user onboarding process"},
         {"name": "Other", "description": "Miscellaneous endpoints"}
-    ]
+    ],
+    # Hide API Keys endpoints from the docs
+    openapi_url="/openapi.json",
 )
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
@@ -859,14 +861,46 @@ app.add_middleware(ReferrerPolicyMiddleware)
 # Include routers
 app.include_router(onboarding_router)
 
+# Create custom OpenAPI function to exclude API Keys tag
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+    
+    openapi_schema = get_openapi(
+        title=app.title,
+        version=app.version,
+        description=app.description,
+        routes=app.routes,
+    )
+    
+    # Filter out paths with API Keys tag
+    paths_to_keep = {}
+    for path, path_item in openapi_schema["paths"].items():
+        exclude_path = False
+        for operation in path_item.values():
+            if "tags" in operation and "API Keys" in operation["tags"]:
+                exclude_path = True
+                break
+        if not exclude_path:
+            paths_to_keep[path] = path_item
+    
+    openapi_schema["paths"] = paths_to_keep
+    
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
 # Import and include API routes
 from api_routes import router as api_router
 from api_key_routes import router as api_key_router
 from brand_management import router as brand_management_router
+from fastapi.openapi.utils import get_openapi
 
 app.include_router(api_router)
-app.include_router(api_key_router)
+app.include_router(api_key_router)  # Still include the router so endpoints work
 app.include_router(brand_management_router)
+
+# Override the openapi function
+app.openapi = custom_openapi
 
 @app.get("/", include_in_schema=False)
 def read_root():
