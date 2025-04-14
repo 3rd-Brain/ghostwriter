@@ -81,13 +81,14 @@
                         <tr>
                             <th>Generation Date</th>
                             <th>Names under Industry Report</th>
-                            <th>Actions</th>
+                            <th>Important Information on Industry</th>
+                            <th>Full Report</th>
                         </tr>
                     </thead>
                     <tbody id="industryReportsList">
                         <!-- Industry reports will be populated here -->
                         <tr>
-                            <td colspan="3" class="text-center">Loading industry reports...</td>
+                            <td colspan="4" class="text-center">Loading industry reports...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -281,24 +282,22 @@
     transition: background-color 0.2s ease;
 }
 
-.view-insights-btn {
-    background-color: var(--surface-alt);
-    color: var(--text-primary);
-    border: 1px solid var(--border);
-}
-
-.view-insights-btn:hover {
-    background-color: var(--surface-hover);
-}
-
-.view-full-report-btn {
-    background-color: var(--primary);
+.purple-button {
+    background-color: #6750A4; /* Purple color */
     color: white;
     border: none;
+    padding: 8px 16px;
+    font-size: 14px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: background-color 0.2s;
+    width: 100%;
+    max-width: 160px;
+    text-align: center;
 }
 
-.view-full-report-btn:hover {
-    background-color: var(--primary-dark, #0056b3);
+.purple-button:hover {
+    background-color: #5B4593; /* Slightly darker purple on hover */
 }
 
 .text-center {
@@ -556,11 +555,13 @@ document.addEventListener('DOMContentLoaded', function() {
                             <tr>
                                 <td>${formatDate(report.created_at)}</td>
                                 <td>${usernamesDisplay}</td>
-                                <td class="file-actions">
-                                    <button class="form-button view-insights-btn" data-report-id="${report._id}">
-                                        Important Information
+                                <td>
+                                    <button class="form-button purple-button" data-report-id="${report._id}">
+                                        Industry Info
                                     </button>
-                                    <button class="form-button view-full-report-btn" data-link="${report.webViewLink || '#'}">
+                                </td>
+                                <td>
+                                    <button class="form-button purple-button" data-link="${report.webViewLink || '#'}">
                                         See Full Report
                                     </button>
                                 </td>
