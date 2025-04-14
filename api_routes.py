@@ -22,7 +22,7 @@ class IndustryReportUploadRequest(BaseModel):
     OverallInsights: Any  # Accept any type instead of string
 
 
-@router.get("/protected", response_model=SuccessResponse)
+@router.get("/protected", response_model=SuccessResponse, include_in_schema=False)
 async def protected_endpoint(current_user: dict = Depends(get_current_api_user)):
     """
     A protected endpoint that requires a valid API key.
@@ -35,7 +35,7 @@ async def protected_endpoint(current_user: dict = Depends(get_current_api_user))
         "message": f"Authenticated as user {current_user.get('user_id')} with scope {current_user.get('scope')}"
     }
 
-@router.get("/admin", response_model=SuccessResponse)
+@router.get("/admin", response_model=SuccessResponse, include_in_schema=False)
 async def admin_endpoint(admin_user: dict = Depends(get_admin_api_user)):
     """
     An admin-only endpoint that requires an API key with admin scope.
@@ -48,7 +48,7 @@ async def admin_endpoint(admin_user: dict = Depends(get_admin_api_user)):
         "message": f"Authenticated as admin user {admin_user.get('user_id')}"
     }
 
-@router.get("/flexible", response_model=SuccessResponse)
+@router.get("/flexible", response_model=SuccessResponse, include_in_schema=False)
 async def flexible_auth_endpoint(user: dict = Depends(check_api_key_or_jwt)):
     """
     An endpoint that accepts either API key or JWT authentication.

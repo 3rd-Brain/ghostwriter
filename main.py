@@ -85,7 +85,7 @@ async def root(request: Request):
 async def login_page(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
-@app.post("/login")
+@app.post("/login", include_in_schema=False)
 async def login(request: Request, username: str = Form(...), password: str = Form(...)):
     # Get Astra DB credentials from environment
     ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
