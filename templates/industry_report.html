@@ -282,13 +282,14 @@
     transition: background-color 0.2s ease;
 }
 
-.purple-button {
-    background-color: #6750A4; /* Purple color */
+.table-button {
+    background-color: var(--primary); /* Using the same color as Add Profiles and Show More buttons */
     color: white;
     border: none;
-    padding: 8px 16px;
-    font-size: 14px;
+    padding: 12px 20px;
     border-radius: var(--radius-md);
+    font-size: 16px;
+    font-weight: 500;
     cursor: pointer;
     transition: background-color 0.2s;
     width: 100%;
@@ -296,8 +297,8 @@
     text-align: center;
 }
 
-.purple-button:hover {
-    background-color: #5B4593; /* Slightly darker purple on hover */
+.table-button:hover {
+    background-color: var(--primary-dark);
 }
 
 .text-center {
@@ -556,12 +557,12 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <td>${formatDate(report.created_at)}</td>
                                 <td>${usernamesDisplay}</td>
                                 <td>
-                                    <button class="form-button purple-button" data-report-id="${report._id}">
+                                    <button class="form-button table-button" data-report-id="${report._id}">
                                         Industry Info
                                     </button>
                                 </td>
                                 <td>
-                                    <button class="form-button purple-button" data-link="${report.webViewLink || '#'}">
+                                    <button class="form-button table-button" data-link="${report.webViewLink || '#'}">
                                         See Full Report
                                     </button>
                                 </td>
