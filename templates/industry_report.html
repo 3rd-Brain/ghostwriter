@@ -1,755 +1,147 @@
-
 {% extends "base.html" %}
 
 {% block title %}Industry Report{% endblock %}
 
 {% block page_title %}Industry Report{% endblock %}
-
-{% block page_subtitle %}Analyze industry trends and generate comprehensive reports{% endblock %}
+{% block page_subtitle %}Check your industry insights and competitor analysis{% endblock %}
 
 {% block content %}
-<div class="dashboard-grid">
-    <!-- Analyze Twitter Profiles card -->
-    <div class="card">
+<div class="dashboard-cards">
+    <div class="card info-card">
         <div class="card-header">
-            <div class="card-title">
-                <span>Analyze Twitter Profiles</span>
-                <i data-lucide="info"></i>
-            </div>
+            <h2>Industry Insights</h2>
         </div>
         <div class="card-content">
-            <p class="text-secondary">Provide up to 10 user profiles to analyze their content and generate an industry report.</p>
-            <button class="form-button mt-md" id="add-profiles-btn" style="background-color: var(--primary); color: white; padding: 12px 20px; border-radius: var(--radius-md); font-size: 16px; font-weight: 500;">+ Add Profiles</button>
+            <p>Analyze key metrics and trends within your industry to stay competitive and identify opportunities for growth.</p>
+            <a href="#" class="btn btn-primary">View All Reports</a>
         </div>
     </div>
-
-    <!-- History Overview card -->
-    <div class="card">
+    <div class="card info-card">
         <div class="card-header">
-            <div class="card-title">
-                <span>History Overview</span>
-                <i data-lucide="info"></i>
-            </div>
+            <h2>Competitor Analysis</h2>
         </div>
         <div class="card-content">
-            <div class="template-stats">
-                <div class="stat-item">
-                    <div class="metric-large">0</div>
-                    <div class="metric-label">Industry Reports Generated</div>
-                </div>
-                <div class="stat-item">
-                    <div class="metric-large">0</div>
-                    <div class="metric-label">Accounts Analyzed</div>
-                </div>
-            </div>
+            <p>Monitor your competition's strategies, content types, and engagement to inform your own content decisions.</p>
+            <a href="#" class="btn btn-primary">View Competitors</a>
         </div>
     </div>
-
-    <!-- Last Industry Report card -->
-    <div class="card">
+    <div class="card info-card">
         <div class="card-header">
-            <div class="card-title">
-                <span>Last Industry Report</span>
-                <i data-lucide="info"></i>
-            </div>
+            <h2>Performance Trends</h2>
         </div>
         <div class="card-content">
-            <h3>Top Performing Categories</h3>
-            <div class="empty-state">
-                <p>No reports generated yet</p>
-            </div>
-            <button class="form-button mt-md" id="show-more-btn" style="background-color: var(--primary); color: white; padding: 12px 20px; border-radius: var(--radius-md); font-size: 16px; font-weight: 500;">Show More</button>
+            <p>Track your performance metrics over time to identify patterns, successes, and areas for improvement.</p>
+            <a href="#" class="btn btn-primary">View Trends</a>
         </div>
     </div>
 </div>
 
-<!-- Bottom section spanning full width -->
-<div class="template-management-full-width">
-    <!-- Content card for industry reports listing -->
-    <div class="card">
-        <div class="card-header">
-            <div class="card-title">
-                <span>Your Industry Reports</span>
-                <i data-lucide="info"></i>
-            </div>
-        </div>
-        <div class="card-content">
-            <p class="text-secondary">View and manage your industry reports</p>
-            <!-- Report table -->
-            <div class="file-list-container mt-md">
-                <table class="file-table">
-                    <thead>
-                        <tr>
-                            <th>Generation Date</th>
-                            <th>Names under Industry Report</th>
-                            <th colspan="2">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="industryReportsList">
-                        <!-- Industry reports will be populated here -->
-                        <tr>
-                            <td colspan="4" class="text-center">Loading industry reports...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+<!-- Industry Reports Table -->
+<div class="table-container">
+    <h2>Industry Reports</h2>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Generation Date</th>
+                <th>Names under Industry Report</th>
+                <th>Important Information</th>
+                <th>Full Report</th>
+            </tr>
+        </thead>
+        <tbody id="industry-reports-table">
+            <!-- Reports will be loaded here dynamically -->
+        </tbody>
+    </table>
 </div>
 
-<!-- Twitter Profiles Modal -->
-<div id="twitter-profiles-modal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2>Add Twitter Profiles</h2>
-            <span class="close" id="close-profiles-modal">&times;</span>
-        </div>
-        <div class="modal-body">
-            <p class="text-secondary">Enter up to 10 Twitter profile URLs to analyze for your industry report.</p>
-            <form id="twitter-profiles-form">
-                <div id="profile-url-container">
-                    <div class="form-group profile-url-input">
-                        <label for="twitter-url-1" class="form-label">Twitter Profile URL</label>
-                        <input type="url" id="twitter-url-1" name="twitter-url-1" class="form-control" placeholder="https://twitter.com/username">
-                    </div>
-                </div>
-                
-                <div class="form-actions">
-                    <button type="button" class="form-button secondary" id="add-another-profile" disabled>+ Add Another Profile</button>
-                    <div class="profile-count">1/10 profiles</div>
-                </div>
-                
-                <div class="modal-footer">
-                    <button type="button" class="form-button" id="cancel-profiles" style="padding: 12px 20px; border-radius: var(--radius-md); font-size: 16px; font-weight: 500; border: 1px solid var(--border);">Cancel</button>
-                    <button type="submit" class="form-button primary" id="generate-report-btn" style="display: inline-block; background-color: var(--primary); color: white; padding: 12px 20px; border-radius: var(--radius-md); font-size: 16px; font-weight: 500;">Generate Report</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+<script>
+    // Fetch and display industry reports
+    async function fetchIndustryReports() {
+        try {
+            const response = await fetch('/api/industry-reports');
+            const data = await response.json();
+
+            if (data.status === 'success' && data.reports && data.reports.length > 0) {
+                const tableBody = document.getElementById('industry-reports-table');
+                tableBody.innerHTML = '';
+
+                data.reports.forEach(report => {
+                    const row = document.createElement('tr');
+
+                    // Format date
+                    const date = new Date(report.created_at);
+                    const formattedDate = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+
+                    // Get usernames
+                    const usernames = report.OverallInsights 
+                        ? report.OverallInsights.map(insight => insight.UserName).join(', ')
+                        : 'No users found';
+
+                    row.innerHTML = `
+                        <td>${formattedDate}</td>
+                        <td>${usernames}</td>
+                        <td><button class="btn btn-secondary btn-sm">View Insights</button></td>
+                        <td><button class="btn btn-primary btn-sm">Full Report</button></td>
+                    `;
+
+                    tableBody.appendChild(row);
+                });
+            } else {
+                document.getElementById('industry-reports-table').innerHTML = `
+                    <tr><td colspan="4">No industry reports available</td></tr>
+                `;
+            }
+        } catch (error) {
+            console.error("Error fetching industry reports:", error);
+            document.getElementById('industry-reports-table').innerHTML = `
+                <tr><td colspan="4">Error loading industry reports</td></tr>
+            `;
+        }
+    }
+
+    // Load reports when page loads
+    document.addEventListener('DOMContentLoaded', fetchIndustryReports);
+</script>
 
 <style>
-/* Modal styles */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.4);
-}
+    .table-container {
+        margin-top: 2rem;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        padding: 1.5rem;
+    }
 
-.modal-content {
-    background-color: var(--surface);
-    margin: 5% auto;
-    padding: 20px;
-    border-radius: 8px;
-    width: 600px;
-    max-width: 90%;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
+    .table-container h2 {
+        margin-bottom: 1rem;
+        color: #333;
+        font-size: 1.25rem;
+    }
 
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid var(--border);
-}
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
 
-.modal-header h2 {
-    margin: 0;
-    font-size: 1.5rem;
-}
+    .data-table th, .data-table td {
+        padding: 0.75rem 1rem;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+    }
 
-.close {
-    color: var(--text-secondary);
-    font-size: 24px;
-    font-weight: bold;
-    cursor: pointer;
-}
+    .data-table th {
+        font-weight: 600;
+        color: #666;
+        background-color: #f9f9f9;
+    }
 
-.modal-body {
-    margin-bottom: 16px;
-}
+    .data-table tbody tr:hover {
+        background-color: rgba(107, 53, 255, 0.05);
+    }
 
-.modal-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 24px;
-    visibility: visible;
-}
-
-/* Fixed button styling */
-.form-button {
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    border: none;
-    font-weight: 500;
-    transition: background-color 0.2s;
-}
-
-.form-button.primary {
-    background-color: var(--primary); /* Use primary color from root variables */
-    color: white;
-    display: inline-block;
-}
-
-.form-button.primary:hover {
-    background-color: var(--primary-dark);
-}
-
-.form-actions {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 16px;
-}
-
-.profile-count {
-    color: var(--text-secondary);
-    font-size: 14px;
-}
-
-.profile-url-input {
-    margin-bottom: 12px;
-    position: relative;
-}
-
-.profile-url-input .remove-profile {
-    position: absolute;
-    right: 8px;
-    top: 37px;
-    cursor: pointer;
-    color: var(--text-secondary);
-}
-
-.form-button.secondary {
-    background-color: transparent;
-    border: 1px solid var(--border);
-    color: var(--text-primary);
-}
-
-/* Table styling */
-.template-management-full-width {
-    margin-top: 24px;
-}
-
-.file-list-container {
-    width: 100%;
-    overflow-x: auto;
-}
-
-.file-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.file-table th, 
-.file-table td {
-    padding: 0.75rem 1rem;
-    text-align: left;
-    border-bottom: 1px solid var(--border);
-}
-
-.file-table th {
-    font-weight: 600;
-    background-color: var(--surface-alt);
-}
-
-.file-table tr:hover {
-    background-color: var(--surface-hover);
-}
-
-.text-center {
-    text-align: center;
-}
-
-.action-button {
-    background-color: var(--primary);
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    font-size: 0.9rem;
-    border-radius: var(--radius-md);
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    margin-right: 8px;
-}
-
-.action-button:hover {
-    background-color: var(--primary-dark);
-}
-
-.action-button.secondary {
-    background-color: var(--surface-alt);
-    color: var(--text-primary);
-    border: 1px solid var(--border);
-}
-
-.action-button.secondary:hover {
-    background-color: var(--surface-hover);
-}
-
-.names-list {
-    max-height: 60px;
-    overflow-y: auto;
-    margin: 0;
-    padding-left: 16px;
-}
-
-.names-list li {
-    margin-bottom: 4px;
-}
+    .btn-sm {
+        padding: 0.25rem 0.75rem;
+        font-size: 0.875rem;
+    }
 </style>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Fetch and display industry reports
-    fetchIndustryReports();
-    
-    // Function to fetch industry reports
-    async function fetchIndustryReports() {
-        try {
-            const industryReportsList = document.getElementById('industryReportsList');
-            
-            const response = await fetch('/api/industry-reports');
-            if (!response.ok) {
-                throw new Error('Failed to fetch industry reports');
-            }
-            
-            const data = await response.json();
-            console.log('Fetched industry reports:', data);
-            
-            if (data.status === 'success' && data.reports && data.reports.length > 0) {
-                industryReportsList.innerHTML = data.reports.map(report => {
-                    // Format the creation date
-                    const creationDate = new Date(report.created_at);
-                    const formattedDate = creationDate.toLocaleDateString() + ' ' + creationDate.toLocaleTimeString();
-                    
-                    // Extract usernames from OverallInsights
-                    let userNames = [];
-                    if (report.OverallInsights && Array.isArray(report.OverallInsights)) {
-                        userNames = report.OverallInsights
-                            .filter(insight => insight.UserName)
-                            .map(insight => insight.UserName);
-                    }
-                    
-                    // Create a list of usernames
-                    const userNamesList = userNames.length > 0 
-                        ? `<ul class="names-list">${userNames.map(name => `<li>${name}</li>`).join('')}</ul>`
-                        : 'No names available';
-                    
-                    return `
-                        <tr>
-                            <td>${formattedDate}</td>
-                            <td>${userNamesList}</td>
-                            <td>
-                                <button class="action-button" data-report-id="${report._id}">Industry Information</button>
-                            </td>
-                            <td>
-                                <button class="action-button secondary" data-report-link="${report.webViewLink}">View Full Report</button>
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
-                
-                // Reinitialize Lucide icons for new content
-                if (window.lucide) {
-                    lucide.createIcons();
-                }
-            } else {
-                industryReportsList.innerHTML = '<tr><td colspan="4" class="text-center">No industry reports found</td></tr>';
-            }
-        } catch (error) {
-            console.error('Error loading industry reports:', error);
-            document.getElementById('industryReportsList').innerHTML = 
-                '<tr><td colspan="4" class="text-center">Error loading industry reports</td></tr>';
-        }
-    }
-</old_str>
-<new_str>/* Fixed button styling */
-.form-button {
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    border: none;
-    font-weight: 500;
-    transition: background-color 0.2s;
-}
-
-.form-button.primary {
-    background-color: var(--primary); /* Use primary color from root variables */
-    color: white;
-    display: inline-block;
-}
-
-.form-button.primary:hover {
-    background-color: var(--primary-dark);
-}
-
-.form-actions {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 16px;
-}
-
-.profile-count {
-    color: var(--text-secondary);
-    font-size: 14px;
-}
-
-.profile-url-input {
-    margin-bottom: 12px;
-    position: relative;
-}
-
-.profile-url-input .remove-profile {
-    position: absolute;
-    right: 8px;
-    top: 37px;
-    cursor: pointer;
-    color: var(--text-secondary);
-}
-
-.form-button.secondary {
-    background-color: transparent;
-    border: 1px solid var(--border);
-    color: var(--text-primary);
-}
-
-/* Table styling */
-.template-management-full-width {
-    margin-top: 24px;
-}
-
-.file-list-container {
-    width: 100%;
-    overflow-x: auto;
-}
-
-.file-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.file-table th, 
-.file-table td {
-    padding: 0.75rem 1rem;
-    text-align: left;
-    border-bottom: 1px solid var(--border);
-}
-
-.file-table th {
-    font-weight: 600;
-    background-color: var(--surface-alt);
-}
-
-.file-table tr:hover {
-    background-color: var(--surface-hover);
-}
-
-.text-center {
-    text-align: center;
-}
-
-.action-button {
-    background-color: var(--primary);
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    font-size: 0.9rem;
-    border-radius: var(--radius-md);
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    margin-right: 8px;
-}
-
-.action-button:hover {
-    background-color: var(--primary-dark);
-}
-
-.action-button.secondary {
-    background-color: var(--surface-alt);
-    color: var(--text-primary);
-    border: 1px solid var(--border);
-}
-
-.action-button.secondary:hover {
-    background-color: var(--surface-hover);
-}
-
-.names-list {
-    max-height: 60px;
-    overflow-y: auto;
-    margin: 0;
-    padding-left: 16px;
-}
-
-.names-list li {
-    margin-bottom: 4px;
-}
-</style>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Fetch and display industry reports
-    fetchIndustryReports();
-    
-    // Function to fetch industry reports
-    async function fetchIndustryReports() {
-        try {
-            const industryReportsList = document.getElementById('industryReportsList');
-            
-            const response = await fetch('/api/industry-reports');
-            if (!response.ok) {
-                throw new Error('Failed to fetch industry reports');
-            }
-            
-            const data = await response.json();
-            console.log('Fetched industry reports:', data);
-            
-            if (data.status === 'success' && data.reports && data.reports.length > 0) {
-                industryReportsList.innerHTML = data.reports.map(report => {
-                    // Format the creation date
-                    const creationDate = new Date(report.created_at);
-                    const formattedDate = creationDate.toLocaleDateString() + ' ' + creationDate.toLocaleTimeString();
-                    
-                    // Extract usernames from OverallInsights
-                    let userNames = [];
-                    if (report.OverallInsights && Array.isArray(report.OverallInsights)) {
-                        userNames = report.OverallInsights
-                            .filter(insight => insight.UserName)
-                            .map(insight => insight.UserName);
-                    }
-                    
-                    // Create a list of usernames
-                    const userNamesList = userNames.length > 0 
-                        ? `<ul class="names-list">${userNames.map(name => `<li>${name}</li>`).join('')}</ul>`
-                        : 'No names available';
-                    
-                    return `
-                        <tr>
-                            <td>${formattedDate}</td>
-                            <td>${userNamesList}</td>
-                            <td>
-                                <button class="action-button" data-report-id="${report._id}">Industry Information</button>
-                            </td>
-                            <td>
-                                <button class="action-button secondary" data-report-link="${report.webViewLink}">View Full Report</button>
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
-                
-                // Reinitialize Lucide icons for new content
-                if (window.lucide) {
-                    lucide.createIcons();
-                }
-            } else {
-                industryReportsList.innerHTML = '<tr><td colspan="4" class="text-center">No industry reports found</td></tr>';
-            }
-        } catch (error) {
-            console.error('Error loading industry reports:', error);
-            document.getElementById('industryReportsList').innerHTML = 
-                '<tr><td colspan="4" class="text-center">Error loading industry reports</td></tr>';
-        }
-    }
-    // Get modal elements
-    const modal = document.getElementById('twitter-profiles-modal');
-    const closeBtn = document.getElementById('close-profiles-modal');
-    const addProfilesBtn = document.getElementById('add-profiles-btn');
-    const cancelBtn = document.getElementById('cancel-profiles');
-    const showMoreBtn = document.getElementById('show-more-btn');
-    
-    // Add Another Profile button
-    const addAnotherProfileBtn = document.getElementById('add-another-profile');
-    const profileContainer = document.getElementById('profile-url-container');
-    const profileCountText = document.querySelector('.profile-count');
-    
-    // Form submission
-    const twitterProfilesForm = document.getElementById('twitter-profiles-form');
-    
-    let profileCount = 1;
-    
-    // Open modal when Add Profiles button is clicked
-    addProfilesBtn.addEventListener('click', function() {
-        modal.style.display = 'block';
-        updateButtonState();
-    });
-    
-    // Close modal when X is clicked
-    closeBtn.addEventListener('click', function() {
-        modal.style.display = 'none';
-    });
-    
-    // Close modal when Cancel is clicked
-    cancelBtn.addEventListener('click', function() {
-        modal.style.display = 'none';
-    });
-    
-    // Close modal when clicking outside
-    window.addEventListener('click', function(event) {
-        if (event.target === modal) {
-            modal.style.display = 'none';
-        }
-    });
-    
-    // Add another profile URL input
-    addAnotherProfileBtn.addEventListener('click', function() {
-        if (profileCount < 10) {
-            profileCount++;
-            
-            const newInput = document.createElement('div');
-            newInput.className = 'form-group profile-url-input';
-            newInput.innerHTML = `
-                <label for="twitter-url-${profileCount}" class="form-label">Twitter Profile URL</label>
-                <div style="display: flex; align-items: center;">
-                    <input type="url" id="twitter-url-${profileCount}" name="twitter-url-${profileCount}" class="form-control" placeholder="https://twitter.com/username">
-                    <span class="remove-profile" data-id="${profileCount}">✕</span>
-                </div>
-            `;
-            
-            profileContainer.appendChild(newInput);
-            updateProfileCount();
-            
-            // Add event listener to the remove button
-            const removeBtn = newInput.querySelector('.remove-profile');
-            removeBtn.addEventListener('click', function() {
-                newInput.remove();
-                profileCount--;
-                updateProfileCount();
-            });
-        }
-    });
-    
-    // Update profile count and button state
-    function updateProfileCount() {
-        profileCountText.textContent = `${profileCount}/10 profiles`;
-        updateButtonState();
-    }
-    
-    // Update the state of the Add Another Profile button
-    function updateButtonState() {
-        addAnotherProfileBtn.disabled = profileCount >= 10;
-    }
-    
-    // Function to show notification messages
-    function showNotification(message, isError = false) {
-        // Always remove any existing notification first
-        const existingNotification = document.getElementById('notification');
-        if (existingNotification) {
-            existingNotification.remove();
-        }
-        
-        // Create a fresh notification element
-        const notification = document.createElement('div');
-        notification.id = 'notification';
-        notification.style.position = 'fixed';
-        notification.style.bottom = '20px';
-        notification.style.right = '20px';
-        notification.style.padding = '12px 20px';
-        notification.style.borderRadius = '8px';
-        notification.style.zIndex = '1000';
-        notification.style.maxWidth = isError ? '300px' : '450px'; // Wider for success messages
-        notification.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-        notification.style.transition = 'opacity 0.3s ease';
-        notification.style.opacity = '0'; // Start with opacity 0
-        
-        // Set style based on error status
-        if (isError) {
-            notification.style.backgroundColor = '#ffd2d2';
-            notification.style.color = '#7d0000';
-            notification.style.border = '1px solid #ffb8b8';
-        } else {
-            notification.style.backgroundColor = '#d1f7c4';
-            notification.style.color = '#2a6b00';
-            notification.style.border = '1px solid #b8e986';
-        }
-        
-        // Set message and add to DOM
-        notification.textContent = message;
-        document.body.appendChild(notification);
-        
-        // Force a browser reflow before changing opacity
-        void notification.offsetWidth;
-        
-        // Now make it visible
-        notification.style.opacity = '1';
-        
-        // Hide notification after longer time for success messages, shorter for errors
-        const displayTime = isError ? 3000 : 6000; // 3 seconds for errors, 6 seconds for success
-        setTimeout(() => {
-            notification.style.opacity = '0';
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.parentNode.removeChild(notification);
-                }
-            }, 300);
-        }, displayTime);
-    }
-
-    // Form submission
-    twitterProfilesForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        // Get all Twitter profile URLs
-        const formData = new FormData(twitterProfilesForm);
-        const twitterUrls = [];
-        
-        for (let i = 1; i <= 10; i++) {
-            const urlValue = formData.get(`twitter-url-${i}`);
-            if (urlValue && urlValue.trim() !== '') {
-                twitterUrls.push(urlValue);
-            }
-        }
-        
-        if (twitterUrls.length === 0) {
-            showNotification('Please enter at least one Twitter profile URL', true);
-            return;
-        }
-        
-        console.log('Twitter URLs to analyze:', twitterUrls);
-        
-        // Show detailed success notification
-        showNotification("We're creating your in-depth Industry Report, analyzing everything from engagement patterns to content performance.\n\nThis comprehensive analysis takes a bit of time, but we'll let you know when your detailed insights are ready!");
-        
-        // Submit the Twitter URLs to the backend for processing
-        fetch('/api/industry-report', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ twitter_urls: twitterUrls })
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Industry report generation started:', data);
-            if (data.status === 'error') {
-                showNotification('Error starting report generation: ' + data.message, true);
-            }
-        })
-        .catch(error => {
-            console.error('Error calling industry report API:', error);
-            showNotification('Failed to start report generation. Please try again.', true);
-        });
-        
-        // Close the modal
-        modal.style.display = 'none';
-    });
-    
-    // Show More button functionality
-    showMoreBtn.addEventListener('click', function() {
-        console.log('Show More button clicked');
-        // Functionality to be added later
-    });
-});
-</script>
 {% endblock %}
