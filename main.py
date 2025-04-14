@@ -861,7 +861,7 @@ app.add_middleware(ReferrerPolicyMiddleware)
 # Include routers
 app.include_router(onboarding_router)
 
-# Create custom OpenAPI function to exclude API Keys tag
+# Create custom OpenAPI function to exclude specified tags
 def custom_openapi():
     if app.openapi_schema:
         return app.openapi_schema
@@ -873,13 +873,20 @@ def custom_openapi():
         routes=app.routes,
     )
     
-    # Filter out paths with API Keys tag
+    # Tags to exclude from documentation
+    tags_to_exclude = ["API Keys", "default", "Onboarding", "Utility", "Storage", "User Management"]
+    
+    # Filter out paths with excluded tags
     paths_to_keep = {}
     for path, path_item in openapi_schema["paths"].items():
         exclude_path = False
         for operation in path_item.values():
-            if "tags" in operation and "API Keys" in operation["tags"]:
-                exclude_path = True
+            if "tags" in operation:
+                for tag in tags_to_exclude:
+                    if tag in operation["tags"]:
+                        exclude_path = True
+                        break
+            if exclude_path:
                 break
         if not exclude_path:
             paths_to_keep[path] = path_item
