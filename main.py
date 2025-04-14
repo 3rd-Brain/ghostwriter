@@ -37,6 +37,8 @@ app = FastAPI(
     ],
     # Hide API Keys endpoints from the docs
     openapi_url="/openapi.json",
+    # Hide schemas section in the docs
+    swagger_ui_parameters={"defaultModelsExpandDepth": -1}
 )
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
