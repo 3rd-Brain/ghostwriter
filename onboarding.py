@@ -392,6 +392,7 @@ async def complete_onboarding(request: OnboardingCompleteRequest, session_data=D
                     
                 print("Importing tweet processing functions...")
                 from source_content_manager import gather_user_tweets, tweet_to_source_content
+                from publish_history_manager import uploadPublication
 
                 # Store user ID in environment for the tweet processing
                 os.environ["CURRENT_USER_ID"] = user_id
@@ -407,6 +408,7 @@ async def complete_onboarding(request: OnboardingCompleteRequest, session_data=D
                 )
                 print(f"Retrieved {len(tweets) if tweets else 0} tweets")
 
+                # Process tweets to create source content
                 print("Processing tweets with tweet_to_source_content...")
                 processed_tweets = tweet_to_source_content(tweets)
                 print(f"Successfully processed {len(processed_tweets)} tweets")
@@ -418,6 +420,95 @@ async def complete_onboarding(request: OnboardingCompleteRequest, session_data=D
                 # Add tweet processing result to user document
                 user["profile"]["twitter_processed"] = True
                 user["profile"]["processed_tweets_count"] = len(processed_tweets)
+                
+                # Also add tweets to user_twitter_publications collection
+                print("\n=== Debug: Adding tweets to publications collection ===")
+                publications_added = 0
+                username = account_basics.get("username", "")
+                
+                for i, tweet in enumerate(tweets):
+                    # Skip retweets
+                    if tweet.get('isRetweet', False):
+                        continue
+                        
+                    # Extract text from tweet
+                    tweet_text = tweet.get('fullText', '') or tweet.get('text', '')
+                    if not tweet_text:
+                        continue
+                    
+                    # Extract tweet ID
+                    tweet_id = tweet.get('id', '') or str(uuid.uuid4())
+                    
+                    # Extract metrics
+                    likes = tweet.get('likeCount', 0)
+                    shares = tweet.get('retweetCount', 0)
+                    quotes = tweet.get('quoteCount', 0)
+                    bookmarks = tweet.get('bookmarkCount', 0)
+                    replies = tweet.get('replyCount', 0)
+                    impressions = tweet.get('viewCount', 0)
+                    followers = tweet.get('author', {}).get('followers', 0)
+                    
+                    # Calculate weighted metrics
+                    follower_count = max(followers, 1)  # Avoid division by zero
+                    impression_follower_ratio = impressions / follower_count
+                    
+                    weighted_impressions = (impression_follower_ratio) * 0.15
+                    weighted_replies = (replies / max(impression_follower_ratio, 0.001)) * 0.25
+                    weighted_bookmarks = (bookmarks / max(impression_follower_ratio, 0.001)) * 0.25
+                    weighted_shares = (shares / max(impression_follower_ratio, 0.001)) * 0.15
+                    weighted_likes = (likes / max(impression_follower_ratio, 0.001)) * 0.2
+                    
+                    # Calculate overall score
+                    score = weighted_impressions + weighted_replies + weighted_bookmarks + weighted_shares + weighted_likes
+                    
+                    # Get tweet created date if available, otherwise use current time
+                    created_at = tweet.get('createdAt', '') or datetime.utcnow().isoformat()
+                    
+                    # Build the publication document
+                    publication_data = {
+                        "_id": str(uuid.uuid4()),
+                        "post_id": tweet_id,
+                        "user_id": user_id,
+                        "first_draft": tweet_text,
+                        "current_draft": tweet_text,
+                        "template_id": "",
+                        "template": "",
+                        "source_chunks": "",
+                        "brand_id": username,
+                        "status": "published",
+                        "created_at": created_at,
+                        "workflow_name": "Twitter Import",
+                        "workflow_id": "twitter_import",
+                        "content_format": "twitter",
+                        "metrics": {
+                            "likes": likes,
+                            "shares": shares,
+                            "quotes": quotes,
+                            "bookmarks": bookmarks,
+                            "replies": replies,
+                            "impressions": impressions
+                        },
+                        "weighted_metrics": {
+                            "weighted_likes": weighted_likes,
+                            "weighted_shares": weighted_shares,
+                            "weighted_bookmarks": weighted_bookmarks,
+                            "weighted_replies": weighted_replies,
+                            "weighted_impressions": weighted_impressions
+                        },
+                        "score": score,
+                        "Approval_Date": created_at
+                    }
+                    
+                    # Upload to user_twitter_publications
+                    try:
+                        upload_response = uploadPublication(publication_data)
+                        if upload_response.get("status") == "success":
+                            publications_added += 1
+                    except Exception as upload_error:
+                        print(f"Error uploading publication {i}: {str(upload_error)}")
+                
+                print(f"Added {publications_added} tweets to publications collection")
+                user["profile"]["publications_added"] = publications_added
                 print("=== End Tweet Processing ===\n")
             except Exception as e:
                 print("\n=== Debug: Tweet Processing Error ===")
