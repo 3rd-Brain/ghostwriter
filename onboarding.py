@@ -594,7 +594,7 @@ async def complete_onboarding(request: OnboardingCompleteRequest, session_data=D
                 }
             },
             "socials": social_media,
-            "twitter_processing": "pending"  # Add initial state for Twitter processing
+            "twitter_processing": "pending",  # Add initial state for Twitter processing
             "follower_count": 0 # Modification here
         },
         "settings": {
