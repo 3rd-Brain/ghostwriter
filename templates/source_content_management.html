@@ -66,6 +66,53 @@
         <div class="card-content">
             <p class="text-secondary">Import content from social media profiles</p>
             <button class="form-button mt-md" id="open-social-modal">Connect Social</button>
+            
+            <!-- Social Media Modal -->
+            <div id="social-media-modal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Connect Social Media Profiles</h2>
+                        <span class="close" id="close-social-modal">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <p class="text-secondary">Connect your social media profiles for content import and analysis.</p>
+                        <form id="social-media-form">
+                            <div class="social-links">
+                                <div class="social-link-item">
+                                    <label for="podcast" class="form-label">Podcast RSS</label>
+                                    <input type="url" id="podcast" name="podcast" class="form-control" placeholder="https://...">
+                                </div>
+                                <div class="social-link-item">
+                                    <label for="youtube" class="form-label">YouTube</label>
+                                    <input type="url" id="youtube" name="youtube" class="form-control" placeholder="https://youtube.com/...">
+                                </div>
+                                <div class="social-link-item">
+                                    <label for="twitter" class="form-label">Twitter</label>
+                                    <input type="url" id="twitter" name="twitter" class="form-control" placeholder="https://twitter.com/...">
+                                </div>
+                                <div class="social-link-item">
+                                    <label for="linkedin" class="form-label">LinkedIn</label>
+                                    <input type="url" id="linkedin" name="linkedin" class="form-control" placeholder="https://linkedin.com/in/...">
+                                </div>
+                                <div class="social-link-item">
+                                    <label for="newsletter" class="form-label">Newsletter</label>
+                                    <input type="url" id="newsletter" name="newsletter" class="form-control" placeholder="https://...">
+                                </div>
+                                <div class="social-link-item">
+                                    <label for="website" class="form-label">Blog/Website</label>
+                                    <input type="url" id="website" name="website" class="form-control" placeholder="https://...">
+                                </div>
+                            </div>
+                            <div class="error-message" id="social-error" style="display: none;"></div>
+                            
+                            <div class="modal-footer">
+                                <button type="button" class="form-button-secondary" id="cancel-social-btn">Cancel</button>
+                                <button type="submit" class="form-button primary">Save Profiles</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -375,6 +422,55 @@
 .delete-button:hover {
     background-color: #c62828;
 }
+
+/* Social Links Grid */
+.social-links {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 15px;
+    margin-bottom: 20px;
+}
+
+.social-link-item {
+    margin-bottom: 10px;
+}
+
+/* Error message styling */
+.error-message {
+    color: var(--error);
+    font-size: 0.85rem;
+    margin-top: 5px;
+}
+
+/* Notification styling */
+.notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 15px 20px;
+    border-radius: var(--radius-md);
+    background-color: var(--surface);
+    color: var(--text);
+    box-shadow: var(--shadow-lg);
+    z-index: 1000;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+}
+
+.notification.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.notification.success {
+    border-left: 4px solid var(--primary);
+}
+
+.notification.error {
+    border-left: 4px solid var(--error);
+}
 </style>
 {% endblock %}
 
@@ -392,9 +488,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const uploadFiles = document.getElementById('upload-files');
     const tabButtons = document.querySelectorAll('.tab-button');
     const tabPanes = document.querySelectorAll('.tab-pane');
+    
+    // Social Media Modal elements
+    const socialMediaModal = document.getElementById('social-media-modal');
+    const openSocialBtn = document.getElementById('open-social-modal');
+    const closeSocialBtn = document.getElementById('close-social-modal');
+    const cancelSocialBtn = document.getElementById('cancel-social-btn');
+    const socialMediaForm = document.getElementById('social-media-form');
 
     // Load storage files directly
     loadStorageFiles();
+    
+    // Load user's existing social media profiles
+    loadUserSocialProfiles();
     
     // Set up event delegation for delete buttons
     document.addEventListener('click', function(e) {
@@ -470,6 +576,25 @@ document.addEventListener('DOMContentLoaded', function() {
     closeUploadBtn.addEventListener('click', resetUploadArea);
     window.addEventListener('click', (e) => {
         if (e.target === uploadModal) resetUploadArea();
+    });
+    
+    // Social Media Modal controls
+    openSocialBtn.addEventListener('click', () => {
+        socialMediaModal.style.display = 'block';
+    });
+    
+    closeSocialBtn.addEventListener('click', () => {
+        socialMediaModal.style.display = 'none';
+    });
+    
+    cancelSocialBtn.addEventListener('click', () => {
+        socialMediaModal.style.display = 'none';
+    });
+    
+    window.addEventListener('click', (e) => {
+        if (e.target === socialMediaModal) {
+            socialMediaModal.style.display = 'none';
+        }
     });
 
     // File upload handling
@@ -591,6 +716,140 @@ document.addEventListener('DOMContentLoaded', function() {
         // Reset file input to allow for more uploads
         fileInput.value = '';
         uploadArea.style.display = 'block';
+    }
+    
+    // Load user's social profiles
+    async function loadUserSocialProfiles() {
+        try {
+            const response = await fetch('/api/user/social-profiles');
+            if (!response.ok) {
+                throw new Error('Failed to fetch social profiles');
+            }
+            
+            const data = await response.json();
+            
+            if (data.social_profiles) {
+                // Fill the form fields with existing values
+                const profiles = data.social_profiles;
+                
+                document.getElementById('podcast').value = profiles.podcast || '';
+                document.getElementById('youtube').value = profiles.youtube || '';
+                document.getElementById('twitter').value = profiles.twitter || '';
+                document.getElementById('linkedin').value = profiles.linkedin || '';
+                document.getElementById('newsletter').value = profiles.newsletter || '';
+                document.getElementById('website').value = profiles.website || '';
+            }
+        } catch (error) {
+            console.error('Error loading social profiles:', error);
+        }
+    }
+    
+    // Social Media Form submission
+    socialMediaForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const socialError = document.getElementById('social-error');
+        socialError.style.display = 'none';
+        
+        // Get all form values
+        const socialProfiles = {
+            podcast: document.getElementById('podcast').value.trim(),
+            youtube: document.getElementById('youtube').value.trim(),
+            twitter: document.getElementById('twitter').value.trim(),
+            linkedin: document.getElementById('linkedin').value.trim(),
+            newsletter: document.getElementById('newsletter').value.trim(),
+            website: document.getElementById('website').value.trim()
+        };
+        
+        // Check if at least one social media field is filled
+        const hasAtLeastOne = Object.values(socialProfiles).some(value => value !== '');
+        
+        if (!hasAtLeastOne) {
+            socialError.textContent = 'Please provide at least one social media profile';
+            socialError.style.display = 'block';
+            return;
+        }
+        
+        // Validate URL format for non-empty fields
+        const urlRegex = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
+        const invalidUrls = Object.entries(socialProfiles)
+            .filter(([_, value]) => value !== '' && !urlRegex.test(value))
+            .map(([key, _]) => key);
+        
+        if (invalidUrls.length > 0) {
+            socialError.textContent = `Please enter valid URLs for: ${invalidUrls.join(', ')}`;
+            socialError.style.display = 'block';
+            return;
+        }
+        
+        try {
+            // Show loading state
+            const submitButton = socialMediaForm.querySelector('button[type="submit"]');
+            const originalButtonText = submitButton.textContent;
+            submitButton.textContent = 'Saving...';
+            submitButton.disabled = true;
+            
+            // Submit the form
+            const response = await fetch('/api/user/social-profiles', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(socialProfiles)
+            });
+            
+            // Reset button state
+            submitButton.textContent = originalButtonText;
+            submitButton.disabled = false;
+            
+            if (!response.ok) {
+                throw new Error('Failed to save social profiles');
+            }
+            
+            // Close the modal on success
+            socialMediaModal.style.display = 'none';
+            
+            // Show success notification
+            showNotification('Social profiles updated successfully');
+            
+            // Reload social count after update
+            // This assumes the browser will refresh the page or update the count display elsewhere
+        } catch (error) {
+            console.error('Error saving social profiles:', error);
+            socialError.textContent = 'Failed to save social profiles. Please try again.';
+            socialError.style.display = 'block';
+        }
+    });
+    
+    // Function to show notification messages
+    function showNotification(message, isError = false) {
+        // Always remove any existing notification first
+        const existingNotification = document.getElementById('notification');
+        if (existingNotification) {
+            existingNotification.remove();
+        }
+        
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.id = 'notification';
+        notification.className = `notification ${isError ? 'error' : 'success'}`;
+        notification.innerHTML = message;
+        
+        // Add notification to page
+        document.body.appendChild(notification);
+        
+        // Show notification with animation
+        setTimeout(() => {
+            notification.classList.add('show');
+        }, 10);
+        
+        // Hide notification after 5 seconds
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => {
+                notification.remove();
+            }, 300);
+        }, 5000);
     }
 });
 </script>
