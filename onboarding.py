@@ -408,6 +408,13 @@ async def complete_onboarding(request: OnboardingCompleteRequest, session_data=D
                 )
                 print(f"Retrieved {len(tweets) if tweets else 0} tweets")
 
+                # Get follower count from the first tweet's author info
+                follower_count = 0
+                if tweets and len(tweets) > 0:
+                    followers = tweets[0].get('author', {}).get('followers', 0)
+                    follower_count = max(followers, 1)  # Avoid division by zero
+                    print(f"Found follower count: {follower_count}")
+
                 # Process tweets to create source content
                 print("Processing tweets with tweet_to_source_content...")
                 processed_tweets = tweet_to_source_content(tweets)
@@ -420,6 +427,11 @@ async def complete_onboarding(request: OnboardingCompleteRequest, session_data=D
                 # Add tweet processing result to user document
                 user["profile"]["twitter_processed"] = True
                 user["profile"]["processed_tweets_count"] = len(processed_tweets)
+                
+                # Add follower count to the user's social media data
+                if follower_count > 0:
+                    user["profile"]["socials"]["follower_count"] = follower_count
+                    print(f"Added follower_count: {follower_count} to user profile")
                 
                 # Also add tweets to user_twitter_publications collection
                 print("\n=== Debug: Adding tweets to publications collection ===")
