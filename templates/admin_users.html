@@ -1,0 +1,154 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management | Admin Dashboard</title>
+    <link rel="stylesheet" href="/static/admin.css">
+</head>
+<body>
+    <div class="admin-container">
+        <aside class="admin-sidebar">
+            <div class="admin-logo">
+                <div class="logo-icon">GW</div>
+                <span class="logo-text">Ghostwriter Admin</span>
+            </div>
+            <nav class="admin-nav">
+                <ul class="admin-menu">
+                    <li class="admin-menu-item">
+                        <a href="/admin">
+                            <i data-lucide="layout-dashboard"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="admin-menu-item active">
+                        <a href="/admin/users">
+                            <i data-lucide="users"></i>
+                            <span>Users</span>
+                        </a>
+                    </li>
+                    <li class="admin-menu-item">
+                        <a href="/admin/content">
+                            <i data-lucide="file-text"></i>
+                            <span>Content</span>
+                        </a>
+                    </li>
+                    <li class="admin-menu-item">
+                        <a href="/admin/templates">
+                            <i data-lucide="copy"></i>
+                            <span>Templates</span>
+                        </a>
+                    </li>
+                    <li class="admin-menu-item">
+                        <a href="/admin/settings">
+                            <i data-lucide="settings"></i>
+                            <span>Settings</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <div class="admin-user">
+                <div class="avatar">A</div>
+                <div class="user-info">
+                    <span class="username">Admin</span>
+                    <a href="/logout" class="logout-link">Logout</a>
+                </div>
+            </div>
+        </aside>
+        
+        <main class="admin-main">
+            <header class="admin-header">
+                <h1 class="page-title">User Management</h1>
+                <div class="header-actions">
+                    <div class="search-container">
+                        <input type="text" placeholder="Search users..." class="search-input">
+                        <button class="search-button">
+                            <i data-lucide="search"></i>
+                        </button>
+                    </div>
+                    <button class="admin-button primary">
+                        <i data-lucide="user-plus"></i>
+                        <span>Add User</span>
+                    </button>
+                </div>
+            </header>
+            
+            <div class="admin-content">
+                <div class="admin-table-section">
+                    <div class="section-header">
+                        <h2>All Users</h2>
+                        <div class="table-actions">
+                            <button class="admin-button">
+                                <i data-lucide="filter"></i>
+                                <span>Filter</span>
+                            </button>
+                            <button class="admin-button">
+                                <i data-lucide="download"></i>
+                                <span>Export</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="admin-table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Email</th>
+                                    <th>Status</th>
+                                    <th>Joined Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                <tr>
+                                    <td>
+                                        <div class="user-cell">
+                                            <div class="avatar small">{{ user.username|truncate(2, true, "") }}</div>
+                                            <span>{{ user.username }}</span>
+                                        </div>
+                                    </td>
+                                    <td>{{ user.email }}</td>
+                                    <td>
+                                        <span class="status-badge {{ user.status|lower }}">
+                                            {{ user.status }}
+                                        </span>
+                                    </td>
+                                    <td>{{ user.join_date }}</td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="icon-button" title="Edit">
+                                                <i data-lucide="edit"></i>
+                                            </button>
+                                            <button class="icon-button" title="Delete" data-user-id="{{ user.user_id }}">
+                                                <i data-lucide="trash-2"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination">
+                        <button class="admin-button" {% if page == 1 %}disabled{% endif %}>
+                            <i data-lucide="chevron-left"></i>
+                            Previous
+                        </button>
+                        <span class="page-info">Page {{ page }} of {{ total_pages }}</span>
+                        <button class="admin-button" {% if page == total_pages %}disabled{% endif %}>
+                            Next
+                            <i data-lucide="chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/static/lucide.min.js"></script>
+    <script src="/static/lucide-init.js"></script>
+    <script src="/static/admin.js"></script>
+</body>
+</html>
