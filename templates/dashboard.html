@@ -102,8 +102,16 @@ window.addEventListener('DOMContentLoaded', (event) => {
                 <i data-lucide="info"></i>
             </div>
         </div>
-        <div class="metric-large">{{ doc_count }}</div>
-        <div class="metric-label">Total chunks from source content</div>
+        <div class="card-content-metrics">
+            <div class="metric-pair">
+                <div class="metric-large">{{ doc_count }}</div>
+                <div class="metric-label">Total chunks from source content</div>
+            </div>
+            <div class="metric-pair">
+                <div class="metric-large">{{ file_count|default(0) }}</div>
+                <div class="metric-label">Files uploaded</div>
+            </div>
+        </div>
     </div>
 
     <div class="card">

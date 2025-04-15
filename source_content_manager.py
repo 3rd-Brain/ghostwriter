@@ -237,3 +237,34 @@ def count_user_documents(user_id: str) -> int:
         return result.get("status", {}).get("count", 0)
     except:
         return 0
+
+def count_user_files(user_id: str) -> int:
+    """
+    Count files that a user has uploaded to Object Storage
+    Args:
+        user_id: String containing the user ID to count files for
+    Returns:
+        Integer count of files
+    """
+    try:
+        from replit.object_storage import Client
+
+        # Initialize the storage client
+        storage_client = Client()
+
+        # List all objects with prefix for user's directory
+        prefix = f"documents/{user_id}/"
+        objects = storage_client.list(prefix=prefix)
+
+        # Count unique files (exclude directory markers)
+        file_count = 0
+        for obj in objects:
+            # Skip directory markers or empty items
+            if obj.name.endswith('/') or not obj.name:
+                continue
+            file_count += 1
+
+        return file_count
+    except Exception as e:
+        print(f"Error counting user files: {str(e)}")
+        return 0

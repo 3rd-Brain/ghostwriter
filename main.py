@@ -379,8 +379,9 @@ async def dashboard(request: Request, current_user: dict = Depends(get_current_u
     has_source_content = bool(response.json().get("data", {}).get("documents", []))
 
     # Get source content count
-    from source_content_manager import count_user_documents
+    from source_content_manager import count_user_documents, count_user_files
     doc_count = count_user_documents(current_user["user_id"])
+    file_count = count_user_files(current_user["user_id"])
     
     # Get content counts by status
     draft_count = 0
@@ -461,6 +462,7 @@ async def dashboard(request: Request, current_user: dict = Depends(get_current_u
         "current_page": "dashboard",
         "show_onboarding": not has_source_content,
         "doc_count": doc_count,
+        "file_count": file_count,
         "draft_count": draft_count,
         "awaiting_publishing_count": awaiting_publishing_count,
         "published_count": published_count,
