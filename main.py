@@ -436,6 +436,24 @@ async def dashboard(request: Request, current_user: dict = Depends(get_current_u
 
     print(f"User data loaded for {current_user['username']}, has_source_content: {has_source_content}, doc_count: {doc_count}, draft_count: {draft_count}, awaiting_publishing_count: {awaiting_publishing_count}, published_count: {published_count}")
 
+    # Get follower count from user's profile
+    follower_count = 0
+    try:
+        user_url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/users_keyspace/users"
+        user_payload = {
+            "findOne": {
+                "filter": {"user_id": current_user["user_id"]}
+            }
+        }
+        
+        user_response = requests.post(user_url, headers=headers, json=user_payload)
+        if user_response.status_code == 200:
+            user_data = user_response.json()
+            follower_count = user_data.get("data", {}).get("document", {}).get("profile", {}).get("follower_count", 0)
+            print(f"Retrieved follower count for user: {follower_count}")
+    except Exception as e:
+        print(f"Error retrieving follower count: {str(e)}")
+        
     return templates.TemplateResponse("dashboard.html", {
         "request": request,
         "username": current_user["username"],
@@ -445,7 +463,8 @@ async def dashboard(request: Request, current_user: dict = Depends(get_current_u
         "doc_count": doc_count,
         "draft_count": draft_count,
         "awaiting_publishing_count": awaiting_publishing_count,
-        "published_count": published_count
+        "published_count": published_count,
+        "follower_count": follower_count
     })
 
 @app.get("/generation/repurpose", response_class=HTMLResponse, include_in_schema=False)
