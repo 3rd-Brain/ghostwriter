@@ -290,6 +290,249 @@ async def update_step_data(step_name: str, request: StepDataRequest, session_dat
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to update step data: {str(e)}")
 
+# Add function to process tweets in background
+def process_tweets_background(twitter_url, user_id, username):
+    """Process tweets in the background after user creation"""
+    try:
+        print("\n=== Debug: Background Twitter URL Processing ===")
+        print(f"Twitter URL detected: {twitter_url}")
+        print(f"User ID: {user_id}")
+        print(f"Username: {username}")
+        print(f"APIFY_API_TOKEN present: {'Yes' if os.environ.get('APIFY_API_TOKEN') else 'No'}")
+        print(f"OPENAI_API_KEY present: {'Yes' if os.environ.get('OPENAI_API_KEY') else 'No'}")
+        
+        if not os.environ.get("APIFY_API_TOKEN"):
+            raise Exception("APIFY_API_TOKEN missing")
+            
+        # Import necessary functions
+        from source_content_manager import gather_user_tweets, tweet_to_source_content
+        from publish_history_manager import uploadPublication
+        
+        # Set environment variable for processing
+        os.environ["CURRENT_USER_ID"] = user_id
+        print(f"Set CURRENT_USER_ID env var to: {user_id} for background processing")
+        
+        # Gather tweets
+        tweets = gather_user_tweets(
+            max_items=100,
+            sort="Latest",
+            user_url=twitter_url
+        )
+        print(f"Retrieved {len(tweets) if tweets else 0} tweets")
+        
+        # Get follower count from the first tweet's author info
+        follower_count = 0
+        if tweets and len(tweets) > 0:
+            followers = tweets[0].get('author', {}).get('followers', 0)
+            follower_count = max(followers, 1)  # Avoid division by zero
+            print(f"Found follower count: {follower_count}")
+            
+            # Update the user profile with follower count
+            ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+            ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+            
+            update_url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/users_keyspace/users"
+            headers = {
+                "Token": ASTRA_DB_APPLICATION_TOKEN,
+                "Content-Type": "application/json"
+            }
+            
+            update_payload = {
+                "updateOne": {
+                    "filter": {"user_id": user_id},
+                    "update": {
+                        "$set": {
+                            "profile.socials.follower_count": follower_count
+                        }
+                    }
+                }
+            }
+            
+            update_response = requests.post(update_url, headers=headers, json=update_payload)
+            update_response.raise_for_status()
+            print(f"Updated user profile with follower_count: {follower_count}")
+        
+        # Process tweets to create source content
+        print("Processing tweets with tweet_to_source_content...")
+        processed_tweets = tweet_to_source_content(tweets)
+        print(f"Successfully processed {len(processed_tweets)} tweets")
+        
+        # Update tweet processing result in user document
+        ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+        ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+        
+        update_url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/users_keyspace/users"
+        headers = {
+            "Token": ASTRA_DB_APPLICATION_TOKEN,
+            "Content-Type": "application/json"
+        }
+        
+        update_payload = {
+            "updateOne": {
+                "filter": {"user_id": user_id},
+                "update": {
+                    "$set": {
+                        "profile.twitter_processed": True,
+                        "profile.processed_tweets_count": len(processed_tweets)
+                    }
+                }
+            }
+        }
+        
+        update_response = requests.post(update_url, headers=headers, json=update_payload)
+        update_response.raise_for_status()
+        print(f"Updated user profile with processed_tweets_count: {len(processed_tweets)}")
+        
+        # Add tweets to publications collection
+        print("\n=== Debug: Adding tweets to publications collection ===")
+        publications_added = 0
+        
+        for i, tweet in enumerate(tweets):
+            # Skip retweets
+            if tweet.get('isRetweet', False):
+                continue
+                
+            # Extract text from tweet
+            tweet_text = tweet.get('fullText', '') or tweet.get('text', '')
+            if not tweet_text:
+                continue
+            
+            # Extract tweet ID
+            tweet_id = tweet.get('id', '') or str(uuid.uuid4())
+            
+            # Extract metrics
+            likes = tweet.get('likeCount', 0)
+            shares = tweet.get('retweetCount', 0)
+            quotes = tweet.get('quoteCount', 0)
+            bookmarks = tweet.get('bookmarkCount', 0)
+            replies = tweet.get('replyCount', 0)
+            impressions = tweet.get('viewCount', 0)
+            followers = tweet.get('author', {}).get('followers', 0)
+            
+            # Calculate weighted metrics
+            follower_count = max(followers, 1)  # Avoid division by zero
+            impression_follower_ratio = impressions / follower_count
+            
+            weighted_impressions = (impression_follower_ratio) * 0.15
+            weighted_replies = (replies / max(impression_follower_ratio, 0.001)) * 0.25
+            weighted_bookmarks = (bookmarks / max(impression_follower_ratio, 0.001)) * 0.25
+            weighted_shares = (shares / max(impression_follower_ratio, 0.001)) * 0.15
+            weighted_likes = (likes / max(impression_follower_ratio, 0.001)) * 0.2
+            
+            # Calculate overall score
+            score = weighted_impressions + weighted_replies + weighted_bookmarks + weighted_shares + weighted_likes
+            
+            # Get tweet created date if available, otherwise use current time
+            created_at = tweet.get('createdAt', '') or datetime.utcnow().isoformat()
+            
+            # Build the publication document
+            publication_data = {
+                "_id": str(uuid.uuid4()),
+                "post_id": tweet_id,
+                "user_id": user_id,
+                "first_draft": tweet_text,
+                "current_draft": tweet_text,
+                "template_id": "",
+                "template": "",
+                "source_chunks": "",
+                "brand_id": "",
+                "status": "published",
+                "created_at": created_at,
+                "workflow_name": "",
+                "workflow_id": "",
+                "content_format": "",
+                "metrics": {
+                    "likes": likes,
+                    "shares": shares,
+                    "quotes": quotes,
+                    "bookmarks": bookmarks,
+                    "replies": replies,
+                    "impressions": impressions
+                },
+                "weighted_metrics": {
+                    "weighted_likes": weighted_likes,
+                    "weighted_shares": weighted_shares,
+                    "weighted_bookmarks": weighted_bookmarks,
+                    "weighted_replies": weighted_replies,
+                    "weighted_impressions": weighted_impressions
+                },
+                "score": score,
+                "Approval_Date": ""
+            }
+            
+            # Upload to user_twitter_publications
+            try:
+                upload_response = uploadPublication(publication_data)
+                if upload_response.get("status") == "success":
+                    publications_added += 1
+            except Exception as upload_error:
+                print(f"Error uploading publication {i}: {str(upload_error)}")
+        
+        print(f"Added {publications_added} tweets to publications collection")
+        
+        # Update the publications count in user document
+        update_payload = {
+            "updateOne": {
+                "filter": {"user_id": user_id},
+                "update": {
+                    "$set": {
+                        "profile.publications_added": publications_added
+                    }
+                }
+            }
+        }
+        
+        update_response = requests.post(update_url, headers=headers, json=update_payload)
+        update_response.raise_for_status()
+        print(f"Updated user profile with publications_added: {publications_added}")
+        
+        # Clear the environment variable
+        if "CURRENT_USER_ID" in os.environ:
+            del os.environ["CURRENT_USER_ID"]
+        print("Cleared CURRENT_USER_ID env var")
+        
+        print("=== End Background Tweet Processing ===\n")
+        return True
+        
+    except Exception as e:
+        print("\n=== Debug: Background Tweet Processing Error ===")
+        print(f"Error type: {type(e).__name__}")
+        print(f"Error message: {str(e)}")
+        print(f"Twitter URL attempted: {twitter_url}")
+        print("=== End Error Debug ===\n")
+        
+        # Update user profile with error
+        try:
+            ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+            ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+            
+            update_url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/users_keyspace/users"
+            headers = {
+                "Token": ASTRA_DB_APPLICATION_TOKEN,
+                "Content-Type": "application/json"
+            }
+            
+            update_payload = {
+                "updateOne": {
+                    "filter": {"user_id": user_id},
+                    "update": {
+                        "$set": {
+                            "profile.twitter_processed": False,
+                            "profile.twitter_process_error": str(e)
+                        }
+                    }
+                }
+            }
+            
+            requests.post(update_url, headers=headers, json=update_payload)
+        except Exception as update_error:
+            print(f"Error updating user profile: {str(update_error)}")
+        
+        return False
+
+# Import threading for background processing
+import threading
+
 @router.post("/complete")
 async def complete_onboarding(request: OnboardingCompleteRequest, session_data=Depends(get_onboarding_session)):
     """Finalize onboarding and create user account"""
@@ -350,7 +593,8 @@ async def complete_onboarding(request: OnboardingCompleteRequest, session_data=D
                     "content_approval_alerts": False
                 }
             },
-            "socials": social_media
+            "socials": social_media,
+            "twitter_processing": "pending"  # Add initial state for Twitter processing
         },
         "settings": {
             "theme": "",
@@ -371,7 +615,7 @@ async def complete_onboarding(request: OnboardingCompleteRequest, session_data=D
     }
 
     try:
-        # Process Twitter data if provided
+        # Check if Twitter URL is provided, but don't process it yet
         social_media_data = form_data.get("social_media", {})
         twitter_url = social_media_data.get("twitter")  # Changed from twitter_url to twitter to match form data
 
@@ -379,157 +623,6 @@ async def complete_onboarding(request: OnboardingCompleteRequest, session_data=D
         print(f"Social media data: {social_media_data}")
         print(f"Twitter URL found: {twitter_url}")
         print("=== End Debug ===\n")
-
-        if twitter_url:
-            try:
-                print("\n=== Debug: Twitter URL Processing ===")
-                print(f"Twitter URL detected: {twitter_url}")
-                print(f"APIFY_API_TOKEN present: {'Yes' if os.environ.get('APIFY_API_TOKEN') else 'No'}")
-                print(f"OPENAI_API_KEY present: {'Yes' if os.environ.get('OPENAI_API_KEY') else 'No'}")
-                
-                if not os.environ.get("APIFY_API_TOKEN"):
-                    raise Exception("APIFY_API_TOKEN missing")
-                    
-                print("Importing tweet processing functions...")
-                from source_content_manager import gather_user_tweets, tweet_to_source_content
-                from publish_history_manager import uploadPublication
-
-                # Store user ID in environment for the tweet processing
-                os.environ["CURRENT_USER_ID"] = user_id
-                print(f"Set CURRENT_USER_ID env var to: {user_id}")
-                print(f"Processing Twitter URL: {twitter_url}")
-
-                # Gather and process tweets
-                print("Calling gather_user_tweets...")
-                tweets = gather_user_tweets(
-                    max_items=100,
-                    sort="Latest",
-                    user_url=twitter_url
-                )
-                print(f"Retrieved {len(tweets) if tweets else 0} tweets")
-
-                # Get follower count from the first tweet's author info
-                follower_count = 0
-                if tweets and len(tweets) > 0:
-                    followers = tweets[0].get('author', {}).get('followers', 0)
-                    follower_count = max(followers, 1)  # Avoid division by zero
-                    print(f"Found follower count: {follower_count}")
-
-                # Process tweets to create source content
-                print("Processing tweets with tweet_to_source_content...")
-                processed_tweets = tweet_to_source_content(tweets)
-                print(f"Successfully processed {len(processed_tweets)} tweets")
-
-                # Clear the environment variable
-                del os.environ["CURRENT_USER_ID"]
-                print("Cleared CURRENT_USER_ID env var")
-
-                # Add tweet processing result to user document
-                user["profile"]["twitter_processed"] = True
-                user["profile"]["processed_tweets_count"] = len(processed_tweets)
-                
-                # Add follower count to the user's social media data
-                if follower_count > 0:
-                    user["profile"]["socials"]["follower_count"] = follower_count
-                    print(f"Added follower_count: {follower_count} to user profile")
-                
-                # Also add tweets to user_twitter_publications collection
-                print("\n=== Debug: Adding tweets to publications collection ===")
-                publications_added = 0
-                username = account_basics.get("username", "")
-                
-                for i, tweet in enumerate(tweets):
-                    # Skip retweets
-                    if tweet.get('isRetweet', False):
-                        continue
-                        
-                    # Extract text from tweet
-                    tweet_text = tweet.get('fullText', '') or tweet.get('text', '')
-                    if not tweet_text:
-                        continue
-                    
-                    # Extract tweet ID
-                    tweet_id = tweet.get('id', '') or str(uuid.uuid4())
-                    
-                    # Extract metrics
-                    likes = tweet.get('likeCount', 0)
-                    shares = tweet.get('retweetCount', 0)
-                    quotes = tweet.get('quoteCount', 0)
-                    bookmarks = tweet.get('bookmarkCount', 0)
-                    replies = tweet.get('replyCount', 0)
-                    impressions = tweet.get('viewCount', 0)
-                    followers = tweet.get('author', {}).get('followers', 0)
-                    
-                    # Calculate weighted metrics
-                    follower_count = max(followers, 1)  # Avoid division by zero
-                    impression_follower_ratio = impressions / follower_count
-                    
-                    weighted_impressions = (impression_follower_ratio) * 0.15
-                    weighted_replies = (replies / max(impression_follower_ratio, 0.001)) * 0.25
-                    weighted_bookmarks = (bookmarks / max(impression_follower_ratio, 0.001)) * 0.25
-                    weighted_shares = (shares / max(impression_follower_ratio, 0.001)) * 0.15
-                    weighted_likes = (likes / max(impression_follower_ratio, 0.001)) * 0.2
-                    
-                    # Calculate overall score
-                    score = weighted_impressions + weighted_replies + weighted_bookmarks + weighted_shares + weighted_likes
-                    
-                    # Get tweet created date if available, otherwise use current time
-                    created_at = tweet.get('createdAt', '') or datetime.utcnow().isoformat()
-                    
-                    # Build the publication document
-                    publication_data = {
-                        "_id": str(uuid.uuid4()),
-                        "post_id": tweet_id,
-                        "user_id": user_id,
-                        "first_draft": tweet_text,
-                        "current_draft": tweet_text,
-                        "template_id": "",
-                        "template": "",
-                        "source_chunks": "",
-                        "brand_id": "",
-                        "status": "published",
-                        "created_at": created_at,
-                        "workflow_name": "",
-                        "workflow_id": "",
-                        "content_format": "",
-                        "metrics": {
-                            "likes": likes,
-                            "shares": shares,
-                            "quotes": quotes,
-                            "bookmarks": bookmarks,
-                            "replies": replies,
-                            "impressions": impressions
-                        },
-                        "weighted_metrics": {
-                            "weighted_likes": weighted_likes,
-                            "weighted_shares": weighted_shares,
-                            "weighted_bookmarks": weighted_bookmarks,
-                            "weighted_replies": weighted_replies,
-                            "weighted_impressions": weighted_impressions
-                        },
-                        "score": score,
-                        "Approval_Date": ""
-                    }
-                    
-                    # Upload to user_twitter_publications
-                    try:
-                        upload_response = uploadPublication(publication_data)
-                        if upload_response.get("status") == "success":
-                            publications_added += 1
-                    except Exception as upload_error:
-                        print(f"Error uploading publication {i}: {str(upload_error)}")
-                
-                print(f"Added {publications_added} tweets to publications collection")
-                user["profile"]["publications_added"] = publications_added
-                print("=== End Tweet Processing ===\n")
-            except Exception as e:
-                print("\n=== Debug: Tweet Processing Error ===")
-                print(f"Error type: {type(e).__name__}")
-                print(f"Error message: {str(e)}")
-                print(f"Twitter URL attempted: {twitter_url}")
-                print("=== End Error Debug ===\n")
-                user["profile"]["twitter_processed"] = False
-                user["profile"]["twitter_process_error"] = str(e)
 
         # Insert user document
         url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/users_keyspace/users"
@@ -568,6 +661,18 @@ async def complete_onboarding(request: OnboardingCompleteRequest, session_data=D
         print(f"Set CURRENT_USER_ID env var to: {user_id} after onboarding completion")
         print(f"Set CURRENT_USERNAME env var to: {username} after onboarding completion")
 
+        # Start Twitter processing in background if Twitter URL is provided
+        if twitter_url:
+            print("Starting tweet processing in background...")
+            # Use threading to process tweets in the background
+            tweet_thread = threading.Thread(
+                target=process_tweets_background,
+                args=(twitter_url, user_id, username)
+            )
+            tweet_thread.daemon = True  # Make thread daemon so it doesn't prevent app shutdown
+            tweet_thread.start()
+            print(f"Background processing started for user {username}")
+
         access_token = create_access_token(
             data={"sub": username, "user_id": user_id},
             expires_delta=timedelta(minutes=30)
@@ -577,7 +682,8 @@ async def complete_onboarding(request: OnboardingCompleteRequest, session_data=D
             "status": "success", 
             "message": "Onboarding completed successfully", 
             "user_id": user_id,
-            "access_token": access_token
+            "access_token": access_token,
+            "twitter_processing": "background" if twitter_url else "none"
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to complete onboarding: {str(e)}")
