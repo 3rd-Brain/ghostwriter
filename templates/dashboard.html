@@ -44,12 +44,12 @@
                 <button class="form-button mt-lg" onclick="showGuidePage()">Next</button>
             </div>
         </div>
-        
+
         <!-- Guide Page -->
         <div id="guidePage" class="modal-page" style="display:none">
             <div class="modal-header">
-                <h2>Let's Add Some Content</h2>
-                <span class="close">&times;</span>
+                <h2>Get Started</h2>
+                <span class="close" onclick="closeFirstLoginModal()">&times;</span>
             </div>
             <div class="modal-body">
                 <p>To get started, you'll need to add some source content for AI generation. You may opt to do the following:</p>
@@ -80,7 +80,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
     // Get show_onboarding value from the server-side template
     const showOnboarding = {{ show_onboarding|default(false)|tojson }};
     console.log("Show onboarding flag:", showOnboarding);
-    
+
     if (showOnboarding === true) {
         console.log("No source content detected, showing onboarding modal");
         const modal = document.getElementById('firstLoginModal');
