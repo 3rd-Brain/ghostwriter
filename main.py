@@ -102,6 +102,18 @@ async def root(request: Request):
 
 @app.get("/login", response_class=HTMLResponse, include_in_schema=False)
 async def login_page(request: Request):
+    # Check if user is already logged in by looking for access_token in cookies
+    if request.cookies.get("access_token"):
+        try:
+            # Validate the token
+            payload = jwt.decode(request.cookies.get("access_token"), SECRET_KEY, algorithms=[ALGORITHM])
+            # If token is valid, redirect to dashboard
+            return RedirectResponse(url="/dashboard", status_code=status.HTTP_302_FOUND)
+        except JWTError:
+            # If token is invalid, continue to login page
+            pass
+    
+    # If no token or invalid token, show login page
     return templates.TemplateResponse("login.html", {"request": request})
 
 @app.post("/login", include_in_schema=False)
@@ -1853,6 +1865,18 @@ async def reset_chat_session(current_user: dict = Depends(get_current_user)):
 
 @app.get("/signup", response_class=HTMLResponse, include_in_schema=False)
 async def signup(request: Request):
+    # Check if user is already logged in
+    if request.cookies.get("access_token"):
+        try:
+            # Validate the token
+            payload = jwt.decode(request.cookies.get("access_token"), SECRET_KEY, algorithms=[ALGORITHM])
+            # If token is valid, redirect to dashboard
+            return RedirectResponse(url="/dashboard", status_code=status.HTTP_302_FOUND)
+        except JWTError:
+            # If token is invalid, continue to signup page
+            pass
+    
+    # If no token or invalid token, show signup page
     return templates.TemplateResponse("signup.html", {"request": request})
 
 @app.delete("/api/user/{identifier}", tags=["User Management"])
