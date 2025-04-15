@@ -771,7 +771,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Validate URL format for non-empty fields
-        const urlRegex = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
+        const urlRegex = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-@]*)*\/?$/;
         const invalidUrls = Object.entries(socialProfiles)
             .filter(([_, value]) => value !== '' && !urlRegex.test(value))
             .map(([key, _]) => key);
