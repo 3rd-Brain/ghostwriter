@@ -4,7 +4,7 @@ import secrets
 import string
 import bcrypt
 import requests
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, Optional, Tuple
 
 def generate_api_key(length: int = 32) -> Tuple[str, str]:
