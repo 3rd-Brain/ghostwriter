@@ -188,15 +188,18 @@ async def login(request: Request, username: str = Form(...), password: str = For
                 os.environ["CURRENT_USERNAME"] = actual_username
                 os.environ["CURRENT_USER_ID"] = user_id
 
+                # Check if user has admin role
+                is_admin = user.get("role") == "admin"
+                
                 # Create a short-lived access token (15 minutes)
                 access_token = create_access_token(
-                    data={"sub": actual_username, "user_id": user_id},
+                    data={"sub": actual_username, "user_id": user_id, "is_admin": is_admin},
                     expires_delta=timedelta(minutes=15)
                 )
                 
                 # Create a long-lived refresh token (30 days)
                 from api_auth import create_refresh_token
-                refresh_token, _ = create_refresh_token(user_id, actual_username)
+                refresh_token, _ = create_refresh_token(user_id, actual_username, is_admin)
                 
                 # Set both tokens as cookies
                 response = RedirectResponse(url="/dashboard", status_code=status.HTTP_302_FOUND)
@@ -284,7 +287,11 @@ async def refresh_access_token_from_cookie(request: Request, refresh_token: str)
     
     # Create a new access token
     access_token = create_access_token(
-        data={"sub": user_info["username"], "user_id": user_info["user_id"]},
+        data={
+            "sub": user_info["username"], 
+            "user_id": user_info["user_id"],
+            "is_admin": user_info.get("is_admin", False)
+        },
         expires_delta=timedelta(minutes=15)
     )
     
@@ -342,7 +349,11 @@ async def refresh_access_token(request: Request, response: Response):
     
     # Create a new access token
     access_token = create_access_token(
-        data={"sub": user_info["username"], "user_id": user_info["user_id"]},
+        data={
+            "sub": user_info["username"], 
+            "user_id": user_info["user_id"],
+            "is_admin": user_info.get("is_admin", False)
+        },
         expires_delta=timedelta(minutes=15)
     )
     

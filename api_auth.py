@@ -192,13 +192,14 @@ def verify_api_key(api_key: str) -> Optional[Dict]:
         print(f"Error verifying API key: {str(e)}")
         return None
 
-def create_refresh_token(user_id: str, username: str) -> Tuple[str, str]:
+def create_refresh_token(user_id: str, username: str, is_admin: bool = False) -> Tuple[str, str]:
     """
     Create a refresh token for the user.
 
     Args:
         user_id: The user's ID
         username: The username
+        is_admin: Whether the user has admin privileges
 
     Returns:
         Tuple containing the refresh token and its hash
@@ -234,7 +235,8 @@ def create_refresh_token(user_id: str, username: str) -> Tuple[str, str]:
         "token_hash": hashed_token,
         "created_at": created_at,
         "expires_at": expires_at,
-        "is_revoked": False
+        "is_revoked": False,
+        "is_admin": is_admin
     }
 
     payload = {
@@ -299,7 +301,8 @@ def validate_refresh_token(refresh_token: str) -> Optional[Dict]:
                 return {
                     "user_id": token_doc.get("user_id"),
                     "username": token_doc.get("username"),
-                    "token_id": token_doc.get("_id")
+                    "token_id": token_doc.get("_id"),
+                    "is_admin": token_doc.get("is_admin", False)
                 }
 
         return None
