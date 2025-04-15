@@ -2,7 +2,7 @@ import json
 import requests
 from datetime import datetime, timedelta
 from typing import Optional
-from fastapi import FastAPI, HTTPException, Depends, Request, Response, status, Form, BackgroundTasks, UploadFile, Query
+from fastapi import FastAPI, HTTPException, Depends, Request, Response, status, Form, BackgroundTasks, UploadFile
 from document_processor import DocumentProcessor
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.security import OAuth2PasswordBearer
@@ -447,69 +447,6 @@ async def dashboard(request: Request, current_user: dict = Depends(get_current_u
         "awaiting_publishing_count": awaiting_publishing_count,
         "published_count": published_count
     })
-
-# Admin Routes
-@app.get("/admin", response_class=HTMLResponse, include_in_schema=False)
-async def admin_dashboard(request: Request, current_user: dict = Depends(get_current_user)):
-    # Check if the user has admin privileges
-    if not current_user.get("is_admin", False):
-        raise HTTPException(status_code=403, detail="Access denied. Admin privileges required.")
-    
-    return templates.TemplateResponse("admin.html", {
-        "request": request,
-        "username": current_user["username"],
-        "user_id": current_user["user_id"]
-    })
-
-@app.get("/admin/users", response_class=HTMLResponse, include_in_schema=False)
-async def admin_users(
-    request: Request, 
-    current_user: dict = Depends(get_current_user),
-    page: int = Query(1, ge=1),
-    limit: int = Query(10, ge=5, le=100)
-):
-    # Check if the user has admin privileges
-    if not current_user.get("is_admin", False):
-        raise HTTPException(status_code=403, detail="Access denied. Admin privileges required.")
-    
-    # Get users with pagination
-    try:
-        skip = (page - 1) * limit
-        result = await get_all_users(limit=limit, skip=skip)
-        users = result.get("data", {}).get("documents", [])
-        
-        # Add status for demonstration
-        for user in users:
-            user["status"] = "Active"  # You could derive this from user data
-            # Format date if available
-            if "created_at" in user:
-                created_at = user["created_at"]
-                user["join_date"] = created_at  # Format as needed
-            else:
-                user["join_date"] = "Unknown"
-                
-        total_count = result.get("data", {}).get("count", 0)
-        total_pages = max(1, (total_count + limit - 1) // limit)
-        
-        return templates.TemplateResponse("admin_users.html", {
-            "request": request,
-            "username": current_user["username"],
-            "users": users,
-            "page": page,
-            "limit": limit,
-            "total_pages": total_pages
-        })
-    except Exception as e:
-        print(f"Error fetching users: {str(e)}")
-        return templates.TemplateResponse("admin_users.html", {
-            "request": request,
-            "username": current_user["username"],
-            "users": [],
-            "page": 1,
-            "limit": limit,
-            "total_pages": 1,
-            "error": str(e)
-        })
 
 @app.get("/generation/repurpose", response_class=HTMLResponse, include_in_schema=False)
 async def generation_repurpose(request: Request, current_user: dict = Depends(get_current_user)):
