@@ -87,6 +87,83 @@ def retrievePublications(user_id: str) -> Dict[str, Any]:
         print(f"=== DEBUG: retrievePublications completed successfully ===\n")
         
         return {
+
+
+def uploadPublication(document_data: dict) -> dict:
+    """
+    Upload a publication document to the user_twitter_publications collection in AstraDB
+    
+    Args:
+        document_data: Dictionary containing the document data to upload
+        
+    Returns:
+        Dictionary containing the upload response
+    """
+    print(f"\n=== DEBUG: uploadPublication started ===")
+    print(f"Document data: {document_data}")
+    
+    ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+    ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+    
+    print(f"ASTRA_DB_API_ENDPOINT configured: {bool(ASTRA_DB_API_ENDPOINT)}")
+    print(f"ASTRA_DB_APPLICATION_TOKEN configured: {bool(ASTRA_DB_APPLICATION_TOKEN)}")
+    
+    if not ASTRA_DB_API_ENDPOINT:
+        print("ERROR: ASTRA_DB_API_ENDPOINT not configured")
+        raise Exception("ASTRA_DB_API_ENDPOINT not configured")
+    if not ASTRA_DB_APPLICATION_TOKEN:
+        print("ERROR: ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
+        raise Exception("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
+    
+    # Set up the API request
+    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/user_twitter_publications"
+    print(f"Request URL: {url}")
+    
+    headers = {
+        "Token": ASTRA_DB_APPLICATION_TOKEN,
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "insertOne": {
+            "document": document_data
+        }
+    }
+    
+    print(f"Request payload: {json.dumps(payload)[:200]}...")
+    
+    try:
+        print("Sending request to AstraDB...")
+        response = requests.post(url, headers=headers, json=payload)
+        print(f"Response status code: {response.status_code}")
+        
+        # Log a preview of the response text
+        response_text = response.text
+        print(f"Response preview: {response_text[:200]}{'...' if len(response_text) > 200 else ''}")
+        
+        response.raise_for_status()
+        result = response.json()
+        
+        print(f"=== DEBUG: uploadPublication completed successfully ===\n")
+        
+        return {
+            "status": "success",
+            "message": "Publication uploaded successfully",
+            "data": result
+        }
+    
+    except requests.exceptions.RequestException as e:
+        print(f"ERROR uploading publication: {str(e)}")
+        if hasattr(e, 'response') and e.response:
+            print(f"Error response status: {e.response.status_code}")
+            print(f"Error response text: {e.response.text[:200]}...")
+        
+        print(f"=== DEBUG: uploadPublication failed ===\n")
+        return {
+            "status": "error",
+            "message": f"Failed to upload publication: {str(e)}"
+        }
+
             "status": "success",
             "publications": publications
         }
