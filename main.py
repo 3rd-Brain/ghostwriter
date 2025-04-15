@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 from fastapi import FastAPI, HTTPException, Depends, Request, Response, status, Form, BackgroundTasks, UploadFile
 from document_processor import DocumentProcessor
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.security import OAuth2PasswordBearer
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -40,6 +40,23 @@ app = FastAPI(
     # Hide schemas section in the docs
     swagger_ui_parameters={"defaultModelsExpandDepth": -1}
 )
+
+# Custom exception handler for authentication failures
+@app.exception_handler(HTTPException)
+async def auth_exception_handler(request: Request, exc: HTTPException):
+    # Only handle 401 Unauthorized errors
+    if exc.status_code == status.HTTP_401_UNAUTHORIZED:
+        # Check if the request is coming from a browser (Accept header includes text/html)
+        accept_header = request.headers.get("Accept", "")
+        if "text/html" in accept_header:
+            # Redirect browser requests to the login page
+            return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
+    
+    # For all other exceptions or API requests, return the original exception
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail}
+    )
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
