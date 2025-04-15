@@ -1,105 +1,3 @@
-
-# Add these routes to your api_routes.py file
-
-@app.get("/api/user/social-profiles")
-async def get_user_social_profiles(current_user: dict = Depends(get_current_user)):
-    try:
-        user_id = current_user.get("_id")
-        
-        # Fetch user data from database
-        url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/users_keyspace/users"
-        headers = {
-            "Token": ASTRA_DB_APPLICATION_TOKEN,
-            "Content-Type": "application/json"
-        }
-        
-        payload = {
-            "findOne": {
-                "filter": {"_id": user_id}
-            }
-        }
-        
-        response = requests.post(url, headers=headers, json=payload)
-        response.raise_for_status()
-        data = response.json()
-        
-        if not data.get("document"):
-            return JSONResponse(
-                status_code=404,
-                content={"status": "error", "message": "User not found"}
-            )
-        
-        # Extract social profiles
-        user_data = data.get("document", {})
-        social_profiles = {
-            "podcast": user_data.get("podcast_url", ""),
-            "youtube": user_data.get("youtube_url", ""),
-            "twitter": user_data.get("twitter_url", ""),
-            "linkedin": user_data.get("linkedin_url", ""),
-            "newsletter": user_data.get("newsletter_url", ""),
-            "website": user_data.get("website_url", "")
-        }
-        
-        return {"status": "success", "social_profiles": social_profiles}
-    
-    except Exception as e:
-        print(f"Error fetching social profiles: {str(e)}")
-        return JSONResponse(
-            status_code=500,
-            content={"status": "error", "message": "Failed to fetch social profiles"}
-        )
-
-@app.post("/api/user/social-profiles")
-async def update_user_social_profiles(
-    profiles: dict,
-    current_user: dict = Depends(get_current_user)
-):
-    try:
-        user_id = current_user.get("_id")
-        
-        # Prepare update data
-        update_data = {
-            "podcast_url": profiles.get("podcast", ""),
-            "youtube_url": profiles.get("youtube", ""),
-            "twitter_url": profiles.get("twitter", ""),
-            "linkedin_url": profiles.get("linkedin", ""),
-            "newsletter_url": profiles.get("newsletter", ""),
-            "website_url": profiles.get("website", "")
-        }
-        
-        # Update user in database
-        url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/users_keyspace/users"
-        headers = {
-            "Token": ASTRA_DB_APPLICATION_TOKEN,
-            "Content-Type": "application/json"
-        }
-        
-        payload = {
-            "updateOne": {
-                "filter": {"_id": user_id},
-                "update": {"$set": update_data}
-            }
-        }
-        
-        response = requests.post(url, headers=headers, json=payload)
-        response.raise_for_status()
-        
-        # Count connected socials for response
-        connected_count = sum(1 for value in update_data.values() if value)
-        
-        return {
-            "status": "success", 
-            "message": "Social profiles updated successfully",
-            "connected_count": connected_count
-        }
-    
-    except Exception as e:
-        print(f"Error updating social profiles: {str(e)}")
-        return JSONResponse(
-            status_code=500,
-            content={"status": "error", "message": "Failed to update social profiles"}
-        )
-
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from api_middleware import get_current_api_user, get_admin_api_user, check_api_key_or_jwt
 from schemas import SuccessResponse
@@ -621,3 +519,102 @@ async def get_user_profile(current_user: dict = Depends(get_current_api_user)):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving user profile: {e}")
+
+@app.get("/api/user/social-profiles")
+async def get_user_social_profiles(current_user: dict = Depends(get_current_user)):
+    try:
+        user_id = current_user.get("_id")
+
+        # Fetch user data from database
+        url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/users_keyspace/users"
+        headers = {
+            "Token": ASTRA_DB_APPLICATION_TOKEN,
+            "Content-Type": "application/json"
+        }
+
+        payload = {
+            "findOne": {
+                "filter": {"_id": user_id}
+            }
+        }
+
+        response = requests.post(url, headers=headers, json=payload)
+        response.raise_for_status()
+        data = response.json()
+
+        if not data.get("document"):
+            return JSONResponse(
+                status_code=404,
+                content={"status": "error", "message": "User not found"}
+            )
+
+        # Extract social profiles
+        user_data = data.get("document", {})
+        social_profiles = {
+            "podcast": user_data.get("podcast_url", ""),
+            "youtube": user_data.get("youtube_url", ""),
+            "twitter": user_data.get("twitter_url", ""),
+            "linkedin": user_data.get("linkedin_url", ""),
+            "newsletter": user_data.get("newsletter_url", ""),
+            "website": user_data.get("website_url", "")
+        }
+
+        return {"status": "success", "social_profiles": social_profiles}
+
+    except Exception as e:
+        print(f"Error fetching social profiles: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "message": "Failed to fetch social profiles"}
+        )
+
+@app.post("/api/user/social-profiles")
+async def update_user_social_profiles(
+    profiles: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    try:
+        user_id = current_user.get("_id")
+
+        # Prepare update data
+        update_data = {
+            "podcast_url": profiles.get("podcast", ""),
+            "youtube_url": profiles.get("youtube", ""),
+            "twitter_url": profiles.get("twitter", ""),
+            "linkedin_url": profiles.get("linkedin", ""),
+            "newsletter_url": profiles.get("newsletter", ""),
+            "website_url": profiles.get("website", "")
+        }
+
+        # Update user in database
+        url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/users_keyspace/users"
+        headers = {
+            "Token": ASTRA_DB_APPLICATION_TOKEN,
+            "Content-Type": "application/json"
+        }
+
+        payload = {
+            "updateOne": {
+                "filter": {"_id": user_id},
+                "update": {"$set": update_data}
+            }
+        }
+
+        response = requests.post(url, headers=headers, json=payload)
+        response.raise_for_status()
+
+        # Count connected socials for response
+        connected_count = sum(1 for value in update_data.values() if value)
+
+        return {
+            "status": "success", 
+            "message": "Social profiles updated successfully",
+            "connected_count": connected_count
+        }
+
+    except Exception as e:
+        print(f"Error updating social profiles: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "message": "Failed to update social profiles"}
+        )
