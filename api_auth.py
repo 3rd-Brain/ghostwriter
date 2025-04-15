@@ -153,6 +153,159 @@ def verify_api_key(api_key: str) -> Optional[Dict]:
 
     # Find API key record by prefix
     url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/users_keyspace/user_api_keys"
+
+def create_refresh_token(user_id: str, username: str) -> Tuple[str, str]:
+    """
+    Create a refresh token for the user.
+    
+    Args:
+        user_id: The user's ID
+        username: The username
+        
+    Returns:
+        Tuple containing the refresh token and its hash
+    """
+    # Generate a random token
+    token = secrets.token_hex(32)
+    
+    # Hash the token for storage
+    hashed_token = bcrypt.hashpw(token.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    
+    # Store the token in the database
+    ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+    ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+    
+    if not ASTRA_DB_API_ENDPOINT or not ASTRA_DB_APPLICATION_TOKEN:
+        raise ValueError("Database credentials not configured")
+    
+    # Current timestamp
+    created_at = datetime.utcnow().isoformat()
+    # Set expiry to 30 days from now
+    expires_at = (datetime.utcnow() + timedelta(days=30)).isoformat()
+    
+    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/users_keyspace/refresh_tokens"
+    headers = {
+        "Token": ASTRA_DB_APPLICATION_TOKEN,
+        "Content-Type": "application/json"
+    }
+    
+    document = {
+        "_id": str(uuid.uuid4()),
+        "user_id": user_id,
+        "username": username,
+        "token_hash": hashed_token,
+        "created_at": created_at,
+        "expires_at": expires_at,
+        "is_revoked": False
+    }
+    
+    payload = {
+        "insertOne": {
+            "document": document
+        }
+    }
+    
+    try:
+        response = requests.post(url, headers=headers, json=payload)
+        response.raise_for_status()
+        return token, hashed_token
+    except Exception as e:
+        print(f"Error creating refresh token: {str(e)}")
+        raise
+
+def validate_refresh_token(refresh_token: str) -> Optional[Dict]:
+    """
+    Validate a refresh token and return user information.
+    
+    Args:
+        refresh_token: The refresh token to validate
+        
+    Returns:
+        User details if valid, None otherwise
+    """
+    ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+    ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+    
+    if not ASTRA_DB_API_ENDPOINT or not ASTRA_DB_APPLICATION_TOKEN:
+        return None
+    
+    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/users_keyspace/refresh_tokens"
+    headers = {
+        "Token": ASTRA_DB_APPLICATION_TOKEN,
+        "Content-Type": "application/json"
+    }
+    
+    # We'll need to scan all non-revoked tokens that haven't expired
+    current_time = datetime.utcnow().isoformat()
+    
+    payload = {
+        "find": {
+            "filter": {
+                "is_revoked": False,
+                "expires_at": {"$gt": current_time}
+            }
+        }
+    }
+    
+    try:
+        response = requests.post(url, headers=headers, json=payload)
+        response.raise_for_status()
+        
+        tokens = response.json().get("data", {}).get("documents", [])
+        
+        # Check each token
+        for token_doc in tokens:
+            stored_hash = token_doc.get("token_hash", "")
+            if bcrypt.checkpw(refresh_token.encode('utf-8'), stored_hash.encode('utf-8')):
+                # Return user information
+                return {
+                    "user_id": token_doc.get("user_id"),
+                    "username": token_doc.get("username"),
+                    "token_id": token_doc.get("_id")
+                }
+        
+        return None
+    except Exception as e:
+        print(f"Error validating refresh token: {str(e)}")
+        return None
+
+def revoke_refresh_token(token_id: str) -> bool:
+    """
+    Revoke a refresh token.
+    
+    Args:
+        token_id: The ID of the token to revoke
+        
+    Returns:
+        True if successful, False otherwise
+    """
+    ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+    ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+    
+    if not ASTRA_DB_API_ENDPOINT or not ASTRA_DB_APPLICATION_TOKEN:
+        return False
+    
+    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/users_keyspace/refresh_tokens"
+    headers = {
+        "Token": ASTRA_DB_APPLICATION_TOKEN,
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "updateOne": {
+            "filter": {"_id": token_id},
+            "update": {"$set": {"is_revoked": True}}
+        }
+    }
+    
+    try:
+        response = requests.post(url, headers=headers, json=payload)
+        response.raise_for_status()
+        return True
+    except Exception as e:
+        print(f"Error revoking refresh token: {str(e)}")
+        return False
+
     headers = {
         "Token": ASTRA_DB_APPLICATION_TOKEN,
         "Content-Type": "application/json"

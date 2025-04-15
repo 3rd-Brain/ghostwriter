@@ -175,34 +175,8 @@ async def login(request: Request, username: str = Form(...), password: str = For
             is_password_match = False
             if stored_hash:
                 try:
-                    # --Delete this section during production--
-                    print("\n=== Debug Password Comparison ===")
-                    print(f"Input password (raw): {password}")
-                    print(f"Input password (type): {type(password)}")
                     input_encoded = password.encode('utf-8')
-                    print(f"Input password (encoded): {input_encoded}")
-                    print(f"Input password (encoded type): {type(input_encoded)}")
-
-                    print(f"\nStored hash (raw): {stored_hash}")
-                    print(f"Stored hash (type): {type(stored_hash)}")
                     stored_encoded = stored_hash.encode('utf-8')
-                    print(f"Stored hash (encoded): {stored_encoded}")
-                    print(f"Stored hash (encoded type): {type(stored_encoded)}")
-
-                    # Extract salt and manually generate hash
-                    print("\nManual Hash Generation:")
-                    stored_salt = stored_encoded[:29]  # bcrypt salt is always 29 chars including version
-                    print(f"Extracted salt: {stored_salt}")
-                    print(f"Salt (type): {type(stored_salt)}")
-
-                    manual_hash = bcrypt.hashpw(input_encoded, stored_salt)
-                    print(f"Manually generated hash: {manual_hash}")
-                    print(f"Manual hash matches stored?: {manual_hash == stored_encoded}")
-
-                    print("\nAttempting hash comparison with bcrypt.checkpw()...")
-                    print("=== End Debug Section ===\n")
-                    # --End delete section--
-
                     is_password_match = bcrypt.checkpw(input_encoded, stored_encoded)
                     print(f"Password comparison result: {is_password_match}")
                 except Exception as e:
@@ -214,13 +188,30 @@ async def login(request: Request, username: str = Form(...), password: str = For
                 os.environ["CURRENT_USERNAME"] = actual_username
                 os.environ["CURRENT_USER_ID"] = user_id
 
-                # Create an access token that includes both username and user_id
+                # Create a short-lived access token (15 minutes)
                 access_token = create_access_token(
                     data={"sub": actual_username, "user_id": user_id},
-                    expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+                    expires_delta=timedelta(minutes=15)
                 )
+                
+                # Create a long-lived refresh token (30 days)
+                from api_auth import create_refresh_token
+                refresh_token, _ = create_refresh_token(user_id, actual_username)
+                
+                # Set both tokens as cookies
                 response = RedirectResponse(url="/dashboard", status_code=status.HTTP_302_FOUND)
-                response.set_cookie(key="access_token", value=access_token, httponly=True)
+                response.set_cookie(
+                    key="access_token", 
+                    value=access_token, 
+                    httponly=True,
+                    max_age=900  # 15 minutes in seconds
+                )
+                response.set_cookie(
+                    key="refresh_token", 
+                    value=refresh_token, 
+                    httponly=True,
+                    max_age=2592000  # 30 days in seconds
+                )
                 return response
             else:
                 login_type = "email" if is_email else "username"
@@ -255,6 +246,11 @@ async def get_current_user(request: Request):
     )
     token = request.cookies.get("access_token")
     if not token:
+        # Check if there's a refresh token we can use
+        refresh_token = request.cookies.get("refresh_token")
+        if refresh_token:
+            # Try to use the refresh token endpoint
+            return await refresh_access_token_from_cookie(request, refresh_token)
         raise credentials_exception
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -264,7 +260,101 @@ async def get_current_user(request: Request):
             raise credentials_exception
         return {"username": username, "user_id": user_id}
     except JWTError:
+        # Token is invalid, try to refresh
+        refresh_token = request.cookies.get("refresh_token")
+        if refresh_token:
+            return await refresh_access_token_from_cookie(request, refresh_token)
         raise credentials_exception
+
+async def refresh_access_token_from_cookie(request: Request, refresh_token: str):
+    """
+    Helper function to refresh an access token using a refresh token from cookie.
+    Returns user info if successful, otherwise raises an exception.
+    """
+    from api_auth import validate_refresh_token
+    
+    # Validate the refresh token
+    user_info = validate_refresh_token(refresh_token)
+    if not user_info:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid refresh token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    # Create a new access token
+    access_token = create_access_token(
+        data={"sub": user_info["username"], "user_id": user_info["user_id"]},
+        expires_delta=timedelta(minutes=15)
+    )
+    
+    # Set the new access token cookie
+    # This is done on the response of the current request
+    try:
+        # Only available in a route function context
+        if hasattr(request.state, "response"):
+            request.state.response.set_cookie(
+                key="access_token", 
+                value=access_token, 
+                httponly=True,
+                max_age=900  # 15 minutes in seconds
+            )
+    except:
+        # We're not in a route context, the cookie will be refreshed on the next request
+        pass
+        
+    # Return the user info
+    return {"username": user_info["username"], "user_id": user_info["user_id"]}
+
+@app.get("/api/refresh-token", tags=["Authentication"])
+async def refresh_access_token(request: Request, response: Response):
+    """
+    **Refresh an expired access token using a valid refresh token**
+    
+    This endpoint validates the refresh token and issues a new access token.
+    
+    ## When to use
+    Use this endpoint when:
+    * Access token has expired but refresh token is still valid
+    * You need to extend a user's session without requiring re-login
+    * You want to maintain persistent authentication with better security
+    
+    *The refresh token should be provided in the HTTP-only cookie.*
+    """
+    refresh_token = request.cookies.get("refresh_token")
+    if not refresh_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token missing",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    from api_auth import validate_refresh_token
+    
+    # Validate the refresh token
+    user_info = validate_refresh_token(refresh_token)
+    if not user_info:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid refresh token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    # Create a new access token
+    access_token = create_access_token(
+        data={"sub": user_info["username"], "user_id": user_info["user_id"]},
+        expires_delta=timedelta(minutes=15)
+    )
+    
+    # Set the new access token cookie
+    response.set_cookie(
+        key="access_token", 
+        value=access_token, 
+        httponly=True,
+        max_age=900  # 15 minutes in seconds
+    )
+    
+    return {"status": "success", "message": "Access token refreshed successfully"}
 
 @app.get("/dashboard", response_class=HTMLResponse, include_in_schema=False)
 async def dashboard(request: Request, current_user: dict = Depends(get_current_user)):
@@ -837,13 +927,25 @@ async def api_keys_page(request: Request, current_user: dict = Depends(get_curre
     })
 
 @app.get("/logout", include_in_schema=False)
-async def logout(response: Response):
+async def logout(request: Request, response: Response):
     # Clear the username environment variable on logout
     if "CURRENT_USERNAME" in os.environ:
         del os.environ["CURRENT_USERNAME"]
+    
+    # Revoke the refresh token if it exists
+    refresh_token = request.cookies.get("refresh_token")
+    if refresh_token:
+        try:
+            from api_auth import validate_refresh_token, revoke_refresh_token
+            token_info = validate_refresh_token(refresh_token)
+            if token_info and token_info.get("token_id"):
+                revoke_refresh_token(token_info["token_id"])
+        except Exception as e:
+            print(f"Error revoking refresh token: {str(e)}")
 
     response = RedirectResponse(url="/login")
     response.delete_cookie("access_token")
+    response.delete_cookie("refresh_token")
     return response
 
 # Configure CORS with enhanced settings for referrer issues
