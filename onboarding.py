@@ -474,12 +474,12 @@ async def complete_onboarding(request: OnboardingCompleteRequest, session_data=D
                         "template_id": "",
                         "template": "",
                         "source_chunks": "",
-                        "brand_id": username,
+                        "brand_id": "",
                         "status": "published",
                         "created_at": created_at,
-                        "workflow_name": "Twitter Import",
-                        "workflow_id": "twitter_import",
-                        "content_format": "twitter",
+                        "workflow_name": "",
+                        "workflow_id": "",
+                        "content_format": "",
                         "metrics": {
                             "likes": likes,
                             "shares": shares,
@@ -496,7 +496,7 @@ async def complete_onboarding(request: OnboardingCompleteRequest, session_data=D
                             "weighted_impressions": weighted_impressions
                         },
                         "score": score,
-                        "Approval_Date": created_at
+                        "Approval_Date": ""
                     }
                     
                     # Upload to user_twitter_publications
