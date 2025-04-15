@@ -439,6 +439,7 @@ async def dashboard(request: Request, current_user: dict = Depends(get_current_u
 
     # Get follower count from user's profile
     follower_count = 0
+    social_count = 0
     try:
         user_url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/users_keyspace/users"
         user_payload = {
@@ -450,10 +451,17 @@ async def dashboard(request: Request, current_user: dict = Depends(get_current_u
         user_response = requests.post(user_url, headers=headers, json=user_payload)
         if user_response.status_code == 200:
             user_data = user_response.json()
-            follower_count = user_data.get("data", {}).get("document", {}).get("profile", {}).get("follower_count", 0)
+            user_profile = user_data.get("data", {}).get("document", {}).get("profile", {})
+            follower_count = user_profile.get("follower_count", 0)
+            
+            # Count social media accounts
+            socials = user_profile.get("socials", {})
+            social_count = sum(1 for value in socials.values() if value)
+            
             print(f"Retrieved follower count for user: {follower_count}")
+            print(f"Connected social accounts: {social_count}")
     except Exception as e:
-        print(f"Error retrieving follower count: {str(e)}")
+        print(f"Error retrieving user data: {str(e)}")
         
     return templates.TemplateResponse("dashboard.html", {
         "request": request,
@@ -466,7 +474,8 @@ async def dashboard(request: Request, current_user: dict = Depends(get_current_u
         "draft_count": draft_count,
         "awaiting_publishing_count": awaiting_publishing_count,
         "published_count": published_count,
-        "follower_count": follower_count
+        "follower_count": follower_count,
+        "social_count": social_count
     })
 
 @app.get("/generation/repurpose", response_class=HTMLResponse, include_in_schema=False)
