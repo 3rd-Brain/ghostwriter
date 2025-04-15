@@ -2,7 +2,7 @@ import json
 import requests
 from datetime import datetime, timedelta
 from typing import Optional
-from fastapi import FastAPI, HTTPException, Depends, Request, Response, status, Form, BackgroundTasks, UploadFile
+from fastapi import FastAPI, HTTPException, Depends, Request, Response, status, Form, BackgroundTasks, UploadFile, Query
 from document_processor import DocumentProcessor
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.security import OAuth2PasswordBearer
