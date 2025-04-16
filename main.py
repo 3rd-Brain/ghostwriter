@@ -13,7 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 from typing import Dict
 from api_middleware import check_api_key_or_jwt
-from social_writer import generated_content_uploader, get_client_brand_voice, top_content_sentiment_setup, source_content_retriever, multitemplate_retriever, short_form_social_repurposing, top_content_to_repurposing, template_context_and_uploader, Templatizer, repurposer_using_posts_as_templates, source_content_repurposer_using_posts_as_templates, delete_user_account
+from social_writer import generated_content_uploader, get_client_brand_voice, source_content_retriever, multitemplate_retriever, short_form_social_repurposing, template_context_and_uploader, Templatizer, repurposer_using_posts_as_templates, source_content_repurposer_using_posts_as_templates, delete_user_account
 from social_dynamic_generation_flow import flow_config_retriever, social_post_generation_with_json
 import schemas
 from onboarding import router as onboarding_router
@@ -1330,23 +1330,17 @@ async def setup_sentiment(request_data: schemas.SentimentSetupRequest, current_u
 
     This endpoint generates filter and sorting configurations for content sentiment analysis.
     """
-    if not os.getenv("OPENAI_API_KEY"):
-        raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
-
-    try:
-        result = top_content_sentiment_setup(request_data.query)
-        return result
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    # Function no longer available
+    raise HTTPException(
+        status_code=501, 
+        detail="This functionality is no longer available. The top_content_sentiment_setup function has been removed."
+    )
 
 def top_content_retriever(query: str, topic: str = "general") -> Dict:
     from top_content_repurposer import top_published_posts_retriever
     
-    setup_result = top_content_sentiment_setup(query)
-    # Use top_published_posts_retriever as a replacement for vector_search_for_published_content
+    # Simply call top_published_posts_retriever directly without sentiment setup
     results = top_published_posts_retriever(user_id=os.environ.get("CURRENT_USER_ID"))
-    # Removed metric_sorter since it no longer exists
-    # Sort can be applied directly in the top_published_posts_retriever function if needed
     return results
 
 @app.post("/api/top-content", response_model=Dict, tags=["Content Management"])
