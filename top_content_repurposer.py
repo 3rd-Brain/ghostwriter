@@ -70,7 +70,7 @@ def top_published_posts_retriever(user_id: str) -> Dict:
         raise Exception(f"Failed to retrieve top posts: {str(e)}")
 
 
-def repurpose_top_published_posts(user_id: str, brand: str, repurpose_count: int = 5) -> Dict:
+def repurpose_top_published_posts(user_id: str, brand: str, repurpose_count: int = 5, published_posts_count_to_repurpose: int = 5, workflow_name: str = "Legacy Generation Flow") -> Dict:
     """
     Repurpose top published posts for a user
 
@@ -78,6 +78,8 @@ def repurpose_top_published_posts(user_id: str, brand: str, repurpose_count: int
         user_id: String containing the user's ID
         brand: String containing the brand name for brand voice
         repurpose_count: Number of templates to use per post (default: 5)
+        published_posts_count_to_repurpose: Number of top published posts to process (default: 5)
+        workflow_name: Workflow name to use for content generation (default: "Legacy Generation Flow")
 
     Returns:
         Dictionary containing the repurposing results
@@ -86,6 +88,8 @@ def repurpose_top_published_posts(user_id: str, brand: str, repurpose_count: int
     print(f"User ID: {user_id}")
     print(f"Brand: {brand}")
     print(f"Repurpose count per post: {repurpose_count}")
+    print(f"Published posts count to repurpose: {published_posts_count_to_repurpose}")
+    print(f"Workflow name: {workflow_name}")
 
     # Step 1: Retrieve top published posts
     try:
@@ -106,12 +110,12 @@ def repurpose_top_published_posts(user_id: str, brand: str, repurpose_count: int
         # Step 3: Process each top post with multiple templates
         results = []
 
-        for post_index, post in enumerate(top_posts[:5]):  # Limit to top 5 posts for now
+        for post_index, post in enumerate(top_posts[:published_posts_count_to_repurpose]):
             post_content = post.get("content", "")
             if not post_content:
                 continue
 
-            print(f"\n--- Processing Post {post_index + 1}/{min(5, len(top_posts))} ---")
+            print(f"\n--- Processing Post {post_index + 1}/{min(published_posts_count_to_repurpose, len(top_posts))} ---")
             print(f"Post content: {post_content[:100]}{'...' if len(post_content) > 100 else ''}")
 
             # Get templates for this post
@@ -141,7 +145,7 @@ def repurpose_top_published_posts(user_id: str, brand: str, repurpose_count: int
                 from social_dynamic_generation_flow import social_post_generation_with_json
                 try:
                     generated_content = social_post_generation_with_json(
-                        workflow_id="Legacy Generation Flow",
+                        workflow_name=workflow_name,
                         client_brief=brand_voice,
                         template=template_content,
                         content_chunks=post_content
