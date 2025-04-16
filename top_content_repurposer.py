@@ -188,14 +188,14 @@ def top_content_retriever(filter_query: str, user_id: str) -> Dict:
             print(f"Response Body: {e.response.text}")
         raise Exception(f"Failed to retrieve user content: {str(e)}")
 
-def top_content_to_repurposing(query: str, brand: str, numberOfPostsToRepurpose: int = 5, repurpose_count: int = 1, workflow_id: str = "Legacy Generation Flow") -> Dict:
+def top_content_to_repurposing(query: str, brand: str, numberOfPostsToRepurpose: int = 5, repurpose_count: int = 5, workflow_id: str = "Legacy Generation Flow") -> Dict:
     """
     Get top posts and repurpose each one multiple times using short_form_social_repurposing
     Args:
         query: String for searching top content (e.g. "Repurpose my most high-performing tweets")
         brand: String containing the brand for brand voice
         numberOfPostsToRepurpose: Number of top posts to repurpose (default: 5)
-        repurpose_count: Number of times to repurpose each post (default: 1)
+        repurpose_count: Number of times to repurpose each post (default: 5)
         workflow_id: String containing the workflow ID for generation
     Returns:
         Dictionary with status of repurposing process
