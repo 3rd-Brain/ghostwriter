@@ -474,7 +474,7 @@ async def generate_industry_report(request: TwitterProfilesRequest, user: dict =
 
 # User Management endpoints
 @router.get("/user/profile", tags=["User Management"])
-async def get_user_profile(current_user: dict = Depends(get_current_api_user)):
+async def get_user_profile(current_user: dict = Depends(check_api_key_or_jwt)):
     """
     **Retrieve the user's profile information**
 
