@@ -1490,7 +1490,7 @@ async def get_top_content_repurposing(request_data: schemas.TopContentRepurposin
         )
 
         # Return immediately
-        return {"status": ""success", "message": "Content is now being generated from your top posts"}
+        return {"status": "success", "message": "Content is now being generated from your top posts"}
     except Exception as e:
         print(f"Error in top content repurposing: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
