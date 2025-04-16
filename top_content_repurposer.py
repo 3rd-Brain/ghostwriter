@@ -63,74 +63,6 @@ def top_content_sentiment_setup(query: str) -> Dict:
         "metric_sort": metric_sort
     }
 
-def vector_search_for_published_content(metadata_filter: Dict, text_to_vectorize: str) -> Dict:
-    """
-    Perform vector search for published content using OpenAI embeddings
-    """
-    if not OPENAI_API_KEY:
-        raise Exception("OPENAI_API_KEY not configured")
-    if not ASTRA_DB_APPLICATION_TOKEN:
-        raise Exception("ASTRA_DB_APPLICATION_TOKEN not configured")
-
-    # Generate embedding for the input text
-    response = openai_client.embeddings.create(
-        input=text_to_vectorize,
-        model="text-embedding-3-small"
-    )
-    vector = response.data[0].embedding
-    print(f"Generated embedding for text: '{text_to_vectorize}'")
-    print(f"Embedding vector (first 5 dimensions): {vector[:5]}...")
-    print(f"Embedding dimension: {len(vector)}")
-
-    # Prepare search request
-    url = "https://d468cd02-85c9-4ee8-9bd3-3dc123ddf2ac-us-east-2.apps.astra.datastax.com/api/json/v1/default_keyspace/published_content"
-
-    headers = {
-        "Token": ASTRA_DB_APPLICATION_TOKEN,
-        "Content-Type": "application/json"
-    }
-
-    # Handle filter structure and add metadata prefix to appropriate fields
-    metadata_fields = [
-        "weighted_impression_ratio", "weighted_like_ratio", 
-        "weighted_bookmark_ratio", "weighted_retweet_ratio", 
-        "weighted_reply_ratio", "total_weight_metric",
-        "post_id", "published_date"
-    ]
-
-    def process_filter(filter_obj):
-        if isinstance(filter_obj, dict):
-            new_obj = {}
-            for key, value in filter_obj.items():
-                if key in ['$and', '$or']:
-                    new_obj[key] = [process_filter(item) for item in value]
-                elif key in metadata_fields:
-                    new_obj[f"metadata.{key}"] = value
-                else:
-                    new_obj[key] = process_filter(value) if isinstance(value, dict) else value
-            return new_obj
-        return filter_obj
-
-    processed_filter = process_filter(metadata_filter)
-
-    payload = {
-        "find": {
-            "filter": processed_filter,
-            "sort": {"$vector": vector},
-            "options": {
-                "limit": 1000
-            }
-        }
-    }
-
-    try:
-        response = requests.post(url, headers=headers, json=payload)
-        response.raise_for_status()
-        response_data = response.json()
-        return response_data
-    except requests.exceptions.RequestException as e:
-        raise Exception(f"Failed to perform vector search: {str(e)}")
-
 def metric_sorter(published_content: Dict, sort_metric: str) -> Dict:
     """
     Sort published content by specified metric in descending order
@@ -163,17 +95,21 @@ def top_content_retriever(query: str, topic: str) -> Dict:
     """
     # Get filter and metric sort from sentiment setup
     setup_result = top_content_sentiment_setup(query)
-
-    # Use vector search with the filter, but vectorize the topic
-    search_result = vector_search_for_published_content(
-        metadata_filter=setup_result["filter"],
-        text_to_vectorize=topic
-    )
-
-    # Sort results by the chosen metric if present
-    if "metric_sort" in setup_result and search_result:
-        return metric_sorter(search_result, setup_result["metric_sort"])
-    return search_result
+    
+    print(f"Generated filter parameters for query: '{query}' and topic: '{topic}'")
+    print(f"Filter: {setup_result.get('filter', {})}")
+    print(f"Metric sort: {setup_result.get('metric_sort', 'None')}")
+    
+    # Return empty result structure since vector_search is removed
+    # This should be replaced with a new implementation
+    empty_result = {
+        "data": {
+            "documents": [],
+            "nextPageState": None
+        }
+    }
+    
+    return empty_result
 
 def top_content_to_repurposing(query: str, topic: str, brand: str, numberOfPostsToRepurpose: int = 5, repurpose_count: int = 1, workflow_id: str = "Legacy Generation Flow") -> Dict:
     """
@@ -205,6 +141,9 @@ def top_content_to_repurposing(query: str, topic: str, brand: str, numberOfPosts
                 status_messages.append(f"Processed post: {post[:50]}...")
             except Exception as e:
                 status_messages.append(f"Failed to process post: {str(e)}")
+    else:
+        status_messages.append("No top content found or vector search functionality is unavailable.")
+        print("No documents found in results. Vector search functionality has been removed.")
 
     return {
         "status": "Completed repurposing of top posts",
