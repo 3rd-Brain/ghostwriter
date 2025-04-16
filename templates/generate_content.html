@@ -865,11 +865,11 @@
             fetch('/api/user-profile')
                 .then(response => response.json())
                 .then(data => {
-                    if (data.twitter_processed === true) {
+                    // Access twitter_processed from nested profile object
+                    if (data.profile && data.profile.twitter_processed === true) {
                         repurposeModal.style.display = 'block';
                     } else {
-                        window.showNotification('Please connect your Twitter account in Source Content Management first', true);
-                    }
+                        window.showNotification('Please connect your Twitter account in Source Content Management first', true);                    }
                 })
                 .catch(error => {
                     console.error('Error checking Twitter connection:', error);
