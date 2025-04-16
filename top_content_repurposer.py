@@ -1,4 +1,3 @@
-
 import os
 import json
 import requests
@@ -84,109 +83,76 @@ def metric_sorter(published_content: Dict, sort_metric: str) -> Dict:
         }
     }
 
-def top_content_retriever(filter_query: str, user_id: str) -> Dict:
+import os
+import json
+import requests
+from typing import Dict
+
+def top_posts_retriever(user_id: str) -> Dict:
     """
-    Process user query to get filtered and sorted content from user's Twitter publications
+    Retrieve top posts for a user from AstraDB
+
     Args:
-        filter_query: String containing the search query (e.g. "Find top posts of the week")
         user_id: String containing the user's ID
+
     Returns:
-        Dictionary containing filtered and sorted content
+        Dictionary containing the response from AstraDB
     """
-    if not ASTRA_DB_APPLICATION_TOKEN:
-        raise Exception("ASTRA_DB_APPLICATION_TOKEN not configured")
-    
-    # Get filter and metric sort from sentiment setup
-    setup_result = top_content_sentiment_setup(filter_query)
-    metadata_filter = setup_result.get("filter", {})
-    metric_sort = setup_result.get("metric_sort")
-    
-    print(f"Generated filter parameters for query: '{filter_query}'")
-    print(f"Filter: {metadata_filter}")
-    print(f"Metric sort: {metric_sort}")
-    
-    # Handle filter structure and add metadata prefix to appropriate fields
-    metadata_fields = [
-        "weighted_impression_ratio", "weighted_like_ratio", 
-        "weighted_bookmark_ratio", "weighted_retweet_ratio", 
-        "weighted_reply_ratio", "total_weight_metric",
-        "post_id", "published_date"
-    ]
-
-    def process_filter(filter_obj):
-        if isinstance(filter_obj, dict):
-            new_obj = {}
-            for key, value in filter_obj.items():
-                if key in ['$and', '$or']:
-                    new_obj[key] = [process_filter(item) for item in value]
-                elif key in metadata_fields:
-                    new_obj[f"metadata.{key}"] = value
-                else:
-                    new_obj[key] = process_filter(value) if isinstance(value, dict) else value
-            return new_obj
-        return filter_obj
-
-    processed_filter = process_filter(metadata_filter)
-    
-    # Add user_id to filter
-    if "$and" in processed_filter:
-        processed_filter["$and"].append({"user_id": user_id})
-    else:
-        processed_filter = {
-            "$and": [
-                processed_filter,
-                {"user_id": user_id}
-            ]
-        }
-    
-    # Get API endpoint from environment
+    # Get AstraDB credentials from environment
     ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+    ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+
     if not ASTRA_DB_API_ENDPOINT:
         raise Exception("ASTRA_DB_API_ENDPOINT not configured")
-    
-    # Get application token for Ghostwriter
-    ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
     if not ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER:
         raise Exception("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
-    
-    # Prepare database request
+
+    # Prepare request
     url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/user_twitter_publications"
-    
+
     headers = {
         "Token": ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
         "Content-Type": "application/json"
     }
-    
+
     payload = {
         "find": {
-            "filter": processed_filter,
-            "options": {
-                "limit": 1000
+            "filter": {"user_id": user_id},
+            "sort": {
+                "score": -1
             }
         }
     }
-    
+
     try:
-        print(f"Sending request to AstraDB: {url}")
-        print(f"Payload: {json.dumps(payload, indent=2)}")
-        
+        print(f"Sending request to AstraDB for user_id: {user_id}")
+        print(f"Request URL: {url}")
+        print(f"Request payload: {json.dumps(payload, indent=2)}")
+
+        # Execute request
         response = requests.post(url, headers=headers, json=payload)
-        print(f"AstraDB Response Status: {response.status_code}")
-        
+
+        # Log response status
+        print(f"Response status code: {response.status_code}")
+
+        # Print truncated response
+        response_text = response.text
+        print(f"Response preview: {response_text[:1000]}{'...' if len(response_text) > 1000 else ''}")
+
+        # Raise exception for non-2xx responses
         response.raise_for_status()
+
+        # Parse and return result
         result = response.json()
-        
-        # Sort results by the chosen metric if present
-        if metric_sort and result.get("data", {}).get("documents"):
-            result = metric_sorter(result, metric_sort)
-            
         return result
+
     except requests.exceptions.RequestException as e:
-        print(f"AstraDB Error: {str(e)}")
+        print(f"Request exception: {str(e)}")
         if hasattr(e, 'response') and e.response:
-            print(f"Response Status: {e.response.status_code}")
-            print(f"Response Body: {e.response.text}")
-        raise Exception(f"Failed to retrieve user content: {str(e)}")
+            print(f"Error response status: {e.response.status_code}")
+            print(f"Error response text: {e.response.text[:200]}...")
+
+        raise Exception(f"Failed to retrieve top posts: {str(e)}")
 
 def top_content_to_repurposing(query: str, brand: str, numberOfPostsToRepurpose: int = 5, repurpose_count: int = 5, workflow_id: str = "Legacy Generation Flow") -> Dict:
     """
@@ -206,8 +172,8 @@ def top_content_to_repurposing(query: str, brand: str, numberOfPostsToRepurpose:
         raise Exception("CURRENT_USER_ID not configured")
     
     # Get top content using updated retriever
-    results = top_content_retriever(query, user_id)
-    print("Results from top_content_retriever:", results)
+    results = top_posts_retriever(user_id)
+    print("Results from top_posts_retriever:", results)
 
     # Process posts
     status_messages = []
