@@ -188,10 +188,10 @@ async def login(request: Request, username: str = Form(...), password: str = For
                 os.environ["CURRENT_USERNAME"] = actual_username
                 os.environ["CURRENT_USER_ID"] = user_id
 
-                # Create a short-lived access token (15 minutes)
+                # Create a short-lived access token (30 minutes for better UX)
                 access_token = create_access_token(
                     data={"sub": actual_username, "user_id": user_id},
-                    expires_delta=timedelta(minutes=15)
+                    expires_delta=timedelta(minutes=30)
                 )
                 
                 # Create a long-lived refresh token (30 days)
@@ -204,13 +204,15 @@ async def login(request: Request, username: str = Form(...), password: str = For
                     key="access_token", 
                     value=access_token, 
                     httponly=True,
-                    max_age=900  # 15 minutes in seconds
+                    max_age=1800,  # 30 minutes in seconds
+                    path="/"
                 )
                 response.set_cookie(
                     key="refresh_token", 
                     value=refresh_token, 
                     httponly=True,
-                    max_age=2592000  # 30 days in seconds
+                    max_age=2592000,  # 30 days in seconds
+                    path="/"
                 )
                 return response
             else:
@@ -272,10 +274,14 @@ async def refresh_access_token_from_cookie(request: Request, refresh_token: str)
     Returns user info if successful, otherwise raises an exception.
     """
     from api_auth import validate_refresh_token
+    import logging
+    
+    logging.info("Attempting to refresh access token from cookie")
     
     # Validate the refresh token
     user_info = validate_refresh_token(refresh_token)
     if not user_info:
+        logging.error("Invalid refresh token")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid refresh token",
@@ -288,22 +294,44 @@ async def refresh_access_token_from_cookie(request: Request, refresh_token: str)
         expires_delta=timedelta(minutes=15)
     )
     
-    # Set the new access token cookie
-    # This is done on the response of the current request
+    # Get current context to see if we can set cookies
+    from starlette.background import BackgroundTask
+    
+    def set_cookies_on_response(response):
+        response.set_cookie(
+            key="access_token", 
+            value=access_token, 
+            httponly=True,
+            max_age=900,  # 15 minutes in seconds
+            path="/"
+        )
+        # Also refresh the refresh token cookie
+        response.set_cookie(
+            key="refresh_token",
+            value=refresh_token,
+            httponly=True,
+            max_age=2592000,  # 30 days in seconds
+            path="/"
+        )
+        logging.info("Cookies set on response")
+        
+    # Try to set cookies in different ways depending on context
     try:
-        # Only available in a route function context
-        if hasattr(request.state, "response"):
-            request.state.response.set_cookie(
-                key="access_token", 
-                value=access_token, 
-                httponly=True,
-                max_age=900  # 15 minutes in seconds
-            )
-    except:
+        # Check if we have a response object in request state
+        if hasattr(request, "state") and hasattr(request.state, "response"):
+            set_cookies_on_response(request.state.response)
+            logging.info("Set cookies on response in request state")
+        else:
+            # Try to add a background task to set cookies
+            request.scope["_background"] = BackgroundTask(set_cookies_on_response)
+            logging.info("Added background task to set cookies")
+    except Exception as e:
+        logging.error(f"Error setting cookies: {str(e)}")
         # We're not in a route context, the cookie will be refreshed on the next request
         pass
         
     # Return the user info
+    logging.info(f"Refreshed access token for user: {user_info['username']}")
     return {"username": user_info["username"], "user_id": user_info["user_id"]}
 
 @app.get("/api/refresh-token", tags=["Authentication"])
@@ -351,7 +379,17 @@ async def refresh_access_token(request: Request, response: Response):
         key="access_token", 
         value=access_token, 
         httponly=True,
-        max_age=900  # 15 minutes in seconds
+        max_age=900,  # 15 minutes in seconds
+        path="/"
+    )
+    
+    # Also refresh the refresh token cookie to extend the session
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        httponly=True,
+        max_age=2592000,  # 30 days in seconds
+        path="/"
     )
     
     return {"status": "success", "message": "Access token refreshed successfully"}
