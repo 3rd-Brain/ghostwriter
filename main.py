@@ -13,7 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 from typing import Dict
 from api_middleware import check_api_key_or_jwt
-from social_writer import generated_content_uploader, get_client_brand_voice, vector_search_for_published_content, metric_sorter, top_content_sentiment_setup, source_content_retriever, multitemplate_retriever, short_form_social_repurposing, top_content_to_repurposing, template_context_and_uploader, Templatizer, repurposer_using_posts_as_templates, source_content_repurposer_using_posts_as_templates, delete_user_account
+from social_writer import generated_content_uploader, get_client_brand_voice, metric_sorter, top_content_sentiment_setup, source_content_retriever, multitemplate_retriever, short_form_social_repurposing, top_content_to_repurposing, template_context_and_uploader, Templatizer, repurposer_using_posts_as_templates, source_content_repurposer_using_posts_as_templates, delete_user_account
 from social_dynamic_generation_flow import flow_config_retriever, social_post_generation_with_json
 import schemas
 from onboarding import router as onboarding_router
@@ -1317,24 +1317,11 @@ async def vector_search(request_data: schemas.VectorSearchRequest, current_user:
 
     This endpoint uses OpenAI embeddings to search for similar content based on the provided text.
     """
-    if not os.getenv("OPENAI_API_KEY"):
-        raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
-    if not os.getenv("ASTRA_DB_APPLICATION_TOKEN"):
-        raise HTTPException(status_code=500, detail="ASTRA_DB_APPLICATION_TOKEN not configured")
-
-    try:
-        metadata_filter = request_data.metadata_filter
-        text_to_vectorize = request_data.text_to_vectorize
-
-        result = vector_search_for_published_content(metadata_filter, text_to_vectorize)
-
-        # If sort_metric is provided, sort the results
-        if request_data.sort_metric:
-            result = metric_sorter(result, request_data.sort_metric)
-
-        return result
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    # This functionality has been removed or replaced
+    raise HTTPException(
+        status_code=501, 
+        detail="This functionality is no longer available. The vector_search_for_published_content function has been removed."
+    )
 
 @app.post("/api/sentiment-setup", response_model=Dict, tags=["Utility"])
 async def setup_sentiment(request_data: schemas.SentimentSetupRequest, current_user: dict = Depends(get_current_user)):
@@ -1353,9 +1340,12 @@ async def setup_sentiment(request_data: schemas.SentimentSetupRequest, current_u
         raise HTTPException(status_code=500, detail=str(e))
 
 def top_content_retriever(query: str, topic: str = "general") -> Dict:
+    from top_content_repurposer import top_published_posts_retriever
+    
     setup_result = top_content_sentiment_setup(query)
-    results = vector_search_for_published_content(setup_result["filter"], topic)
-    if setup_result.get("metric_sort"):
+    # Use top_published_posts_retriever as a replacement for vector_search_for_published_content
+    results = top_published_posts_retriever(user_id=os.environ.get("CURRENT_USER_ID"))
+    if setup_result.get("metric_sort") and results.get("data", {}).get("documents"):
         results = metric_sorter(results, setup_result["metric_sort"])
     return results
 
