@@ -1474,7 +1474,9 @@ async def get_top_content_repurposing(request_data: schemas.TopContentRepurposin
         raise HTTPException(status_code=500, detail="ASTRA_DB_APPLICATION_TOKEN notconfigured")
 
     try:
-        # Add task to background
+        # Add task to background using the new module
+        from top_content_repurposer import top_content_to_repurposing
+
         background_tasks.add_task(
             top_content_to_repurposing, 
             request_data.query, 
