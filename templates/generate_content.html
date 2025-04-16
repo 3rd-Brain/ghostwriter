@@ -862,17 +862,43 @@
 
         openRepurposeBtn.addEventListener('click', function() {
             // First check if user has connected their Twitter account
+            console.log("Repurpose button clicked - Checking Twitter connection status...");
             fetch('/api/user-profile')
-                .then(response => response.json())
+                .then(response => {
+                    console.log("Twitter check API response status:", response.status);
+                    return response.json();
+                })
                 .then(data => {
+                    // Debug logs - full profile data
+                    console.log("API response data:", JSON.stringify(data, null, 2));
+                    
+                    // Check profile structure
+                    console.log("Has profile object:", Boolean(data.profile));
+                    
+                    if (data.profile) {
+                        console.log("twitter_processed value:", data.profile.twitter_processed);
+                        console.log("twitter_processed type:", typeof data.profile.twitter_processed);
+                    }
+                    
                     // Access twitter_processed from nested profile object
                     if (data.profile && data.profile.twitter_processed === true) {
+                        console.log("Twitter connection check PASSED - Opening modal");
                         repurposeModal.style.display = 'block';
                     } else {
-                        window.showNotification('Please connect your Twitter account in Source Content Management first', true);                    }
+                        console.log("Twitter connection check FAILED - Conditions not met");
+                        if (!data.profile) {
+                            console.warn("Issue: Profile object is missing");
+                        } else if (data.profile.twitter_processed === undefined) {
+                            console.warn("Issue: twitter_processed property is missing");
+                        } else if (data.profile.twitter_processed !== true) {
+                            console.warn("Issue: twitter_processed is not true, value:", data.profile.twitter_processed);
+                        }
+                        window.showNotification('Please connect your Twitter account in Source Content Management first', true);                    
+                    }
                 })
                 .catch(error => {
-                    console.error('Error checking Twitter connection:', error);
+                    console.error("Error checking Twitter connection:", error);
+                    console.error("Error details:", error.message);
                     window.showNotification('Error checking profile. Please try again.', true);
                 });
         });

@@ -395,18 +395,18 @@ async def upload_industry_report(request: IndustryReportUploadRequest, user: dic
 
     # Convert the request object to a dictionary
     report_data = request.dict()
-    
+
     # Extract the user_id from the payload if it exists
     payload_user_id = report_data.get("user_id")
-    
+
     # Determine which user_id to use for the report upload
     # If payload contains a user_id, use that; otherwise use authenticated user's ID
     user_id_to_use = payload_user_id if payload_user_id else auth_user_id
-    
+
     # Set the user_id in the report_data if it's not already there
     if not payload_user_id:
         report_data["user_id"] = auth_user_id
-    
+
     # Call the uploadIndustryReport function with the report data
     # Pass the user_id from the auth context as the second parameter for verification/logging
     result = uploadIndustryReport(report_data, payload_user_id)
@@ -477,15 +477,15 @@ async def generate_industry_report(request: TwitterProfilesRequest, user: dict =
 async def get_user_profile(current_user: dict = Depends(get_current_api_user)):
     """
     **Retrieve the user's profile information**
-    
+
     This endpoint fetches the current user's profile data, including Twitter connection status.
-    
+
     ## When to use
     Use this endpoint when you need to:
     * Access user profile information
     * Check Twitter integration status
     * Retrieve user identity details
-    
+
     *This endpoint requires API key authentication with appropriate permissions.*
     """
     try:
@@ -504,21 +504,47 @@ async def get_user_profile(current_user: dict = Depends(get_current_api_user)):
             }
         }
 
+        print("Sending DB request...")
         response = requests.post(url, headers=headers, json=payload)
+        print(f"DB response status code: {response.status_code}")
         response.raise_for_status()
+
         user_data = response.json()
+        print(f"DB response structure keys: {list(user_data.keys()) if user_data else 'None'}")
 
-        # Extract relevant user profile data including twitter_processed status
-        profile_data = user_data.get("data", {}).get("document", {}).get("profile", {})
-        twitter_processed = profile_data.get("twitter_processed", False)
+        if "data" in user_data:
+            print(f"Has data key: True")
+            data_obj = user_data["data"]
+            print(f"Data object keys: {list(data_obj.keys()) if data_obj else 'None'}")
 
-        return {
-            "user_id": current_user["user_id"],
-            "username": current_user.get("username"),
-            "twitter_processed": twitter_processed
-        }
+            if "document" in data_obj:
+                print(f"Has document key: True")
+                doc = data_obj["document"]
+                print(f"Document keys: {list(doc.keys()) if doc else 'None'}")
+
+                if "profile" in doc:
+                    profile = doc.get("profile", {})
+                    print(f"Profile object: {profile}")
+                    print(f"twitter_processed in profile: {'twitter_processed' in profile}")
+                    print(f"twitter_processed value: {profile.get('twitter_processed')}")
+                else:
+                    print("Profile key missing in document")
+
+                # Return profile data
+                return {"status": "success", "profile": doc.get("profile", {})}
+            else:
+                print("Document key missing in data object")
+        else:
+            print("Data key missing in response")
+
+        # If we reach here, something is wrong with the response structure
+        print(f"Full response for debugging: {user_data}")
+        return {"status": "error", "message": "User profile not found", "debug_response": user_data}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error retrieving user profile: {e}")
+        print(f"Exception in get_user_profile: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return {"status": "error", "message": str(e)}
 
 @router.get("/user/social-profiles")
 async def get_user_social_profiles(current_user: dict = Depends(check_api_key_or_jwt)):
@@ -528,7 +554,7 @@ async def get_user_social_profiles(current_user: dict = Depends(check_api_key_or
         # Fetch user data from database
         ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
         ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
-        
+
         url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/users_keyspace/users"
         headers = {
             "Token": ASTRA_DB_APPLICATION_TOKEN,
