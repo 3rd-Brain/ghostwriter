@@ -93,11 +93,16 @@ def repurpose_top_published_posts(user_id: str, brand: str, repurpose_count: int
 
     # Step 1: Retrieve top published posts
     try:
+        print(f"\n=== Retrieving top published posts for user ID: {user_id} ===")
         posts_data = top_published_posts_retriever(user_id)
 
+        print(f"Posts data response structure: {json.dumps(posts_data, indent=2)[:500]}...")
+
         if not posts_data.get("data", {}).get("documents"):
+            print(f"No published posts found for user ID: {user_id}")
             return {"status": "error", "message": "No published posts found for this user"}
 
+        print(f"Found {len(posts_data['data']['documents'])} published posts")
         top_posts = posts_data["data"]["documents"]
         print(f"Retrieved {len(top_posts)} top published posts")
 
