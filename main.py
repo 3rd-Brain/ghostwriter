@@ -1480,11 +1480,10 @@ async def get_top_content_repurposing(request_data: schemas.TopContentRepurposin
         background_tasks.add_task(
             top_content_to_repurposing, 
             request_data.query, 
-            request_data.topic, 
             request_data.brand, 
             request_data.number_of_posts, 
             request_data.repurpose_count, 
-            request_data.workflow_name  # Changed from workflow_id to workflow_name
+            request_data.workflow_id
         )
 
         # Return immediately
