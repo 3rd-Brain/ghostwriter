@@ -860,7 +860,14 @@
         const openRepurposeBtn = document.getElementById('open-repurpose-modal');
         const closeRepurposeBtn = document.getElementById('close-repurpose-modal');
 
-        openRepurposeBtn.addEventListener('click', function() {
+        // Remove any existing event listeners by cloning and replacing the button
+        const newOpenRepurposeBtn = openRepurposeBtn.cloneNode(true);
+        openRepurposeBtn.parentNode.replaceChild(newOpenRepurposeBtn, openRepurposeBtn);
+        
+        // Re-assign the variable to the new button
+        const refreshedOpenRepurposeBtn = document.getElementById('open-repurpose-modal');
+
+        refreshedOpenRepurposeBtn.addEventListener('click', function() {
             // First check if user has connected their Twitter account
             console.log("Repurpose button clicked - Checking Twitter connection status...");
             fetch('/api/user/profile')
