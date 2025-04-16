@@ -863,7 +863,7 @@
         openRepurposeBtn.addEventListener('click', function() {
             // First check if user has connected their Twitter account
             console.log("Repurpose button clicked - Checking Twitter connection status...");
-            fetch('/api/user-profile')
+            fetch('/api/user/profile')
                 .then(response => {
                     console.log("Twitter check API response status:", response.status);
                     return response.json();
@@ -871,15 +871,15 @@
                 .then(data => {
                     // Debug logs - full profile data
                     console.log("API response data:", JSON.stringify(data, null, 2));
-                    
+
                     // Check profile structure
                     console.log("Has profile object:", Boolean(data.profile));
-                    
+
                     if (data.profile) {
                         console.log("twitter_processed value:", data.profile.twitter_processed);
                         console.log("twitter_processed type:", typeof data.profile.twitter_processed);
                     }
-                    
+
                     // Access twitter_processed from nested profile object
                     if (data.profile && data.profile.twitter_processed === true) {
                         console.log("Twitter connection check PASSED - Opening modal");
