@@ -84,48 +84,129 @@ def metric_sorter(published_content: Dict, sort_metric: str) -> Dict:
         }
     }
 
-def top_content_retriever(query: str, topic: str) -> Dict:
+def top_content_retriever(filter_query: str, user_id: str) -> Dict:
     """
-    Process user query to get filtered and sorted content
+    Process user query to get filtered and sorted content from user's Twitter publications
     Args:
-        query: String containing the search query (e.g. "Find top posts of the week")
-        topic: String containing the topic to vectorize (e.g. "Digital Operations")
+        filter_query: String containing the search query (e.g. "Find top posts of the week")
+        user_id: String containing the user's ID
     Returns:
         Dictionary containing filtered and sorted content
     """
+    if not ASTRA_DB_APPLICATION_TOKEN:
+        raise Exception("ASTRA_DB_APPLICATION_TOKEN not configured")
+    
     # Get filter and metric sort from sentiment setup
-    setup_result = top_content_sentiment_setup(query)
+    setup_result = top_content_sentiment_setup(filter_query)
+    metadata_filter = setup_result.get("filter", {})
+    metric_sort = setup_result.get("metric_sort")
     
-    print(f"Generated filter parameters for query: '{query}' and topic: '{topic}'")
-    print(f"Filter: {setup_result.get('filter', {})}")
-    print(f"Metric sort: {setup_result.get('metric_sort', 'None')}")
+    print(f"Generated filter parameters for query: '{filter_query}'")
+    print(f"Filter: {metadata_filter}")
+    print(f"Metric sort: {metric_sort}")
     
-    # Return empty result structure since vector_search is removed
-    # This should be replaced with a new implementation
-    empty_result = {
-        "data": {
-            "documents": [],
-            "nextPageState": None
+    # Handle filter structure and add metadata prefix to appropriate fields
+    metadata_fields = [
+        "weighted_impression_ratio", "weighted_like_ratio", 
+        "weighted_bookmark_ratio", "weighted_retweet_ratio", 
+        "weighted_reply_ratio", "total_weight_metric",
+        "post_id", "published_date"
+    ]
+
+    def process_filter(filter_obj):
+        if isinstance(filter_obj, dict):
+            new_obj = {}
+            for key, value in filter_obj.items():
+                if key in ['$and', '$or']:
+                    new_obj[key] = [process_filter(item) for item in value]
+                elif key in metadata_fields:
+                    new_obj[f"metadata.{key}"] = value
+                else:
+                    new_obj[key] = process_filter(value) if isinstance(value, dict) else value
+            return new_obj
+        return filter_obj
+
+    processed_filter = process_filter(metadata_filter)
+    
+    # Add user_id to filter
+    if "$and" in processed_filter:
+        processed_filter["$and"].append({"user_id": user_id})
+    else:
+        processed_filter = {
+            "$and": [
+                processed_filter,
+                {"user_id": user_id}
+            ]
+        }
+    
+    # Get API endpoint from environment
+    ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+    if not ASTRA_DB_API_ENDPOINT:
+        raise Exception("ASTRA_DB_API_ENDPOINT not configured")
+    
+    # Get application token for Ghostwriter
+    ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+    if not ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER:
+        raise Exception("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
+    
+    # Prepare database request
+    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/user_twitter_publications"
+    
+    headers = {
+        "Token": ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "find": {
+            "filter": processed_filter,
+            "options": {
+                "limit": 1000
+            }
         }
     }
     
-    return empty_result
+    try:
+        print(f"Sending request to AstraDB: {url}")
+        print(f"Payload: {json.dumps(payload, indent=2)}")
+        
+        response = requests.post(url, headers=headers, json=payload)
+        print(f"AstraDB Response Status: {response.status_code}")
+        
+        response.raise_for_status()
+        result = response.json()
+        
+        # Sort results by the chosen metric if present
+        if metric_sort and result.get("data", {}).get("documents"):
+            result = metric_sorter(result, metric_sort)
+            
+        return result
+    except requests.exceptions.RequestException as e:
+        print(f"AstraDB Error: {str(e)}")
+        if hasattr(e, 'response') and e.response:
+            print(f"Response Status: {e.response.status_code}")
+            print(f"Response Body: {e.response.text}")
+        raise Exception(f"Failed to retrieve user content: {str(e)}")
 
-def top_content_to_repurposing(query: str, topic: str, brand: str, numberOfPostsToRepurpose: int = 5, repurpose_count: int = 1, workflow_id: str = "Legacy Generation Flow") -> Dict:
+def top_content_to_repurposing(query: str, brand: str, numberOfPostsToRepurpose: int = 5, repurpose_count: int = 1, workflow_id: str = "Legacy Generation Flow") -> Dict:
     """
     Get top posts and repurpose each one multiple times using short_form_social_repurposing
     Args:
         query: String for searching top content (e.g. "Repurpose my most high-performing tweets")
-        topic: String containing topic to search for (e.g. "Digital Operations")
         brand: String containing the brand for brand voice
         numberOfPostsToRepurpose: Number of top posts to repurpose (default: 5)
-        repurposeCount: Number of times to repurpose each post (default: 5)
+        repurpose_count: Number of times to repurpose each post (default: 1)
         workflow_id: String containing the workflow ID for generation
     Returns:
         Dictionary with status of repurposing process
     """
-    # Get top content using existing retriever
-    results = top_content_retriever(query, topic)
+    # Get user ID from environment
+    user_id = os.environ.get("CURRENT_USER_ID")
+    if not user_id:
+        raise Exception("CURRENT_USER_ID not configured")
+    
+    # Get top content using updated retriever
+    results = top_content_retriever(query, user_id)
     print("Results from top_content_retriever:", results)
 
     # Process posts
