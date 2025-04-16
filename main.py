@@ -51,7 +51,7 @@ async def auth_exception_handler(request: Request, exc: HTTPException):
         if "text/html" in accept_header:
             # Redirect browser requests to the login page
             return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
-    
+
     # For all other exceptions or API requests, return the original exception
     return JSONResponse(
         status_code=exc.status_code,
@@ -112,7 +112,7 @@ async def login_page(request: Request):
         except JWTError:
             # If token is invalid, continue to login page
             pass
-    
+
     # If no token or invalid token, show login page
     return templates.TemplateResponse("login.html", {"request": request})
 
@@ -193,11 +193,11 @@ async def login(request: Request, username: str = Form(...), password: str = For
                     data={"sub": actual_username, "user_id": user_id},
                     expires_delta=timedelta(minutes=30)
                 )
-                
+
                 # Create a long-lived refresh token (30 days)
                 from api_auth import create_refresh_token
                 refresh_token, _ = create_refresh_token(user_id, actual_username)
-                
+
                 # Set both tokens as cookies
                 response = RedirectResponse(url="/dashboard", status_code=status.HTTP_302_FOUND)
                 response.set_cookie(
@@ -275,9 +275,9 @@ async def refresh_access_token_from_cookie(request: Request, refresh_token: str)
     """
     from api_auth import validate_refresh_token
     import logging
-    
+
     logging.info("Attempting to refresh access token from cookie")
-    
+
     # Validate the refresh token
     user_info = validate_refresh_token(refresh_token)
     if not user_info:
@@ -287,16 +287,16 @@ async def refresh_access_token_from_cookie(request: Request, refresh_token: str)
             detail="Invalid refresh token",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
+
     # Create a new access token
     access_token = create_access_token(
         data={"sub": user_info["username"], "user_id": user_info["user_id"]},
         expires_delta=timedelta(minutes=15)
     )
-    
+
     # Get current context to see if we can set cookies
     from starlette.background import BackgroundTask
-    
+
     def set_cookies_on_response(response):
         response.set_cookie(
             key="access_token", 
@@ -314,7 +314,7 @@ async def refresh_access_token_from_cookie(request: Request, refresh_token: str)
             path="/"
         )
         logging.info("Cookies set on response")
-        
+
     # Try to set cookies in different ways depending on context
     try:
         # Check if we have a response object in request state
@@ -329,7 +329,7 @@ async def refresh_access_token_from_cookie(request: Request, refresh_token: str)
         logging.error(f"Error setting cookies: {str(e)}")
         # We're not in a route context, the cookie will be refreshed on the next request
         pass
-        
+
     # Return the user info
     logging.info(f"Refreshed access token for user: {user_info['username']}")
     return {"username": user_info["username"], "user_id": user_info["user_id"]}
@@ -338,15 +338,15 @@ async def refresh_access_token_from_cookie(request: Request, refresh_token: str)
 async def refresh_access_token(request: Request, response: Response):
     """
     **Refresh an expired access token using a valid refresh token**
-    
+
     This endpoint validates the refresh token and issues a new access token.
-    
+
     ## When to use
     Use this endpoint when:
     * Access token has expired but refresh token is still valid
     * You need to extend a user's session without requiring re-login
     * You want to maintain persistent authentication with better security
-    
+
     *The refresh token should be provided in the HTTP-only cookie.*
     """
     refresh_token = request.cookies.get("refresh_token")
@@ -356,9 +356,9 @@ async def refresh_access_token(request: Request, response: Response):
             detail="Refresh token missing",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
+
     from api_auth import validate_refresh_token
-    
+
     # Validate the refresh token
     user_info = validate_refresh_token(refresh_token)
     if not user_info:
@@ -367,13 +367,13 @@ async def refresh_access_token(request: Request, response: Response):
             detail="Invalid refresh token",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
+
     # Create a new access token
     access_token = create_access_token(
         data={"sub": user_info["username"], "user_id": user_info["user_id"]},
         expires_delta=timedelta(minutes=15)
     )
-    
+
     # Set the new access token cookie
     response.set_cookie(
         key="access_token", 
@@ -382,7 +382,7 @@ async def refresh_access_token(request: Request, response: Response):
         max_age=900,  # 15 minutes in seconds
         path="/"
     )
-    
+
     # Also refresh the refresh token cookie to extend the session
     response.set_cookie(
         key="refresh_token",
@@ -391,7 +391,7 @@ async def refresh_access_token(request: Request, response: Response):
         max_age=2592000,  # 30 days in seconds
         path="/"
     )
-    
+
     return {"status": "success", "message": "Access token refreshed successfully"}
 
 @app.get("/dashboard", response_class=HTMLResponse, include_in_schema=False)
@@ -420,14 +420,14 @@ async def dashboard(request: Request, current_user: dict = Depends(get_current_u
     from source_content_manager import count_user_documents, count_user_files
     doc_count = count_user_documents(current_user["user_id"])
     file_count = count_user_files(current_user["user_id"])
-    
+
     # Get content counts by status
     draft_count = 0
     awaiting_publishing_count = 0
     published_count = 0
     try:
         generated_content_url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/generated_content"
-        
+
         # Count draft content
         draft_payload = {
             "countDocuments": {
@@ -437,11 +437,11 @@ async def dashboard(request: Request, current_user: dict = Depends(get_current_u
                 }
             }
         }
-        
+
         draft_response = requests.post(generated_content_url, headers=headers, json=draft_payload)
         if draft_response.status_code == 200:
             draft_count = draft_response.json().get("status", {}).get("count", 0)
-            
+
         # Count awaiting publishing content
         awaiting_payload = {
             "countDocuments": {
@@ -451,11 +451,11 @@ async def dashboard(request: Request, current_user: dict = Depends(get_current_u
                 }
             }
         }
-        
+
         awaiting_response = requests.post(generated_content_url, headers=headers, json=awaiting_payload)
         if awaiting_response.status_code == 200:
             awaiting_publishing_count = awaiting_response.json().get("status", {}).get("count", 0)
-            
+
         # Count published content
         published_payload = {
             "countDocuments": {
@@ -465,11 +465,11 @@ async def dashboard(request: Request, current_user: dict = Depends(get_current_u
                 }
             }
         }
-        
+
         published_response = requests.post(generated_content_url, headers=headers, json=published_payload)
         if published_response.status_code == 200:
             published_count = published_response.json().get("status", {}).get("count", 0)
-            
+
     except Exception as e:
         print(f"Error counting content: {str(e)}")
 
@@ -485,22 +485,22 @@ async def dashboard(request: Request, current_user: dict = Depends(get_current_u
                 "filter": {"user_id": current_user["user_id"]}
             }
         }
-        
+
         user_response = requests.post(user_url, headers=headers, json=user_payload)
         if user_response.status_code == 200:
             user_data = user_response.json()
             user_profile = user_data.get("data", {}).get("document", {}).get("profile", {})
             follower_count = user_profile.get("follower_count", 0)
-            
+
             # Count social media accounts
             socials = user_profile.get("socials", {})
             social_count = sum(1 for value in socials.values() if value)
-            
+
             print(f"Retrieved follower count for user: {follower_count}")
             print(f"Connected social accounts: {social_count}")
     except Exception as e:
         print(f"Error retrieving user data: {str(e)}")
-        
+
     return templates.TemplateResponse("dashboard.html", {
         "request": request,
         "username": current_user["username"],
@@ -754,7 +754,7 @@ async def source_content_management(request: Request, current_user: dict = Depen
         user_data = response.json()
 
         # Count social media accounts
-        socials = user_data.get("data", {}).get("document", {}).get("profile", {}).get("socials", {})
+        socials = user_data.get("data", {}).get("document", {}).get("profile", {}).get("socials",{})
         social_count = sum(1 for value in socials.values() if value)
     except Exception as e:
         print(f"Error fetching user data: {str(e)}")
@@ -911,42 +911,42 @@ async def publish_history(request: Request, current_user: dict = Depends(get_cur
 async def get_user_publications(user: dict = Depends(check_api_key_or_jwt)):
     """
     **Retrieve published content for the current user**
-    
+
     This endpoint fetches all publications created by the current user,
     including metrics and status information.
-    
+
     ## When to use
     Use this endpoint when you need to:
     * View your publication history
     * Track performance metrics across publications
     * Analyze content effectiveness
-    
+
     *This endpoint supports both JWT and API key authentication.*
     """
     print("\n=== DEBUG: /api/user-publications endpoint called ===")
     print(f"User context: {user}")
-    
+
     try:
         from publish_history_manager import retrievePublications
-        
+
         # Get user ID from authenticated user
         user_id = user.get("user_id")
         print(f"Extracted user_id: {user_id}")
-        
+
         if not user_id:
             print("ERROR: User ID not found in authentication context")
             raise HTTPException(status_code=401, detail="User ID not found in authentication context")
-            
+
         print(f"Calling retrievePublications with user_id: {user_id}")
         result = retrievePublications(user_id)
-        
+
         print(f"Retrieved result status: {result.get('status')}")
         print(f"Publication count: {len(result.get('publications', []))}")
-        
+
         if result.get("status") == "error":
             print(f"Error in result: {result.get('message')}")
             raise HTTPException(status_code=500, detail=result.get("message"))
-         
+
         print("=== DEBUG: /api/user-publications completed successfully ===\n")   
         return result
     except Exception as e:
@@ -961,25 +961,25 @@ async def get_user_publications(user: dict = Depends(check_api_key_or_jwt)):
 async def get_publication_metrics(publication_id: str, user: dict = Depends(check_api_key_or_jwt)):
     """
     **Retrieve detailed metrics for a specific publication**
-    
+
     This endpoint fetches comprehensive performance metrics for a single publication.
-    
+
     ## When to use
     Use this endpoint when you need to:
     * Analyze detailed metrics for a specific post
     * Compare weighted and raw metrics
     * Access performance score information
-    
+
     *This endpoint supports both JWT and API key authentication.*
     """
     try:
         from publish_history_manager import getPublicationMetrics
-        
+
         result = getPublicationMetrics(publication_id)
-        
+
         if result.get("status") == "error":
             raise HTTPException(status_code=500, detail=result.get("message"))
-            
+
         return result
     except Exception as e:
         print(f"Error fetching publication metrics: {str(e)}")
@@ -999,7 +999,7 @@ async def logout(request: Request, response: Response):
     # Clear the username environment variable on logout
     if "CURRENT_USERNAME" in os.environ:
         del os.environ["CURRENT_USERNAME"]
-    
+
     # Revoke the refresh token if it exists
     refresh_token = request.cookies.get("refresh_token")
     if refresh_token:
@@ -1066,17 +1066,17 @@ app.include_router(onboarding_router)
 def custom_openapi():
     if app.openapi_schema:
         return app.openapi_schema
-    
+
     openapi_schema = get_openapi(
         title=app.title,
         version=app.version,
         description=app.description,
         routes=app.routes,
     )
-    
+
     # Tags to exclude from documentation
     tags_to_exclude = ["API Keys", "default", "Onboarding", "Utility", "Storage", "User Management"]
-    
+
     # Filter out paths with excluded tags
     paths_to_keep = {}
     for path, path_item in openapi_schema["paths"].items():
@@ -1091,9 +1091,9 @@ def custom_openapi():
                 break
         if not exclude_path:
             paths_to_keep[path] = path_item
-    
+
     openapi_schema["paths"] = paths_to_keep
-    
+
     app.openapi_schema = openapi_schema
     return app.openapi_schema
 
@@ -1154,7 +1154,7 @@ async def upload_file(
         # Store file in Object Storage first
         file_id = await processor.store_file(file.file, file.filename, user["user_id"])
         print(f"File stored with ID: {file_id}")
-        
+
         # Schedule background processing
         print("Scheduling background processing...")
         background_tasks.add_task(
@@ -1468,27 +1468,31 @@ async def get_top_content_repurposing(request_data: schemas.TopContentRepurposin
     *This performs an automatic selection of high-performing content before repurposing.*
     *This endpoint supports both JWT and API key authentication.*
     """
-    if not os.getenv("OPENAI_API_KEY"):
-        raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
-    if not os.getenv("ASTRA_DB_APPLICATION_TOKEN"):
-        raise HTTPException(status_code=500, detail="ASTRA_DB_APPLICATION_TOKEN notconfigured")
+    if not os.getenv("ANTHROPIC_API_KEY"):
+        raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY not configured")
+    if not os.getenv("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER"):
+        raise HTTPException(status_code=500, detail="ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
 
     try:
-        # Add task to background using the new module
-        from top_content_repurposer import top_content_to_repurposing
+        # Set current user ID in environment
+        os.environ["CURRENT_USER_ID"] = user.get("user_id", "")
+
+        # Add task to background using the new implementation
+        from top_content_repurposer import repurpose_top_published_posts
 
         background_tasks.add_task(
-            top_content_to_repurposing, 
-            request_data.query, 
-            request_data.brand, 
-            request_data.number_of_posts, 
-            request_data.repurpose_count, 
-            request_data.workflow_id
+            repurpose_top_published_posts, 
+            user_id=user.get("user_id", ""),
+            brand=request_data.brand,
+            repurpose_count=request_data.repurpose_count,
+            published_posts_count_to_repurpose=request_data.number_of_posts,
+            workflow_name=request_data.workflow_name
         )
 
         # Return immediately
-        return {"status": "success", "message": "Content is now being generated"}
+        return {"status": ""success", "message": "Content is now being generated from your top posts"}
     except Exception as e:
+        print(f"Error in top content repurposing: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/social-post-generation", response_model=schemas.SocialPostGenerationResponse, tags=["Generation"])
@@ -1707,7 +1711,7 @@ async def search_templates(request_data: schemas.MultitemplateRequest, user: dic
 
     print("Performing template search...")
     print("Received request data:", request_data)   
-    
+
     try:
         from social_writer import template_search
         result = template_search(
@@ -1933,12 +1937,12 @@ async def update_post_status(request_data: schemas.PostStatusUpdateRequest, user
 
     # Prepare the API request to AstraDB
     url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/generated_content"
-    
+
     headers = {
         "Token": ASTRA_DB_APPLICATION_TOKEN,
         "Content-Type": "application/json"
     }
-    
+
     payload = {
         "findOneAndUpdate": {
             "filter": {"$and": [
@@ -1959,11 +1963,11 @@ async def update_post_status(request_data: schemas.PostStatusUpdateRequest, user
         print(f"Post ID: {post_id}")
         print(f"New Status: {new_status}")
         print(f"User ID: {user_id}")
-        
+
         response = requests.post(url, headers=headers, json=payload)
         response.raise_for_status()
         result = response.json()
-        
+
         # Check if update was successful
         if result.get("data", {}).get("document"):
             print(f"Post status updated successfully")
@@ -1971,7 +1975,7 @@ async def update_post_status(request_data: schemas.PostStatusUpdateRequest, user
         else:
             print(f"Post not found or no update made: {result}")
             return {"status": "warning", "message": "Post not found or no changes were made"}
-            
+
     except Exception as e:
         print(f"Error updating post status: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -2046,7 +2050,7 @@ async def signup(request: Request):
         except JWTError:
             # If token is invalid, continue to signup page
             pass
-    
+
     # If no token or invalid token, show signup page
     return templates.TemplateResponse("signup.html", {"request": request})
 
