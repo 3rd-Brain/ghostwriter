@@ -39,7 +39,6 @@ class RepurposeRequest(BaseModel):
 
 # Top Content Repurposing schemas
 class TopContentRepurposingRequest(BaseModel):
-    query: str = Field(..., description="Query for content selection")
     brand: str = Field(..., description="Brand name for content style")
     number_of_posts: int = Field(5, description="Number of posts to select")
     repurpose_count: int = Field(1, description="Number of repurposed items to generate")
