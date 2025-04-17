@@ -35,7 +35,7 @@ class RepurposeRequest(BaseModel):
     topic_query: str = Field(..., description="Topic to search for")
     brand: str = Field(..., description="Brand name for content style")
     repurpose_count: int = Field(1, description="Number of repurposed content items to generate")
-    workflow_name: str = Field("Legacy Generation Flow", description="Name of workflow to use")
+    workflow_id: str = Field("Legacy Generation Flow", description="ID of workflow to use")
 
 # Top Content Repurposing schemas
 class TopContentRepurposingRequest(BaseModel):

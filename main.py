@@ -1430,7 +1430,7 @@ async def generate_new_content(request_data: schemas.RepurposeRequest, backgroun
             request_data.topic_query, 
             request_data.brand, 
             request_data.repurpose_count, 
-            request_data.workflow_name
+            request_data.workflow_id
         )
         return {"status": "success", "message": "Your content is being generated"}
     except Exception as e:
