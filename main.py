@@ -1500,7 +1500,7 @@ async def generate_social_post(request_data: schemas.SocialPostGenerationRequest
 
     try:
         result = social_post_generation_with_json(
-            workflow_id=request_data.workflow_id,
+            workflow_name=request_data.workflow_name,
             client_brief=request_data.client_brief,
             template=request_data.template,
             content_chunks=request_data.content_chunks,
@@ -1541,12 +1541,12 @@ async def create_template_embedding(request_data: schemas.TemplateContextRequest
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/api/flow-config/{workflow_id}", tags=["Generation Flows"])
-async def get_flow_config(workflow_id: str, user: dict = Depends(check_api_key_or_jwt)):
+@app.get("/api/flow-config/{workflow_name}", tags=["Generation Flows"])
+async def get_flow_config(workflow_name: str, user: dict = Depends(check_api_key_or_jwt)):
     """
     **Retrieve a generation workflow configuration**
 
-    This endpoint fetches the complete configuration for a specific workflow by ID.
+    This endpoint fetches the complete configuration for a specific workflow by name.
 
     ## When to use
     Use this endpoint when you need to:
@@ -1564,9 +1564,9 @@ async def get_flow_config(workflow_id: str, user: dict = Depends(check_api_key_o
         raise HTTPException(status_code=500, detail="ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
 
     try:
-        result = flow_config_retriever(workflow_id)
+        result = flow_config_retriever(workflow_name)
         # Ensure response is JSON serializable
-        return {"workflow_id": workflow_id, "flow_config": result}
+        return {"workflow_name": workflow_name, "flow_config": result}
     except Exception as e:
         print(f"Error retrieving flow config: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

@@ -46,7 +46,7 @@ class TopContentRepurposingRequest(BaseModel):
 
 # Social Post Generation schemas
 class SocialPostGenerationRequest(BaseModel):
-    workflow_id: str = Field(..., description="ID of workflow to use")
+    workflow_name: str = Field(..., description="Name of workflow to use")
     client_brief: str = Field(..., description="Client brief for post generation")
     template: str = Field(..., description="Template to use for post")
     content_chunks: str = Field(..., description="Content chunks to use in generation")

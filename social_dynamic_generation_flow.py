@@ -8,7 +8,7 @@ import anthropic
 import os
 from string import Template
 
-def social_post_generation_with_json(workflow_name: str, # Changed to workflow_name
+def social_post_generation_with_json(workflow_name: str,
                                      client_brief: str,
                                      template: str,
                                      content_chunks: str,
@@ -16,7 +16,7 @@ def social_post_generation_with_json(workflow_name: str, # Changed to workflow_n
     """
     Generate social post using a JSON-defined flow configuration
     Args:
-        flow_config: Dictionary containing the generation steps configuration
+        workflow_name: String containing the workflow name to use
         client_brief: String containing client brief
         template: String containing the template to use
         content_chunks: String containing content chunks
@@ -69,7 +69,7 @@ def social_post_generation_with_json(workflow_name: str, # Changed to workflow_n
     return prev_output
 
 
-def flow_config_retriever(workflow_name: str) -> dict: # Changed to workflow_name
+def flow_config_retriever(workflow_name: str) -> dict:
     """
     Retrieve flow configuration from AstraDB based on workflow name.
     First checks system workflows, then falls back to user workflows if not found.
@@ -87,7 +87,7 @@ def flow_config_retriever(workflow_name: str) -> dict: # Changed to workflow_nam
     CURRENT_USER_ID = os.environ.get("CURRENT_USER_ID", "")
 
     print(f"\n=== Debug: Flow Config Retrieval Started ===")
-    print(f"Workflow Name: {workflow_name}") # Changed to workflow_name
+    print(f"Workflow Name: {workflow_name}")
     print(f"User ID: {CURRENT_USER_ID}")
     print(
         f"ASTRA_DB_API_ENDPOINT configured: {'Yes' if ASTRA_DB_API_ENDPOINT else 'No'}"
@@ -111,7 +111,7 @@ def flow_config_retriever(workflow_name: str) -> dict: # Changed to workflow_nam
     system_url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/sys_keyspace/workflows"
     print(f"Checking system workflows at URL: {system_url}")
 
-    system_payload = {"findOne": {"filter": {"workflow_name": workflow_name}}}  # Changed to workflow_name
+    system_payload = {"findOne": {"filter": {"workflow_name": workflow_name}}}
     print(f"System payload: {json.dumps(system_payload, indent=2)}")
 
     try:
@@ -170,7 +170,7 @@ def flow_config_retriever(workflow_name: str) -> dict: # Changed to workflow_nam
                 "filter": {
                     "$and": [
                         {"user_id": CURRENT_USER_ID},
-                        {"workflow_name": workflow_name} # Changed to workflow_name
+                        {"workflow_name": workflow_name}
                     ]
                 }
             }
@@ -184,14 +184,14 @@ def flow_config_retriever(workflow_name: str) -> dict: # Changed to workflow_nam
         if user_response.status_code != 200:
             print(f"User workflow request failed with status {user_response.status_code}")
             print(f"Response: {user_response.text}")
-            raise Exception(f"No workflow found with name: {workflow_name}") # Changed to workflow_name
+            raise Exception(f"No workflow found with name: {workflow_name}")
 
         user_data = user_response.json()
         print(f"User data available: {'Yes' if user_data else 'No'}")
 
         if not user_data.get('data', {}).get('document'):
             print("No document found in user workflows")
-            raise Exception(f"No workflow found with name: {workflow_name}") # Changed to workflow_name
+            raise Exception(f"No workflow found with name: {workflow_name}")
 
         document = user_data['data']['document']
         # Handle nested steps structure - the steps field might be an object with a 'steps' array
@@ -199,7 +199,7 @@ def flow_config_retriever(workflow_name: str) -> dict: # Changed to workflow_nam
 
         if not steps:
             print("No steps field found in user workflow document")
-            raise Exception(f"Invalid workflow format for workflow_name: {workflow_name}") # Changed to workflow_name
+            raise Exception(f"Invalid workflow format for workflow_name: {workflow_name}")
 
         # Check if steps is a dict with a nested 'steps' array (new format)
         if isinstance(steps, dict) and 'steps' in steps:
