@@ -1731,13 +1731,18 @@ async def repurpose_source_content_with_templates(
     *This endpoint supports both JWT and API key authentication.*
     """
     try:
+        # Determine which workflow identifier to use
+        workflow_identifier = request_data.workflow_id
+        if not workflow_identifier and hasattr(request_data, 'workflow_name') and request_data.workflow_name:
+            workflow_identifier = request_data.workflow_name
+        
         # Add task to background
         background_tasks.add_task(
             source_content_repurposer_using_posts_as_templates,
             content_topic_query=request_data.content_topic_query,
             template_post=request_data.template_post,
             brand=request_data.brand,
-            workflow_id=request_data.workflow_id,
+            workflow_id=workflow_identifier,
             is_given_template_query=request_data.is_given_template_query,
             number_of_posts_to_template=request_data.number_of_posts_to_template,
             post_topic_query=request_data.post_topic_query

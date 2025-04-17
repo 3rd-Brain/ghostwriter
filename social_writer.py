@@ -56,8 +56,15 @@ def generated_content_uploader(content_data: Dict) -> Dict:
     template = content_data.get("template", "")
     template_id = content_data.get("template_id", "")  # New field
     brand_id = content_data.get("brand_id", "")  # New field
+    
+    # Handle either workflow_id or workflow_name
     workflow_id = content_data.get("workflow_id", "")
     workflow_name = content_data.get("workflow_name", "Legacy Generation Flow")
+    
+    # If only workflow_name is provided, use it for workflow_id as well for backward compatibility
+    if not workflow_id and workflow_name:
+        workflow_id = workflow_name
+        
     content_format = content_data.get("content_format", "Short Form Social")
 
     # Set the URL for the new collection path
