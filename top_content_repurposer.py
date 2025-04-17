@@ -114,25 +114,76 @@ def repurpose_top_published_posts(user_id: str, brand: str, repurpose_count: int
 
         # Step 3: Process each top post with multiple templates
         results = []
+        
+        print(f"\n=== Examining top posts structure ===")
+        # Debug: Print top post structure to identify field names
+        if top_posts and len(top_posts) > 0:
+            print(f"First post keys: {list(top_posts[0].keys())}")
+            print(f"Sample post data: {json.dumps(top_posts[0], indent=2)[:500]}...")
+        else:
+            print("No posts available to process")
+        
+        # Look for the actual content field name - 'content', 'text', or 'post_content'
+        content_field_name = 'content'
+        if top_posts and len(top_posts) > 0:
+            # Check for alternative field names that might contain the post content
+            possible_content_fields = ['content', 'text', 'post_content', 'full_text', 'tweet_text', 'message']
+            found_field = None
+            for field in possible_content_fields:
+                if field in top_posts[0]:
+                    content_field_name = field
+                    found_field = field
+                    print(f"Found content in field: '{field}'")
+                    break
+            
+            if not found_field:
+                print(f"Warning: Could not identify content field in post. Using default '{content_field_name}'")
 
         for post_index, post in enumerate(top_posts[:published_posts_count_to_repurpose]):
-            post_content = post.get("content", "")
+            # Try to get content from the identified field or fall back to 'content'
+            post_content = post.get(content_field_name, "")
+            
+            print(f"\n--- Processing Post {post_index + 1}/{min(published_posts_count_to_repurpose, len(top_posts))} ---")
+            print(f"Post has content field '{content_field_name}': {content_field_name in post}")
+            
+            # If no content in preferred field, try each possible field
             if not post_content:
+                print(f"No content found in '{content_field_name}' field, trying alternatives...")
+                for field in ['content', 'text', 'post_content', 'full_text', 'tweet_text', 'message']:
+                    if field in post and post[field]:
+                        post_content = post[field]
+                        print(f"Found content in alternative field: '{field}'")
+                        break
+            
+            if not post_content:
+                print(f"Warning: No content found in post {post_index + 1}, skipping")
+                print(f"Post data: {json.dumps(post, indent=2)[:200]}...")
                 continue
 
-            print(f"\n--- Processing Post {post_index + 1}/{min(published_posts_count_to_repurpose, len(top_posts))} ---")
             print(f"Post content: {post_content[:100]}{'...' if len(post_content) > 100 else ''}")
 
             # Get templates for this post
-            from social_writer import multitemplate_retriever
-            template_results = multitemplate_retriever(post_content, template_count_to_retrieve=repurpose_count)
-
-            if not template_results.get("data", {}).get("documents"):
-                print(f"No templates found for post {post_index + 1}")
+            try:
+                print(f"Retrieving templates for post {post_index + 1}...")
+                from social_writer import multitemplate_retriever
+                template_results = multitemplate_retriever(post_content, template_count_to_retrieve=repurpose_count)
+                
+                print(f"Template results structure: {json.dumps(template_results, indent=2)[:200]}...")
+                
+                if not template_results.get("data", {}).get("documents"):
+                    print(f"No templates found for post {post_index + 1}")
+                    continue
+                
+                templates = template_results["data"]["documents"]
+                print(f"Retrieved {len(templates)} templates for post")
+                
+                if len(templates) == 0:
+                    print("Warning: Empty templates list returned")
+                    continue
+                    
+            except Exception as e:
+                print(f"Error retrieving templates for post {post_index + 1}: {str(e)}")
                 continue
-
-            templates = template_results["data"]["documents"]
-            print(f"Retrieved {len(templates)} templates for post")
 
             # Generate content using each template
             post_results = []
@@ -191,12 +242,21 @@ def repurpose_top_published_posts(user_id: str, brand: str, repurpose_count: int
             })
 
         print("\n=== Top Published Posts Repurposing Process Complete ===")
-
-        return {
-            "status": "success",
-            "message": f"Successfully repurposed {len(results)} top posts",
-            "results": results
-        }
+        print(f"Processed {len(results)} out of {min(published_posts_count_to_repurpose, len(top_posts))} posts")
+        
+        if len(results) == 0:
+            print("Warning: No posts were successfully repurposed")
+            return {
+                "status": "warning",
+                "message": "No posts were successfully repurposed. Check logs for details.",
+                "results": []
+            }
+        else:
+            return {
+                "status": "success",
+                "message": f"Successfully repurposed {len(results)} top posts",
+                "results": results
+            }
 
     except Exception as e:
         print(f"Error in repurpose_top_published_posts: {str(e)}")
