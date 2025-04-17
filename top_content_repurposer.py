@@ -123,33 +123,36 @@ def repurpose_top_published_posts(user_id: str, brand: str, repurpose_count: int
         else:
             print("No posts available to process")
         
-        # Look for the actual content field name - 'content', 'text', or 'post_content'
-        content_field_name = 'content'
+        # Use first_draft field for post content since that's where the content is stored
+        content_field_name = 'first_draft'
         if top_posts and len(top_posts) > 0:
-            # Check for alternative field names that might contain the post content
-            possible_content_fields = ['content', 'text', 'post_content', 'full_text', 'tweet_text', 'message']
-            found_field = None
-            for field in possible_content_fields:
-                if field in top_posts[0]:
-                    content_field_name = field
-                    found_field = field
-                    print(f"Found content in field: '{field}'")
-                    break
-            
-            if not found_field:
-                print(f"Warning: Could not identify content field in post. Using default '{content_field_name}'")
+            print(f"Using '{content_field_name}' field for post content")
+            if content_field_name not in top_posts[0]:
+                print(f"Warning: '{content_field_name}' field not found in posts. Available fields: {list(top_posts[0].keys())}")
+                # If first_draft isn't available, try to find any usable content field
+                possible_content_fields = ['first_draft', 'current_draft', 'content', 'text', 'post_content', 'full_text', 'tweet_text', 'message']
+                found_field = None
+                for field in possible_content_fields:
+                    if field in top_posts[0]:
+                        content_field_name = field
+                        found_field = field
+                        print(f"Found alternative content in field: '{field}'")
+                        break
+                
+                if not found_field:
+                    print(f"Warning: Could not identify any content field in post.")
 
         for post_index, post in enumerate(top_posts[:published_posts_count_to_repurpose]):
-            # Try to get content from the identified field or fall back to 'content'
+            # Try to get content from first_draft field
             post_content = post.get(content_field_name, "")
             
             print(f"\n--- Processing Post {post_index + 1}/{min(published_posts_count_to_repurpose, len(top_posts))} ---")
-            print(f"Post has content field '{content_field_name}': {content_field_name in post}")
+            print(f"Post has '{content_field_name}' field: {content_field_name in post}")
             
-            # If no content in preferred field, try each possible field
+            # If no content in first_draft, try any alternative field that might contain content
             if not post_content:
                 print(f"No content found in '{content_field_name}' field, trying alternatives...")
-                for field in ['content', 'text', 'post_content', 'full_text', 'tweet_text', 'message']:
+                for field in ['current_draft', 'content', 'text', 'post_content', 'full_text', 'tweet_text', 'message']:
                     if field in post and post[field]:
                         post_content = post[field]
                         print(f"Found content in alternative field: '{field}'")
@@ -236,8 +239,10 @@ def repurpose_top_published_posts(user_id: str, brand: str, repurpose_count: int
                 except Exception as e:
                     print(f"Error generating content with template {template_index + 1}: {str(e)}")
 
+            # Also include post_id in the results for better tracking
             results.append({
                 "original_post": post_content,
+                "original_post_id": post.get("post_id", ""),
                 "repurposed_content": post_results
             })
 
