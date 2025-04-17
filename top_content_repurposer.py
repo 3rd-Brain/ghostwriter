@@ -223,8 +223,8 @@ def repurpose_top_published_posts(user_id: str, brand: str, repurpose_count: int
                         "first_draft": generated_content,
                         "content_chunks": post_content,
                         "template": template_base,
-                        "workflow_name": workflow_name,
-                        "original_post_id": post.get("post_id", "")
+                        "brand_id": brand,
+                        "workflow_id": workflow_name
                     }
 
                     upload_result = generated_content_uploader(content_data)
