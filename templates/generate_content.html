@@ -538,7 +538,7 @@
                 </div>
                 <div class="workflow-modal-body">
                     <div class="workflow-steps-container">
-                        <div class="workflow-steps-sidebar" id="workflow-steps-sidebar">
+                        <div class="workflow-steps-sidebar">
                             <!-- Step items will be added here -->
                         </div>
                         <div class="workflow-detail-area" id="workflow-detail-area">
@@ -572,7 +572,7 @@
         createWorkflowModal();
 
         const modal = document.getElementById('workflow-modal');
-        const sidebarEl = document.getElementById('workflow-steps-sidebar');
+        const sidebarEl = modal.querySelector('.workflow-steps-sidebar'); // Get the sidebar specific to this modal
         const detailAreaEl = document.getElementById('workflow-detail-area');
 
         // Clear previous content
@@ -600,8 +600,8 @@
             `;
 
             stepItem.addEventListener('click', function() {
-                // Remove active class from all step items
-                document.querySelectorAll('.workflow-step-item').forEach(item => {
+                // Remove active class from all step items within this modal
+                modal.querySelectorAll('.workflow-step-item').forEach(item => {
                     item.classList.remove('active');
                 });
 
