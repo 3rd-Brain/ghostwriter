@@ -64,7 +64,7 @@
         overflow-y: auto;
         flex-grow: 1;
         display: flex;
-        flex-direction: column;
+        flex-direction: row; /* Changed to row */
         gap: 20px;
     }
 
@@ -734,6 +734,28 @@
             }
         }
 
+        // Ensure proper layout of modal components
+        const modalBody = modal.querySelector('.workflow-modal-body');
+        if (modalBody) {
+            modalBody.style.display = 'flex';
+            modalBody.style.flexDirection = 'row';
+        }
+
+        const sidebarEl = document.getElementById('workflow-steps-sidebar');
+        if (sidebarEl) {
+            sidebarEl.style.width = '250px';
+            sidebarEl.style.borderRight = '1px solid #eee';
+            sidebarEl.style.overflowY = 'auto';
+            sidebarEl.style.padding = '15px';
+        }
+
+        const detailAreaEl = document.getElementById('workflow-detail-area');
+        if (detailAreaEl) {
+            detailAreaEl.style.flexGrow = '1';
+            detailAreaEl.style.padding = '15px';
+            detailAreaEl.style.overflowY = 'auto';
+        }
+
         // Show the modal
         modal.style.display = 'block';
     }
@@ -853,9 +875,8 @@
         const closeRepurposeBtn = document.getElementById('close-repurpose-modal');
 
         // Remove any existing event listeners by cloning and replacing the button
-        const newOpenRepurposeBtn = openRepurposeBtn.cloneNode(true);
-        openRepurposeBtn.parentNode.replaceChild(newOpenRepurposeBtn, openRepurposeBtn);
-        
+        const newOpenRepurposeBtn = openRepurposeBtn.cloneNode(true);openRepurposeBtn.parentNode.replaceChild(newOpenRepurposeBtn, openRepurposeBtn);
+
         // Re-assign the variable to the new button
         const refreshedOpenRepurposeBtn = document.getElementById('open-repurpose-modal');
 
@@ -950,21 +971,21 @@
 
         // Form submissions - using a better approach to prevent duplicate submissions
         const createPostsForm = document.getElementById('create-posts-form');
-        
+
         // Remove any existing event listeners by cloning and replacing the form
         const newForm = createPostsForm.cloneNode(true);
         createPostsForm.parentNode.replaceChild(newForm, createPostsForm);
-        
+
         // Add a single event listener to the new form
         newForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            
+
             // Disable the submit button to prevent double submissions
             const submitButton = this.querySelector('button[type="submit"]');
             if (submitButton) {
                 submitButton.disabled = true;
             }
-            
+
             // Display loading indicator or notification
             window.showNotification('Generating posts, please wait...', false);
 
