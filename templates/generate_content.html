@@ -948,9 +948,23 @@
             createWorkflowModal.style.display = 'none';
         });
 
-        // Form submissions
-        document.getElementById('create-posts-form').addEventListener('submit', function(e) {
+        // Form submissions - using a better approach to prevent duplicate submissions
+        const createPostsForm = document.getElementById('create-posts-form');
+        
+        // Remove any existing event listeners by cloning and replacing the form
+        const newForm = createPostsForm.cloneNode(true);
+        createPostsForm.parentNode.replaceChild(newForm, createPostsForm);
+        
+        // Add a single event listener to the new form
+        newForm.addEventListener('submit', function(e) {
             e.preventDefault();
+            
+            // Disable the submit button to prevent double submissions
+            const submitButton = this.querySelector('button[type="submit"]');
+            if (submitButton) {
+                submitButton.disabled = true;
+            }
+            
             // Display loading indicator or notification
             window.showNotification('Generating posts, please wait...', false);
 
@@ -967,6 +981,9 @@
             if (!formData.topicQuery || !formData.brand || !formData.workflowName) {
                 console.error('Missing required form fields');
                 window.showNotification('Please fill in all required fields', true);
+                if (submitButton) {
+                    submitButton.disabled = false;
+                }
                 return;
             }
 
@@ -1001,11 +1018,17 @@
                     createPostsModal.style.display = 'none';
                 } else {
                     window.showNotification('Error generating posts: ' + (data.message || 'Unknown error'), true);
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                    }
                 }
             })
             .catch(error => {
                 console.error('API call error:', error);
                 window.showNotification('Error generating posts: ' + error.message, true);
+                if (submitButton) {
+                    submitButton.disabled = false;
+                }
             });
         });
 
