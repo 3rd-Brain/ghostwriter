@@ -59,7 +59,7 @@ def generated_content_uploader(content_data: Dict) -> Dict:
     
     # Handle either workflow_id or workflow_name
     workflow_id = content_data.get("workflow_id", "")
-    workflow_name = content_data.get("workflow_name", "Legacy Generation Flow")
+    workflow_name = content_data.get("workflow_name")
     
     # If only workflow_name is provided, use it for workflow_id as well for backward compatibility
     if not workflow_id and workflow_name:
@@ -671,7 +671,7 @@ def repurposer_using_posts_as_templates(
     content_chunks: str,
     template_post: str,
     brand: str,
-    workflow_id: str = "Legacy Generation Flow with Claude",
+    workflow_name: str,
     is_given_template_query: bool = False,
     number_of_posts_to_template: int = 5,
     post_topic_query: str = "Digital Operations"
@@ -681,7 +681,7 @@ def repurposer_using_posts_as_templates(
     Args:        content_chunks: String containing content to supply generation
         template_post: String of a social post to inherit / String of a query to grab social posts
         brand: String containing brand name
-        workflow_id: String containing workflow ID for generation (default: Legacy Generation Flow with Claude)
+        workflow_name: String containing workflow name for generation
         is_given_template_query: Boolean indicating if a template query is provided (default: False)
         number_of_posts_to_template: Number of top posts to use as templates (default: 5)
         post_topic_query: String containing topic for top content search (default: "Digital Operations")
@@ -698,7 +698,7 @@ def repurposer_using_posts_as_templates(
     if not is_given_template_query:
         # Direct template usage path
         generated_content = social_post_generation_with_json(
-            workflow_id=workflow_id,
+            workflow_name=workflow_name,
             client_brief=brand_voice,
             template=template_post,
             content_chunks=content_chunks
@@ -734,7 +734,7 @@ def repurposer_using_posts_as_templates(
         generated_contents = []
         for post in top_posts:
             generated_content = social_post_generation_with_json(
-                workflow_id=workflow_id,
+                workflow_name=workflow_name,
                 client_brief=brand_voice,
                 template=post,
                 content_chunks=content_chunks
@@ -781,14 +781,11 @@ def Templatizer(social_post: str) -> str:
 
     return template
 
-
-
-
 def source_content_repurposer_using_posts_as_templates(
     content_topic_query: str,
     template_post: str,
     brand: str,
-    workflow_id: str = "Legacy Generation Flow with Claude",
+    workflow_name: str,
     is_given_template_query: bool = False,
     number_of_posts_to_template: int = 5,
     post_topic_query: str = "Digital Operations"
@@ -799,7 +796,7 @@ def source_content_repurposer_using_posts_as_templates(
         content_topic_query: String containing topic to search for source content
         template_post: String of a social post to inherit / String of a query to grab social posts
         brand: String containing brand name
-        workflow_id: String containing workflow ID for generation (default: Legacy Generation Flow with Claude)
+        workflow_name: String containing workflow name for generation
         is_given_template_query: Boolean indicating if a template query is provided (default: False)
         number_of_posts_to_template: Number of top posts to use as templates (default: 5)
         post_topic_query: String containing topic for top content search (default: "Digital Operations")
@@ -822,7 +819,7 @@ def source_content_repurposer_using_posts_as_templates(
         content_chunks=combined_chunks,
         template_post=template_post,
         brand=brand,
-        workflow_id=workflow_id,
+        workflow_name=workflow_name,
         is_given_template_query=is_given_template_query,
         number_of_posts_to_template=number_of_posts_to_template,
         post_topic_query=post_topic_query
@@ -958,7 +955,7 @@ def delete_generated_content(username: str, content_id: str) -> Dict:
         print(f"Request exception: {str(e)}")
         raise Exception(f"Failed to delete content from AstraDB: {str(e)}")
 
-def simple_repurpose(social_post: str, brand: str, repurpose_count: int = 5, workflow_id: str = "Simple Repurpose Flow") -> List[Dict]:
+def simple_repurpose(social_post: str, brand: str, repurpose_count: int = 5, workflow_name: str = "Legacy") -> List[Dict]:
     """
     Simple repurposing of a social post using multiple templates
     Args:
@@ -1003,7 +1000,7 @@ def simple_repurpose(social_post: str, brand: str, repurpose_count: int = 5, wor
             try:
                 # Generate content using the template
                 generated_content = social_post_generation_with_json(
-                    workflow_id=workflow_id,
+                    workflow_name=workflow_name,
                     client_brief=brand_voice,
                     template=template_base,
                     content_chunks=social_post

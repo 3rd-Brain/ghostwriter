@@ -40,9 +40,9 @@ class RepurposeRequest(BaseModel):
 # Top Content Repurposing schemas
 class TopContentRepurposingRequest(BaseModel):
     brand: str = Field(..., description="Brand name for content style")
-    number_of_posts: int = Field(5, description="Number of posts to select")
+    number_of_posts: int = Field(..., description="Number of posts to select")
+    workflow_name: str = Field(..., description="Name of workflow to use")
     repurpose_count: int = Field(1, description="Number of repurposed items to generate")
-    workflow_name: str = Field("Legacy Generation Flow", description="Name of workflow to use")
 
 # Social Post Generation schemas
 class SocialPostGenerationRequest(BaseModel):
@@ -70,8 +70,8 @@ class ContentUploadRequest(BaseModel):
     template: str = Field(..., description="Template used for generation")
     template_id: Optional[str] = Field(None, description="ID reference to system templates")
     brand_id: Optional[str] = Field(None, description="ID reference to brand used")
-    workflow_id: Optional[str] = Field("Legacy Generation Flow", description="ID of workflow used for generation")
-    workflow_name: Optional[str] = Field("Legacy Generation Flow", description="Name of the workflow used")
+    workflow_id: Optional[str] = Field(None, description="ID of workflow used for generation")
+    workflow_name: str = Field(..., description="Name of the workflow used")
     content_format: Optional[str] = Field("Short Form Social", description="Format of the content")
     post_id: Optional[str] = Field(None, description="UUID for the post (generates automatically if not provided)")
     current_draft: Optional[str] = Field("", description="Current version of the content")
@@ -102,7 +102,7 @@ class RepurposeWithTemplatesRequest(BaseModel):
     content_chunks: str = Field(..., description="Content chunks to repurpose")
     template_post: str = Field(..., description="Template post to use")
     brand: str = Field(..., description="Brand name for content style")
-    workflow_id: str = Field("Legacy Generation Flow", description="Workflow ID to use")
+    workflow_name: str = Field(..., description="Name of workflow to use")
     is_given_template_query: bool = Field(False, description="Whether the template is a query")
     number_of_posts_to_template: int = Field(5, description="Number of posts to template")
     post_topic_query: str = Field("Digital Operations", description="Topic query for posts")
@@ -112,7 +112,7 @@ class SourceContentRepurposeWithTemplatesRequest(BaseModel):
     content_topic_query: str = Field(..., description="Topic query for content")
     template_post: str = Field(..., description="Template post to use")
     brand: str = Field(..., description="Brand name for content style")
-    workflow_id: str = Field("Legacy Generation Flow", description="Workflow ID to use")
+    workflow_name: str = Field(..., description="Workflow name to use")
     is_given_template_query: bool = Field(False, description="Whether the template is a query")
     number_of_posts_to_template: int = Field(5, description="Number of posts to template")
     post_topic_query: str = Field("Digital Operations", description="Topic query for posts")

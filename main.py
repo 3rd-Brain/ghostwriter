@@ -1424,8 +1424,6 @@ async def generate_new_content(request_data: schemas.RepurposeRequest, backgroun
     if not os.getenv("AIRTABLE_API_KEY"):
         raise HTTPException(status_code=500, detail="AIRTABLE_API_KEY not configured")
 
-    
-    
     try:
         background_tasks.add_task(
             short_form_social_repurposing, 
@@ -1663,7 +1661,7 @@ async def repurpose_with_templates(request_data: schemas.RepurposeWithTemplatesR
             content_chunks=request_data.content_chunks,
             template_post=request_data.template_post,
             brand=request_data.brand,
-            workflow_id=request_data.workflow_id,
+            workflow_name=request_data.workflow_name,
             is_given_template_query=request_data.is_given_template_query,
             number_of_posts_to_template=request_data.number_of_posts_to_template,
             post_topic_query=request_data.post_topic_query
@@ -1742,7 +1740,7 @@ async def repurpose_source_content_with_templates(
             content_topic_query=request_data.content_topic_query,
             template_post=request_data.template_post,
             brand=request_data.brand,
-            workflow_id=workflow_identifier,
+            workflow_name=workflow_identifier,
             is_given_template_query=request_data.is_given_template_query,
             number_of_posts_to_template=request_data.number_of_posts_to_template,
             post_topic_query=request_data.post_topic_query
