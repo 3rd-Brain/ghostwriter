@@ -213,70 +213,6 @@
                 <i data-lucide="info"></i>
             </div>
         </div>
-
-    /* View workflow modal specific styles */
-    .workflow-view-modal .workflow-modal-content {
-        background-color: #f8f9fa;
-    }
-
-    .workflow-modal-header.view-header {
-        background-color: #3f51b5;
-        color: white;
-    }
-
-    .workflow-modal-header.view-header .close {
-        color: white;
-    }
-
-    .workflow-modal-header.create-header {
-        background-color: #28a745;
-        color: white;
-    }
-
-    .workflow-modal-header.create-header .close {
-        color: white;
-    }
-
-    .view-sidebar {
-        background-color: #f0f2f5;
-        border-right: 1px solid #dde2e7;
-    }
-
-    .view-detail-area {
-        background-color: white;
-        padding: 20px;
-        border-radius: 6px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        margin: 10px;
-    }
-
-    .workflow-detail-group {
-        margin-bottom: 20px;
-    }
-
-    .workflow-detail-label {
-        font-weight: bold;
-        margin-bottom: 5px;
-        color: #555;
-    }
-
-    .workflow-detail-value {
-        padding: 10px;
-        background-color: #f5f7f9;
-        border-radius: 4px;
-        font-family: monospace;
-        white-space: pre-wrap;
-    }
-
-    .workflow-step-item.active {
-        background-color: #3f51b5;
-        color: white;
-    }
-
-    #create-workflow-modal .workflow-step-item.active {
-        background-color: #28a745;
-    }
-
         <div class="card-content">
             <p class="text-secondary">Create variations of your best-performing content</p>
             <button class="form-button mt-md" id="open-repurpose-modal">Repurpose Content</button>
@@ -451,8 +387,8 @@
 <!-- Modal for Create Workflow -->
 <div id="create-workflow-modal" class="workflow-modal">
     <div class="workflow-modal-content">
-        <div class="workflow-modal-header create-header">
-            <h2><i data-lucide="plus-circle"></i> Create New Workflow</h2>
+        <div class="workflow-modal-header">
+            <h2>Create Workflow</h2>
             <span class="close" id="close-create-workflow-modal">&times;</span>
         </div>
         <div class="workflow-modal-body">
@@ -574,10 +510,6 @@
             flowButton.addEventListener('click', function() {
                 // Show the steps data from the workflow
                 showGenerationFlow(workflow.steps);
-                // Initialize Lucide icons in the modal
-                if (window.Lucide) {
-                    window.Lucide.createIcons();
-                }
             });
             flowCell.appendChild(flowButton);
             row.appendChild(flowCell);
@@ -586,29 +518,29 @@
         });
     }
 
-    // Function to create the workflow viewing modal if it doesn't exist
+    // Function to create the workflow modal if it doesn't exist
     function createWorkflowModal() {
-        if (document.getElementById('workflow-view-modal')) {
+        if (document.getElementById('workflow-modal')) {
             return;
         }
 
         // Create the modal container
         const modal = document.createElement('div');
-        modal.id = 'workflow-view-modal';
-        modal.className = 'workflow-modal workflow-view-modal';
+        modal.id = 'workflow-modal';
+        modal.className = 'workflow-modal';
 
         // Create modal content
         modal.innerHTML = `
-            <div class="workflow-modal-content view-mode">
-                <div class="workflow-modal-header view-header">
-                    <h2><i data-lucide="eye"></i> View Generation Flow</h2>
-                    <span class="close" id="close-workflow-view-modal">&times;</span>
+            <div class="workflow-modal-content">
+                <div class="workflow-modal-header">
+                    <h2>Generation Flow</h2>
+                    <span class="close" id="close-workflow-modal">&times;</span>
                 </div>
                 <div class="workflow-modal-body">
-                    <div class="workflow-steps-sidebar view-sidebar" id="workflow-view-steps-sidebar">
+                    <div class="workflow-steps-sidebar" id="workflow-steps-sidebar">
                         <!-- Step items will be added here -->
                     </div>
-                    <div class="workflow-detail-area view-detail-area" id="workflow-view-detail-area">
+                    <div class="workflow-detail-area" id="workflow-detail-area">
                         <!-- Step details will be added here -->
                     </div>
                 </div>
@@ -618,7 +550,7 @@
         document.body.appendChild(modal);
 
         // Add event listener to close button
-        document.getElementById('close-workflow-view-modal').addEventListener('click', function() {
+        document.getElementById('close-workflow-modal').addEventListener('click', function() {
             modal.style.display = 'none';
         });
 
@@ -637,9 +569,9 @@
         // Create the modal if it doesn't exist
         createWorkflowModal();
 
-        const modal = document.getElementById('workflow-view-modal');
-        const sidebarEl = document.getElementById('workflow-view-steps-sidebar');
-        const detailAreaEl = document.getElementById('workflow-view-detail-area');
+        const modal = document.getElementById('workflow-modal');
+        const sidebarEl = document.getElementById('workflow-steps-sidebar');
+        const detailAreaEl = document.getElementById('workflow-detail-area');
 
         // Clear previous content
         sidebarEl.innerHTML = '';
