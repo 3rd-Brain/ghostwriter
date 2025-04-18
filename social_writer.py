@@ -407,7 +407,7 @@ def search_templates_in_db(api_endpoint: str, api_token: str, vector: List[float
         # Return empty result structure instead of raising an exception
         return {"data": {"documents": []}}
 
-def short_form_social_repurposing(topic_query: str, brand: str, repurpose_count: int = 5, workflow_name: str = "Legacy Generation Flow") -> Dict:
+def short_form_social_repurposing(topic_query: str, brand: str, repurpose_count: int = 5, workflow_name: str) -> Dict:
     """
     Repurpose content based on topic query and user's brand voice
     Args:

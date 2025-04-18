@@ -1430,7 +1430,7 @@ async def generate_new_content(request_data: schemas.RepurposeRequest, backgroun
             request_data.topic_query, 
             request_data.brand, 
             request_data.repurpose_count, 
-            request_data.workflow_id
+            request_data.workflow_name
         )
         return {"status": "success", "message": "Your content is being generated"}
     except Exception as e:
@@ -1732,9 +1732,7 @@ async def repurpose_source_content_with_templates(
     """
     try:
         # Determine which workflow identifier to use
-        workflow_identifier = request_data.workflow_id
-        if not workflow_identifier and hasattr(request_data, 'workflow_name') and request_data.workflow_name:
-            workflow_identifier = request_data.workflow_name
+        workflow_identifier = request_data.workflow_name if (hasattr(request_data, 'workflow_name') and request_data.workflow_name) else request_data.workflow_id
         
         # Add task to background
         background_tasks.add_task(
