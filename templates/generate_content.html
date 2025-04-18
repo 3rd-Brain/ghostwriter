@@ -838,12 +838,23 @@
         const createPostsModal = document.getElementById('create-posts-modal');
         const openCreatePostsBtn = document.getElementById('open-create-posts-modal');
         const closeCreatePostsBtn = document.getElementById('close-create-posts-modal');
+        
+        // Remove any existing event listeners by cloning and replacing the buttons
+        const newOpenCreatePostsBtn = openCreatePostsBtn.cloneNode(true);
+        openCreatePostsBtn.parentNode.replaceChild(newOpenCreatePostsBtn, openCreatePostsBtn);
+        
+        const newCloseCreatePostsBtn = closeCreatePostsBtn.cloneNode(true);
+        closeCreatePostsBtn.parentNode.replaceChild(newCloseCreatePostsBtn, closeCreatePostsBtn);
+        
+        // Re-assign variables to the new buttons
+        const refreshedOpenCreatePostsBtn = document.getElementById('open-create-posts-modal');
+        const refreshedCloseCreatePostsBtn = document.getElementById('close-create-posts-modal');
 
-        openCreatePostsBtn.addEventListener('click', function() {
+        refreshedOpenCreatePostsBtn.addEventListener('click', function() {
             createPostsModal.style.display = 'block';
         });
 
-        closeCreatePostsBtn.addEventListener('click', function() {
+        refreshedCloseCreatePostsBtn.addEventListener('click', function() {
             createPostsModal.style.display = 'none';
         });
 
@@ -911,11 +922,22 @@
         const openTemplatesBtn = document.getElementById('open-templates-modal');
         const closeTemplatesBtn = document.getElementById('close-templates-modal');
 
-        openTemplatesBtn.addEventListener('click', function() {
+        // Remove any existing event listeners by cloning and replacing the buttons
+        const newOpenTemplatesBtn = openTemplatesBtn.cloneNode(true);
+        openTemplatesBtn.parentNode.replaceChild(newOpenTemplatesBtn, openTemplatesBtn);
+        
+        const newCloseTemplatesBtn = closeTemplatesBtn.cloneNode(true);
+        closeTemplatesBtn.parentNode.replaceChild(newCloseTemplatesBtn, closeTemplatesBtn);
+        
+        // Re-assign variables to the new buttons
+        const refreshedOpenTemplatesBtn = document.getElementById('open-templates-modal');
+        const refreshedCloseTemplatesBtn = document.getElementById('close-templates-modal');
+
+        refreshedOpenTemplatesBtn.addEventListener('click', function() {
             templatesModal.style.display = 'block';
         });
 
-        closeTemplatesBtn.addEventListener('click', function() {
+        refreshedCloseTemplatesBtn.addEventListener('click', function() {
             templatesModal.style.display = 'none';
         });
 
