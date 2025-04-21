@@ -479,7 +479,50 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Save API keys functionality (mock)
+    // Fetch third-party API keys when page loads
+    function fetchThirdPartyKeys() {
+        fetch('/api/third-party-keys')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to load API keys');
+                }
+                return response.json();
+            })
+            .then(data => {
+                populateThirdPartyKeyFields(data.keys);
+            })
+            .catch(error => {
+                console.error('Error loading third-party API keys:', error);
+                // Don't show error notification - it's common for users to not have keys yet
+            });
+    }
+    
+    // Populate the API key fields with existing keys
+    function populateThirdPartyKeyFields(keys) {
+        if (!keys || keys.length === 0) {
+            return; // No keys to display
+        }
+        
+        // Find keys by service and populate the fields
+        const anthropicKeyData = keys.find(key => key.service === 'anthropic');
+        const openaiKeyData = keys.find(key => key.service === 'openai');
+        
+        // Update the UI with placeholders based on key prefixes if they exist
+        // We don't actually show full keys, as they're encrypted on the backend
+        if (anthropicKeyData) {
+            const anthropicInput = document.getElementById('anthropic-api-key');
+            anthropicInput.placeholder = `Key exists (prefix: ${anthropicKeyData.key_prefix})`;
+            anthropicInput.dataset.keyId = anthropicKeyData.key_id;
+        }
+        
+        if (openaiKeyData) {
+            const openaiInput = document.getElementById('openai-api-key');
+            openaiInput.placeholder = `Key exists (prefix: ${openaiKeyData.key_prefix})`;
+            openaiInput.dataset.keyId = openaiKeyData.key_id;
+        }
+    }
+    
+    // Save/update API keys functionality
     const saveApiKeysButton = document.getElementById('save-api-keys');
     saveApiKeysButton.addEventListener('click', function() {
         const anthropicKey = document.getElementById('anthropic-api-key').value;
@@ -490,15 +533,95 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Mock saving functionality
-        showNotification('API keys saved successfully');
+        const promises = [];
         
-        // In a real implementation, you would send these to your backend
-        console.log('Would save keys:', { 
-            anthropic: anthropicKey ? '****' + anthropicKey.slice(-4) : null,
-            openai: openaiKey ? '****' + openaiKey.slice(-4) : null
-        });
+        // Process Anthropic key if provided
+        if (anthropicKey) {
+            const anthropicInput = document.getElementById('anthropic-api-key');
+            const keyId = anthropicInput.dataset.keyId;
+            
+            let promise;
+            if (keyId) {
+                // Update existing key
+                promise = fetch(`/api/third-party-keys/${keyId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ api_key: anthropicKey })
+                });
+            } else {
+                // Create new key
+                promise = fetch('/api/third-party-keys', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        service: 'anthropic',
+                        api_key: anthropicKey,
+                        description: 'Anthropic API key for Claude models'
+                    })
+                });
+            }
+            promises.push(promise);
+        }
+        
+        // Process OpenAI key if provided
+        if (openaiKey) {
+            const openaiInput = document.getElementById('openai-api-key');
+            const keyId = openaiInput.dataset.keyId;
+            
+            let promise;
+            if (keyId) {
+                // Update existing key
+                promise = fetch(`/api/third-party-keys/${keyId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ api_key: openaiKey })
+                });
+            } else {
+                // Create new key
+                promise = fetch('/api/third-party-keys', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        service: 'openai',
+                        api_key: openaiKey,
+                        description: 'OpenAI API key for GPT models'
+                    })
+                });
+            }
+            promises.push(promise);
+        }
+        
+        // Process all promises and show results
+        Promise.all(promises.map(p => p.catch(e => e)))
+            .then(results => {
+                const failedResults = results.filter(r => r instanceof Error);
+                
+                if (failedResults.length > 0) {
+                    showNotification('Failed to save one or more API keys', true);
+                    console.error('API key save errors:', failedResults);
+                } else {
+                    showNotification('API keys saved successfully');
+                    
+                    // Clear the input fields 
+                    document.getElementById('anthropic-api-key').value = '';
+                    document.getElementById('openai-api-key').value = '';
+                    
+                    // Refresh key data
+                    fetchThirdPartyKeys();
+                }
+            });
     });
+    
+    // Call fetch keys when DOM is loaded
+    fetchThirdPartyKeys();
     
     tabs.forEach(tab => {
         tab.addEventListener('click', function() {
@@ -727,3 +850,43 @@ function deleteApiKey(keyId) {
 }
 </script>
 {% endblock %}
+
+
+// Helper function to show notifications
+function showNotification(message, isError = false) {
+    // Create notification element if it doesn't exist
+    let notification = document.getElementById('notification');
+    
+    if (!notification) {
+        notification = document.createElement('div');
+        notification.id = 'notification';
+        notification.style.position = 'fixed';
+        notification.style.top = '20px';
+        notification.style.right = '20px';
+        notification.style.padding = '10px 20px';
+        notification.style.borderRadius = '4px';
+        notification.style.zIndex = '1000';
+        notification.style.transition = 'opacity 0.3s ease';
+        document.body.appendChild(notification);
+    }
+    
+    // Set styles based on notification type
+    if (isError) {
+        notification.style.backgroundColor = '#FED7D7';
+        notification.style.color = '#C53030';
+        notification.style.border = '1px solid #FC8181';
+    } else {
+        notification.style.backgroundColor = '#C6F6D5';
+        notification.style.color = '#2F855A';
+        notification.style.border = '1px solid #9AE6B4';
+    }
+    
+    // Set message and show notification
+    notification.textContent = message;
+    notification.style.opacity = '1';
+    
+    // Hide notification after 3 seconds
+    setTimeout(() => {
+        notification.style.opacity = '0';
+    }, 3000);
+}
