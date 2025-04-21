@@ -1059,8 +1059,16 @@ class ReferrerPolicyMiddleware(BaseHTTPMiddleware):
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=["*"])
 app.add_middleware(ReferrerPolicyMiddleware)
 
+# Import routers
+from api_routes import router as api_router
+from api_key_routes import router as api_key_router
+from third_party_api_routes import router as third_party_key_router
+from fastapi.openapi.utils import get_openapi
+
 # Include routers
-app.include_router(onboarding_router)
+app.include_router(api_router)
+app.include_router(api_key_router)
+app.include_router(third_party_key_router)
 
 # Create custom OpenAPI function to exclude specified tags
 def custom_openapi():
@@ -1096,16 +1104,6 @@ def custom_openapi():
 
     app.openapi_schema = openapi_schema
     return app.openapi_schema
-
-# Import and include API routes
-from api_routes import router as api_router
-from api_key_routes import router as api_key_router
-from brand_management import router as brand_management_router
-from fastapi.openapi.utils import get_openapi
-
-app.include_router(api_router)
-app.include_router(api_key_router)  # Still include the router so endpoints work
-app.include_router(brand_management_router)
 
 # Override the openapi function
 app.openapi = custom_openapi
@@ -1338,7 +1336,7 @@ async def setup_sentiment(request_data: schemas.SentimentSetupRequest, current_u
 
 def top_content_retriever(query: str, topic: str = "general") -> Dict:
     from top_content_repurposer import top_published_posts_retriever
-    
+
     # Simply call top_published_posts_retriever directly without sentiment setup
     results = top_published_posts_retriever(user_id=os.environ.get("CURRENT_USER_ID"))
     return results
@@ -1733,7 +1731,7 @@ async def repurpose_source_content_with_templates(
     try:
         # Determine which workflow identifier to use
         workflow_identifier = request_data.workflow_name if (hasattr(request_data, 'workflow_name') and request_data.workflow_name) else request_data.workflow_id
-        
+
         # Add task to background
         background_tasks.add_task(
             source_content_repurposer_using_posts_as_templates,
