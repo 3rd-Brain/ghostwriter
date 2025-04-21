@@ -1390,19 +1390,7 @@ def createBrandFromAccount(profile_url: str, brand_name: str = None) -> Dict:
 
         response = client.messages.create(
             model="claude-3-7-sonnet-latest",
-            system="""You are a brand voice analyst. Your task is to analyze a collection of social media posts and create a comprehensive brand voice guide.
-
-The brand voice guide should include:
-1. Overall tone and personality traits
-2. Writing style characteristics and patterns
-3. Key messaging themes and topics
-4. Vocabulary preferences and distinctive phrases
-5. Content structure preferences
-6. Audience engagement style
-7. Specific do's and don'ts for writing in this voice
-
-Your output should be detailed and specific enough that another writer could effectively emulate this voice.
-Format the output as a structured guide with clear sections and specific examples taken from the source content.""",
+            system=Prompts.BRAND_VOICE_ANALYZER,
             messages=[
                 {
                     "role": "user", 
