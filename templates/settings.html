@@ -14,6 +14,86 @@
         margin-bottom: 24px;
     }
     
+    /* Ghostwriter API Integration Styles */
+    .api-integration-container {
+        background-color: #f9fafb;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        margin-top: 16px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .api-integration-header {
+        padding: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid transparent;
+    }
+    
+    .api-integration-header h3 {
+        font-size: 16px;
+        font-weight: 500;
+        margin: 0;
+    }
+    
+    .toggle-button {
+        background: none;
+        border: none;
+        color: #4a5568;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s ease;
+    }
+    
+    .toggle-button.active {
+        transform: rotate(180deg);
+    }
+    
+    .api-integration-form {
+        padding: 16px;
+        border-top: 1px solid #e2e8f0;
+    }
+    
+    .api-key-input-group {
+        display: flex;
+        position: relative;
+    }
+    
+    .api-key-input-group input {
+        flex: 1;
+        padding-right: 40px;
+    }
+    
+    .toggle-visibility {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #718096;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .input-help {
+        font-size: 12px;
+        color: #718096;
+        margin-top: 4px;
+    }
+    
+    .mb-md {
+        margin-bottom: 16px;
+    }
+    
     .settings-tab {
         padding: 12px 24px;
         cursor: pointer;
@@ -203,6 +283,7 @@
         <div class="settings-tab active" data-tab="api-keys">API Key Management</div>
         <div class="settings-tab" data-tab="profile">Profile Settings</div>
         <div class="settings-tab" data-tab="account">Account Management</div>
+        <div class="settings-tab" data-tab="ghostwriter">Ghostwriter Settings</div>
     </div>
 
     <!-- API Keys Section -->
@@ -264,6 +345,57 @@
             </div>
         </div>
     </div>
+
+    <!-- Ghostwriter Settings Section -->
+    <div class="settings-section" id="ghostwriter-section">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <span>Third Party API Integration</span>
+                </div>
+            </div>
+            <div class="card-content">
+                <p class="mb-md">Connect your own AI provider accounts to use with Ghostwriter. Adding your own API keys gives you more control over content generation and cost management.</p>
+                
+                <div class="api-integration-container" id="api-integration-container">
+                    <div class="api-integration-header" id="api-integration-toggle">
+                        <h3>API Provider Settings</h3>
+                        <button class="toggle-button">
+                            <i data-lucide="chevron-down"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="api-integration-form" id="api-integration-form" style="display: none;">
+                        <div class="form-group">
+                            <label for="anthropic-api-key">Anthropic API Key</label>
+                            <div class="api-key-input-group">
+                                <input type="password" id="anthropic-api-key" placeholder="Enter your Anthropic API key" class="form-control">
+                                <button class="toggle-visibility" data-target="anthropic-api-key">
+                                    <i data-lucide="eye"></i>
+                                </button>
+                            </div>
+                            <p class="input-help">Used for Claude models. <a href="https://console.anthropic.com/settings/keys" target="_blank">Get it from Anthropic Console</a></p>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="openai-api-key">OpenAI API Key</label>
+                            <div class="api-key-input-group">
+                                <input type="password" id="openai-api-key" placeholder="Enter your OpenAI API key" class="form-control">
+                                <button class="toggle-visibility" data-target="openai-api-key">
+                                    <i data-lucide="eye"></i>
+                                </button>
+                            </div>
+                            <p class="input-help">Used for GPT models. <a href="https://platform.openai.com/api-keys" target="_blank">Get it from OpenAI Dashboard</a></p>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button class="form-button" id="save-api-keys">Save API Keys</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Create API Key Modal -->
@@ -314,6 +446,59 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize tabs
     const tabs = document.querySelectorAll('.settings-tab');
     const sections = document.querySelectorAll('.settings-section');
+    
+    // Ghostwriter API Integration functionality
+    const apiIntegrationToggle = document.getElementById('api-integration-toggle');
+    const apiIntegrationForm = document.getElementById('api-integration-form');
+    const toggleButton = apiIntegrationToggle.querySelector('.toggle-button');
+    
+    apiIntegrationToggle.addEventListener('click', function() {
+        apiIntegrationForm.style.display = apiIntegrationForm.style.display === 'none' ? 'block' : 'none';
+        toggleButton.classList.toggle('active');
+    });
+    
+    // Toggle API key visibility
+    const toggleVisibilityButtons = document.querySelectorAll('.toggle-visibility');
+    toggleVisibilityButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-target');
+            const inputField = document.getElementById(targetId);
+            
+            if (inputField.type === 'password') {
+                inputField.type = 'text';
+                this.innerHTML = '<i data-lucide="eye-off"></i>';
+            } else {
+                inputField.type = 'password';
+                this.innerHTML = '<i data-lucide="eye"></i>';
+            }
+            
+            // Reinitialize Lucide icons
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        });
+    });
+    
+    // Save API keys functionality (mock)
+    const saveApiKeysButton = document.getElementById('save-api-keys');
+    saveApiKeysButton.addEventListener('click', function() {
+        const anthropicKey = document.getElementById('anthropic-api-key').value;
+        const openaiKey = document.getElementById('openai-api-key').value;
+        
+        if (!anthropicKey && !openaiKey) {
+            showNotification('Please enter at least one API key', true);
+            return;
+        }
+        
+        // Mock saving functionality
+        showNotification('API keys saved successfully');
+        
+        // In a real implementation, you would send these to your backend
+        console.log('Would save keys:', { 
+            anthropic: anthropicKey ? '****' + anthropicKey.slice(-4) : null,
+            openai: openaiKey ? '****' + openaiKey.slice(-4) : null
+        });
+    });
     
     tabs.forEach(tab => {
         tab.addEventListener('click', function() {
