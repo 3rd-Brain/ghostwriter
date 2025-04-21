@@ -1415,26 +1415,66 @@ async def generate_new_content(request_data: schemas.RepurposeRequest, backgroun
     *This endpoint runs in the background and doesn't provide immediate results.*
     *This endpoint supports both JWT and API key authentication.*
     """
-    if not os.getenv("OPENAI_API_KEY"):
-        raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
-    if not os.getenv("ASTRA_DB_APPLICATION_TOKEN"):
-        raise HTTPException(status_code=500, detail="ASTRA_DB_APPLICATION_TOKEN not configured")
-    if not os.getenv("ANTHROPIC_API_KEY"):
-        raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY not configured")
-    if not os.getenv("AIRTABLE_API_KEY"):
-        raise HTTPException(status_code=500, detail="AIRTABLE_API_KEY not configured")
-
-    try:
-        background_tasks.add_task(
-            short_form_social_repurposing, 
-            request_data.topic_query, 
-            request_data.brand, 
-            request_data.workflow_name,
-            request_data.repurpose_count
+    # Check for required environment variables
+    missing_vars = []
+    for env_var in ["OPENAI_API_KEY", "ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER", "ANTHROPIC_API_KEY"]:
+        if not os.getenv(env_var):
+            missing_vars.append(env_var)
+    
+    if missing_vars:
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Required environment variables not configured: {', '.join(missing_vars)}"
         )
+
+    # Set user ID in environment for background task access
+    os.environ["CURRENT_USER_ID"] = user.get("user_id", "")
+    
+    import logging
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger("content-generation")
+    
+    try:
+        # Log the content generation request
+        logger.info(f"Content generation requested: Topic='{request_data.topic_query}', " +
+                  f"Brand='{request_data.brand}', Workflow='{request_data.workflow_name}'")
+        
+        # Define a wrapper function to handle errors in the background task
+        def run_with_error_handling():
+            try:
+                print(f"\n=== Starting background content generation task ===")
+                print(f"Topic: {request_data.topic_query}")
+                print(f"Brand: {request_data.brand}")
+                print(f"Workflow: {request_data.workflow_name}")
+                
+                # Run the actual content generation function
+                result = short_form_social_repurposing(
+                    request_data.topic_query, 
+                    request_data.brand, 
+                    request_data.workflow_name,
+                    request_data.repurpose_count
+                )
+                
+                # Log the result
+                print(f"Background task completed with status: {result.get('status', 'unknown')}")
+                print(f"=== Background content generation task finished ===\n")
+                
+            except Exception as e:
+                print(f"\n=== ERROR in background content generation task ===")
+                print(f"Error type: {type(e).__name__}")
+                print(f"Error message: {str(e)}")
+                import traceback
+                print(f"Traceback: {traceback.format_exc()}")
+                print(f"=== End of error report ===\n")
+                logger.error(f"Background task error: {str(e)}")
+        
+        # Add the wrapped task to background tasks
+        background_tasks.add_task(run_with_error_handling)
+        
         return {"status": "success", "message": "Your content is being generated"}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Failed to start content generation: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to start content generation: {str(e)}")
 
 @app.post("/api/top-content-repurposing", response_model=schemas.SuccessResponse, tags=["Generation"])
 async def get_top_content_repurposing(request_data: schemas.TopContentRepurposingRequest, background_tasks: BackgroundTasks, user: dict = Depends(check_api_key_or_jwt)):

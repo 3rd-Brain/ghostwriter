@@ -12,9 +12,9 @@ from social_dynamic_generation_flow import social_post_generation_with_json
 
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
-ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN")
-ASTRA_DB_APPLICATION_TOKEN_FOR_SOURCES = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_FOR_SOURCES")
-ASTRA_DB_APPLICATION_TOKEN_FOR_SHORTFORM_TEMPLATES = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_FOR_SHORTFORM_TEMPLATES")
+ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+ASTRA_DB_APPLICATION_TOKEN_FOR_SOURCES = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+ASTRA_DB_APPLICATION_TOKEN_FOR_SHORTFORM_TEMPLATES = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
 
 openai_client = OpenAI(api_key=OPENAI_API_KEY)
 client = anthropic.Client(api_key=ANTHROPIC_API_KEY)
@@ -418,96 +418,133 @@ def short_form_social_repurposing(topic_query: str, brand: str, workflow_name: s
     Returns:
         Dictionary with status message
     """
-    print("\n=== Starting Content Repurposing Process ===")
+    try:
+        print("\n=== Starting Content Repurposing Process ===")
+        print(f"Topic Query: {topic_query}")
+        print(f"Brand: {brand}")
+        print(f"Workflow Name: {workflow_name}")
+        print(f"Repurpose Count: {repurpose_count}")
 
-    # Step 1: Get source content
-    source_results = source_content_retriever(topic_query)
+        # Step 1: Get source content
+        print("\n=== Step 1: Retrieving source content ===")
+        source_results = source_content_retriever(topic_query)
 
-    # Extract first three content chunks
-    content_chunks = []
-    if source_results.get("data", {}).get("documents"):
-        content_chunks = [doc["content"] for doc in source_results["data"]["documents"][:3]]
+        # Extract first three content chunks
+        content_chunks = []
+        if source_results.get("data", {}).get("documents"):
+            print(f"Found {len(source_results['data']['documents'])} source documents")
+            content_chunks = [doc["content"] for doc in source_results["data"]["documents"][:3]]
+            print(f"Extracted {len(content_chunks)} content chunks")
+        else:
+            print("WARNING: No source content found for this topic. Content generation may fail.")
 
-    combined_chunks = "\n\n".join(content_chunks)
+        combined_chunks = "\n\n".join(content_chunks)
+        print(f"Combined chunks length: {len(combined_chunks)} characters")
+        if len(combined_chunks) < 50:
+            print(f"WARNING: Very small content chunk: '{combined_chunks}'")
 
-    # Step 2: Get templates based on repurpose count
-    template_results = multitemplate_retriever(combined_chunks, template_count_to_retrieve=repurpose_count)
+        # Step 2: Get templates based on repurpose count
+        print("\n=== Step 2: Retrieving templates ===")
+        template_results = multitemplate_retriever(combined_chunks, template_count_to_retrieve=repurpose_count)
 
-    # Debug logging for template retrieval
-    print("\n=== Debug: Template Retrieval Results ===")
-    template_count = len(template_results.get("data", {}).get("documents", []))
-    print(f"Requested template count: {repurpose_count}")
-    print(f"Actual templates retrieved: {template_count}")
-    if template_count > 0:
-        print(f"First template preview: {template_results['data']['documents'][0].get('template', '')[:50]}...")
-    else:
-        print("Warning: No templates retrieved!")
-    print("=== End Template Debug ===\n")
+        # Debug logging for template retrieval
+        print("\n=== Debug: Template Retrieval Results ===")
+        template_count = len(template_results.get("data", {}).get("documents", []))
+        print(f"Requested template count: {repurpose_count}")
+        print(f"Actual templates retrieved: {template_count}")
+        if template_count > 0:
+            print(f"First template preview: {template_results['data']['documents'][0].get('template', '')[:50]}...")
+        else:
+            print("CRITICAL ERROR: No templates retrieved! Content generation will fail.")
+            return {"status": "error", "message": "Failed to retrieve templates for content generation"}
+        print("=== End Template Debug ===\n")
 
-    # Step 3: Get brand voice (use current user's ID from environment)
-    user_id = os.environ.get("CURRENT_USER_ID")
-    brand_voice = get_client_brand_voice(brand, user_id)
+        # Step 3: Get brand voice (use current user's ID from environment)
+        print("\n=== Step 3: Retrieving brand voice ===")
+        user_id = os.environ.get("CURRENT_USER_ID")
+        if not user_id:
+            print("CRITICAL ERROR: CURRENT_USER_ID not found in environment variables")
+            return {"status": "error", "message": "User ID not found. Please try again."}
+            
+        print(f"Using user_id: {user_id}")
+        brand_voice = get_client_brand_voice(brand, user_id)
+        print(f"Successfully retrieved brand voice for: {brand}")
 
-    # Return early with status message
-    result = {"status": "Your content is being generated"}
+        # Step 4: Generate content for each template
+        print("\n=== Step 4: Generating content with templates ===")
+        if template_results.get("data", {}).get("documents"):
+            templates = template_results["data"]["documents"][:repurpose_count]  # Get templates based on repurpose count
+            print(f"Using {len(templates)} templates for content generation")
 
-    # Step 4: Generate content for each template
-    if template_results.get("data", {}).get("documents"):
-        templates = template_results["data"]["documents"][:repurpose_count]  # Get templates based on repurpose count
-        print(f"\n=== Debug: Using {len(templates)} templates for content generation ===")
+            # Log each template being used
+            for i, template in enumerate(templates, 1):
+                template_content = template.get("template") if "template" in template else template.get("content", "")
+                print(f"Template {i}: {template_content[:100]}...")
 
-        # Log each template being used
-        for i, template in enumerate(templates, 1):
-            template_content = template.get("template") if "template" in template else template.get("content", "")
-            print(f"Template {i}: {template_content[:100]}...")
+            successful_generations = 0
+            for template_index, template in enumerate(templates, 1):
+                try:
+                    print(f"\n--- Processing Template {template_index}/{len(templates)} ---")
+                    from social_dynamic_generation_flow import social_post_generation_with_json
 
-        for template in templates:
-            from social_dynamic_generation_flow import social_post_generation_with_json
+                    # Determine the correct template content key (template or content)
+                    template_content = template.get("template") if "template" in template else template.get("content", "")
 
-            # Determine the correct template content key (template or content)
-            template_content = template.get("template") if "template" in template else template.get("content", "")
+                    if not template_content:
+                        print(f"Warning: Could not find template content in: {template}")
+                        continue
 
-            if not template_content:
-                print(f"Warning: Could not find template content in: {template}")
-                continue
+                    print(f"Generating content using workflow: {workflow_name}")
+                    generated_content = social_post_generation_with_json(
+                        workflow_name=workflow_name,
+                        client_brief=brand_voice["brand_voice"],
+                        template=template_content,
+                        content_chunks=combined_chunks
+                    )
 
-            generated_content = social_post_generation_with_json(
-                workflow_name=workflow_name,
-                client_brief=brand_voice["brand_voice"],
-                template=template_content,
-                content_chunks=combined_chunks
-            )
+                    print(f"Content generation successful, length: {len(generated_content)} characters")
+                    print(f"Generated Content Preview: {generated_content[:100]}...")
 
-            print(f"\n--- Content Generated Using Template ---")
-            # Use the correct key for template content (template or content)
-            template_display = template.get("template") if "template" in template else template.get("content", "Unknown template")
-            print(f"Template: {template_display}")
-            print(f"Generated Content: {generated_content}")
+                    # Extract template without variations by splitting on "|" and taking first part
+                    template_base = template_content.split("|")[0].strip()
 
-            # Extract template without variations by splitting on "|" and taking first part
-            template_base = template_content.split("|")[0].strip()
+                    # Prepare content data for upload
+                    content_data = {
+                        "first_draft": generated_content,
+                        "content_chunks": combined_chunks,
+                        "template": template_base,
+                        "workflow_name": workflow_name
+                    }
 
-            # Create content result using consistent template access
-            content_result = {
-                "first_draft": generated_content,
-                "content_chunks": combined_chunks,
-                "template": template_base
-            }
+                    # Upload the generated content
+                    print(f"Uploading content to database...")
+                    upload_result = generated_content_uploader(content_data)
+                    print(f"Upload successful. Response: {upload_result.get('status', 'unknown')}")
+                    
+                    successful_generations += 1
+                except Exception as template_error:
+                    print(f"ERROR processing template {template_index}: {str(template_error)}")
+                    import traceback
+                    print(f"Traceback: {traceback.format_exc()}")
+            
+            print(f"\n=== Content Generation Summary ===")
+            print(f"Templates processed: {len(templates)}")
+            print(f"Successful generations: {successful_generations}")
+            print(f"Failed generations: {len(templates) - successful_generations}")
+        else:
+            print("ERROR: No templates available for content generation")
+            return {"status": "error", "message": "No templates available for content generation"}
 
-            # Prepare content data for upload (now using the same approach as content_result)
-            content_data = {
-                "first_draft": content_result["first_draft"],
-                "content_chunks": combined_chunks,
-                "template": template_base,
-                "workflow_name": workflow_name
-            }
-
-            # Upload the generated content
-            upload_result = generated_content_uploader(content_data)
-            print(f"\n--- Content Upload Result ---")
-            print(json.dumps(upload_result, indent=2))
-
-    return result
+        print("\n=== Content Repurposing Process Completed Successfully ===")
+        return {"status": "success", "message": "Your content has been generated"}
+    except Exception as e:
+        print(f"\n=== CRITICAL ERROR in content repurposing ===")
+        print(f"Error type: {type(e).__name__}")
+        print(f"Error message: {str(e)}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
+        print(f"=== End of error report ===")
+        return {"status": "error", "message": f"Content generation failed: {str(e)}"}
 
 def source_content_retriever(topic_query: str) -> str:
     """
