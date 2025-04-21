@@ -63,7 +63,7 @@ templates = Jinja2Templates(directory="templates")
 # Security configuration
 SECRET_KEY = os.getenv("JWT_SECRET_KEY", "fallback-dev-only-key")  # Fetch from environment variables
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 60  # Increased from 30 to 60 minutes
 
 import bcrypt
 
@@ -188,10 +188,10 @@ async def login(request: Request, username: str = Form(...), password: str = For
                 os.environ["CURRENT_USERNAME"] = actual_username
                 os.environ["CURRENT_USER_ID"] = user_id
 
-                # Create a short-lived access token (30 minutes for better UX)
+                # Create an access token using the configured expiration time
                 access_token = create_access_token(
                     data={"sub": actual_username, "user_id": user_id},
-                    expires_delta=timedelta(minutes=30)
+                    expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
                 )
 
                 # Create a long-lived refresh token (30 days)
@@ -204,7 +204,7 @@ async def login(request: Request, username: str = Form(...), password: str = For
                     key="access_token", 
                     value=access_token, 
                     httponly=True,
-                    max_age=1800,  # 30 minutes in seconds
+                    max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,  # Convert minutes to seconds
                     path="/"
                 )
                 response.set_cookie(
@@ -288,10 +288,10 @@ async def refresh_access_token_from_cookie(request: Request, refresh_token: str)
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    # Create a new access token
+    # Create a new access token using the configured expiration time
     access_token = create_access_token(
         data={"sub": user_info["username"], "user_id": user_info["user_id"]},
-        expires_delta=timedelta(minutes=15)
+        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     )
 
     # Get current context to see if we can set cookies
@@ -302,7 +302,7 @@ async def refresh_access_token_from_cookie(request: Request, refresh_token: str)
             key="access_token", 
             value=access_token, 
             httponly=True,
-            max_age=900,  # 15 minutes in seconds
+            max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,  # Convert minutes to seconds
             path="/"
         )
         # Also refresh the refresh token cookie
@@ -368,10 +368,10 @@ async def refresh_access_token(request: Request, response: Response):
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    # Create a new access token
+    # Create a new access token using the configured expiration time
     access_token = create_access_token(
         data={"sub": user_info["username"], "user_id": user_info["user_id"]},
-        expires_delta=timedelta(minutes=15)
+        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     )
 
     # Set the new access token cookie
@@ -379,7 +379,7 @@ async def refresh_access_token(request: Request, response: Response):
         key="access_token", 
         value=access_token, 
         httponly=True,
-        max_age=900,  # 15 minutes in seconds
+        max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,  # Convert minutes to seconds
         path="/"
     )
 
