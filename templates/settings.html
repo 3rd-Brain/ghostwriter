@@ -848,10 +848,6 @@ function deleteApiKey(keyId) {
         showNotification('Error deleting API key', true);
     });
 }
-</script>
-{% endblock %}
-
-
 // Helper function to show notifications
 function showNotification(message, isError = false) {
     // Create notification element if it doesn't exist
@@ -890,3 +886,5 @@ function showNotification(message, isError = false) {
         notification.style.opacity = '0';
     }, 3000);
 }
+</script>
+{% endblock %}
