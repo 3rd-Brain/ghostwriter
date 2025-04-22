@@ -257,6 +257,7 @@
                             <th>Workflow Name</th>
                             <th>Workflow Type</th>
                             <th>Description</th>
+                            <th>Source</th>
                             <th>Generation Flow</th>
                         </tr>
                     </thead>
@@ -444,25 +445,51 @@
 
     // Function to fetch workflows and populate the table
     function fetchWorkflows() {
-        fetch('/api/workflows')
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success' && data.workflows) {
-                    workflowsData = data.workflows;
-                    populateWorkflowsTable(data.workflows);
-                    populateWorkflowDropdown(data.workflows); //Added to populate dropdown on page load
-                    populateRepurposeWorkflowDropdown(data.workflows); //Added to populate dropdown on page load
-                    populateTemplateWorkflowDropdown(data.workflows); //Added to populate dropdown on page load
-
-                } else {
-                    console.error('Failed to fetch workflows:', data);
-                    window.showNotification('Failed to load workflows', true);
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching workflows:', error);
-                window.showNotification('Error loading workflows', true);
-            });
+        // Fetch both system and user workflows
+        Promise.all([
+            fetch('/api/workflows').then(response => response.json()),
+            fetch('/api/user-workflows').then(response => response.json())
+        ])
+        .then(([systemData, userData]) => {
+            let allWorkflows = [];
+            
+            // Add system workflows
+            if (systemData.status === 'success' && systemData.workflows) {
+                // Mark system workflows
+                systemData.workflows.forEach(workflow => {
+                    workflow.isSystemWorkflow = true;
+                    workflow.source = 'System';
+                });
+                allWorkflows = allWorkflows.concat(systemData.workflows);
+            } else {
+                console.error('Failed to fetch system workflows:', systemData);
+            }
+            
+            // Add user workflows
+            if (userData.data && userData.data.documents) {
+                // Mark user workflows and normalize structure
+                userData.data.documents.forEach(workflow => {
+                    workflow.isSystemWorkflow = false;
+                    workflow.source = 'User';
+                });
+                allWorkflows = allWorkflows.concat(userData.data.documents);
+            } else {
+                console.error('Failed to fetch user workflows:', userData);
+            }
+            
+            // Save workflows data globally
+            workflowsData = allWorkflows;
+            
+            // Populate UI elements
+            populateWorkflowsTable(allWorkflows);
+            populateWorkflowDropdown(allWorkflows);
+            populateRepurposeWorkflowDropdown(allWorkflows);
+            populateTemplateWorkflowDropdown(allWorkflows);
+        })
+        .catch(error => {
+            console.error('Error fetching workflows:', error);
+            window.showNotification('Error loading workflows', true);
+        });
     }
 
     // Function to populate the workflows table
@@ -474,7 +501,7 @@
             // Display a message if no workflows
             const row = document.createElement('tr');
             const cell = document.createElement('td');
-            cell.colSpan = 4;
+            cell.colSpan = 5; // Updated column count
             cell.textContent = 'No workflows found';
             cell.style.textAlign = 'center';
             row.appendChild(cell);
@@ -500,6 +527,13 @@
             const descCell = document.createElement('td');
             descCell.textContent = workflow.description || 'N/A';
             row.appendChild(descCell);
+            
+            // Source (System or User)
+            const sourceCell = document.createElement('td');
+            sourceCell.textContent = workflow.source || 'System';
+            // Add a class for styling if needed
+            sourceCell.classList.add(workflow.source === 'User' ? 'user-workflow' : 'system-workflow');
+            row.appendChild(sourceCell);
 
             // Generation Flow button
             const flowCell = document.createElement('td');
