@@ -55,7 +55,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     with in-memory storage as a backend.
     """
     
-    def __init__(self, app, rate_limit_per_hour: int = 300):
+    def __init__(self, app, rate_limit_per_hour: int = 1000):
         super().__init__(app)
         self.rate_limit_per_hour = rate_limit_per_hour
         # Convert to requests per second for more granular control
@@ -65,6 +65,27 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         # Skip rate limiting for certain paths or methods
         if request.method == "OPTIONS":
             return await call_next(request)
+            
+        # Skip rate limiting for common page loads to improve UX
+        excluded_paths = [
+            "/dashboard", 
+            "/settings", 
+            "/generate-content",
+            "/static/",
+            "/login",
+            "/source-content-management",
+            "/generation/",
+            "/template-management",
+            "/content-approval",
+            "/publish-history",
+            "/api-keys"
+        ]
+        
+        # Check if the current path should be excluded
+        current_path = request.url.path
+        for path in excluded_paths:
+            if current_path.startswith(path):
+                return await call_next(request)
             
         # Get identifier from either API key or JWT
         identifier = self._get_identifier(request)

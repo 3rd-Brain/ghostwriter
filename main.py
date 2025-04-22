@@ -72,8 +72,8 @@ import bcrypt
 # Import rate limiter
 from rate_limiter import RateLimitMiddleware
 
-# Rate limiting configuration - 300 requests per hour
-app.add_middleware(RateLimitMiddleware, rate_limit_per_hour=300)
+# Rate limiting configuration - 1000 requests per hour, with exclusions for UI pages
+app.add_middleware(RateLimitMiddleware, rate_limit_per_hour=1000)
 
 # CORS configuration
 app.add_middleware(
