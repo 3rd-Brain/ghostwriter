@@ -772,8 +772,20 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Validate URL format for non-empty fields
         const urlRegex = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-@]*)*\/?$/;
+        
+        // Simple LinkedIn regex - accept any URL with linkedin.com/in/ pattern
+        const linkedinRegex = /^(https?:\/\/)?(www\.)?linkedin\.com\/in\//i;
+        
         const invalidUrls = Object.entries(socialProfiles)
-            .filter(([_, value]) => value !== '' && !urlRegex.test(value))
+            .filter(([key, value]) => {
+                if (value === '') return false;
+                // Use LinkedIn-specific regex for LinkedIn URLs
+                if (key === 'linkedin') {
+                    return !linkedinRegex.test(value);
+                }
+                // Use general URL regex for other fields
+                return !urlRegex.test(value);
+            })
             .map(([key, _]) => key);
         
         if (invalidUrls.length > 0) {

@@ -577,8 +577,12 @@
 
                     // Validate URL format for non-empty fields
                     const urlRegex = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-@]*)*\/?$/;
-                    const inputs = ['podcast', 'youtube', 'twitter', 'linkedin', 'newsletter', 'website'];
-
+                    // Simple LinkedIn regex - accept any URL with linkedin.com/in/ pattern
+                    const linkedinRegex = /^(https?:\/\/)?(www\.)?linkedin\.com\/in\//i;
+                    
+                    const inputs = ['podcast', 'youtube', 'twitter', 'newsletter', 'website'];
+                    
+                    // Validate standard URLs
                     inputs.forEach(input => {
                         const value = document.getElementById(input).value.trim();
                         if (value && !urlRegex.test(value)) {
@@ -587,6 +591,14 @@
                             isValid = false;
                         }
                     });
+                    
+                    // Special validation for LinkedIn
+                    const linkedinValue = document.getElementById('linkedin').value.trim();
+                    if (linkedinValue && !linkedinRegex.test(linkedinValue)) {
+                        socialError.textContent = 'Please enter a valid LinkedIn profile URL (should contain linkedin.com/in/)';
+                        socialError.style.display = 'block';
+                        isValid = false;
+                    }
                 }
 
                 return isValid;
