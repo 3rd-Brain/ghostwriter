@@ -257,7 +257,6 @@
                             <th>Workflow Name</th>
                             <th>Workflow Type</th>
                             <th>Description</th>
-                            <th>Source</th>
                             <th>Generation Flow</th>
                         </tr>
                     </thead>
@@ -501,7 +500,7 @@
             // Display a message if no workflows
             const row = document.createElement('tr');
             const cell = document.createElement('td');
-            cell.colSpan = 5; // Updated column count
+            cell.colSpan = 4; // Updated column count
             cell.textContent = 'No workflows found';
             cell.style.textAlign = 'center';
             row.appendChild(cell);
@@ -527,13 +526,6 @@
             const descCell = document.createElement('td');
             descCell.textContent = workflow.description || 'N/A';
             row.appendChild(descCell);
-            
-            // Source (System or User)
-            const sourceCell = document.createElement('td');
-            sourceCell.textContent = workflow.source || 'System';
-            // Add a class for styling if needed
-            sourceCell.classList.add(workflow.source === 'User' ? 'user-workflow' : 'system-workflow');
-            row.appendChild(sourceCell);
 
             // Generation Flow button
             const flowCell = document.createElement('td');
