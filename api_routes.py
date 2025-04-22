@@ -349,6 +349,14 @@ async def create_brand_from_twitter(request: CreateBrandRequest, background_task
         if not os.environ.get("ANTHROPIC_API_KEY"):
             raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY not configured in environment")
 
+        # Call the extractProfileTopTweets function to check if profile exists
+        from social_writer import extractProfileTopTweets
+        tweets_data = extractProfileTopTweets(request.profile_url)
+        total_tweets = len(tweets_data)
+
+        if total_tweets == 0:
+            return {"status": "error", "message": "No tweets found in this profile. Please try another profile."}
+
         # Set the current user ID in environment
         os.environ["CURRENT_USER_ID"] = user.get("user_id")
 
