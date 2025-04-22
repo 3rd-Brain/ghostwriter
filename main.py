@@ -1071,6 +1071,7 @@ app.include_router(api_router)
 app.include_router(api_key_router)
 app.include_router(third_party_key_router)
 app.include_router(brand_management_router)
+app.include_router(onboarding_router)
 
 # Create custom OpenAPI function to exclude specified tags
 def custom_openapi():
