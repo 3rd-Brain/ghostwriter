@@ -352,14 +352,6 @@ async def create_brand_from_twitter(request: CreateBrandRequest, background_task
         # Set the current user ID in environment
         os.environ["CURRENT_USER_ID"] = user.get("user_id")
 
-        # Call the extractProfileTopTweets function to check if profile exists
-        from social_writer import extractProfileTopTweets
-        tweets_data = extractProfileTopTweets(request.profile_url)
-        total_tweets = len(tweets_data)
-
-        if total_tweets == 0:
-            return {"status": "error", "message": "No tweets found in this profile. Please try another profile."}
-
         # Add the brand creation task to background tasks
         from social_writer import createBrandFromAccount
         background_tasks.add_task(
