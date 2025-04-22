@@ -783,11 +783,23 @@
 
                 // Show notification
                 if (successCount > 0) {
-                    showNotification(`Successfully created ${successCount} brand voices from Twitter profiles`);
-                    // Refresh brands list
-                    fetchBrands();
+                    showNotification(`Brand voice creation started in the background for ${successCount} Twitter profiles`);
+                    // Refresh brands list after a delay to catch any quickly created brands
+                    setTimeout(() => {
+                        fetchBrands();
+                    }, 5000);
+                    
+                    // Set up a recurring check for new brands
+                    const refreshInterval = setInterval(() => {
+                        fetchBrands();
+                    }, 30000); // Check every 30 seconds
+                    
+                    // Stop checking after 10 minutes
+                    setTimeout(() => {
+                        clearInterval(refreshInterval);
+                    }, 600000);
                 } else {
-                    showNotification('Failed to create any brand voices. Please try again.', true);
+                    showNotification('Failed to start brand voice creation. Please try again.', true);
                 }
 
                 // Reset button
@@ -795,19 +807,17 @@
                 submitBtn.disabled = false;
                 hideLoading();
 
-                // Reset the form after a delay
-                setTimeout(() => {
-                    createBrandModal.style.display = 'none';
-                    createBrandForm.reset();
-                    profileCount = 1;
+                // Reset the form immediately since processing is now in background
+                createBrandModal.style.display = 'none';
+                createBrandForm.reset();
+                profileCount = 1;
 
-                    // Clean up additional profile fields
-                    const additionalFields = document.querySelectorAll('.profile-url-input:not(:first-child)');
-                    additionalFields.forEach(field => field.remove());
+                // Clean up additional profile fields
+                const additionalFields = document.querySelectorAll('.profile-url-input:not(:first-child)');
+                additionalFields.forEach(field => field.remove());
 
-                    updateProfileCount();
-                    progressContainer.style.display = 'none';
-                }, 3000);
+                updateProfileCount();
+                progressContainer.style.display = 'none';
             }
 
             // Start processing URLs

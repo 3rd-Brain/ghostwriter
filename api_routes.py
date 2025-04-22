@@ -320,7 +320,7 @@ async def top_tweets_to_template(request: ProfileURLRequest, background_tasks: B
 
 # Brand Management endpoints
 @router.post("/create-brand-from-twitter", tags=["Brand Management"])
-async def create_brand_from_twitter(request: CreateBrandRequest, user: dict = Depends(check_api_key_or_jwt)):
+async def create_brand_from_twitter(request: CreateBrandRequest, background_tasks: BackgroundTasks, user: dict = Depends(check_api_key_or_jwt)):
     """
     **Create a brand voice from a Twitter/X profile**
 
@@ -338,6 +338,7 @@ async def create_brand_from_twitter(request: CreateBrandRequest, user: dict = De
     * `brand_name`: (Optional) Custom name for the brand
 
     *This endpoint supports both JWT and API key authentication.*
+    *Processing happens in the background for a better user experience.*
     """
     try:
         # Check for APIFY API token
@@ -351,17 +352,29 @@ async def create_brand_from_twitter(request: CreateBrandRequest, user: dict = De
         # Set the current user ID in environment
         os.environ["CURRENT_USER_ID"] = user.get("user_id")
 
-        # Call the createBrandFromAccount function
+        # Call the extractProfileTopTweets function to check if profile exists
+        from social_writer import extractProfileTopTweets
+        tweets_data = extractProfileTopTweets(request.profile_url)
+        total_tweets = len(tweets_data)
+
+        if total_tweets == 0:
+            return {"status": "error", "message": "No tweets found in this profile. Please try another profile."}
+
+        # Add the brand creation task to background tasks
         from social_writer import createBrandFromAccount
-        result = createBrandFromAccount(
+        background_tasks.add_task(
+            createBrandFromAccount,
             profile_url=request.profile_url,
             brand_name=request.brand_name
         )
 
-        if result.get("status") == "error":
-            raise HTTPException(status_code=500, detail=result.get("message"))
-
-        return result
+        # Return immediate success response
+        return {
+            "status": "success", 
+            "message": f"Processing {total_tweets} tweets in the background. Brand voice creation has started.",
+            "profile_url": request.profile_url,
+            "tweet_count": total_tweets
+        }
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
