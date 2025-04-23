@@ -786,7 +786,7 @@ async def delete_source_content_endpoint(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/purge-user/{user_id}", tags=["User Management"])
+@router.delete("/purge-user/{user_id}", tags=["Test"])
 async def purge_user(user_id: str,
                      current_user: dict = Depends(check_api_key_or_jwt)):
     """
