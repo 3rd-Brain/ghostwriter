@@ -556,6 +556,59 @@ async def get_user_profile(current_user: dict = Depends(check_api_key_or_jwt)):
     except Exception as e:
         print(f"Exception in get_user_profile: {str(e)}")
         import traceback
+
+
+@router.delete("/source-content", tags=["Content Management"])
+async def delete_source_content_endpoint(filename: str, user: dict = Depends(check_api_key_or_jwt)):
+    """
+    **Delete source content from AstraDB for a specific file**
+
+    This endpoint deletes all source content associated with a specific filename from the database.
+
+    ## When to use
+    Use this endpoint when you need to:
+    * Remove specific file content from your knowledge base
+    * Delete outdated or incorrect source material
+    * Clean up content after file deletion
+
+    *This endpoint supports both JWT and API key authentication.*
+    """
+    try:
+        from source_content_manager import delete_source_content
+
+        # Get the user ID from the authenticated user
+        user_id = user.get("user_id")
+        if not user_id:
+            raise HTTPException(status_code=401, detail="User ID not found in authentication context")
+
+        print(f"\n=== Debug: Delete Source Content API ===")
+        print(f"User ID: {user_id}")
+        print(f"Filename to delete: {filename}")
+
+        # Call the delete_source_content function
+        result = delete_source_content(user_id, filename)
+
+        # Check the deletion count
+        deleted_count = result.get("status", {}).get("deletedCount", 0)
+        
+        if deleted_count > 0:
+            return {
+                "status": "success", 
+                "message": f"Successfully deleted {deleted_count} source content documents for file '{filename}'",
+                "deleted_count": deleted_count
+            }
+        else:
+            return {
+                "status": "warning", 
+                "message": f"No source content found for file '{filename}'",
+                "deleted_count": 0
+            }
+            
+    except Exception as e:
+        print(f"Error deleting source content: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
         traceback.print_exc()
         return {"status": "error", "message": str(e)}
 
