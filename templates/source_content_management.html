@@ -471,6 +471,17 @@
 .notification.error {
     border-left: 4px solid var(--error);
 }
+
+.notification.loading {
+    border-left: 4px solid var(--primary);
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.8; }
+    50% { opacity: 1; }
+    100% { opacity: 0.8; }
+}
 </style>
 {% endblock %}
 
@@ -506,11 +517,65 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('click', function(e) {
         if (e.target && e.target.classList.contains('delete-idea')) {
             const filePath = e.target.getAttribute('data-file-path');
+            const fileName = filePath.split('/').pop(); // Extract filename from path
             console.log('Delete Ideas clicked for file:', filePath);
-            // Placeholder for future delete functionality
-            alert('Delete Ideas functionality will be implemented later');
+            
+            if (confirm(`Are you sure you want to delete all source content for "${fileName}"? This cannot be undone.`)) {
+                deleteSourceContent(fileName, filePath);
+            }
         }
     });
+    
+    // Function to delete source content and then the file
+    async function deleteSourceContent(fileName, filePath) {
+        try {
+            // Show loading notification
+            showNotification('Deleting source content...', false, true);
+            
+            // Step 1: Delete the source content from AstraDB
+            const sourceContentResponse = await fetch(`/api/source-content?filename=${encodeURIComponent(fileName)}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (!sourceContentResponse.ok) {
+                const errorData = await sourceContentResponse.json();
+                throw new Error(errorData.message || 'Failed to delete source content');
+            }
+            
+            const sourceContentResult = await sourceContentResponse.json();
+            console.log('Source content deletion result:', sourceContentResult);
+            
+            // Step 2: Delete the file from Object Storage
+            const fileDeleteResponse = await fetch('/api/delete-file', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ path: filePath })
+            });
+            
+            if (!fileDeleteResponse.ok) {
+                const errorData = await fileDeleteResponse.json();
+                throw new Error(errorData.message || 'Failed to delete file');
+            }
+            
+            const fileDeleteResult = await fileDeleteResponse.json();
+            console.log('File deletion result:', fileDeleteResult);
+            
+            // Show success notification
+            showNotification(`Successfully deleted source content for "${fileName}"`, false);
+            
+            // Reload the file list to update UI
+            loadStorageFiles();
+            
+        } catch (error) {
+            console.error('Error deleting content:', error);
+            showNotification(`Error: ${error.message}`, true);
+        }
+    }
     
     // Load storage files
     async function loadStorageFiles() {
@@ -834,7 +899,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Function to show notification messages
-    function showNotification(message, isError = false) {
+    function showNotification(message, isError = false, isLoading = false) {
         // Always remove any existing notification first
         const existingNotification = document.getElementById('notification');
         if (existingNotification) {
@@ -844,7 +909,14 @@ document.addEventListener('DOMContentLoaded', function() {
         // Create notification element
         const notification = document.createElement('div');
         notification.id = 'notification';
-        notification.className = `notification ${isError ? 'error' : 'success'}`;
+        
+        // Set class based on type
+        if (isLoading) {
+            notification.className = 'notification loading';
+        } else {
+            notification.className = `notification ${isError ? 'error' : 'success'}`;
+        }
+        
         notification.innerHTML = message;
         
         // Add notification to page
@@ -855,13 +927,17 @@ document.addEventListener('DOMContentLoaded', function() {
             notification.classList.add('show');
         }, 10);
         
-        // Hide notification after 5 seconds
-        setTimeout(() => {
-            notification.classList.remove('show');
+        // Hide notification after 5 seconds (unless it's a loading notification)
+        if (!isLoading) {
             setTimeout(() => {
-                notification.remove();
-            }, 300);
-        }, 5000);
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 5000);
+        }
+        
+        return notification; // Return the notification element so it can be removed programmatically
     }
 });
 </script>
