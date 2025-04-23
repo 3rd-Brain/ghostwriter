@@ -210,7 +210,46 @@ def complete_user_purge(user_id: str) -> Dict:
         "workflows": None
     }
     
-    # 1. Delete from users_keyspace/users
+    # Helper function to delete all documents that match a filter in batches
+    def delete_all_documents(url, collection_name, filter_criteria):
+        total_deleted = 0
+        batch_results = []
+        
+        while True:
+            try:
+                print(f"Deleting batch of documents from {collection_name}...")
+                payload = {
+                    "deleteMany": {
+                        "filter": filter_criteria
+                    }
+                }
+                
+                response = requests.post(url, headers=headers, json=payload)
+                response.raise_for_status()
+                result = response.json()
+                batch_results.append(result)
+                
+                # Check deletion status
+                status = result.get("status", {})
+                deleted_count = status.get("deletedCount", 0)
+                more_data = status.get("moreData", False)
+                
+                total_deleted += deleted_count
+                print(f"Deleted {deleted_count} documents from {collection_name} (total: {total_deleted})")
+                
+                if not more_data:
+                    print(f"All documents deleted from {collection_name}")
+                    break
+                    
+                print(f"More documents to delete from {collection_name}, continuing...")
+                
+            except Exception as e:
+                print(f"Error deleting documents from {collection_name}: {str(e)}")
+                return {"error": str(e), "deleted_count": total_deleted, "batch_results": batch_results}
+        
+        return {"deleted_count": total_deleted, "batch_results": batch_results}
+    
+    # 1. Delete from users_keyspace/users (single document deletion)
     try:
         print(f"Deleting user account from users database...")
         users_url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/users_keyspace/users"
@@ -231,145 +270,125 @@ def complete_user_purge(user_id: str) -> Dict:
     try:
         print(f"Deleting user API keys...")
         api_keys_url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/users_keyspace/user_api_keys"
-        api_keys_payload = {
-            "deleteMany": {
-                "filter": {"user_id": user_id}
-            }
-        }
-        response = requests.post(api_keys_url, headers=headers, json=api_keys_payload)
-        response.raise_for_status()
-        results["api_keys"] = response.json()
-        print(f"User API keys deleted successfully.")
+        results["api_keys"] = delete_all_documents(
+            api_keys_url, 
+            "user_api_keys", 
+            {"user_id": user_id}
+        )
     except Exception as e:
-        print(f"Error deleting user API keys: {str(e)}")
+        print(f"Error in API keys deletion process: {str(e)}")
         results["api_keys"] = {"error": str(e)}
     
     # 3. Delete from user_content_keyspace/brands
     try:
         print(f"Deleting user brands...")
         brands_url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/brands"
-        brands_payload = {
-            "deleteMany": {
-                "filter": {"user_id": user_id}
-            }
-        }
-        response = requests.post(brands_url, headers=headers, json=brands_payload)
-        response.raise_for_status()
-        results["brands"] = response.json()
-        print(f"User brands deleted successfully.")
+        results["brands"] = delete_all_documents(
+            brands_url, 
+            "brands", 
+            {"user_id": user_id}
+        )
     except Exception as e:
-        print(f"Error deleting user brands: {str(e)}")
+        print(f"Error in brands deletion process: {str(e)}")
         results["brands"] = {"error": str(e)}
     
     # 4. Delete from user_content_keyspace/generated_content
     try:
         print(f"Deleting user generated content...")
         generated_content_url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/generated_content"
-        generated_content_payload = {
-            "deleteMany": {
-                "filter": {"user_id": user_id}
-            }
-        }
-        response = requests.post(generated_content_url, headers=headers, json=generated_content_payload)
-        response.raise_for_status()
-        results["generated_content"] = response.json()
-        print(f"User generated content deleted successfully.")
+        results["generated_content"] = delete_all_documents(
+            generated_content_url,
+            "generated_content",
+            {"user_id": user_id}
+        )
     except Exception as e:
-        print(f"Error deleting user generated content: {str(e)}")
+        print(f"Error in generated content deletion process: {str(e)}")
         results["generated_content"] = {"error": str(e)}
     
     # 5. Delete from user_content_keyspace/user_industry_reports
     try:
         print(f"Deleting user industry reports...")
         industry_reports_url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/user_industry_reports"
-        industry_reports_payload = {
-            "deleteMany": {
-                "filter": {"user_id": user_id}
-            }
-        }
-        response = requests.post(industry_reports_url, headers=headers, json=industry_reports_payload)
-        response.raise_for_status()
-        results["industry_reports"] = response.json()
-        print(f"User industry reports deleted successfully.")
+        results["industry_reports"] = delete_all_documents(
+            industry_reports_url,
+            "user_industry_reports",
+            {"user_id": user_id}
+        )
     except Exception as e:
-        print(f"Error deleting user industry reports: {str(e)}")
+        print(f"Error in industry reports deletion process: {str(e)}")
         results["industry_reports"] = {"error": str(e)}
     
     # 6. Delete from user_content_keyspace/user_source_content
     try:
         print(f"Deleting user source content...")
         source_content_url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/user_source_content"
-        source_content_payload = {
-            "deleteMany": {
-                "filter": {"user_id": user_id}
-            }
-        }
-        response = requests.post(source_content_url, headers=headers, json=source_content_payload)
-        response.raise_for_status()
-        results["source_content"] = response.json()
-        print(f"User source content deleted successfully.")
+        results["source_content"] = delete_all_documents(
+            source_content_url,
+            "user_source_content",
+            {"user_id": user_id}
+        )
     except Exception as e:
-        print(f"Error deleting user source content: {str(e)}")
+        print(f"Error in source content deletion process: {str(e)}")
         results["source_content"] = {"error": str(e)}
     
     # 7. Delete from user_content_keyspace/user_templates
     try:
         print(f"Deleting user templates...")
         templates_url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/user_templates"
-        templates_payload = {
-            "deleteMany": {
-                "filter": {"user_id": user_id}
-            }
-        }
-        response = requests.post(templates_url, headers=headers, json=templates_payload)
-        response.raise_for_status()
-        results["templates"] = response.json()
-        print(f"User templates deleted successfully.")
+        results["templates"] = delete_all_documents(
+            templates_url,
+            "user_templates",
+            {"user_id": user_id}
+        )
     except Exception as e:
-        print(f"Error deleting user templates: {str(e)}")
+        print(f"Error in templates deletion process: {str(e)}")
         results["templates"] = {"error": str(e)}
     
     # 8. Delete from user_content_keyspace/user_twitter_publications
     try:
         print(f"Deleting user Twitter publications...")
         twitter_publications_url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/user_twitter_publications"
-        twitter_publications_payload = {
-            "deleteMany": {
-                "filter": {"user_id": user_id}
-            }
-        }
-        response = requests.post(twitter_publications_url, headers=headers, json=twitter_publications_payload)
-        response.raise_for_status()
-        results["twitter_publications"] = response.json()
-        print(f"User Twitter publications deleted successfully.")
+        results["twitter_publications"] = delete_all_documents(
+            twitter_publications_url,
+            "user_twitter_publications",
+            {"user_id": user_id}
+        )
     except Exception as e:
-        print(f"Error deleting user Twitter publications: {str(e)}")
+        print(f"Error in Twitter publications deletion process: {str(e)}")
         results["twitter_publications"] = {"error": str(e)}
     
     # 9. Delete from user_content_keyspace/user_workflows
     try:
         print(f"Deleting user workflows...")
         workflows_url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/user_workflows"
-        workflows_payload = {
-            "deleteMany": {
-                "filter": {"user_id": user_id}
-            }
-        }
-        response = requests.post(workflows_url, headers=headers, json=workflows_payload)
-        response.raise_for_status()
-        results["workflows"] = response.json()
-        print(f"User workflows deleted successfully.")
+        results["workflows"] = delete_all_documents(
+            workflows_url,
+            "user_workflows",
+            {"user_id": user_id}
+        )
     except Exception as e:
-        print(f"Error deleting user workflows: {str(e)}")
+        print(f"Error in workflows deletion process: {str(e)}")
         results["workflows"] = {"error": str(e)}
     
     print(f"=== Debug: Complete User Purge Completed ===\n")
     
-    # Prepare summary
-    success_count = sum(1 for v in results.values() if v and not isinstance(v, dict) or "error" not in v)
+    # Prepare deletion summary stats
+    deletion_stats = {}
+    total_deleted = 0
+    
+    for collection, result in results.items():
+        if collection != "users":  # Users is deleteOne, not deleteMany
+            if isinstance(result, dict) and "deleted_count" in result:
+                deleted_count = result["deleted_count"]
+                deletion_stats[collection] = deleted_count
+                total_deleted += deleted_count
+    
+    # Determine overall success status
+    has_errors = any(isinstance(v, dict) and "error" in v for v in results.values())
     
     return {
-        "status": "success" if success_count == len(results) else "partial_success",
-        "message": f"User purge completed. Successfully purged {success_count}/{len(results)} databases.",
-        "details": results
+        "status": "success" if not has_errors else "partial_success",
+        "message": f"User purge completed. Deleted {total_deleted} documents across {len(deletion_stats)} collections.",
+        "details": results,
+        "deletion_stats": deletion_stats
     }
