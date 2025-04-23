@@ -74,33 +74,9 @@ def scrape_linkedin_posts(profile_url: str, max_posts: int = 50) -> List[Dict[st
 # YouTube Scraper
 # ----------------------
 
-def scrape_youtube_channel(channel_url: str) -> Dict[str, Any]:
-    """
-    Scrape data from a YouTube channel.
-    
-    Args:
-        channel_url: URL of the YouTube channel to scrape
-        
-    Returns:
-        Dictionary containing channel data such as:
-        - Channel info (name, description, subscribers)
-        - About section
-        - Playlists
-        - Channel statistics
-    """
-    # This functionality is now covered by scrape_youtube_videos_with_transcripts
-    # which returns comprehensive channel and video data
-    print(f"Scraping YouTube channel: {channel_url}")
-    
-    return {
-        "status": "redirected_to_comprehensive_scraper",
-        "message": "Please use scrape_youtube_videos_with_transcripts for more complete data",
-        "channel_url": channel_url
-    }
-
-def scrape_youtube_videos_with_transcripts(
+def scrape_youtube_videos(
     channel_url: str, 
-    max_videos: int = 50, 
+    max_videos: int = 20, 
     sort_by: str = "POPULAR"
 ) -> List[Dict[str, Any]]:
     """
@@ -184,31 +160,7 @@ def scrape_youtube_videos_with_transcripts(
             "channel_url": channel_url
         }]
 
-def scrape_youtube_videos(channel_url: str, max_videos: int = 10) -> List[Dict[str, Any]]:
-    """
-    Scrape videos from a YouTube channel.
-    
-    Args:
-        channel_url: URL of the YouTube channel to scrape videos from
-        max_videos: Maximum number of videos to retrieve
-        
-    Returns:
-        List of dictionaries containing video data:
-        - Video title
-        - Description
-        - Upload date
-        - Duration
-        - View count
-        - Engagement metrics (likes, comments)
-        - Thumbnail URL
-        - Video URL
-    """
-    # Use the more comprehensive scraper but maintain backward compatibility
-    print(f"Using comprehensive YouTube scraper for: {channel_url} (max: {max_videos})")
-    return scrape_youtube_videos_with_transcripts(channel_url, max_videos)
-
-
-def extract_youtube_transcript(video_url: str) -> Dict[str, Any]:
+def scrape_youtube_single_video(video_url: str) -> Dict[str, Any]:
     """
     Extract the transcript from a YouTube video.
     
