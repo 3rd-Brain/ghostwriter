@@ -268,6 +268,7 @@ def count_user_files(user_id: str) -> int:
     except Exception as e:
         print(f"Error counting user files: {str(e)}")
         return 0
+        
 def delete_source_content(user_id: str, filename: str) -> Dict:
     """
     Delete source content documents from AstraDB based on user_id and filename
