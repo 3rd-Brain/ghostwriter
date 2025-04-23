@@ -815,7 +815,7 @@ async def purge_user(user_id: str,
     try:
         # Security check: users can only purge their own account, admins can purge any account
         authenticated_user_id = current_user.get("user_id")
-        is_admin = current_user.get("scope") == "admin"
+        is_admin = current_user.get("role") == "admin"
         
         if not is_admin and authenticated_user_id != user_id:
             raise HTTPException(
