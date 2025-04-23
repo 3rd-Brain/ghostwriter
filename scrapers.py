@@ -36,14 +36,6 @@ def scrape_linkedin_posts(profile_url: str, max_posts: int = 50) -> List[Dict[st
     
     print(f"Scraping LinkedIn posts from: {profile_url} (max: {max_posts})")
     
-    # Extract username from profile URL if needed
-    # This assumes profile_url could be either a full URL or just the username
-    import re
-    username = profile_url
-    username_match = re.search(r'linkedin\.com/in/([^/]+)', profile_url)
-    if username_match:
-        username = username_match.group(1)
-    
     # Prepare API request
     url = "https://api.apify.com/v2/actor-tasks/james-3rdbrain~ghostwriter-linkedin-posts-scraper/run-sync-get-dataset-items"
     
@@ -55,7 +47,7 @@ def scrape_linkedin_posts(profile_url: str, max_posts: int = 50) -> List[Dict[st
     
     payload = {
         "limit": max_posts,
-        "username": username
+        "username": profile_url
     }
     
     try:
@@ -77,7 +69,6 @@ def scrape_linkedin_posts(profile_url: str, max_posts: int = 50) -> List[Dict[st
             "message": str(e),
             "profile_url": profile_url
         }]
-
 
 # ----------------------
 # YouTube Scraper
