@@ -1066,12 +1066,16 @@ from third_party_api_routes import router as third_party_key_router
 from brand_management import router as brand_management_router
 from fastapi.openapi.utils import get_openapi
 
+# Import scraper router
+from scraper_routes import router as scraper_router
+
 # Include routers
 app.include_router(api_router)
 app.include_router(api_key_router)
 app.include_router(third_party_key_router)
 app.include_router(brand_management_router)
 app.include_router(onboarding_router)
+app.include_router(scraper_router)
 
 # Create custom OpenAPI function to exclude specified tags
 def custom_openapi():
