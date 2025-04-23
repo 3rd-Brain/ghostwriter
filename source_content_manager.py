@@ -3,6 +3,7 @@ from typing import Literal, Dict, Union, List
 import os
 from openai import OpenAI
 import uuid
+import json
 
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 openai_client = OpenAI(api_key=OPENAI_API_KEY)
