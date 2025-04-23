@@ -15,61 +15,7 @@ from typing import Dict, List, Optional, Union, Any
 # LinkedIn Scraper
 # ----------------------
 
-def scrape_linkedin_profile(profile_url: str) -> Dict[str, Any]:
-    """
-    Scrape data from a LinkedIn profile.
-    
-    Args:
-        profile_url: URL of the LinkedIn profile to scrape
-        
-    Returns:
-        Dictionary containing profile data such as:
-        - Basic info (name, headline, location)
-        - About section
-        - Experience
-        - Education
-        - Skills
-        - Recent activity
-    """
-    # TODO: Implement LinkedIn scraping logic
-    # Consider using LinkedIn API if available or third-party service like Apify
-    
-    # Placeholder implementation
-    print(f"Scraping LinkedIn profile: {profile_url}")
-    
-    return {
-        "status": "not_implemented",
-        "profile_url": profile_url
-    }
-
-
-def scrape_linkedin_company(company_url: str) -> Dict[str, Any]:
-    """
-    Scrape data from a LinkedIn company page.
-    
-    Args:
-        company_url: URL of the LinkedIn company page to scrape
-        
-    Returns:
-        Dictionary containing company data such as:
-        - Company info (name, industry, size)
-        - About section
-        - Recent posts
-        - Products/Services
-        - Employee count
-    """
-    # TODO: Implement LinkedIn company scraping logic
-    
-    # Placeholder implementation
-    print(f"Scraping LinkedIn company page: {company_url}")
-    
-    return {
-        "status": "not_implemented",
-        "company_url": company_url
-    }
-
-
-def scrape_linkedin_posts(profile_url: str, max_posts: int = 10) -> List[Dict[str, Any]]:
+def scrape_linkedin_posts(profile_url: str, max_posts: int = 50) -> List[Dict[str, Any]]:
     """
     Scrape recent posts from a LinkedIn profile.
     
@@ -125,7 +71,6 @@ def scrape_youtube_channel(channel_url: str) -> Dict[str, Any]:
         "channel_url": channel_url
     }
 
-
 def scrape_youtube_videos(channel_url: str, max_videos: int = 10) -> List[Dict[str, Any]]:
     """
     Scrape videos from a YouTube channel.
@@ -179,31 +124,4 @@ def extract_youtube_transcript(video_url: str) -> Dict[str, Any]:
     return {
         "status": "not_implemented",
         "video_url": video_url
-    }
-
-
-def analyze_youtube_comments(video_url: str, max_comments: int = 100) -> Dict[str, Any]:
-    """
-    Analyze comments from a YouTube video.
-    
-    Args:
-        video_url: URL of the YouTube video to analyze comments from
-        max_comments: Maximum number of comments to retrieve
-        
-    Returns:
-        Dictionary containing comment analysis:
-        - Comment list with metadata
-        - Sentiment analysis summary
-        - Top keywords
-        - Common questions
-    """
-    # TODO: Implement YouTube comment analysis
-    
-    # Placeholder implementation
-    print(f"Analyzing YouTube comments from: {video_url} (max: {max_comments})")
-    
-    return {
-        "status": "not_implemented",
-        "video_url": video_url,
-        "max_comments": max_comments
     }
