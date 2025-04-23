@@ -786,11 +786,65 @@ async def delete_source_content_endpoint(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/admin/purge-user/{user_id}", tags=["User Management"])
+@router.delete("/purge-user/{user_id}", tags=["User Management"])
 async def purge_user(user_id: str,
-                     admin_user: dict = Depends(get_admin_api_user)):
+                     current_user: dict = Depends(check_api_key_or_jwt)):
     """
     **Completely purge a user and all their data**
+
+    This endpoint deletes all user data from all databases, including:
+    - User account
+    - API keys
+    - Brand information
+    - Generated content
+    - Industry reports
+    - Source content
+    - Templates
+    - Twitter publications
+    - Workflows
+
+    ## When to use
+    Use this endpoint when you need to:
+    * Permanently remove all traces of a user from the system
+    * Delete your own account and all associated data
+    * Comply with data deletion requests
+    * Perform complete account cleanup
+
+    *This action cannot be undone and ALL user data across ALL systems will be permanently deleted.*
+    """
+    try:
+        # Security check: users can only purge their own account, admins can purge any account
+        authenticated_user_id = current_user.get("user_id")
+        is_admin = current_user.get("scope") == "admin"
+        
+        if not is_admin and authenticated_user_id != user_id:
+            raise HTTPException(
+                status_code=403,
+                detail="You can only delete your own account unless you have admin privileges"
+            )
+            
+        from admin_functions import complete_user_purge
+
+        print(f"\n=== Debug: User Purge Request ===")
+        print(f"Authenticated User ID: {authenticated_user_id}")
+        print(f"User ID to purge: {user_id}")
+        print(f"Is Admin Request: {is_admin}")
+
+        # Call the complete_user_purge function
+        result = complete_user_purge(user_id)
+
+        print(f"Purge completed with status: {result.get('status')}")
+        return result
+    except Exception as e:
+        print(f"Error purging user: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Keep the admin endpoint for backward compatibility
+@router.delete("/admin/purge-user/{user_id}", tags=["User Management"])
+async def admin_purge_user(user_id: str,
+                           admin_user: dict = Depends(get_admin_api_user)):
+    """
+    **Admin-only endpoint to completely purge a user and all their data**
 
     This endpoint deletes all user data from all databases, including:
     - User account
