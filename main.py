@@ -1090,7 +1090,7 @@ def custom_openapi():
     )
 
     # Tags to exclude from documentation
-    tags_to_exclude = ["API Keys", "default", "Onboarding", "Utility", "Storage", "User Management", "Third Party API Keys", "Authentication"]
+    tags_to_exclude = ["API Keys", "default", "Onboarding", "Utility", "Storage", "User Management", "Third Party API Keys", "Authentication", "Scrapers"]
 
     # Filter out paths with excluded tags
     paths_to_keep = {}
