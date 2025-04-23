@@ -373,5 +373,3 @@ def complete_user_purge(user_id: str) -> Dict:
         "message": f"User purge completed. Successfully purged {success_count}/{len(results)} databases.",
         "details": results
     }
-
-        raise Exception(f"Failed to retrieve user from AstraDB: {str(e)}")
