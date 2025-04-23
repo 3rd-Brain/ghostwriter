@@ -30,16 +30,53 @@ def scrape_linkedin_posts(profile_url: str, max_posts: int = 50) -> List[Dict[st
         - Engagement metrics (likes, comments, shares)
         - Media attachments
     """
-    # TODO: Implement LinkedIn post scraping logic
+    APIFY_API_TOKEN = os.environ.get("APIFY_API_TOKEN")
+    if not APIFY_API_TOKEN:
+        raise Exception("APIFY_API_TOKEN not configured in environment")
     
-    # Placeholder implementation
     print(f"Scraping LinkedIn posts from: {profile_url} (max: {max_posts})")
     
-    return [{
-        "status": "not_implemented",
-        "profile_url": profile_url,
-        "max_posts": max_posts
-    }]
+    # Extract username from profile URL if needed
+    # This assumes profile_url could be either a full URL or just the username
+    import re
+    username = profile_url
+    username_match = re.search(r'linkedin\.com/in/([^/]+)', profile_url)
+    if username_match:
+        username = username_match.group(1)
+    
+    # Prepare API request
+    url = "https://api.apify.com/v2/actor-tasks/james-3rdbrain~ghostwriter-linkedin-posts-scraper/run-sync-get-dataset-items"
+    
+    headers = {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": f"Bearer {APIFY_API_TOKEN}"
+    }
+    
+    payload = {
+        "limit": max_posts,
+        "username": username
+    }
+    
+    try:
+        print(f"Sending request to Apify with payload: {payload}")
+        response = requests.post(url, headers=headers, json=payload)
+        response.raise_for_status()
+        
+        result = response.json()
+        print(f"LinkedIn scraping successful: Retrieved {len(result) if isinstance(result, list) else 0} posts")
+        
+        return result
+    except requests.exceptions.RequestException as e:
+        print(f"LinkedIn scraping failed: {str(e)}")
+        if hasattr(e.response, 'text'):
+            print(f"Error response: {e.response.text}")
+        
+        return [{
+            "status": "error",
+            "message": str(e),
+            "profile_url": profile_url
+        }]
 
 
 # ----------------------
