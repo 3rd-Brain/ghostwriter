@@ -153,6 +153,7 @@ def get_user_by_id(user_id: str) -> Optional[Dict]:
         
         return result.get("data", {}).get("document")
     except requests.exceptions.RequestException as e:
+        raise Exception(f"Failed to retrieve user from AstraDB: {str(e)}")
 
 
 def complete_user_purge(user_id: str) -> Dict:
