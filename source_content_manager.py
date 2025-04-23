@@ -268,3 +268,67 @@ def count_user_files(user_id: str) -> int:
     except Exception as e:
         print(f"Error counting user files: {str(e)}")
         return 0
+def delete_source_content(user_id: str, filename: str) -> Dict:
+    """
+    Delete source content documents from AstraDB based on user_id and filename
+    
+    Args:
+        user_id: String containing the user ID to delete content for
+        filename: String containing the filename to delete content for
+        
+    Returns:
+        Dictionary containing the deletion result
+    """
+    ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+    ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+
+    print(f"\n=== Debug: Source Content Deletion Started ===")
+    print(f"User ID: {user_id}")
+    print(f"Filename to delete: {filename}")
+
+    if not ASTRA_DB_API_ENDPOINT:
+        raise Exception("ASTRA_DB_API_ENDPOINT not configured")
+    if not ASTRA_DB_APPLICATION_TOKEN:
+        raise Exception("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
+
+    # Construct URL for the user source content collection
+    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/user_source_content"
+
+    headers = {
+        "Token": ASTRA_DB_APPLICATION_TOKEN,
+        "Content-Type": "application/json"
+    }
+
+    # Create the delete payload with filter for user_id and source (filename)
+    payload = {
+        "deleteMany": {
+            "filter": {
+                "$and": [
+                    {"user_id": user_id},
+                    {"source": filename}
+                ]
+            }
+        }
+    }
+
+    try:
+        print(f"Sending delete request to AstraDB...")
+        print(f"Request URL: {url}")
+        print(f"Request payload: {json.dumps(payload, indent=2)}")
+
+        response = requests.post(url, headers=headers, json=payload)
+        print(f"Response status code: {response.status_code}")
+        
+        # Log truncated response for debugging
+        response_text = response.text
+        print(f"Response preview: {response_text[:200]}{'...' if len(response_text) > 200 else ''}")
+
+        response.raise_for_status()
+        result = response.json()
+
+        print(f"=== Debug: Source Content Deletion Completed ===\n")
+
+        return result
+    except requests.exceptions.RequestException as e:
+        print(f"Request exception: {str(e)}")
+        raise Exception(f"Failed to delete source content from AstraDB: {str(e)}")
