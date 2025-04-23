@@ -559,7 +559,7 @@ async def get_user_profile(current_user: dict = Depends(check_api_key_or_jwt)):
         traceback.print_exc()
         return {"status": "error", "message": str(e)}
 
-@router.get("/user/social-profiles")
+@router.get("/user/social-profiles", tags=["User Management"])
 async def get_user_social_profiles(current_user: dict = Depends(check_api_key_or_jwt)):
     try:
         user_id = current_user.get("user_id")
@@ -598,7 +598,7 @@ async def get_user_social_profiles(current_user: dict = Depends(check_api_key_or
         print(f"Error fetching social profiles: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to fetch social profiles")
 
-@router.post("/user/social-profiles")
+@router.post("/user/social-profiles", tags=["User Management"])
 async def update_user_social_profiles(
     profiles: dict,
     current_user: dict = Depends(check_api_key_or_jwt)
