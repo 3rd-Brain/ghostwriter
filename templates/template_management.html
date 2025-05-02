@@ -60,8 +60,7 @@
     </div>
 </div>
 
-<!-- Bottom section spanning full width - TEMPORARILY HIDDEN -->
-<!--
+<!-- Bottom section spanning full width -->
 <div class="template-management-full-width">
     <div class="card">
         <div class="card-header">
@@ -123,7 +122,6 @@
         </div>
     </div>
 </div>
--->
 
 <!-- Modal for Templatizer -->
 <div id="templatizer-modal" class="modal">
@@ -616,8 +614,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     });
 
-    // Template Management - Temporarily disabled
-    /* 
+    // Template Management
     const templatesTableBody = document.getElementById('templates-table-body');
     const templatesLoading = document.getElementById('templates-loading');
     const templateSearchInput = document.getElementById('template-search-input');
@@ -625,7 +622,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const prevPageButton = document.getElementById('prev-page');
     const nextPageButton = document.getElementById('next-page');
     const pageInfo = document.getElementById('page-info');
-    */
 
     let currentPage = 1;
     const pageSize = 10;
@@ -795,8 +791,8 @@ document.addEventListener('DOMContentLoaded', function() {
         loadTemplates(currentPage + 1);
     });
 
-    // Initial load of templates with default query - Temporarily disabled
-    // loadTemplates(1);
+    // Initial load of templates with default query
+    loadTemplates(1);
 });
 </script>
 {% endblock %}
