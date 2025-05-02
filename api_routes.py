@@ -881,3 +881,84 @@ async def admin_purge_user(user_id: str,
     except Exception as e:
         print(f"Error purging user: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+        
+@router.delete("/template/{template_id}", tags=["Template Management"])
+async def delete_template_endpoint(template_id: str, 
+                               db_to_access: str = "both",
+                               user: dict = Depends(check_api_key_or_jwt)):
+    """
+    **Delete a template from the database**
+
+    This endpoint deletes a template from either the system templates or user templates database.
+
+    ## When to use
+    Use this endpoint when you need to:
+    * Remove unwanted templates from your library
+    * Clean up your template collection
+
+    ## Required Parameters
+    * `template_id`: The ID of the template to delete
+    * `db_to_access`: Which database to delete from ("sys", "user", or "both")
+
+    *This endpoint supports both JWT and API key authentication.*
+    """
+    try:
+        from social_writer import delete_template
+        
+        print(f"\n=== Debug: Delete Template Request ===")
+        print(f"User ID: {user.get('user_id')}")
+        print(f"Template ID to delete: {template_id}")
+        print(f"Database to access: {db_to_access}")
+        
+        # Set the current user ID in environment
+        os.environ["CURRENT_USER_ID"] = user.get("user_id")
+        
+        # For "both" option, try deleting from both databases
+        if db_to_access.lower() == "both":
+            # Try user database first
+            try:
+                user_result = delete_template(template_id, "user")
+                if user_result.get("status", {}).get("deletedCount", 0) > 0:
+                    return {
+                        "status": "success",
+                        "message": "Template deleted successfully from user templates",
+                        "database": "user"
+                    }
+            except Exception as e:
+                print(f"Error deleting from user database: {str(e)}")
+                
+            # Then try system database
+            try:
+                sys_result = delete_template(template_id, "sys")
+                if sys_result.get("status", {}).get("deletedCount", 0) > 0:
+                    return {
+                        "status": "success",
+                        "message": "Template deleted successfully from system templates",
+                        "database": "sys"
+                    }
+            except Exception as e:
+                print(f"Error deleting from system database: {str(e)}")
+                
+            # If we get here, the template wasn't found in either database
+            return {
+                "status": "error",
+                "message": "Template not found in any database"
+            }
+        else:
+            # Delete from the specified database
+            result = delete_template(template_id, db_to_access)
+            
+            if result.get("status", {}).get("deletedCount", 0) > 0:
+                return {
+                    "status": "success",
+                    "message": f"Template deleted successfully from {db_to_access} database",
+                    "database": db_to_access
+                }
+            else:
+                return {
+                    "status": "error",
+                    "message": f"Template not found in {db_to_access} database"
+                }
+    except Exception as e:
+        print(f"Error deleting template: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))

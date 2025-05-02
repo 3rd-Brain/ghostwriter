@@ -851,10 +851,64 @@ document.addEventListener('DOMContentLoaded', function() {
             const button = event.target.closest('.delete-template');
             const templateId = button.getAttribute('data-template-id');
             console.log('Delete template with ID:', templateId);
-            // Delete functionality will be implemented later
-            alert('Delete functionality will be implemented later');
+            
+            // Confirm deletion
+            if (confirm('Are you sure you want to delete this template? This action cannot be undone.')) {
+                deleteTemplate(templateId, button);
+            }
         }
     });
+    
+    // Function to delete template
+    async function deleteTemplate(templateId, buttonElement) {
+        try {
+            // Get the database filter
+            const databaseFilter = document.getElementById('template-database-filter').value;
+            
+            // Change button appearance to show loading state
+            const originalText = buttonElement.textContent;
+            buttonElement.textContent = 'Deleting...';
+            buttonElement.disabled = true;
+            
+            // Make API call to delete template
+            const response = await fetch(`/api/template/${templateId}?db_to_access=${databaseFilter}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            const result = await response.json();
+            
+            if (result.status === 'success') {
+                // Show success message
+                showNotification('Template deleted successfully', false);
+                
+                // Find the row and remove it with animation
+                const row = buttonElement.closest('tr');
+                row.style.opacity = '0.5';
+                setTimeout(() => {
+                    row.style.height = '0';
+                    row.style.padding = '0';
+                    row.style.overflow = 'hidden';
+                    
+                    setTimeout(() => {
+                        row.remove();
+                    }, 300);
+                }, 300);
+            } else {
+                // Show error message and reset button
+                showNotification(`Error: ${result.message}`, true);
+                buttonElement.textContent = originalText;
+                buttonElement.disabled = false;
+            }
+        } catch (error) {
+            console.error('Error deleting template:', error);
+            showNotification(`Error deleting template: ${error.message}`, true);
+            buttonElement.textContent = 'Delete';
+            buttonElement.disabled = false;
+        }
+    }
 });
 </script>
 {% endblock %}
