@@ -1468,6 +1468,7 @@ def createBrandFromAccount(profile_url: str, brand_name: str = None) -> Dict:
             "status": "error",
             "message": f"Failed to create brand voice: {str(e)}"
         }
+        
 def delete_template(template_id: str, db_to_access: str = "sys") -> Dict:
     """
     Delete a template from AstraDB based on template ID
