@@ -1468,3 +1468,69 @@ def createBrandFromAccount(profile_url: str, brand_name: str = None) -> Dict:
             "status": "error",
             "message": f"Failed to create brand voice: {str(e)}"
         }
+def delete_template(template_id: str, db_to_access: str = "sys") -> Dict:
+    """
+    Delete a template from AstraDB based on template ID
+    
+    Args:
+        template_id: String containing the template ID to delete
+        db_to_access: Which database to delete from ("sys" or "user")
+        
+    Returns:
+        Dictionary containing the deletion result
+    """
+    ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+    ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+
+    print(f"\n=== Debug: Template Deletion Started ===")
+    print(f"Template ID to delete: {template_id}")
+    print(f"Database to access: {db_to_access}")
+
+    if not ASTRA_DB_API_ENDPOINT:
+        raise Exception("ASTRA_DB_API_ENDPOINT not configured")
+    if not ASTRA_DB_APPLICATION_TOKEN:
+        raise Exception("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
+
+    # Determine which database collection to use based on db_to_access
+    if db_to_access.lower() == "user":
+        # Delete from user templates
+        url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/user_templates"
+    else:
+        # Default - delete from system templates
+        url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/sys_keyspace/templates"
+
+    headers = {
+        "Token": ASTRA_DB_APPLICATION_TOKEN,
+        "Content-Type": "application/json"
+    }
+
+    # Create the delete payload
+    payload = {
+        "findOneAndDelete": {
+            "filter": {
+                "_id": template_id
+            }
+        }
+    }
+
+    try:
+        print(f"Sending delete request to AstraDB...")
+        print(f"Request URL: {url}")
+        print(f"Request payload: {json.dumps(payload, indent=2)}")
+
+        response = requests.post(url, headers=headers, json=payload)
+        print(f"Response status code: {response.status_code}")
+        
+        # Log truncated response for debugging
+        response_text = response.text
+        print(f"Response preview: {response_text[:200]}{'...' if len(response_text) > 200 else ''}")
+
+        response.raise_for_status()
+        result = response.json()
+
+        print(f"=== Debug: Template Deletion Completed ===\n")
+
+        return result
+    except requests.exceptions.RequestException as e:
+        print(f"Request exception: {str(e)}")
+        raise Exception(f"Failed to delete template from AstraDB: {str(e)}")
