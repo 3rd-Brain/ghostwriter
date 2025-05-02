@@ -216,33 +216,13 @@
             <!-- Step 3: Social Media Links -->
             <div class="form-step" data-step="3">
                 <div class="form-group">
-                    <label class="form-label">Social Media Links</label>
-                    <p class="text-secondary">Please provide at least one social media link.</p>
+                    <label class="form-label">Twitter Link</label>
+                    <p class="text-secondary">Please provide your Twitter profile link.</p>
 
                     <div class="social-links">
-                        <div class="social-link-item">
-                            <label for="podcast" class="form-label">Podcast RSS</label>
-                            <input type="url" id="podcast" name="podcast" class="form-control" placeholder="https://...">
-                        </div>
-                        <div class="social-link-item">
-                            <label for="youtube" class="form-label">YouTube</label>
-                            <input type="url" id="youtube" name="youtube" class="form-control" placeholder="https://youtube.com/...">
-                        </div>
-                        <div class="social-link-item">
+                        <div class="social-link-item" style="width: 100%;">
                             <label for="twitter" class="form-label">Twitter</label>
-                            <input type="url" id="twitter" name="twitter" class="form-control" placeholder="https://twitter.com/...">
-                        </div>
-                        <div class="social-link-item">
-                            <label for="linkedin" class="form-label">LinkedIn</label>
-                            <input type="url" id="linkedin" name="linkedin" class="form-control" placeholder="https://linkedin.com/in/...">
-                        </div>
-                        <div class="social-link-item">
-                            <label for="newsletter" class="form-label">Newsletter</label>
-                            <input type="url" id="newsletter" name="newsletter" class="form-control" placeholder="https://...">
-                        </div>
-                        <div class="social-link-item">
-                            <label for="website" class="form-label">Blog/Website</label>
-                            <input type="url" id="website" name="website" class="form-control" placeholder="https://...">
+                            <input type="url" id="twitter" name="twitter" class="form-control" placeholder="https://twitter.com/..." required>
                         </div>
                     </div>
                     <div class="error-message" id="social-error"></div>
@@ -399,15 +379,10 @@
                     .then(data => {
                         const sessionToken = sessionStorage.getItem('onboardingToken');
 
-                        // Prepare social media links
-                        const socialLinks = {};
-
-                        if (formData.podcast) socialLinks.podcast = formData.podcast;
-                        if (formData.youtube) socialLinks.youtube = formData.youtube;
-                        if (formData.twitter) socialLinks.twitter = formData.twitter;
-                        if (formData.linkedin) socialLinks.linkedin = formData.linkedin;
-                        if (formData.newsletter) socialLinks.newsletter = formData.newsletter;
-                        if (formData.website) socialLinks.website = formData.website;
+                        // Prepare Twitter link
+                        const socialLinks = {
+                            twitter: formData.twitter
+                        };
 
                         // Submit Social Media Links
                         return fetch('/sys/onboarding/step/social_media', {
@@ -558,44 +533,23 @@
                         fullNameError.style.display = 'none';
                     }
                 } else if (step === 3) {
-                    // Validate at least one social media link
-                    const podcast = document.getElementById('podcast').value.trim();
-                    const youtube = document.getElementById('youtube').value.trim();
+                    // Validate Twitter link
                     const twitter = document.getElementById('twitter').value.trim();
-                    const linkedin = document.getElementById('linkedin').value.trim();
-                    const newsletter = document.getElementById('newsletter').value.trim();
-                    const website = document.getElementById('website').value.trim();
                     const socialError = document.getElementById('social-error');
 
-                    if (!podcast && !youtube && !twitter && !linkedin && !newsletter && !website) {
-                        socialError.textContent = 'At least one social media link is required';
+                    if (!twitter) {
+                        socialError.textContent = 'Twitter profile link is required';
                         socialError.style.display = 'block';
                         isValid = false;
                     } else {
                         socialError.style.display = 'none';
                     }
 
-                    // Validate URL format for non-empty fields
-                    const urlRegex = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-@]*)*\/?$/;
-                    // Simple LinkedIn regex - accept any URL with linkedin.com/in/ pattern
-                    const linkedinRegex = /^(https?:\/\/)?(www\.)?linkedin\.com\/in\//i;
+                    // Validate Twitter URL format
+                    const twitterRegex = /^(https?:\/\/)?(www\.)?(twitter|x)\.com\/[a-zA-Z0-9_]+\/?$/;
                     
-                    const inputs = ['podcast', 'youtube', 'twitter', 'newsletter', 'website'];
-                    
-                    // Validate standard URLs
-                    inputs.forEach(input => {
-                        const value = document.getElementById(input).value.trim();
-                        if (value && !urlRegex.test(value)) {
-                            socialError.textContent = 'Please enter valid URLs';
-                            socialError.style.display = 'block';
-                            isValid = false;
-                        }
-                    });
-                    
-                    // Special validation for LinkedIn
-                    const linkedinValue = document.getElementById('linkedin').value.trim();
-                    if (linkedinValue && !linkedinRegex.test(linkedinValue)) {
-                        socialError.textContent = 'Please enter a valid LinkedIn profile URL (should contain linkedin.com/in/)';
+                    if (twitter && !twitterRegex.test(twitter)) {
+                        socialError.textContent = 'Please enter a valid Twitter profile URL';
                         socialError.style.display = 'block';
                         isValid = false;
                     }
@@ -635,12 +589,7 @@
                     'confirm-password': document.getElementById('confirm-password').value,
                     'full-name': document.getElementById('full-name').value.trim(),
                     company: document.getElementById('company').value.trim(),
-                    podcast: document.getElementById('podcast').value.trim(),
-                    youtube: document.getElementById('youtube').value.trim(),
-                    twitter: document.getElementById('twitter').value.trim(),
-                    linkedin: document.getElementById('linkedin').value.trim(),
-                    newsletter: document.getElementById('newsletter').value.trim(),
-                    website: document.getElementById('website').value.trim()
+                    twitter: document.getElementById('twitter').value.trim()
                 };
             }
         });
