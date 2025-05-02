@@ -139,12 +139,12 @@
                         <input type="url" id="twitter-url-1" name="twitter-url-1" class="form-control" placeholder="https://twitter.com/username">
                     </div>
                 </div>
-                
+
                 <div class="form-actions">
                     <button type="button" class="form-button secondary" id="add-another-profile">+ Add Another Profile</button>
                     <div class="profile-count">1/5 profiles</div>
                 </div>
-                
+
                 <div class="modal-footer">
                     <button type="button" class="form-button" id="cancel-profiles">Cancel</button>
                     <button type="submit" class="form-button primary" id="generate-templates-btn">Extract and Templatize</button>
@@ -263,6 +263,44 @@
     text-align: center;
     margin-top: 5px;
 }
+
+.icon-button {
+    position: relative;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-secondary);
+    padding: 5px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-button:hover {
+    color: var(--error);
+    background-color: rgba(245, 101, 101, 0.1);
+}
+
+.delete-template {
+    transition: all 0.2s ease;
+}
+
+.delete-template.confirm-delete {
+    background-color: var(--error);
+    color: white;
+}
+
+.data-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    transition: background-color 0.2s ease;
+}
+
+.data-table tr {
+    cursor: pointer;
+    transition: opacity 0.3s ease, height 0.3s ease;
+}
 </style>
 
 <!-- Add JavaScript for modals and template management -->
@@ -276,7 +314,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const profileContainer = document.getElementById('profile-url-container');
     const profileCountText = document.querySelector('.profile-count');
     const cancelBtn = document.getElementById('cancel-profiles');
-    
+
     let profileCount = 1;
 
     openTemplatizerBtn.addEventListener('click', function() {
@@ -287,7 +325,7 @@ document.addEventListener('DOMContentLoaded', function() {
     closeTemplatizerBtn.addEventListener('click', function() {
         templatizerModal.style.display = 'none';
     });
-    
+
     // Close modal when Cancel is clicked
     cancelBtn.addEventListener('click', function() {
         templatizerModal.style.display = 'none';
@@ -315,12 +353,12 @@ document.addEventListener('DOMContentLoaded', function() {
             uploadModal.style.display = 'none';
         }
     });
-    
+
     // Add another profile URL input
     addAnotherProfileBtn.addEventListener('click', function() {
         if (profileCount < 5) {
             profileCount++;
-            
+
             const newInput = document.createElement('div');
             newInput.className = 'form-group profile-url-input';
             newInput.innerHTML = `
@@ -330,10 +368,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     <span class="remove-profile" data-id="${profileCount}">✕</span>
                 </div>
             `;
-            
+
             profileContainer.appendChild(newInput);
             updateProfileCount();
-            
+
             // Add event listener to the remove button
             const removeBtn = newInput.querySelector('.remove-profile');
             removeBtn.addEventListener('click', function() {
@@ -343,18 +381,18 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
-    
+
     // Update profile count and button state
     function updateProfileCount() {
         profileCountText.textContent = `${profileCount}/5 profiles`;
         updateButtonState();
     }
-    
+
     // Update the state of the Add Another Profile button
     function updateButtonState() {
         addAnotherProfileBtn.disabled = profileCount >= 5;
     }
-    
+
     // Function to show notification messages
     function showNotification(message, isError = false) {
         // Always remove any existing notification first
@@ -362,7 +400,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (existingNotification) {
             existingNotification.remove();
         }
-        
+
         // Create a fresh notification element
         const notification = document.createElement('div');
         notification.id = 'notification';
@@ -376,7 +414,7 @@ document.addEventListener('DOMContentLoaded', function() {
         notification.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
         notification.style.transition = 'opacity 0.3s ease';
         notification.style.opacity = '0'; // Start with opacity 0
-        
+
         // Set style based on error status
         if (isError) {
             notification.style.backgroundColor = '#ffd2d2';
@@ -387,17 +425,17 @@ document.addEventListener('DOMContentLoaded', function() {
             notification.style.color = '#2a6b00';
             notification.style.border = '1px solid #b8e986';
         }
-        
+
         // Set message and add to DOM
         notification.textContent = message;
         document.body.appendChild(notification);
-        
+
         // Force a browser reflow before changing opacity
         void notification.offsetWidth;
-        
+
         // Now make it visible
         notification.style.opacity = '1';
-        
+
         // Hide notification after longer time for success messages, shorter for errors
         const displayTime = isError ? 3000 : 6000; // 3 seconds for errors, 6 seconds for success
         setTimeout(() => {
@@ -414,23 +452,23 @@ document.addEventListener('DOMContentLoaded', function() {
     const templatizerForm = document.getElementById('templatizer-form');
     templatizerForm.addEventListener('submit', function(e) {
         e.preventDefault();
-        
+
         // Get all Twitter profile URLs
         const formData = new FormData(templatizerForm);
         const twitterUrls = [];
-        
+
         for (let i = 1; i <= 5; i++) {
             const urlValue = formData.get(`twitter-url-${i}`);
             if (urlValue && urlValue.trim() !== '') {
                 twitterUrls.push(urlValue);
             }
         }
-        
+
         if (twitterUrls.length === 0) {
             showNotification('Please enter at least one Twitter profile URL', true);
             return;
         }
-        
+
         console.log('Twitter URLs to analyze:', twitterUrls);
 
         // Show loading state
@@ -438,7 +476,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const originalText = submitBtn.textContent;
         submitBtn.textContent = 'Processing...';
         submitBtn.disabled = true;
-        
+
         // Create progress tracking elements if they don't exist
         let progressContainer = document.getElementById('template-progress-container');
         if (!progressContainer) {
@@ -453,56 +491,56 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 <div id="progress-status" class="progress-status">Initializing...</div>
             `;
-            
+
             // Add it before the result div
             const resultDiv = document.getElementById('templatizer-result');
             resultDiv.parentNode.insertBefore(progressContainer, resultDiv);
         }
-        
+
         // Show progress container
         progressContainer.style.display = 'block';
-        
+
         // Reset progress bar
         const progressBar = document.getElementById('template-progress-bar');
         const progressStatus = document.getElementById('progress-status');
         progressBar.style.width = '0%';
         progressStatus.textContent = `Processing 0 of ${twitterUrls.length} profiles...`;
-        
+
         // Track processed profiles
         let processedCount = 0;
         const totalProfiles = twitterUrls.length;
         const processingResults = [];
-        
+
         // Process each profile sequentially
         const processNextProfile = (index) => {
             if (index >= twitterUrls.length) {
                 // All profiles processed
                 progressBar.style.width = '100%';
                 progressStatus.textContent = `Completed processing ${processedCount} of ${totalProfiles} profiles!`;
-                
+
                 // Show success notification
                 showNotification("We've completed processing the Twitter profiles. Templates are being generated in the background and will be added to your template library soon!");
-                
+
                 // Display results summary
                 document.getElementById('template-result-content').textContent = 
                     `Successfully processed ${processedCount} profiles:\n${processingResults.join('\n')}`;
                 document.getElementById('templatizer-result').style.display = 'block';
-                
+
                 // Reset button
                 submitBtn.textContent = originalText;
                 submitBtn.disabled = false;
-                
+
                 // Close the modal after delay
                 setTimeout(() => {
                     templatizerModal.style.display = 'none';
                 }, 5000);
-                
+
                 return;
             }
-            
+
             const profileUrl = twitterUrls[index];
             progressStatus.textContent = `Processing profile ${index + 1} of ${totalProfiles}: ${profileUrl}`;
-            
+
             // Make API call for this profile
             fetch('/api/top-tweets-to-template', {
                 method: 'POST',
@@ -514,36 +552,36 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 processedCount++;
-                
+
                 // Update progress
                 const percentage = (processedCount / totalProfiles) * 100;
                 progressBar.style.width = `${percentage}%`;
                 progressStatus.textContent = `Processed ${processedCount} of ${totalProfiles} profiles...`;
-                
+
                 // Store result
                 const resultText = `${data.profile_url}: ${data.total_tweets} tweets queued for template generation`;
                 processingResults.push(resultText);
-                
+
                 // Process next profile
                 processNextProfile(index + 1);
             })
             .catch(error => {
                 console.error('Error processing profile:', profileUrl, error);
-                
+
                 // Update progress
                 processedCount++;
                 const percentage = (processedCount / totalProfiles) * 100;
                 progressBar.style.width = `${percentage}%`;
                 progressStatus.textContent = `Error with profile ${index + 1}. Processing ${processedCount} of ${totalProfiles}...`;
-                
+
                 // Store error result
                 processingResults.push(`${profileUrl}: Failed to process (${error.message})`);
-                
+
                 // Continue with next profile
                 processNextProfile(index + 1);
             });
         };
-        
+
         // Start processing the first profile
         processNextProfile(0);
     });
@@ -643,7 +681,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Log the filter for debugging
         console.log('Using database filter:', databaseFilter);
-        
+
         // Make API call to search templates
         fetch('/api/template-search', {
             method: 'POST',
@@ -716,14 +754,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Action column with delete button
                 const actionCell = document.createElement('td');
                 actionCell.className = 'template-actions';
-                
+
                 const deleteButton = document.createElement('button');
                 deleteButton.className = 'icon-button delete-template';
                 deleteButton.setAttribute('data-template-id', templateId);
-                
+
                 const deleteIcon = document.createElement('i');
                 deleteIcon.setAttribute('data-lucide', 'trash-2');
-                
+
                 deleteButton.appendChild(deleteIcon);
                 actionCell.appendChild(deleteButton);
                 row.appendChild(actionCell);
@@ -780,7 +818,7 @@ document.addEventListener('DOMContentLoaded', function() {
             loadTemplates(currentPage);
         }
     });
-    
+
     // Database filter change handler
     document.getElementById('template-database-filter').addEventListener('change', function() {
         currentPage = 1;
@@ -800,7 +838,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initial load of templates with default query
     loadTemplates(1);
-    
+
     // Event delegation for delete buttons
     document.addEventListener('click', function(event) {
         if (event.target.closest('.delete-template')) {
