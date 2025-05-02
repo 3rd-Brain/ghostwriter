@@ -291,6 +291,15 @@
     color: white;
 }
 
+.delete-btn {
+    background-color: var(--error);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
 .data-table td {
     padding: 12px 16px;
     border-bottom: 1px solid var(--border);
@@ -756,13 +765,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 actionCell.className = 'template-actions';
 
                 const deleteButton = document.createElement('button');
-                deleteButton.className = 'icon-button delete-template';
+                deleteButton.className = 'delete-btn delete-template';
                 deleteButton.setAttribute('data-template-id', templateId);
+                deleteButton.textContent = 'Delete';
 
-                const deleteIcon = document.createElement('i');
-                deleteIcon.setAttribute('data-lucide', 'trash-2');
-
-                deleteButton.appendChild(deleteIcon);
                 actionCell.appendChild(deleteButton);
                 row.appendChild(actionCell);
 
