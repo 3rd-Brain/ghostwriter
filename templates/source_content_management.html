@@ -79,28 +79,8 @@
                         <form id="social-media-form">
                             <div class="social-links">
                                 <div class="social-link-item">
-                                    <label for="podcast" class="form-label">Podcast RSS</label>
-                                    <input type="url" id="podcast" name="podcast" class="form-control" placeholder="https://...">
-                                </div>
-                                <div class="social-link-item">
-                                    <label for="youtube" class="form-label">YouTube</label>
-                                    <input type="url" id="youtube" name="youtube" class="form-control" placeholder="https://youtube.com/...">
-                                </div>
-                                <div class="social-link-item">
                                     <label for="twitter" class="form-label">Twitter</label>
                                     <input type="url" id="twitter" name="twitter" class="form-control" placeholder="https://twitter.com/...">
-                                </div>
-                                <div class="social-link-item">
-                                    <label for="linkedin" class="form-label">LinkedIn</label>
-                                    <input type="url" id="linkedin" name="linkedin" class="form-control" placeholder="https://linkedin.com/in/...">
-                                </div>
-                                <div class="social-link-item">
-                                    <label for="newsletter" class="form-label">Newsletter</label>
-                                    <input type="url" id="newsletter" name="newsletter" class="form-control" placeholder="https://...">
-                                </div>
-                                <div class="social-link-item">
-                                    <label for="website" class="form-label">Blog/Website</label>
-                                    <input type="url" id="website" name="website" class="form-control" placeholder="https://...">
                                 </div>
                             </div>
                             <div class="error-message" id="social-error" style="display: none;"></div>
@@ -797,12 +777,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Fill the form fields with existing values
                 const profiles = data.social_profiles;
                 
-                document.getElementById('podcast').value = profiles.podcast || '';
-                document.getElementById('youtube').value = profiles.youtube || '';
                 document.getElementById('twitter').value = profiles.twitter || '';
-                document.getElementById('linkedin').value = profiles.linkedin || '';
-                document.getElementById('newsletter').value = profiles.newsletter || '';
-                document.getElementById('website').value = profiles.website || '';
             }
         } catch (error) {
             console.error('Error loading social profiles:', error);
@@ -818,12 +793,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Get all form values
         const socialProfiles = {
-            podcast: document.getElementById('podcast').value.trim(),
-            youtube: document.getElementById('youtube').value.trim(),
-            twitter: document.getElementById('twitter').value.trim(),
-            linkedin: document.getElementById('linkedin').value.trim(),
-            newsletter: document.getElementById('newsletter').value.trim(),
-            website: document.getElementById('website').value.trim()
+            twitter: document.getElementById('twitter').value.trim()
         };
         
         // Check if at least one social media field is filled
