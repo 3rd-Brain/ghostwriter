@@ -66,7 +66,7 @@
         <div class="card-content">
             <p class="text-secondary">Import content from social media profiles</p>
             <button class="form-button mt-md" id="open-social-modal">Connect Social</button>
-
+            
             <!-- Social Media Modal -->
             <div id="social-media-modal" class="modal">
                 <div class="modal-content">
@@ -84,7 +84,7 @@
                                 </div>
                             </div>
                             <div class="error-message" id="social-error" style="display: none;"></div>
-
+                            
                             <div class="modal-footer">
                                 <button type="button" class="form-button secondary" id="cancel-social-btn">Cancel</button>
                                 <button type="submit" class="form-button primary">Save Profiles</button>
@@ -479,7 +479,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const uploadFiles = document.getElementById('upload-files');
     const tabButtons = document.querySelectorAll('.tab-button');
     const tabPanes = document.querySelectorAll('.tab-pane');
-
+    
     // Social Media Modal elements
     const socialMediaModal = document.getElementById('social-media-modal');
     const openSocialBtn = document.getElementById('open-social-modal');
@@ -489,29 +489,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Load storage files directly
     loadStorageFiles();
-
+    
     // Load user's existing social media profiles
     loadUserSocialProfiles();
-
+    
     // Set up event delegation for delete buttons
     document.addEventListener('click', function(e) {
         if (e.target && e.target.classList.contains('delete-idea')) {
             const filePath = e.target.getAttribute('data-file-path');
             const fileName = filePath.split('/').pop(); // Extract filename from path
             console.log('Delete Ideas clicked for file:', filePath);
-
+            
             if (confirm(`Are you sure you want to delete all source content for "${fileName}"? This cannot be undone.`)) {
                 deleteSourceContent(fileName, filePath);
             }
         }
     });
-
+    
     // Function to delete source content and then the file
     async function deleteSourceContent(fileName, filePath) {
         try {
             // Show loading notification
             showNotification('Deleting source content...', false, true);
-
+            
             // Step 1: Delete the source content from AstraDB
             const sourceContentResponse = await fetch(`/api/source-content?filename=${encodeURIComponent(fileName)}`, {
                 method: 'DELETE',
@@ -519,15 +519,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     'Content-Type': 'application/json'
                 }
             });
-
+            
             if (!sourceContentResponse.ok) {
                 const errorData = await sourceContentResponse.json();
                 throw new Error(errorData.message || 'Failed to delete source content');
             }
-
+            
             const sourceContentResult = await sourceContentResponse.json();
             console.log('Source content deletion result:', sourceContentResult);
-
+            
             // Step 2: Delete the file from Object Storage
             const fileDeleteResponse = await fetch('/api/delete-file', {
                 method: 'DELETE',
@@ -536,40 +536,40 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: JSON.stringify({ path: filePath })
             });
-
+            
             if (!fileDeleteResponse.ok) {
                 const errorData = await fileDeleteResponse.json();
                 throw new Error(errorData.message || 'Failed to delete file');
             }
-
+            
             const fileDeleteResult = await fileDeleteResponse.json();
             console.log('File deletion result:', fileDeleteResult);
-
+            
             // Show success notification
             showNotification(`Successfully deleted source content for "${fileName}"`, false);
-
+            
             // Reload the file list to update UI
             loadStorageFiles();
-
+            
         } catch (error) {
             console.error('Error deleting content:', error);
             showNotification(`Error: ${error.message}`, true);
         }
     }
-
+    
     // Load storage files
     async function loadStorageFiles() {
         try {
             const storageFilesList = document.getElementById('storageFilesList');
             storageFilesList.innerHTML = '<tr><td colspan="4" class="text-center">Loading files...</td></tr>';
-
+            
             const response = await fetch('/api/storage-files');
             if (!response.ok) {
                 throw new Error('Failed to fetch storage files');
             }
-
+            
             const data = await response.json();
-
+            
             if (data.files && data.files.length > 0) {
                 storageFilesList.innerHTML = data.files.map(file => {
                     // Determine file type for styling
@@ -578,7 +578,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     else if (file.name.toLowerCase().endsWith('.md')) fileType = 'md';
                     else if (file.name.toLowerCase().endsWith('.txt')) fileType = 'txt';
                     else if (file.name.toLowerCase().endsWith('.docx')) fileType = 'docx';
-
+                    
                     return `
                         <tr>
                             <td>${file.name}</td>
@@ -589,7 +589,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         </tr>
                     `;
                 }).join('');
-
+                
                 // Reinitialize Lucide icons for new content
                 if (window.lucide) {
                     lucide.createIcons();
@@ -603,7 +603,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 '<tr><td colspan="4" class="text-center text-error">Error loading files</td></tr>';
         }
     }
-
+    
     // Modal controls
     openUploadBtn.addEventListener('click', () => uploadModal.style.display = 'block');
 
@@ -622,20 +622,20 @@ document.addEventListener('DOMContentLoaded', function() {
     window.addEventListener('click', (e) => {
         if (e.target === uploadModal) resetUploadArea();
     });
-
+    
     // Social Media Modal controls
     openSocialBtn.addEventListener('click', () => {
         socialMediaModal.style.display = 'block';
     });
-
+    
     closeSocialBtn.addEventListener('click', () => {
         socialMediaModal.style.display = 'none';
     });
-
+    
     cancelSocialBtn.addEventListener('click', () => {
         socialMediaModal.style.display = 'none';
     });
-
+    
     window.addEventListener('click', (e) => {
         if (e.target === socialMediaModal) {
             socialMediaModal.style.display = 'none';
@@ -669,15 +669,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
         uploadProgress.style.display = 'block';
         uploadFiles.innerHTML = '';
-
+        
         // Calculate progress increment based on file count
         const progressIncrement = 100 / files.length;
         let currentProgress = 0;
-
+        
         // Update initial progress
         progressFill.style.width = '0%';
         progressText.textContent = 'Preparing upload...';
-
+        
         // Create file divs for all files
         const fileDivs = [];
         for (const file of files) {
@@ -699,75 +699,70 @@ document.addEventListener('DOMContentLoaded', function() {
             uploadFiles.appendChild(fileDiv);
             fileDivs.push(fileDiv);
         }
-
+        
         // Process files with simulated upload time
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
             const fileDiv = fileDivs[i];
             const formData = new FormData();
             formData.append('file', file);
-
+            
             try {
                 // Update UI to show this file is uploading
                 fileDiv.querySelector('.file-status').textContent = 'Uploading...';
-
+                
                 // Simulate upload progress for at least 2 seconds
                 await new Promise(resolve => {
                     // Update progress to show this file is being worked on
                     currentProgress += progressIncrement;
                     progressFill.style.width = `${currentProgress}%`;
                     progressText.textContent = `Uploading file ${i+1} of ${files.length}...`;
-
+                    
                     // Wait at least 2 seconds per file for realistic upload feel
                     setTimeout(resolve, 2000);
                 });
-
+                
                 // Start the actual fetch in parallel
-                fetch('/api/upload-file', {
+                const fetchPromise = fetch('/api/upload-file', {
                     method: 'POST',
                     body: formData
-                })
-                .then(response => {
+                });
+                
+                // Mark file as uploaded
+                fileDiv.querySelector('.file-status').textContent = 'Uploaded';
+                
+                // Handle the actual response in the background
+                fetchPromise.then(response => {
                     if (!response.ok) {
-                        return response.json().then(data => {
-                            throw new Error(data.detail || 'Upload failed');
-                        });
+                        throw new Error(`Upload failed: ${response.statusText}`);
                     }
                     return response.json();
                 })
-                .then(data => {
-                    showNotification('File uploaded successfully and is being processed in the background. You can continue using the application.', false);
-
-                    // Close the modal immediately after starting the upload
-                    resetUploadArea();
-
-                    // Refresh the file list
-                    loadSourceFiles();
+                .then(result => {
+                    console.log('Upload success:', result);
                 })
                 .catch(error => {
-                    console.error('Error uploading file:', error);
-                    showNotification(`Upload error: ${error.message}`, true);
+                    console.error('Upload error:', error);
+                    fileDiv.querySelector('.file-status').textContent = 'Failed';
+                    fileDiv.className = 'file-item error';
                 });
-
-                // Close the modal right after initiating the upload
-                // This allows the user to continue using the app while processing happens
-                showNotification('Upload started, processing in background. You can navigate to other pages.', false);
-                resetUploadArea();
+                
             } catch (error) {
-                console.error('Error starting upload:', error);
-                showNotification(`Upload error: ${error.message}`, true);
+                console.error('Upload error:', error);
+                fileDiv.querySelector('.file-status').textContent = 'Failed';
+                fileDiv.className = 'file-item error';
             }
         }
-
+        
         // Final update to 100%
         progressFill.style.width = '100%';
         progressText.textContent = 'Upload complete!';
-
+        
         // Reset file input to allow for more uploads
         fileInput.value = '';
         uploadArea.style.display = 'block';
     }
-
+    
     // Load user's social profiles
     async function loadUserSocialProfiles() {
         try {
@@ -775,47 +770,47 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!response.ok) {
                 throw new Error('Failed to fetch social profiles');
             }
-
+            
             const data = await response.json();
-
+            
             if (data.social_profiles) {
                 // Fill the form fields with existing values
                 const profiles = data.social_profiles;
-
+                
                 document.getElementById('twitter').value = profiles.twitter || '';
             }
         } catch (error) {
             console.error('Error loading social profiles:', error);
         }
     }
-
+    
     // Social Media Form submission
     socialMediaForm.addEventListener('submit', async function(e) {
         e.preventDefault();
-
+        
         const socialError = document.getElementById('social-error');
         socialError.style.display = 'none';
-
+        
         // Get all form values
         const socialProfiles = {
             twitter: document.getElementById('twitter').value.trim()
         };
-
+        
         // Check if at least one social media field is filled
         const hasAtLeastOne = Object.values(socialProfiles).some(value => value !== '');
-
+        
         if (!hasAtLeastOne) {
             socialError.textContent = 'Please provide at least one social media profile';
             socialError.style.display = 'block';
             return;
         }
-
+        
         // Validate URL format for non-empty fields
         const urlRegex = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-@]*)*\/?$/;
-
+        
         // Simple LinkedIn regex - accept any URL with linkedin.com/in/ pattern
         const linkedinRegex = /^(https?:\/\/)?(www\.)?linkedin\.com\/in\//i;
-
+        
         const invalidUrls = Object.entries(socialProfiles)
             .filter(([key, value]) => {
                 if (value === '') return false;
@@ -827,20 +822,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 return !urlRegex.test(value);
             })
             .map(([key, _]) => key);
-
+        
         if (invalidUrls.length > 0) {
             socialError.textContent = `Please enter valid URLs for: ${invalidUrls.join(', ')}`;
             socialError.style.display = 'block';
             return;
         }
-
+        
         try {
             // Show loading state
             const submitButton = socialMediaForm.querySelector('button[type="submit"]');
             const originalButtonText = submitButton.textContent;
             submitButton.textContent = 'Saving...';
             submitButton.disabled = true;
-
+            
             // Submit the form
             const response = await fetch('/api/user/social-profiles', {
                 method: 'POST',
@@ -849,21 +844,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: JSON.stringify(socialProfiles)
             });
-
+            
             // Reset button state
             submitButton.textContent = originalButtonText;
             submitButton.disabled = false;
-
+            
             if (!response.ok) {
                 throw new Error('Failed to save social profiles');
             }
-
+            
             // Close the modal on success
             socialMediaModal.style.display = 'none';
-
+            
             // Show success notification
             showNotification('Social profiles updated successfully');
-
+            
             // Reload social count after update
             // This assumes the browser will refresh the page or update the count display elsewhere
         } catch (error) {
@@ -872,7 +867,7 @@ document.addEventListener('DOMContentLoaded', function() {
             socialError.style.display = 'block';
         }
     });
-
+    
     // Function to show notification messages
     function showNotification(message, isError = false, isLoading = false) {
         // Always remove any existing notification first
@@ -880,28 +875,28 @@ document.addEventListener('DOMContentLoaded', function() {
         if (existingNotification) {
             existingNotification.remove();
         }
-
+        
         // Create notification element
         const notification = document.createElement('div');
         notification.id = 'notification';
-
+        
         // Set class based on type
         if (isLoading) {
             notification.className = 'notification loading';
         } else {
             notification.className = `notification ${isError ? 'error' : 'success'}`;
         }
-
+        
         notification.innerHTML = message;
-
+        
         // Add notification to page
         document.body.appendChild(notification);
-
+        
         // Show notification with animation
         setTimeout(() => {
             notification.classList.add('show');
         }, 10);
-
+        
         // Hide notification after 5 seconds (unless it's a loading notification)
         if (!isLoading) {
             setTimeout(() => {
@@ -911,45 +906,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 }, 300);
             }, 5000);
         }
-
+        
         return notification; // Return the notification element so it can be removed programmatically
-    }
-
-    async function loadSourceFiles() {
-        try {
-            const response = await fetch('/api/storage-files');
-            if (!response.ok) {
-                throw new Error('Failed to fetch storage files');
-            }
-            const data = await response.json();
-            if (data.files && data.files.length > 0) {
-                storageFilesList.innerHTML = data.files.map(file => {
-                    let fileType = 'default';
-                    if (file.name.toLowerCase().endsWith('.pdf')) fileType = 'pdf';
-                    else if (file.name.toLowerCase().endsWith('.md')) fileType = 'md';
-                    else if (file.name.toLowerCase().endsWith('.txt')) fileType = 'txt';
-                    else if (file.name.toLowerCase().endsWith('.docx')) fileType = 'docx';
-
-                    return `
-                        <tr>
-                            <td>${file.name}</td>
-                            <td><span class="file-type-badge file-type-${fileType}">${fileType.toUpperCase()}</span></td>
-                            <td>
-                                <button class="form-button delete-button delete-idea" data-file-path="${file.path}">Delete Ideas</button>
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
-                if (window.lucide) {
-                    lucide.createIcons();
-                }
-            } else {
-                storageFilesList.innerHTML = '<tr><td colspan="4" class="text-center">No files found in storage</td></tr>';
-            }
-        } catch (error) {
-            console.error('Error loading source files:', error);
-            document.getElementById('storageFilesList').innerHTML = '<tr><td colspan="4" class="text-center text-error">Error loading files</td></tr>';
-        }
     }
 });
 </script>
@@ -1098,30 +1056,30 @@ function viewFile(filePath) {
     const modal = document.createElement('div');
     modal.className = 'modal';
     modal.style.display = 'block';
-
+    
     const modalContent = document.createElement('div');
     modalContent.className = 'modal-content';
-
+    
     const modalHeader = document.createElement('div');
     modalHeader.className = 'modal-header';
-
+    
     const title = document.createElement('h2');
     title.textContent = 'File Preview';
-
+    
     const closeBtn = document.createElement('span');
     closeBtn.className = 'close';
     closeBtn.innerHTML = '&times;';
     closeBtn.onclick = function() {
         document.body.removeChild(modal);
     };
-
+    
     modalHeader.appendChild(title);
     modalHeader.appendChild(closeBtn);
-
+    
     const modalBody = document.createElement('div');
     modalBody.className = 'modal-body';
     modalBody.innerHTML = `<div class="loading">Loading file preview...</div>`;
-
+    
     // Fetch file content
     fetch(`/api/file-preview?path=${encodeURIComponent(filePath)}`)
         .then(response => {
@@ -1145,18 +1103,18 @@ function viewFile(filePath) {
             console.error('Error loading file preview:', error);
             modalBody.innerHTML = `<div class="error">Error loading file: ${error.message}</div>`;
         });
-
+    
     modalContent.appendChild(modalHeader);
     modalContent.appendChild(modalBody);
     modal.appendChild(modalContent);
-
+    
     // Close when clicking outside of modal
     window.onclick = function(event) {
         if (event.target === modal) {
             document.body.removeChild(modal);
         }
     };
-
+    
     document.body.appendChild(modal);
 }
 
@@ -1191,6 +1149,5 @@ function deleteFile(filePath) {
         });
     }
 }
-});
 </script>
 {% endblock %}
