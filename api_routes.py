@@ -748,7 +748,7 @@ async def delete_source_content_endpoint(
     *This endpoint supports both JWT and API key authentication.*
     """
     try:
-        from source_content_manager import delete_source_content
+        from source_content_manager import delete_source_content_by_file
 
         # Get the user ID from the authenticated user
         user_id = user.get("user_id")
@@ -761,8 +761,8 @@ async def delete_source_content_endpoint(
         print(f"User ID: {user_id}")
         print(f"Filename to delete: {filename}")
 
-        # Call the delete_source_content function
-        result = delete_source_content(user_id, filename)
+        # Call the delete_source_content_by_file function
+        result = delete_source_content_by_file(user_id, filename)
 
         # Check the deletion count
         deleted_count = result.get("status", {}).get("deletedCount", 0)
