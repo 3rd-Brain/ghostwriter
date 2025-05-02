@@ -60,9 +60,9 @@
     </div>
 </div>
 
-<!-- Bottom section spanning full width - TEMPORARILY HIDDEN
+<!-- Bottom section spanning full width - TEMPORARILY HIDDEN -->
+<!--
 <div class="template-management-full-width">
-    <!-- Content card for template listing -->
     <div class="card">
         <div class="card-header">
             <div class="card-title">
@@ -73,7 +73,6 @@
         <div class="card-content">
             <p class="text-secondary">View and manage your saved templates</p>
 
-            <!-- Search bar -->
             <div class="search-container mb-lg">
                 <div class="search-filter-container">
                     <div class="simple-search-container">
@@ -90,7 +89,6 @@
                 </div>
             </div>
 
-            <!-- Templates table -->
             <div class="table-container">
                 <table class="data-table" id="templates-table">
                     <thead>
@@ -108,13 +106,11 @@
                 </table>
             </div>
 
-            <!-- Loading indicator -->
             <div id="templates-loading" class="loading-spinner" style="display: none;">
                 <div class="spinner"></div>
                 <p>Loading templates...</p>
             </div>
 
-            <!-- Pagination controls -->
             <div class="pagination-container" id="templates-pagination">
                 <button class="pagination-btn" id="prev-page" disabled>
                     <i data-lucide="chevron-left"></i>
@@ -620,7 +616,8 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     });
 
-    // Template Management
+    // Template Management - Temporarily disabled
+    /* 
     const templatesTableBody = document.getElementById('templates-table-body');
     const templatesLoading = document.getElementById('templates-loading');
     const templateSearchInput = document.getElementById('template-search-input');
@@ -628,6 +625,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const prevPageButton = document.getElementById('prev-page');
     const nextPageButton = document.getElementById('next-page');
     const pageInfo = document.getElementById('page-info');
+    */
 
     let currentPage = 1;
     const pageSize = 10;
@@ -797,8 +795,8 @@ document.addEventListener('DOMContentLoaded', function() {
         loadTemplates(currentPage + 1);
     });
 
-    // Initial load of templates with default query
-    loadTemplates(1);
+    // Initial load of templates with default query - Temporarily disabled
+    // loadTemplates(1);
 });
 </script>
 {% endblock %}
