@@ -816,13 +816,14 @@ async def purge_user(user_id: str,
         # Security check: users can only purge their own account, admins can purge any account
         authenticated_user_id = current_user.get("user_id")
         is_admin = current_user.get("scope") == "admin"
-        
+
         if not is_admin and authenticated_user_id != user_id:
             raise HTTPException(
                 status_code=403,
-                detail="You can only delete your own account unless you have admin privileges"
+                detail=
+                "You can only delete your own account unless you have admin privileges"
             )
-            
+
         from admin_functions import complete_user_purge
 
         print(f"\n=== Debug: User Purge Request ===")
@@ -838,6 +839,7 @@ async def purge_user(user_id: str,
     except Exception as e:
         print(f"Error purging user: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
 
 # Keep the admin endpoint for backward compatibility
 @router.delete("/admin/purge-user/{user_id}", tags=["User Management"])
@@ -881,11 +883,12 @@ async def admin_purge_user(user_id: str,
     except Exception as e:
         print(f"Error purging user: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
-        
+
+
 @router.delete("/template/{template_id}", tags=["Template Management"])
-async def delete_template_endpoint(template_id: str, 
-                               db_to_access: str = "both",
-                               user: dict = Depends(check_api_key_or_jwt)):
+async def delete_template_endpoint(template_id: str,
+                                   db_to_access: str = "user",
+                                   user: dict = Depends(check_api_key_or_jwt)):
     """
     **Delete a template from the database**
 
@@ -898,21 +901,21 @@ async def delete_template_endpoint(template_id: str,
 
     ## Required Parameters
     * `template_id`: The ID of the template to delete
-    * `db_to_access`: Which database to delete from ("sys", "user", or "both")
+    * `db_to_access`: Which database to delete from ("sys", "user")
 
     *This endpoint supports both JWT and API key authentication.*
     """
     try:
         from social_writer import delete_template
-        
+
         print(f"\n=== Debug: Delete Template Request ===")
         print(f"User ID: {user.get('user_id')}")
         print(f"Template ID to delete: {template_id}")
         print(f"Database to access: {db_to_access}")
-        
+
         # Set the current user ID in environment
         os.environ["CURRENT_USER_ID"] = user.get("user_id")
-        
+
         # For "both" option, try deleting from both databases
         if db_to_access.lower() == "both":
             # Try user database first
@@ -921,24 +924,26 @@ async def delete_template_endpoint(template_id: str,
                 if user_result.get("status", {}).get("deletedCount", 0) > 0:
                     return {
                         "status": "success",
-                        "message": "Template deleted successfully from user templates",
+                        "message":
+                        "Template deleted successfully from user templates",
                         "database": "user"
                     }
             except Exception as e:
                 print(f"Error deleting from user database: {str(e)}")
-                
+
             # Then try system database
             try:
                 sys_result = delete_template(template_id, "sys")
                 if sys_result.get("status", {}).get("deletedCount", 0) > 0:
                     return {
                         "status": "success",
-                        "message": "Template deleted successfully from system templates",
+                        "message":
+                        "Template deleted successfully from system templates",
                         "database": "sys"
                     }
             except Exception as e:
                 print(f"Error deleting from system database: {str(e)}")
-                
+
             # If we get here, the template wasn't found in either database
             return {
                 "status": "error",
@@ -947,11 +952,12 @@ async def delete_template_endpoint(template_id: str,
         else:
             # Delete from the specified database
             result = delete_template(template_id, db_to_access)
-            
+
             if result.get("status", {}).get("deletedCount", 0) > 0:
                 return {
                     "status": "success",
-                    "message": f"Template deleted successfully from {db_to_access} database",
+                    "message":
+                    f"Template deleted successfully from {db_to_access} database",
                     "database": db_to_access
                 }
             else:
