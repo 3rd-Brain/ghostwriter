@@ -196,15 +196,6 @@
                     <option value="Mid Form Social">Mid Form Social</option>
                 </select>
             </div>
-            <div class="filter-group">
-                <label for="date-range">Creation Date Range:</label>
-                <select id="date-range" class="filter-select">
-                    <option value="all">All Time</option>
-                    <option value="today">Today</option>
-                    <option value="week">Last 7 Days</option>
-                    <option value="month">Last 30 Days</option>
-                </select>
-            </div>
         </div>
 
         <div class="approval-actions">
@@ -282,7 +273,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('publish-selected').addEventListener('click', publishSelected);
     document.getElementById('status-filter').addEventListener('change', filterContent);
     document.getElementById('content-format-filter').addEventListener('change', filterContent);
-    document.getElementById('date-range').addEventListener('change', filterContent);
 
     // Modal close buttons
     document.getElementById('close-source-modal').addEventListener('click', function() {
@@ -755,12 +745,10 @@ function filterContent() {
     // Get filter values
     const statusFilter = document.getElementById('status-filter').value;
     const contentFormatFilter = document.getElementById('content-format-filter').value;
-    const dateFilter = document.getElementById('date-range').value;
 
     console.log('Filtering content with:', {
         status: statusFilter,
-        contentFormat: contentFormatFilter,
-        date: dateFilter
+        contentFormat: contentFormatFilter
     });
 
     // Filter the data based on selected filters
@@ -779,34 +767,6 @@ function filterContent() {
         filteredData = filteredData.filter(item => {
             const itemFormat = item.Content_Format || item.content_format || '';
             return itemFormat === contentFormatFilter;
-        });
-    }
-
-    // Filter by date range if not "all"
-    if (dateFilter !== 'all') {
-        const now = new Date();
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-        filteredData = filteredData.filter(item => {
-            const createdDateStr = item.Created_Time || item.created_at || item.created_time || '';
-            if (!createdDateStr) return false;
-
-            const createdDate = new Date(createdDateStr);
-
-            switch(dateFilter) {
-                case 'today':
-                    return createdDate >= today;
-                case 'week':
-                    const weekAgo = new Date(today);
-                    weekAgo.setDate(today.getDate() - 7);
-                    return createdDate >= weekAgo;
-                case 'month':
-                    const monthAgo = new Date(today);
-                    monthAgo.setDate(today.getDate() - 30);
-                    return createdDate >= monthAgo;
-                default:
-                    return true;
-            }
         });
     }
 
