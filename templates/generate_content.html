@@ -218,20 +218,6 @@
             <button class="form-button mt-md" id="open-repurpose-modal">Repurpose Content</button>
         </div>
     </div>
-
-    <!-- Generate Posts with Templates card -->
-    <div class="card">
-        <div class="card-header">
-            <div class="card-title">
-                <span>Generate Posts with Templates</span>
-                <i data-lucide="info"></i>
-            </div>
-        </div>
-        <div class="card-content">
-            <p class="text-secondary">Use specific templates to create consistent content</p>
-            <button class="form-button mt-md" id="open-templates-modal">Use Templates</button>
-        </div>
-    </div>
 </div>
 
 <!-- Workflows Card -->
@@ -343,46 +329,7 @@
     </div>
 </div>
 
-<!-- Modal for Generate Posts with Templates -->
-<div id="templates-modal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2>Generate Posts with Templates</h2>
-            <span class="close" id="close-templates-modal">&times;</span>
-        </div>
-        <div class="modal-body">
-            <form id="templates-form">
-                <div class="form-group">
-                    <label for="content-topic" class="form-label">Content Topic</label>
-                    <input type="text" id="content-topic" name="content-topic" class="form-control" placeholder="Enter topic for content...">
-                </div>
-                <div class="form-group">
-                    <label for="template-post" class="form-label">Template Post</label>
-                    <textarea id="template-post" name="template-post" class="form-control" rows="6" placeholder="Paste a template post..."></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="template-brand" class="form-label">Brand</label>
-                    <select id="template-brand" name="template-brand" class="form-control" required>
-                        <option value="">Select a brand</option>
-                        <!-- Brand options will be added by JavaScript -->
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="template-workflowName">Content Generation Workflow</label>
-                    <select id="template-workflowName" name="template-workflowName" class="form-control" required>
-                        <option value="">Select a workflow</option>
-                        <!-- Workflow options will be added by JavaScript -->
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="posts-count" class="form-label">Number of Posts</label>
-                    <input type="number" id="posts-count" name="posts-count" class="form-control" min="1" max="10" value="3">
-                </div>
-                <button type="submit" class="form-button">Generate Posts</button>
-            </form>
-        </div>
-    </div>
-</div>
+
 
 <!-- Modal for Create Workflow -->
 <div id="create-workflow-modal" class="workflow-modal">
@@ -483,7 +430,6 @@
             populateWorkflowsTable(allWorkflows);
             populateWorkflowDropdown(allWorkflows);
             populateRepurposeWorkflowDropdown(allWorkflows);
-            populateTemplateWorkflowDropdown(allWorkflows);
         })
         .catch(error => {
             console.error('Error fetching workflows:', error);
@@ -792,18 +738,7 @@
         });
     }
 
-    // Function to populate the template workflow dropdown
-    function populateTemplateWorkflowDropdown(workflows) {
-        const workflowSelect = document.getElementById('template-workflowName');
-        workflowSelect.innerHTML = '<option value="">Select a workflow</option>';
-
-        workflows.forEach(workflow => {
-            const option = document.createElement('option');
-            option.value = workflow.workflow_name;
-            option.textContent = workflow.workflow_name || 'Unnamed Workflow';
-            workflowSelect.appendChild(option);
-        });
-    }
+    
 
     // Function to fetch brands for the current user
     function fetchUserBrands() {
@@ -834,8 +769,7 @@
         // Get all brand dropdown elements
         const brandDropdowns = [
             document.getElementById('brand'),
-            document.getElementById('repurpose-brand'),
-            document.getElementById('template-brand')
+            document.getElementById('repurpose-brand')
         ];
 
         // For each dropdown, clear and populate
@@ -934,18 +868,7 @@
             repurposeModal.style.display = 'none';
         });
 
-        // Templates modal
-        const templatesModal = document.getElementById('templates-modal');
-        const openTemplatesBtn = document.getElementById('open-templates-modal');
-        const closeTemplatesBtn = document.getElementById('close-templates-modal');
-
-        openTemplatesBtn.addEventListener('click', function() {
-            templatesModal.style.display = 'block';
-        });
-
-        closeTemplatesBtn.addEventListener('click', function() {
-            templatesModal.style.display = 'none';
-        });
+        
 
         // Close modals when clicking outside
         window.addEventListener('click', function(event) {
@@ -954,9 +877,6 @@
             }
             if (event.target == repurposeModal) {
                 repurposeModal.style.display = 'none';
-            }
-            if (event.target == templatesModal) {
-                templatesModal.style.display = 'none';
             }
             if (event.target.classList.contains('workflow-modal')) {
                 event.target.style.display = 'none';
@@ -1119,68 +1039,7 @@
             });
         });
 
-        document.getElementById('templates-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            window.showNotification('Generating posts from template, please wait...', false);
-
-            console.log('Submitting Templates form...');
-
-            // Collect form data
-            const formData = {
-                contentTopic: document.getElementById('content-topic').value,
-                templatePost: document.getElementById('template-post').value,
-                brand: document.getElementById('template-brand').value,
-                workflowName: document.getElementById('template-workflowName').value,
-                postsCount: parseInt(document.getElementById('posts-count').value, 10)
-            };
-
-            if (!formData.contentTopic || !formData.templatePost || !formData.brand || !formData.workflowName) {
-                console.error('Missing required form fields');
-                window.showNotification('Please fill in all required fields', true);
-                return;
-            }
-
-            console.log('Form data:', formData);
-
-            // Prepare API payload
-            const payload = {
-                content_topic_query: formData.contentTopic,
-                template_post: formData.templatePost,
-                brand: formData.brand,
-                workflow_name: formData.workflowName,
-                is_given_template_query: false,
-                number_of_posts_to_template: formData.postsCount,
-                post_topic_query: formData.contentTopic
-            };
-
-            console.log('API payload:', payload);
-
-            // Make the API call
-            fetch('/api/source-content-repurpose-with-templates', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-            })
-            .then(response => {
-                console.log('API response status:', response.status);
-                return response.json();
-            })
-            .then(data => {
-                console.log('API response data:', data);
-                if (data.status === 'success') {
-                    window.showNotification('Template-based posts generated successfully! Check your generated content page.', false);
-                    templatesModal.style.display = 'none';
-                } else {
-                    window.showNotification('Error generating template-based posts: ' + (data.message || 'Unknown error'), true);
-                }
-            })
-            .catch(error => {
-                console.error('API call error:', error);
-                window.showNotification('Error generating template-based posts: ' + error.message, true);
-            });
-        });
+        
     });
 
     // Workflow Creation System
