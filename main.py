@@ -396,6 +396,11 @@ async def refresh_access_token(request: Request, response: Response):
 
 @app.get("/dashboard", response_class=HTMLResponse, include_in_schema=False)
 async def dashboard(request: Request, current_user: dict = Depends(get_current_user)):
+    # Redirect to the generate-content page
+    return RedirectResponse(url="/generate-content", status_code=status.HTTP_302_FOUND)
+
+    # Original dashboard code (commented out)
+    '''
     # Check for source content
     ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
     ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
@@ -515,6 +520,7 @@ async def dashboard(request: Request, current_user: dict = Depends(get_current_u
         "follower_count": follower_count,
         "social_count": social_count
     })
+    '''
 
 @app.get("/generation/repurpose", response_class=HTMLResponse, include_in_schema=False)
 async def generation_repurpose(request: Request, current_user: dict = Depends(get_current_user)):
