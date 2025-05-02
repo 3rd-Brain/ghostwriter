@@ -334,3 +334,68 @@ def delete_source_content_by_file(user_id: str, filename: str) -> Dict:
     except requests.exceptions.RequestException as e:
         print(f"Request exception: {str(e)}")
         raise Exception(f"Failed to delete source content from AstraDB: {str(e)}")
+
+def delete_source_content_by_id(user_id: str, content_id: str) -> Dict:
+    """
+    Delete a specific source content document from AstraDB based on user_id and content_id
+    
+    Args:
+        user_id: String containing the user ID to delete content for
+        content_id: String containing the content ID to delete
+        
+    Returns:
+        Dictionary containing the deletion result
+    """
+    ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+    ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+
+    print(f"\n=== Debug: Source Content Deletion By ID Started ===")
+    print(f"User ID: {user_id}")
+    print(f"Content ID to delete: {content_id}")
+
+    if not ASTRA_DB_API_ENDPOINT:
+        raise Exception("ASTRA_DB_API_ENDPOINT not configured")
+    if not ASTRA_DB_APPLICATION_TOKEN:
+        raise Exception("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
+
+    # Construct URL for the user source content collection
+    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/user_source_content"
+
+    headers = {
+        "Token": ASTRA_DB_APPLICATION_TOKEN,
+        "Content-Type": "application/json"
+    }
+
+    # Create the delete payload with filter for user_id and content_id
+    payload = {
+        "deleteOne": {
+            "filter": {
+                "$and": [
+                    {"user_id": user_id},
+                    {"content_id": content_id}
+                ]
+            }
+        }
+    }
+
+    try:
+        print(f"Sending delete request to AstraDB...")
+        print(f"Request URL: {url}")
+        print(f"Request payload: {json.dumps(payload, indent=2)}")
+
+        response = requests.post(url, headers=headers, json=payload)
+        print(f"Response status code: {response.status_code}")
+        
+        # Log truncated response for debugging
+        response_text = response.text
+        print(f"Response preview: {response_text[:200]}{'...' if len(response_text) > 200 else ''}")
+
+        response.raise_for_status()
+        result = response.json()
+
+        print(f"=== Debug: Source Content Deletion By ID Completed ===\n")
+
+        return result
+    except requests.exceptions.RequestException as e:
+        print(f"Request exception: {str(e)}")
+        raise Exception(f"Failed to delete source content from AstraDB: {str(e)}")

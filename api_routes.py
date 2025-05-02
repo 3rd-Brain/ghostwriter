@@ -785,6 +785,59 @@ async def delete_source_content_endpoint(
         print(f"Error deleting source content: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.delete("/source-content-by-id", tags=["Content Management"])
+async def delete_source_content_by_id_endpoint(
+    content_id: str, user: dict = Depends(check_api_key_or_jwt)):
+    """
+    **Delete a specific source content document from AstraDB by ID**
+
+    This endpoint deletes a single source content document based on its content ID.
+
+    ## When to use
+    Use this endpoint when you need to:
+    * Remove a specific piece of content from your knowledge base
+    * Delete individual chunks or segments from source content
+    * Fine-tune your content collection by removing specific items
+
+    *This endpoint supports both JWT and API key authentication.*
+    """
+    try:
+        from source_content_manager import delete_source_content_by_id
+
+        # Get the user ID from the authenticated user
+        user_id = user.get("user_id")
+        if not user_id:
+            raise HTTPException(
+                status_code=401,
+                detail="User ID not found in authentication context")
+
+        print(f"\n=== Debug: Delete Source Content By ID API ===")
+        print(f"User ID: {user_id}")
+        print(f"Content ID to delete: {content_id}")
+
+        # Call the delete_source_content_by_id function
+        result = delete_source_content_by_id(user_id, content_id)
+
+        # Check the deletion count
+        deleted_count = result.get("status", {}).get("deletedCount", 0)
+
+        if deleted_count > 0:
+            return {
+                "status": "success",
+                "message": f"Successfully deleted source content with ID '{content_id}'",
+                "deleted_count": deleted_count
+            }
+        else:
+            return {
+                "status": "warning",
+                "message": f"No source content found with ID '{content_id}'",
+                "deleted_count": 0
+            }
+
+    except Exception as e:
+        print(f"Error deleting source content by ID: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.delete("/purge-user/{user_id}", tags=["Test"])
 async def purge_user(user_id: str,
