@@ -92,9 +92,9 @@
                 <table class="data-table" id="templates-table">
                     <thead>
                         <tr>
-                            <th style="width: 50%">Template</th>
-                            <th style="width: 35%">Description</th>
-                            <th style="width: 15%">Category</th>
+                            <th style="width: 65%">Template</th>
+                            <th style="width: 20%">Category</th>
+                            <th style="width: 15%">Action</th>
                         </tr>
                     </thead>
                     <tbody id="templates-table-body">
@@ -694,8 +694,8 @@ document.addEventListener('DOMContentLoaded', function() {
             pageTemplates.forEach(template => {
                 // Extract template data from the correct fields
                 let templateText = template.template || "";
-                let description = template.description || "";
                 let category = template.category || "General";
+                let templateId = template._id || ""; // Get template ID for delete functionality
 
                 // Create table row
                 const row = document.createElement('tr');
@@ -708,18 +708,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 templateCell.style.wordBreak = 'break-word'; // Break long words
                 row.appendChild(templateCell);
 
-                // Description column
-                const descriptionCell = document.createElement('td');
-                descriptionCell.className = 'template-description';
-                descriptionCell.textContent = description;
-                descriptionCell.style.whiteSpace = 'pre-wrap'; // Allow wrapping
-                descriptionCell.style.wordBreak = 'break-word'; // Break long words
-                row.appendChild(descriptionCell);
-
                 // Category column
                 const categoryCell = document.createElement('td');
                 categoryCell.textContent = category;
                 row.appendChild(categoryCell);
+
+                // Action column with delete button
+                const actionCell = document.createElement('td');
+                actionCell.className = 'template-actions';
+                
+                const deleteButton = document.createElement('button');
+                deleteButton.className = 'icon-button delete-template';
+                deleteButton.setAttribute('data-template-id', templateId);
+                
+                const deleteIcon = document.createElement('i');
+                deleteIcon.setAttribute('data-lucide', 'trash-2');
+                
+                deleteButton.appendChild(deleteIcon);
+                actionCell.appendChild(deleteButton);
+                row.appendChild(actionCell);
 
                 // Add row to table
                 templatesTableBody.appendChild(row);
@@ -793,6 +800,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initial load of templates with default query
     loadTemplates(1);
+    
+    // Event delegation for delete buttons
+    document.addEventListener('click', function(event) {
+        if (event.target.closest('.delete-template')) {
+            const button = event.target.closest('.delete-template');
+            const templateId = button.getAttribute('data-template-id');
+            console.log('Delete template with ID:', templateId);
+            // Delete functionality will be implemented later
+            alert('Delete functionality will be implemented later');
+        }
+    });
 });
 </script>
 {% endblock %}
