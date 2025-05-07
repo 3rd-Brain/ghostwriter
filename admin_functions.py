@@ -435,9 +435,9 @@ def create_system_workflow(
         "Content-Type": "application/json"
     }
     
-    # Create a unique workflow ID if not already part of the workflow name
+    # Create a unique workflow ID using UUID
     import uuid
-    workflow_id = workflow_name.lower().replace(" ", "_")
+    workflow_id = str(uuid.uuid4())
     
     # Create the document to insert
     document = {
@@ -567,21 +567,19 @@ def delete_system_workflow(workflow_id: str) -> Dict:
         raise Exception(f"Failed to delete system workflow from AstraDB: {str(e)}")
 
 def create_system_template(
-    template_text: str,
-    template_name: str,
+    template: str,
     category: str = "Short Form",
-    description: str = None,
-    vector_embedding: List[float] = None
+    description: str = "System template for content generation",
+    vector_embedding: List[float] = []
 ) -> Dict:
     """
     Create a system template in sys_keyspace/templates.
     
     Args:
-        template_text: The actual template content
-        template_name: The name of the template
+        template: The actual template content
         category: The category of the template (Short Form, Atomic, or Mid Form)
-        description: Optional description of the template
-        vector_embedding: Optional vector embedding for semantic search
+        description: Description of the template (required)
+        vector_embedding: Vector embedding for semantic search (required)
         
     Returns:
         Dictionary containing the creation result
@@ -594,13 +592,18 @@ def create_system_template(
     ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
     
     print(f"\n=== Debug: System Template Creation Started ===")
-    print(f"Template name: {template_name}")
     print(f"Template category: {category}")
     
     if not ASTRA_DB_API_ENDPOINT:
         raise Exception("ASTRA_DB_API_ENDPOINT not configured")
     if not ASTRA_DB_APPLICATION_TOKEN:
         raise Exception("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
+    
+    if not vector_embedding:
+        raise Exception("Vector embedding is required for template creation")
+    
+    if not description:
+        raise Exception("Description is required for template creation")
     
     url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/sys_keyspace/templates"
     headers = {
@@ -612,28 +615,19 @@ def create_system_template(
     import uuid
     template_id = str(uuid.uuid4())
     
-    # If no description provided, generate a placeholder
-    if not description:
-        description = f"System template for {category} content: {template_name}"
-    
     # Create the document to insert
     document = {
-        "_id": template_id,
         "template_id": template_id,
-        "template_name": template_name,
-        "template_text": template_text,
+        "template": template,
         "category": category,
         "description": description,
+        "$vector": vector_embedding,
         "metadata": {
             "created_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"),
             "updated_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"),
             "created_by": "admin"
         }
     }
-    
-    # Add vector embedding if provided
-    if vector_embedding:
-        document["$vector"] = vector_embedding
     
     # Create the insert payload
     payload = {
