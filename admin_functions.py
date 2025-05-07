@@ -3,8 +3,10 @@
 
 import os
 import requests
-from typing import Dict, Optional
+import json
+from typing import Dict, Optional, List, Any
 from fastapi import HTTPException
+from datetime import datetime
 
 def delete_user(user_id: str) -> Dict:
     """
@@ -392,3 +394,357 @@ def complete_user_purge(user_id: str) -> Dict:
         "details": results,
         "deletion_stats": deletion_stats
     }
+
+def create_system_workflow(
+    workflow_name: str,
+    workflow_type: str,
+    description: str,
+    steps: List[Dict[str, Any]]
+) -> Dict:
+    """
+    Create a system workflow in sys_keyspace/workflows.
+    
+    Args:
+        workflow_name: The name of the workflow to create
+        workflow_type: The type of workflow (e.g., 'post_generation', 'repurpose')
+        description: A description of what the workflow does
+        steps: List of generation steps with model configurations
+        
+    Returns:
+        Dictionary containing the creation result
+        
+    Raises:
+        Exception: If creation fails or database credentials are missing
+    """
+    # Get Astra DB credentials
+    ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+    ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+    
+    print(f"\n=== Debug: System Workflow Creation Started ===")
+    print(f"Workflow name: {workflow_name}")
+    print(f"Workflow type: {workflow_type}")
+    
+    if not ASTRA_DB_API_ENDPOINT:
+        raise Exception("ASTRA_DB_API_ENDPOINT not configured")
+    if not ASTRA_DB_APPLICATION_TOKEN:
+        raise Exception("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
+    
+    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/sys_keyspace/workflows"
+    headers = {
+        "Token": ASTRA_DB_APPLICATION_TOKEN,
+        "Content-Type": "application/json"
+    }
+    
+    # Create a unique workflow ID if not already part of the workflow name
+    import uuid
+    workflow_id = workflow_name.lower().replace(" ", "_")
+    
+    # Create the document to insert
+    document = {
+        "workflow_id": workflow_id,
+        "workflow_name": workflow_name,
+        "workflow_type": workflow_type.lower(),
+        "description": description,
+        "steps": {
+            "steps": steps
+        },
+        "metadata": {
+            "created_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"),
+            "updated_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"),
+            "created_by": "admin"
+        }
+    }
+    
+    # Create the insert payload
+    payload = {
+        "insertOne": {
+            "document": document
+        }
+    }
+    
+    try:
+        print(f"Sending create request to AstraDB...")
+        print(f"Request URL: {url}")
+        print(f"Request payload summary: {document['workflow_name']}, {len(steps)} steps")
+        
+        response = requests.post(url, headers=headers, json=payload)
+        print(f"Response status code: {response.status_code}")
+        
+        # Log truncated response for debugging
+        response_text = response.text
+        print(f"Response preview: {response_text[:200]}{'...' if len(response_text) > 200 else ''}")
+        
+        response.raise_for_status()
+        result = response.json()
+        print(f"=== Debug: System Workflow Creation Completed ===\n")
+        
+        return {
+            "status": "success",
+            "message": f"System workflow '{workflow_name}' created successfully",
+            "workflow_id": workflow_id,
+            "details": result
+        }
+    except requests.exceptions.RequestException as e:
+        print(f"Request exception: {str(e)}")
+        raise Exception(f"Failed to create system workflow in AstraDB: {str(e)}")
+
+def delete_system_workflow(workflow_id: str) -> Dict:
+    """
+    Delete a system workflow from sys_keyspace/workflows.
+    
+    Args:
+        workflow_id: The ID of the workflow to delete
+        
+    Returns:
+        Dictionary containing the deletion result
+        
+    Raises:
+        Exception: If deletion fails or database credentials are missing
+    """
+    # Get Astra DB credentials
+    ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+    ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+    
+    print(f"\n=== Debug: System Workflow Deletion Started ===")
+    print(f"Workflow ID to delete: {workflow_id}")
+    
+    if not ASTRA_DB_API_ENDPOINT:
+        raise Exception("ASTRA_DB_API_ENDPOINT not configured")
+    if not ASTRA_DB_APPLICATION_TOKEN:
+        raise Exception("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
+    
+    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/sys_keyspace/workflows"
+    headers = {
+        "Token": ASTRA_DB_APPLICATION_TOKEN,
+        "Content-Type": "application/json"
+    }
+    
+    # Create the delete payload
+    payload = {
+        "deleteOne": {
+            "filter": {
+                "workflow_id": workflow_id
+            }
+        }
+    }
+    
+    try:
+        print(f"Sending delete request to AstraDB...")
+        print(f"Request URL: {url}")
+        print(f"Request payload: {json.dumps(payload, indent=2)}")
+        
+        response = requests.post(url, headers=headers, json=payload)
+        print(f"Response status code: {response.status_code}")
+        
+        # Log truncated response for debugging
+        response_text = response.text
+        print(f"Response preview: {response_text[:200]}{'...' if len(response_text) > 200 else ''}")
+        
+        response.raise_for_status()
+        result = response.json()
+        
+        # Check if anything was deleted
+        deleted_count = result.get("status", {}).get("deletedCount", 0)
+        
+        if deleted_count > 0:
+            print(f"Successfully deleted workflow: {workflow_id}")
+            print(f"=== Debug: System Workflow Deletion Completed ===\n")
+            return {
+                "status": "success",
+                "message": f"System workflow '{workflow_id}' deleted successfully",
+                "details": result
+            }
+        else:
+            print(f"No workflow found with ID: {workflow_id}")
+            print(f"=== Debug: System Workflow Deletion Completed (Not Found) ===\n")
+            return {
+                "status": "warning",
+                "message": f"No system workflow found with ID '{workflow_id}'",
+                "details": result
+            }
+    except requests.exceptions.RequestException as e:
+        print(f"Request exception: {str(e)}")
+        raise Exception(f"Failed to delete system workflow from AstraDB: {str(e)}")
+
+def create_system_template(
+    template_text: str,
+    template_name: str,
+    category: str = "Short Form",
+    description: str = None,
+    vector_embedding: List[float] = None
+) -> Dict:
+    """
+    Create a system template in sys_keyspace/templates.
+    
+    Args:
+        template_text: The actual template content
+        template_name: The name of the template
+        category: The category of the template (Short Form, Atomic, or Mid Form)
+        description: Optional description of the template
+        vector_embedding: Optional vector embedding for semantic search
+        
+    Returns:
+        Dictionary containing the creation result
+        
+    Raises:
+        Exception: If creation fails or database credentials are missing
+    """
+    # Get Astra DB credentials
+    ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+    ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+    
+    print(f"\n=== Debug: System Template Creation Started ===")
+    print(f"Template name: {template_name}")
+    print(f"Template category: {category}")
+    
+    if not ASTRA_DB_API_ENDPOINT:
+        raise Exception("ASTRA_DB_API_ENDPOINT not configured")
+    if not ASTRA_DB_APPLICATION_TOKEN:
+        raise Exception("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
+    
+    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/sys_keyspace/templates"
+    headers = {
+        "Token": ASTRA_DB_APPLICATION_TOKEN,
+        "Content-Type": "application/json"
+    }
+    
+    # Create a unique template ID
+    import uuid
+    template_id = str(uuid.uuid4())
+    
+    # If no description provided, generate a placeholder
+    if not description:
+        description = f"System template for {category} content: {template_name}"
+    
+    # Create the document to insert
+    document = {
+        "_id": template_id,
+        "template_id": template_id,
+        "template_name": template_name,
+        "template_text": template_text,
+        "category": category,
+        "description": description,
+        "metadata": {
+            "created_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"),
+            "updated_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"),
+            "created_by": "admin"
+        }
+    }
+    
+    # Add vector embedding if provided
+    if vector_embedding:
+        document["$vector"] = vector_embedding
+    
+    # Create the insert payload
+    payload = {
+        "insertOne": {
+            "document": document
+        }
+    }
+    
+    try:
+        print(f"Sending create request to AstraDB...")
+        print(f"Request URL: {url}")
+        print(f"Request document ID: {template_id}")
+        
+        response = requests.post(url, headers=headers, json=payload)
+        print(f"Response status code: {response.status_code}")
+        
+        # Log truncated response for debugging
+        response_text = response.text
+        print(f"Response preview: {response_text[:200]}{'...' if len(response_text) > 200 else ''}")
+        
+        response.raise_for_status()
+        result = response.json()
+        print(f"=== Debug: System Template Creation Completed ===\n")
+        
+        return {
+            "status": "success",
+            "message": f"System template '{template_name}' created successfully",
+            "template_id": template_id,
+            "details": result
+        }
+    except requests.exceptions.RequestException as e:
+        print(f"Request exception: {str(e)}")
+        raise Exception(f"Failed to create system template in AstraDB: {str(e)}")
+
+def delete_system_template(template_id: str) -> Dict:
+    """
+    Delete a system template from sys_keyspace/templates.
+    
+    Args:
+        template_id: The ID of the template to delete
+        
+    Returns:
+        Dictionary containing the deletion result
+        
+    Raises:
+        Exception: If deletion fails or database credentials are missing
+    """
+    # Get Astra DB credentials
+    ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+    ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+    
+    print(f"\n=== Debug: System Template Deletion Started ===")
+    print(f"Template ID to delete: {template_id}")
+    
+    if not ASTRA_DB_API_ENDPOINT:
+        raise Exception("ASTRA_DB_API_ENDPOINT not configured")
+    if not ASTRA_DB_APPLICATION_TOKEN:
+        raise Exception("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
+    
+    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/sys_keyspace/templates"
+    headers = {
+        "Token": ASTRA_DB_APPLICATION_TOKEN,
+        "Content-Type": "application/json"
+    }
+    
+    # Templates can be searched by either _id or template_id, so we'll use both in an $or filter
+    payload = {
+        "deleteOne": {
+            "filter": {
+                "$or": [
+                    {"_id": template_id},
+                    {"template_id": template_id}
+                ]
+            }
+        }
+    }
+    
+    try:
+        print(f"Sending delete request to AstraDB...")
+        print(f"Request URL: {url}")
+        print(f"Request payload: {json.dumps(payload, indent=2)}")
+        
+        response = requests.post(url, headers=headers, json=payload)
+        print(f"Response status code: {response.status_code}")
+        
+        # Log truncated response for debugging
+        response_text = response.text
+        print(f"Response preview: {response_text[:200]}{'...' if len(response_text) > 200 else ''}")
+        
+        response.raise_for_status()
+        result = response.json()
+        
+        # Check if anything was deleted
+        deleted_count = result.get("status", {}).get("deletedCount", 0)
+        
+        if deleted_count > 0:
+            print(f"Successfully deleted template: {template_id}")
+            print(f"=== Debug: System Template Deletion Completed ===\n")
+            return {
+                "status": "success",
+                "message": f"System template '{template_id}' deleted successfully",
+                "details": result
+            }
+        else:
+            print(f"No template found with ID: {template_id}")
+            print(f"=== Debug: System Template Deletion Completed (Not Found) ===\n")
+            return {
+                "status": "warning", 
+                "message": f"No system template found with ID '{template_id}'",
+                "details": result
+            }
+    except requests.exceptions.RequestException as e:
+        print(f"Request exception: {str(e)}")
+        raise Exception(f"Failed to delete system template from AstraDB: {str(e)}")
