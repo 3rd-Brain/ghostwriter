@@ -289,8 +289,6 @@ def multitemplate_retriever(content_chunk: str, template_count_to_retrieve: int 
     Returns:
         Dictionary containing template search results
     """
-    if not OPENAI_API_KEY:
-        raise Exception("OPENAI_API_KEY not configured")
     if not ASTRA_DB_APPLICATION_TOKEN_FOR_SHORTFORM_TEMPLATES:
         raise Exception("ASTRA_DB_APPLICATION_TOKEN_FOR_SHORTFORM_TEMPLATES not configured")
 
@@ -616,8 +614,6 @@ def source_content_retriever(topic_query: str) -> str:
     Returns:
         String containing concatenated text chunks from search results
     """
-    if not OPENAI_API_KEY:
-        raise Exception("OPENAI_API_KEY not configured")
     ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
     if not ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER:
         raise Exception("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
@@ -1251,9 +1247,6 @@ def template_search(text_query: str, template_count: int = 5, db_to_access: str 
     Returns:
         Dictionary containing template search results
     """
-    if not OPENAI_API_KEY:
-        raise Exception("OPENAI_API_KEY not configured")
-
     ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
     ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
 
