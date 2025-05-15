@@ -1748,9 +1748,6 @@ async def search_templates(request_data: schemas.MultitemplateRequest, user: dic
     print("Received request data:", request_data)   
 
     try:
-        # Make sure to set the current user ID in the environment
-        os.environ["CURRENT_USER_ID"] = user.get("user_id", "")
-        
         from social_writer import template_search
         result = template_search(
             text_query=request_data.content_chunk, 
