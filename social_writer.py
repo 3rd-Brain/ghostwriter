@@ -30,6 +30,7 @@ def get_openai_client(user_id=None):
     if user_id is None:
         if openai_client is None:
             openai_client = OpenAI(api_key=DEFAULT_OPENAI_API_KEY)
+            print(f"Using default OpenAI API key")
         return openai_client
 
     # Try to get user-specific key
@@ -39,8 +40,10 @@ def get_openai_client(user_id=None):
     if not user_api_key:
         if openai_client is None:
             openai_client = OpenAI(api_key=DEFAULT_OPENAI_API_KEY)
+            print(f"Using default OpenAI API key")
         return openai_client
 
+    print(f"Using user-specific OpenAI API key for user_id: {user_id}")
     # Return client with user's key
     return OpenAI(api_key=user_api_key)
 
@@ -52,6 +55,7 @@ def get_anthropic_client(user_id=None):
     if user_id is None:
         if anthropic_client is None:
             anthropic_client = anthropic.Client(api_key=DEFAULT_ANTHROPIC_API_KEY)
+            print(f"Using default Anthropic API key")
         return anthropic_client
 
     # Try to get user-specific key
@@ -61,8 +65,10 @@ def get_anthropic_client(user_id=None):
     if not user_api_key:
         if anthropic_client is None:
             anthropic_client = anthropic.Client(api_key=DEFAULT_ANTHROPIC_API_KEY)
+            print(f"Using default Anthropic API key")
         return anthropic_client
 
+    print(f"Using user-specific Anthropic API key for user_id: {user_id}")
     # Return client with user's key
     return anthropic.Client(api_key=user_api_key)
 
