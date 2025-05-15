@@ -4,9 +4,25 @@ import os
 from openai import OpenAI
 import uuid
 import json
+from third_party_keys import get_third_party_key
 
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
-openai_client = OpenAI(api_key=OPENAI_API_KEY)
+DEFAULT_OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+
+def get_openai_client(user_id=None):
+    """Get an OpenAI client with user API key if available"""
+    # If no user_id, use default key
+    if user_id is None:
+        return OpenAI(api_key=DEFAULT_OPENAI_API_KEY)
+    
+    # Try to get user-specific key
+    user_api_key = get_third_party_key(user_id, "openai")
+    
+    # If no user key found, use default
+    if not user_api_key:
+        return OpenAI(api_key=DEFAULT_OPENAI_API_KEY)
+    
+    # Return client with user's key
+    return OpenAI(api_key=user_api_key)
 
 def tweet_to_source_content(tweets: List[Dict]) -> List[Dict]:
     """

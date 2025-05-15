@@ -7,6 +7,7 @@ from typing import Dict, List
 import anthropic
 import os
 from string import Template
+from third_party_keys import get_third_party_key
 
 def social_post_generation_with_json(workflow_name: str,
                                      client_brief: str,

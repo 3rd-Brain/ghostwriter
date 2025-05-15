@@ -9,15 +9,62 @@ from urllib.parse import quote
 from prompts import Prompts
 from openai import OpenAI
 from social_dynamic_generation_flow import social_post_generation_with_json
+from third_party_keys import get_third_party_key
 
-ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+# Default API keys from environment
+DEFAULT_ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
+DEFAULT_OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
 ASTRA_DB_APPLICATION_TOKEN_FOR_SOURCES = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
 ASTRA_DB_APPLICATION_TOKEN_FOR_SHORTFORM_TEMPLATES = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
 
-openai_client = OpenAI(api_key=OPENAI_API_KEY)
-client = anthropic.Client(api_key=ANTHROPIC_API_KEY)
+# Initialize clients with default keys - will be updated per user request
+openai_client = None
+anthropic_client = None
+
+def get_openai_client(user_id=None):
+    """Get an OpenAI client with user API key if available"""
+    global openai_client
+    
+    # If no user_id, use default key
+    if user_id is None:
+        if openai_client is None:
+            openai_client = OpenAI(api_key=DEFAULT_OPENAI_API_KEY)
+        return openai_client
+    
+    # Try to get user-specific key
+    user_api_key = get_third_party_key(user_id, "openai")
+    
+    # If no user key found, use default
+    if not user_api_key:
+        if openai_client is None:
+            openai_client = OpenAI(api_key=DEFAULT_OPENAI_API_KEY)
+        return openai_client
+    
+    # Return client with user's key
+    return OpenAI(api_key=user_api_key)
+
+def get_anthropic_client(user_id=None):
+    """Get an Anthropic client with user API key if available"""
+    global anthropic_client
+    
+    # If no user_id, use default key
+    if user_id is None:
+        if anthropic_client is None:
+            anthropic_client = anthropic.Client(api_key=DEFAULT_ANTHROPIC_API_KEY)
+        return anthropic_client
+    
+    # Try to get user-specific key
+    user_api_key = get_third_party_key(user_id, "anthropic")
+    
+    # If no user key found, use default
+    if not user_api_key:
+        if anthropic_client is None:
+            anthropic_client = anthropic.Client(api_key=DEFAULT_ANTHROPIC_API_KEY)
+        return anthropic_client
+    
+    # Return client with user's key
+    return anthropic.Client(api_key=user_api_key)
 
 def generated_content_uploader(content_data: Dict) -> Dict:
     """
