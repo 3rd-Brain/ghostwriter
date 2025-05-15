@@ -1748,6 +1748,9 @@ async def search_templates(request_data: schemas.MultitemplateRequest, user: dic
     print("Received request data:", request_data)   
 
     try:
+        # Make sure to set the current user ID in the environment
+        os.environ["CURRENT_USER_ID"] = user.get("user_id", "")
+        
         from social_writer import template_search
         result = template_search(
             text_query=request_data.content_chunk, 
@@ -1757,6 +1760,10 @@ async def search_templates(request_data: schemas.MultitemplateRequest, user: dic
         )
         return result
     except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
+        print(f"Template search error: {str(e)}")
+        print(f"Error details: {error_details}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/source-content-repurpose-with-templates", response_model=schemas.SuccessResponse, tags=["Generation"])
