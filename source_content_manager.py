@@ -37,10 +37,8 @@ def tweet_to_source_content(tweets: List[Dict]) -> List[Dict]:
     print("\n=== Debug Tweet Processing ===")
     print(f"Number of tweets to process: {len(tweets)}")
     print(f"Sample tweet structure: {tweets[0] if tweets else 'No tweets'}")
-    print(f"OpenAI API Key configured: {'Yes' if OPENAI_API_KEY else 'No'}")
     print("=== End Debug Section ===\n")
-    if not OPENAI_API_KEY:
-        raise Exception("OPENAI_API_KEY not configured in environment")
+
 
     processed_tweets = []
 
@@ -60,6 +58,9 @@ def tweet_to_source_content(tweets: List[Dict]) -> List[Dict]:
             
             # Get OpenAI client with user API key if available
             oai_client = get_openai_client(user_id)
+
+            if not oai_client:
+                raise Exception("OPENAI API KEY not configured in environment")
             
             # Generate embedding using OpenAI
             response = oai_client.embeddings.create(
