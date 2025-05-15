@@ -411,8 +411,8 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (!data || !data.keys || data.keys.length === 0) {
-                    // No API keys found, show warning
-                    showNotification('Warning: No AI API keys configured. Please add API keys in Settings to ensure template creation works properly.', true);
+                    // No API keys found, show warning with longer display time (10 seconds)
+                    showNotification('Warning: No AI API keys configured. Please add API keys in Settings to ensure template creation works properly.', true, 10000);
                 }
             })
             .catch(error => {
@@ -421,7 +421,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
 // Function to show notification messages
-    function showNotification(message, isError = false) {
+    function showNotification(message, isError = false, displayDuration = null) {
         // Always remove any existing notification first
         const existingNotification = document.getElementById('notification');
         if (existingNotification) {
@@ -463,8 +463,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Now make it visible
         notification.style.opacity = '1';
 
-        // Hide notification after longer time for success messages, shorter for errors
-        const displayTime = isError ? 3000 : 6000; // 3 seconds for errors, 6 seconds for success
+        // Hide notification after specified time or use defaults
+        // Default: 3 seconds for errors, 6 seconds for success
+        const displayTime = displayDuration || (isError ? 3000 : 6000);
         setTimeout(() => {
             notification.style.opacity = '0';
             setTimeout(() => {
