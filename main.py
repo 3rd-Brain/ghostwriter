@@ -896,6 +896,15 @@ async def template_management(request: Request, current_user: str = Depends(get_
         "current_page": "template_management"
     })
 
+@app.get("/workflow-management", response_class=HTMLResponse, include_in_schema=False)
+async def workflow_management(request: Request, current_user: dict = Depends(get_current_user)):
+    return templates.TemplateResponse("workflow_management.html", {
+        "request": request,
+        "username": current_user["username"],
+        "user_id": current_user["user_id"],
+        "current_page": "workflow_management"
+    })
+
 @app.get("/content-approval", response_class=HTMLResponse, include_in_schema=False)
 async def content_approval(request: Request, current_user: str = Depends(get_current_user)):
     return templates.TemplateResponse("content_approval.html", {
