@@ -55,8 +55,14 @@ def tweet_to_source_content(tweets: List[Dict]) -> List[Dict]:
             continue
 
         try:
+            # Get user_id from environment 
+            user_id = os.environ.get("CURRENT_USER_ID")
+            
+            # Get OpenAI client with user API key if available
+            oai_client = get_openai_client(user_id)
+            
             # Generate embedding using OpenAI
-            response = openai_client.embeddings.create(
+            response = oai_client.embeddings.create(
                 input=text,
                 model="text-embedding-3-small"
             )

@@ -25,7 +25,21 @@ def social_post_generation_with_json(workflow_name: str,
     Returns:
         String containing the generated social post
     """
-    client = anthropic.Client(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+    # Get the user_id from environment
+    user_id = os.environ.get("CURRENT_USER_ID")
+    
+    # Get Claude client with user API key if available
+    from third_party_keys import get_third_party_key
+    
+    # Try to get user-specific key
+    user_api_key = get_third_party_key(user_id, "anthropic")
+    
+    # If no user key found, use default
+    if not user_api_key:
+        client = anthropic.Client(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+    else:
+        # Use client with user's key
+        client = anthropic.Client(api_key=user_api_key)
 
     # Retrieve flow configuration using workflow_name
     flow_config = flow_config_retriever(workflow_name)

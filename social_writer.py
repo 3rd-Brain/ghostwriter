@@ -25,44 +25,44 @@ anthropic_client = None
 def get_openai_client(user_id=None):
     """Get an OpenAI client with user API key if available"""
     global openai_client
-    
+
     # If no user_id, use default key
     if user_id is None:
         if openai_client is None:
             openai_client = OpenAI(api_key=DEFAULT_OPENAI_API_KEY)
         return openai_client
-    
+
     # Try to get user-specific key
     user_api_key = get_third_party_key(user_id, "openai")
-    
+
     # If no user key found, use default
     if not user_api_key:
         if openai_client is None:
             openai_client = OpenAI(api_key=DEFAULT_OPENAI_API_KEY)
         return openai_client
-    
+
     # Return client with user's key
     return OpenAI(api_key=user_api_key)
 
 def get_anthropic_client(user_id=None):
     """Get an Anthropic client with user API key if available"""
     global anthropic_client
-    
+
     # If no user_id, use default key
     if user_id is None:
         if anthropic_client is None:
             anthropic_client = anthropic.Client(api_key=DEFAULT_ANTHROPIC_API_KEY)
         return anthropic_client
-    
+
     # Try to get user-specific key
     user_api_key = get_third_party_key(user_id, "anthropic")
-    
+
     # If no user key found, use default
     if not user_api_key:
         if anthropic_client is None:
             anthropic_client = anthropic.Client(api_key=DEFAULT_ANTHROPIC_API_KEY)
         return anthropic_client
-    
+
     # Return client with user's key
     return anthropic.Client(api_key=user_api_key)
 
@@ -103,15 +103,15 @@ def generated_content_uploader(content_data: Dict) -> Dict:
     template = content_data.get("template", "")
     template_id = content_data.get("template_id", "")  # New field
     brand_id = content_data.get("brand_id", "")  # New field
-    
+
     # Handle either workflow_id or workflow_name
     workflow_id = content_data.get("workflow_id", "")
     workflow_name = content_data.get("workflow_name")
-    
+
     # If only workflow_name is provided, use it for workflow_id as well for backward compatibility
     if not workflow_id and workflow_name:
         workflow_id = workflow_name
-        
+
     content_format = content_data.get("content_format", "Short Form Social")
 
     # Set the URL for the new collection path
@@ -296,8 +296,14 @@ def multitemplate_retriever(content_chunk: str, template_count_to_retrieve: int 
     if not ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER:
         raise Exception("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
 
-    # Get template description from Claude
-    response = client.messages.create(
+    # Get user_id from environment 
+    user_id = os.environ.get("CURRENT_USER_ID")
+
+    # Get Claude client with user API key if available
+    anthropic_client = get_anthropic_client(user_id)
+
+    # Generate template description using Claude
+    response = anthropic_client.messages.create(
         model="claude-3-5-haiku-20241022",
         system=Prompts.TEMPLATE_DESCRIPTION,
         messages=[{"role": "user", "content": content_chunk}],
@@ -305,8 +311,11 @@ def multitemplate_retriever(content_chunk: str, template_count_to_retrieve: int 
     )
     template_description = response.content[0].text
 
+    # Get OpenAI client with user API key if available
+    oai_client = get_openai_client(user_id)
+
     # Generate embedding for the template description
-    response = openai_client.embeddings.create(
+    response = oai_client.embeddings.create(
         input=template_description,
         model="text-embedding-3-small"
     )
@@ -512,7 +521,7 @@ def short_form_social_repurposing(topic_query: str, brand: str, workflow_name: s
         if not user_id:
             print("CRITICAL ERROR: CURRENT_USER_ID not found in environment variables")
             return {"status": "error", "message": "User ID not found. Please try again."}
-            
+
         print(f"Using user_id: {user_id}")
         brand_voice = get_client_brand_voice(brand, user_id)
         print(f"Successfully retrieved brand voice for: {brand}")
@@ -567,13 +576,13 @@ def short_form_social_repurposing(topic_query: str, brand: str, workflow_name: s
                     print(f"Uploading content to database...")
                     upload_result = generated_content_uploader(content_data)
                     print(f"Upload successful. Response: {upload_result.get('status', 'unknown')}")
-                    
+
                     successful_generations += 1
                 except Exception as template_error:
                     print(f"ERROR processing template {template_index}: {str(template_error)}")
                     import traceback
                     print(f"Traceback: {traceback.format_exc()}")
-            
+
             print(f"\n=== Content Generation Summary ===")
             print(f"Templates processed: {len(templates)}")
             print(f"Successful generations: {successful_generations}")
@@ -612,8 +621,11 @@ def source_content_retriever(topic_query: str) -> str:
     if not user_id:
         raise Exception("CURRENT_USER_ID not configured")
 
+    # Get OpenAI client with user API key if available
+    oai_client = get_openai_client(user_id)
+    
     # Generate embedding for the topic query
-    response = openai_client.embeddings.create(
+    response = oai_client.embeddings.create(
         input=topic_query,
         model="text-embedding-3-small"
     )
@@ -673,8 +685,11 @@ def template_context_and_uploader(template: str, category: str = "Short Form") -
     if not user_id:
         raise Exception("CURRENT_USER_ID not configured")
 
+    # Get Claude client with user API key if available
+    anthropic_client = get_anthropic_client(user_id)
+
     # Generate template description using Claude
-    response = client.messages.create(
+    response = anthropic_client.messages.create(
         model="claude-3-5-haiku-20241022",
         system=Prompts.TEMPLATE_DESCRIPTION_ANALYSIS,
         messages=[{"role": "user", "content": template}],
@@ -687,8 +702,11 @@ def template_context_and_uploader(template: str, category: str = "Short Form") -
     combined_text = f"{template}|{template_description}"
     print(f"\n=== Combined Text ===\n{combined_text}")
 
+    # Get OpenAI client with user API key if available
+    oai_client = get_openai_client(user_id)
+
     # Generate vector embedding
-    embedding_response = openai_client.embeddings.create(
+    embedding_response = oai_client.embeddings.create(
         input=combined_text,
         model="text-embedding-3-small"
     )
@@ -853,8 +871,14 @@ def Templatizer(social_post: str) -> str:
     print("\n=== Starting Templatization Process ===")
     print(f"Input post: {social_post}")
 
+    # Get user_id from environment 
+    user_id = os.environ.get("CURRENT_USER_ID")
+
+    # Get Claude client with user API key if available
+    anthropic_client = get_anthropic_client(user_id)
+
     # Generate template using Claude
-    response = client.messages.create(
+    response = anthropic_client.messages.create(
         model="claude-3-5-haiku-20241022",
         system=Prompts.TEMPLATIZER_SHORT_FORM_PROMPT,
         messages=[{"role": "user", "content": social_post}],
@@ -1149,39 +1173,39 @@ def delete_user_account(identifier: str, delete_by: str = "username") -> dict:
 def extractProfileTopTweets(profile_url: str) -> Dict:
     """
     Extract top tweets from a Twitter/X profile
-    
+
     Args:
         profile_url: URL of the Twitter/X profile (e.g., "https://x.com/elonmusk")
-        
+
     Returns:
         Dictionary containing the top tweets from the profile
     """
     print(f"\n=== Debug: Extracting Top Tweets ===")
     print(f"Profile URL: {profile_url}")
-    
+
     # Check for API token
     APIFY_API_TOKEN = os.environ.get("APIFY_API_TOKEN")
     if not APIFY_API_TOKEN:
         raise Exception("APIFY_API_TOKEN not configured in environment")
-    
+
     # Extract handle from URL
     import re
     match = re.search(r"(twitter|x)\.com/([^/\?]+)", profile_url)
     if not match:
         raise Exception(f"Invalid Twitter/X profile URL: {profile_url}")
-    
+
     handle = match.group(2)
     print(f"Extracted handle: {handle}")
-    
+
     # Prepare API request
     url = "https://api.apify.com/v2/actor-tasks/N9ut2oKijxopfVt4Y/run-sync-get-dataset-items"
-    
+
     headers = {
         "Content-Type": "application/json",
         "Accept": "application/json",
         "Authorization": f"Bearer {APIFY_API_TOKEN}"
     }
-    
+
     payload = {
         "maxItems": 100,
         "searchTerms": [
@@ -1189,19 +1213,19 @@ def extractProfileTopTweets(profile_url: str) -> Dict:
         ],
         "sort": "Top"
     }
-    
+
     print(f"API request payload: {json.dumps(payload, indent=2)}")
 
     try:
         response = requests.post(url, headers=headers, json=payload)
         print(f"API response status: {response.status_code}")
-        
+
         response.raise_for_status()
         result = response.json()
-        
+
         print(f"Retrieved {len(result)} tweets")
         print("=== Debug: Top Tweets Extraction Complete ===\n")
-        
+
         return result
     except requests.exceptions.RequestException as e:
         print(f"API request failed: {str(e)}")
@@ -1232,8 +1256,14 @@ def template_search(text_query: str, template_count: int = 5, db_to_access: str 
     if not ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER:
         raise Exception("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
 
+    # Get user_id from environment 
+    user_id = os.environ.get("CURRENT_USER_ID")
+
+    # Get OpenAI client with user API key if available
+    oai_client = get_openai_client(user_id)
+
     # Generate embedding directly for the input text
-    response = openai_client.embeddings.create(
+    response = oai_client.embeddings.create(
         input=text_query,
         model="text-embedding-3-small"
     )
@@ -1244,7 +1274,7 @@ def template_search(text_query: str, template_count: int = 5, db_to_access: str 
     print(f"Template count: {template_count}")
     print(f"DB to access: {db_to_access}")
     print(f"Category: {category}")
-    
+
     # Configure search based on db_to_access parameter
     if db_to_access.lower() == "both":
         # If accessing both databases, split the count between them
@@ -1435,7 +1465,13 @@ def createBrandFromAccount(profile_url: str, brand_name: str = None) -> Dict:
         # Step 3: Generate brand voice using Claude
         print("Generating brand voice with Claude...")
 
-        response = client.messages.create(
+        # Get user_id from environment 
+        user_id = os.environ.get("CURRENT_USER_ID")
+
+        # Get Claude client with user API key if available
+        anthropic_client = get_anthropic_client(user_id)
+
+        response = anthropic_client.messages.create(
             model="claude-3-7-sonnet-latest",
             system=Prompts.BRAND_VOICE_ANALYZER,
             messages=[
@@ -1515,15 +1551,15 @@ def createBrandFromAccount(profile_url: str, brand_name: str = None) -> Dict:
             "status": "error",
             "message": f"Failed to create brand voice: {str(e)}"
         }
-        
+
 def delete_template(template_id: str, db_to_access: str = "sys") -> Dict:
     """
     Delete a template from AstraDB based on template ID
-    
+
     Args:
         template_id: String containing the template ID to delete
         db_to_access: Which database to delete from ("sys" or "user")
-        
+
     Returns:
         Dictionary containing the deletion result
     """
@@ -1568,13 +1604,14 @@ def delete_template(template_id: str, db_to_access: str = "sys") -> Dict:
 
         response = requests.post(url, headers=headers, json=payload)
         print(f"Response status code: {response.status_code}")
-        
+
         # Log truncated response for debugging
         response_text = response.text
         print(f"Response preview: {response_text[:200]}{'...' if len(response_text) > 200 else ''}")
 
         response.raise_for_status()
-        result = response.json()
+        result =```python
+response.json()
 
         print(f"=== Debug: Template Deletion Completed ===\n")
 
