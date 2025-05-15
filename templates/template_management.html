@@ -315,6 +315,9 @@
 <!-- Add JavaScript for modals and template management -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Check if user has API keys
+    checkForApiKeys();
+    
     // Templatizer Modal
     const templatizerModal = document.getElementById('templatizer-modal');
     const openTemplatizerBtn = document.getElementById('open-templatizer-modal');
@@ -402,7 +405,22 @@ document.addEventListener('DOMContentLoaded', function() {
         addAnotherProfileBtn.disabled = profileCount >= 5;
     }
 
-    // Function to show notification messages
+    // Function to check if user has API keys
+    function checkForApiKeys() {
+        fetch('/api/third-party-keys')
+            .then(response => response.json())
+            .then(data => {
+                if (!data || !data.keys || data.keys.length === 0) {
+                    // No API keys found, show warning
+                    showNotification('Warning: No AI API keys configured. Please add API keys in Settings to ensure template creation works properly.', true);
+                }
+            })
+            .catch(error => {
+                console.error('Error checking API keys:', error);
+            });
+    }
+    
+// Function to show notification messages
     function showNotification(message, isError = false) {
         // Always remove any existing notification first
         const existingNotification = document.getElementById('notification');

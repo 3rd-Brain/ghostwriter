@@ -792,6 +792,9 @@
         // Fetch workflows and brands when the page loads
         fetchWorkflows();
         fetchUserBrands();
+        
+        // Check if user has API keys
+        checkForApiKeys();
 
         // Initialize workflow creation system
         initWorkflowCreation();
@@ -902,6 +905,21 @@
         // Remove any existing event listeners by cloning and replacing the form
         const newForm = createPostsForm.cloneNode(true);
         createPostsForm.parentNode.replaceChild(newForm, createPostsForm);
+        
+        // Function to check if user has API keys
+        function checkForApiKeys() {
+            fetch('/api/third-party-keys')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data || !data.keys || data.keys.length === 0) {
+                        // No API keys found, show warning
+                        window.showNotification('Warning: No AI API keys configured. Please add API keys in Settings to ensure content generation works properly.', true);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking API keys:', error);
+                });
+        }
         
         // Add a single event listener to the new form
         newForm.addEventListener('submit', function(e) {
