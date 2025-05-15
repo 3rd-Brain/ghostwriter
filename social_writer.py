@@ -1616,8 +1616,7 @@ def delete_template(template_id: str, db_to_access: str = "sys") -> Dict:
         print(f"Response preview: {response_text[:200]}{'...' if len(response_text) > 200 else ''}")
 
         response.raise_for_status()
-        result =```python
-response.json()
+        result = response.json()
 
         print(f"=== Debug: Template Deletion Completed ===\n")
 
