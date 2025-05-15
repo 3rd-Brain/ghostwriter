@@ -398,7 +398,7 @@
         ])
         .then(([systemData, userData]) => {
             let allWorkflows = [];
-            
+
             // Add system workflows
             if (systemData.status === 'success' && systemData.workflows) {
                 // Mark system workflows
@@ -410,7 +410,7 @@
             } else {
                 console.error('Failed to fetch system workflows:', systemData);
             }
-            
+
             // Add user workflows
             if (userData.data && userData.data.documents) {
                 // Mark user workflows and normalize structure
@@ -422,10 +422,10 @@
             } else {
                 console.error('Failed to fetch user workflows:', userData);
             }
-            
+
             // Save workflows data globally
             workflowsData = allWorkflows;
-            
+
             // Populate UI elements
             populateWorkflowsTable(allWorkflows);
             populateWorkflowDropdown(allWorkflows);
@@ -738,7 +738,7 @@
         });
     }
 
-    
+
 
     // Function to fetch brands for the current user
     function fetchUserBrands() {
@@ -792,7 +792,7 @@
         // Fetch workflows and brands when the page loads
         fetchWorkflows();
         fetchUserBrands();
-        
+
         // Check if user has API keys
         checkForApiKeys();
 
@@ -820,7 +820,7 @@
         // Remove any existing event listeners by cloning and replacing the button
         const newOpenRepurposeBtn = openRepurposeBtn.cloneNode(true);
         openRepurposeBtn.parentNode.replaceChild(newOpenRepurposeBtn, openRepurposeBtn);
-        
+
         // Re-assign the variable to the new button
         const refreshedOpenRepurposeBtn = document.getElementById('open-repurpose-modal');
 
@@ -871,7 +871,7 @@
             repurposeModal.style.display = 'none';
         });
 
-        
+
 
         // Close modals when clicking outside
         window.addEventListener('click', function(event) {
@@ -901,36 +901,48 @@
 
         // Form submissions - using a better approach to prevent duplicate submissions
         const createPostsForm = document.getElementById('create-posts-form');
-        
+
         // Remove any existing event listeners by cloning and replacing the form
         const newForm = createPostsForm.cloneNode(true);
         createPostsForm.parentNode.replaceChild(newForm, createPostsForm);
-        
+
         // Function to check if user has API keys
         function checkForApiKeys() {
             fetch('/api/third-party-keys')
                 .then(response => response.json())
                 .then(data => {
                     if (!data || !data.keys || data.keys.length === 0) {
-                        // No API keys found, show warning
-                        window.showNotification('Warning: No AI API keys configured. Please add API keys in Settings to ensure content generation works properly.', true);
+                        // No API keys found, show warning with extended display time (8 seconds)
+                        const notification = window.showNotification('Warning: No AI API keys configured. Please add API keys in Settings to ensure content generation works properly.', true);
+
+                        // Keep the notification visible for longer (8 seconds)
+                        if (notification && notification.element) {
+                            // If the showNotification returns an object with the element
+                            clearTimeout(notification.timeout);
+                            notification.timeout = setTimeout(() => {
+                                notification.element.classList.remove('show');
+                                setTimeout(() => {
+                                    notification.element.remove();
+                                }, 300);
+                            }, 8000); // 8 seconds
+                        }
                     }
                 })
                 .catch(error => {
                     console.error('Error checking API keys:', error);
                 });
         }
-        
+
         // Add a single event listener to the new form
         newForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            
+
             // Disable the submit button to prevent double submissions
             const submitButton = this.querySelector('button[type="submit"]');
             if (submitButton) {
                 submitButton.disabled = true;
             }
-            
+
             // Display loading indicator or notification
             window.showNotification('Generating posts, please wait...', false);
 
@@ -1057,7 +1069,7 @@
             });
         });
 
-        
+
     });
 
     // Workflow Creation System
