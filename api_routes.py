@@ -396,11 +396,12 @@ async def create_brand_from_twitter(
                 status_code=500,
                 detail="APIFY_API_TOKEN not configured in environment")
 
-        # Check for ANTHROPIC_API_KEY
-        if not os.environ.get("ANTHROPIC_API_KEY"):
+        # Check if the user has Anthropic API key configured
+        from third_party_keys import user_has_api_keys
+        if not user_has_api_keys(user.get("user_id"), "anthropic"):
             raise HTTPException(
                 status_code=500,
-                detail="ANTHROPIC_API_KEY not configured in environment")
+                detail="No Anthropic API key found for this user. Please add your API key in Settings.")
 
         # Call the extractProfileTopTweets function to check if profile exists
         from social_writer import extractProfileTopTweets

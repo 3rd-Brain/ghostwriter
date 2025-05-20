@@ -350,18 +350,15 @@ async def check_api_key_requirement(request: Request):
         # Import here to avoid circular imports
         from third_party_keys import user_has_api_keys, get_third_party_key
 
-        # Check if default keys exist in environment
-        has_default_openai = bool(os.getenv("OPENAI_API_KEY"))
-        has_default_anthropic = bool(os.getenv("ANTHROPIC_API_KEY"))
-
-        # Check if user has their own keys
+        # Only check if user has their own keys
         has_user_openai = bool(get_third_party_key(user_id, "openai"))
         has_user_anthropic = bool(get_third_party_key(user_id, "anthropic"))
 
         return {
-            "requires_keys": not (has_default_openai or has_user_openai) or not (has_default_anthropic or has_user_anthropic),
-            "has_openai": has_default_openai or has_user_openai,
-            "has_anthropic": has_default_anthropic or has_user_anthropic
+            "requires_keys": not has_user_openai or not has_user_anthropic,
+            "has_openai": has_user_openai,
+            "has_anthropic": has_user_anthropic,
+            "has_any_keys": has_user_openai or has_user_anthropic
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

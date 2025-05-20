@@ -34,14 +34,12 @@ def social_post_generation_with_json(workflow_name: str,
     # Try to get user-specific key
     user_api_key = get_third_party_key(user_id, "anthropic")
     
-    # If no user key found, use default
+    # Use user's key or handle missing key case
     if not user_api_key:
-        client = anthropic.Client(api_key=os.environ.get("ANTHROPIC_API_KEY"))
-        print("Using default Anthropic API key")
-    else:
-        # Use client with user's key
-        client = anthropic.Client(api_key=user_api_key)
-        print("Using user-specific Anthropic API key")
+        raise Exception("No Anthropic API key found for this user. Please add your API key in Settings.")
+    
+    client = anthropic.Client(api_key=user_api_key)
+    print("Using user-specific Anthropic API key")
 
     # Retrieve flow configuration using workflow_name
     flow_config = flow_config_retriever(workflow_name)
