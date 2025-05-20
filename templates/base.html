@@ -444,13 +444,22 @@
                 fetch('/api/key-status')
                     .then(response => response.json())
                     .then(data => {
+                        console.log("API key status check:", data);
+                        
+                        // Remove existing notification if it exists
+                        const existingNotification = document.getElementById('api-key-notification');
+                        if (existingNotification) {
+                            existingNotification.remove();
+                        }
+                        
+                        // Remove existing header indicator if it exists
+                        const existingIndicator = document.querySelector('.api-key-indicator');
+                        if (existingIndicator) {
+                            existingIndicator.remove();
+                        }
+                        
+                        // Only show the notification if no keys are configured
                         if (!data.has_keys) {
-                            // Remove existing notification if it exists
-                            const existingNotification = document.getElementById('api-key-notification');
-                            if (existingNotification) {
-                                existingNotification.remove();
-                            }
-                            
                             // Create the dedicated API key notification
                             const apiKeyNotification = document.createElement('div');
                             apiKeyNotification.id = 'api-key-notification';
@@ -467,11 +476,11 @@
 
                             // Add a visual indicator in the header as well
                             const headerActions = document.querySelector('.header-actions');
-                            if (headerActions && !document.querySelector('.api-key-indicator')) {
+                            if (headerActions) {
                                 const keyIndicator = document.createElement('button');
                                 keyIndicator.className = 'action-button api-key-indicator';
                                 keyIndicator.title = 'API keys required';
-                                keyIndicator.innerHTML = '<i data-lucide="key-alert"></i>';
+                                keyIndicator.innerHTML = '<i data-lucide="key"></i>';
 
                                 // Add click handler to go to settings
                                 keyIndicator.addEventListener('click', function() {
