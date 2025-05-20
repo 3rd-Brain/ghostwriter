@@ -334,6 +334,39 @@ async def refresh_access_token_from_cookie(request: Request, refresh_token: str)
     logging.info(f"Refreshed access token for user: {user_info['username']}")
     return {"username": user_info["username"], "user_id": user_info["user_id"]}
 
+@app.get("/api/key-requirement-status")
+async def check_api_key_requirement(request: Request):
+    """
+    Check if the current user needs to provide API keys.
+
+    This endpoint helps the frontend determine if it should prompt the user
+    to set up their API keys.
+    """
+    try:
+        # Get the current user
+        current_user = await get_current_user(request)
+        user_id = current_user["user_id"]
+
+        # Import here to avoid circular imports
+        from third_party_keys import user_has_api_keys, get_third_party_key
+
+        # Check if default keys exist in environment
+        has_default_openai = bool(os.getenv("OPENAI_API_KEY"))
+        has_default_anthropic = bool(os.getenv("ANTHROPIC_API_KEY"))
+
+        # Check if user has their own keys
+        has_user_openai = bool(get_third_party_key(user_id, "openai"))
+        has_user_anthropic = bool(get_third_party_key(user_id, "anthropic"))
+
+        return {
+            "requires_keys": not (has_default_openai or has_user_openai) or not (has_default_anthropic or has_user_anthropic),
+            "has_openai": has_default_openai or has_user_openai,
+            "has_anthropic": has_default_anthropic or has_user_anthropic
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.get("/api/refresh-token", tags=["Authentication"])
 async def refresh_access_token(request: Request, response: Response):
     """
@@ -346,40 +379,6 @@ async def refresh_access_token(request: Request, response: Response):
     * Access token has expired but refresh token is still valid
     * You need to extend a user's session without requiring re-login
     * You want to maintain persistent authentication with better security
-
-
-@app.get("/api/key-requirement-status")
-async def check_api_key_requirement(request: Request):
-    """
-    Check if the current user needs to provide API keys.
-    
-    This endpoint helps the frontend determine if it should prompt the user
-    to set up their API keys.
-    """
-    try:
-        # Get the current user
-        current_user = await get_current_user(request)
-        user_id = current_user["user_id"]
-        
-        # Import here to avoid circular imports
-        from third_party_keys import user_has_api_keys, get_third_party_key
-        
-        # Check if default keys exist in environment
-        has_default_openai = bool(os.getenv("OPENAI_API_KEY"))
-        has_default_anthropic = bool(os.getenv("ANTHROPIC_API_KEY"))
-        
-        # Check if user has their own keys
-        has_user_openai = bool(get_third_party_key(user_id, "openai"))
-        has_user_anthropic = bool(get_third_party_key(user_id, "anthropic"))
-        
-        return {
-            "requires_keys": not (has_default_openai or has_user_openai) or not (has_default_anthropic or has_user_anthropic),
-            "has_openai": has_default_openai or has_user_openai,
-            "has_anthropic": has_default_anthropic or has_user_anthropic
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
     *The refresh token should be provided in the HTTP-only cookie.*
     """
     refresh_token = request.cookies.get("refresh_token")
