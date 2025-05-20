@@ -23,11 +23,11 @@
             flex-direction: column;
             z-index: 100;
         }
-        
+
         .main-menu, .other-menu {
             overflow-y: auto;
         }
-        
+
         .user-profile {
             position: sticky;
             bottom: 0;
@@ -35,22 +35,22 @@
             z-index: 10;
             margin-top: auto;
         }
-        
+
         .main-content {
             margin-left: 280px;
             width: calc(100% - 280px);
         }
-        
+
         /* Make sure the app container doesn't apply grid anymore since we're using fixed positioning */
         .app-container {
             display: block;
         }
-        
+
         /* Collapsed sidebar adjustments */
         .app-container.sidebar-collapsed .sidebar {
             width: 80px;
         }
-        
+
         .app-container.sidebar-collapsed .main-content {
             margin-left: 80px;
             width: calc(100% - 80px);
@@ -150,7 +150,7 @@
             z-index: 90;
             background-color: white;
         }
-        
+
         .app-container.sidebar-collapsed .content-header {
             left: 80px;
         }
@@ -161,40 +161,42 @@
             padding-bottom: 20px; /* Keep padding at the bottom */
             width: 100%; /* Ensure content takes full width */
         }
-        
+
         .api-key-indicator {
             position: relative;
             color: #e53e3e !important;
             animation: pulse 2s infinite;
         }
-        
+
         @keyframes pulse {
             0% { opacity: 1; }
             50% { opacity: 0.5; }
             100% { opacity: 1; }
         }
-        
+
         .notification {
             position: fixed;
             top: 16px;
             right: 16px;
-            padding: 12px 16px;
+            padding: 10px 16px;
             border-radius: 8px;
             background-color: #4caf50;
             color: white;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             transition: transform 0.3s ease, opacity 0.3s ease;
             transform: translateY(-100%);
             opacity: 0;
             z-index: 1000;
-            max-width: 400px;
+            max-width: 300px;
+            font-size: 14px;
+            width: auto;
         }
-        
+
         .notification.show {
             transform: translateY(0);
             opacity: 1;
         }
-        
+
         .notification.error {
             background-color: #f44336;
         }
@@ -298,7 +300,7 @@
         </main>
 
         </div>
-    
+
     <div class="chatbox-container">
         <div class="chatbox">
             <div class="chatbox-header">
@@ -342,7 +344,7 @@
                     }
                 });
             }
-            
+
             // Check for API key configuration status
             checkApiKeyStatus();
 
@@ -350,10 +352,10 @@
             const toggleChatbotBtn = document.getElementById('toggle-chatbot');
             const chatboxContainer = document.querySelector('.chatbox-container');
             const contentContainer = document.querySelector('.content-container');
-            
+
             // Set the default state to hidden, and use localStorage if available
             const chatbotHidden = localStorage.getItem('chatbotHidden');
-            
+
             // If there's no stored preference, hide by default
             // If there is a preference, follow it (but default to hidden if null or not 'false')
             if (chatbotHidden === 'false') {
@@ -361,7 +363,7 @@
             } else {
                 hideChatbot();
             }
-            
+
             // Toggle button is disabled for now
             // When re-enabling, uncomment this code:
             /*
@@ -377,7 +379,7 @@
                 });
             }
             */
-            
+
             // Function to hide chatbot
             function hideChatbot() {
                 chatboxContainer.style.opacity = '0';
@@ -386,11 +388,11 @@
                 chatboxContainer.style.visibility = 'hidden';
                 contentContainer.style.marginRight = '0';
                 contentContainer.style.width = '100%';
-                
+
                 // Update button appearance to show it's toggled off
                 toggleChatbotBtn.classList.add('toggled-off');
             }
-            
+
             // Function to show chatbot
             function showChatbot() {
                 chatboxContainer.style.opacity = '1';
@@ -399,7 +401,7 @@
                 chatboxContainer.style.visibility = 'visible';
                 contentContainer.style.marginRight = '320px';
                 contentContainer.style.width = 'calc(100% - 320px)';
-                
+
                 // Update button appearance to show it's toggled on
                 toggleChatbotBtn.classList.remove('toggled-off');
             }
@@ -414,10 +416,10 @@
                 const timeout = setTimeout(() => {
                     notification.classList.remove('show');
                 }, duration);
-                
+
                 return { element: notification, timeout: timeout };
             }
-            
+
             // Check API Key Status
             function checkApiKeyStatus() {
                 fetch('/api/key-status')
@@ -426,7 +428,7 @@
                         if (!data.has_keys) {
                             // Show notification about missing API keys
                             window.showNotification('API keys not configured. To use Ghostwriter AI features, please add your API keys in Settings.', true, 6000);
-                            
+
                             // Add a visual indicator in the header
                             const headerActions = document.querySelector('.header-actions');
                             if (headerActions && !document.querySelector('.api-key-indicator')) {
@@ -434,12 +436,12 @@
                                 keyIndicator.className = 'action-button api-key-indicator';
                                 keyIndicator.title = 'API keys required';
                                 keyIndicator.innerHTML = '<i data-lucide="key-alert"></i>';
-                                
+
                                 // Add click handler to go to settings
                                 keyIndicator.addEventListener('click', function() {
                                     window.location.href = '/settings#api-keys-section';
                                 });
-                                
+
                                 headerActions.prepend(keyIndicator);
                                 if (window.lucide) {
                                     window.lucide.createIcons();
