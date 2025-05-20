@@ -11,62 +11,42 @@ from openai import OpenAI
 from social_dynamic_generation_flow import social_post_generation_with_json
 from third_party_keys import get_third_party_key
 
-# Default API keys from environment
-DEFAULT_ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
-DEFAULT_OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+# Database tokens
 ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
 ASTRA_DB_APPLICATION_TOKEN_FOR_SOURCES = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
 ASTRA_DB_APPLICATION_TOKEN_FOR_SHORTFORM_TEMPLATES = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
 
-# Initialize clients with default keys - will be updated per user request
+# Initialize clients
 openai_client = None
 anthropic_client = None
 
 def get_openai_client(user_id=None):
-    """Get an OpenAI client with user API key if available"""
-    global openai_client
-
-    # If no user_id, use default key
+    """Get an OpenAI client with user API key"""
     if user_id is None:
-        if openai_client is None:
-            openai_client = OpenAI(api_key=DEFAULT_OPENAI_API_KEY)
-            print(f"Using default OpenAI API key")
-        return openai_client
+        raise ValueError("User ID is required to get API key")
 
-    # Try to get user-specific key
+    # Get user-specific key
     user_api_key = get_third_party_key(user_id, "openai")
 
-    # If no user key found, use default
+    # If no user key found, raise an error
     if not user_api_key:
-        if openai_client is None:
-            openai_client = OpenAI(api_key=DEFAULT_OPENAI_API_KEY)
-            print(f"Using default OpenAI API key")
-        return openai_client
+        raise ValueError("No OpenAI API key found for this user. Please add your API key in the settings.")
 
     print(f"Using user-specific OpenAI API key for user_id: {user_id}")
     # Return client with user's key
     return OpenAI(api_key=user_api_key)
 
 def get_anthropic_client(user_id=None):
-    """Get an Anthropic client with user API key if available"""
-    global anthropic_client
-
-    # If no user_id, use default key
+    """Get an Anthropic client with user API key"""
     if user_id is None:
-        if anthropic_client is None:
-            anthropic_client = anthropic.Client(api_key=DEFAULT_ANTHROPIC_API_KEY)
-            print(f"Using default Anthropic API key")
-        return anthropic_client
+        raise ValueError("User ID is required to get API key")
 
-    # Try to get user-specific key
+    # Get user-specific key
     user_api_key = get_third_party_key(user_id, "anthropic")
 
-    # If no user key found, use default
+    # If no user key found, raise an error
     if not user_api_key:
-        if anthropic_client is None:
-            anthropic_client = anthropic.Client(api_key=DEFAULT_ANTHROPIC_API_KEY)
-            print(f"Using default Anthropic API key")
-        return anthropic_client
+        raise ValueError("No Anthropic API key found for this user. Please add your API key in the settings.")
 
     print(f"Using user-specific Anthropic API key for user_id: {user_id}")
     # Return client with user's key

@@ -6,20 +6,17 @@ import uuid
 import json
 from third_party_keys import get_third_party_key
 
-DEFAULT_OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
-
 def get_openai_client(user_id=None):
-    """Get an OpenAI client with user API key if available"""
-    # If no user_id, use default key
+    """Get an OpenAI client with user API key"""
     if user_id is None:
-        return OpenAI(api_key=DEFAULT_OPENAI_API_KEY)
+        raise ValueError("User ID is required to get API key")
     
-    # Try to get user-specific key
+    # Get user-specific key
     user_api_key = get_third_party_key(user_id, "openai")
     
-    # If no user key found, use default
+    # If no user key found, raise an error
     if not user_api_key:
-        return OpenAI(api_key=DEFAULT_OPENAI_API_KEY)
+        raise ValueError("No OpenAI API key found for this user. Please add your API key in the settings.")
     
     # Return client with user's key
     return OpenAI(api_key=user_api_key)

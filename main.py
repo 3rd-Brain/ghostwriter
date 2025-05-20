@@ -1469,14 +1469,23 @@ async def generate_new_content(request_data: schemas.RepurposeRequest, backgroun
     """
     # Check for required environment variables
     missing_vars = []
-    for env_var in ["OPENAI_API_KEY", "ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER", "ANTHROPIC_API_KEY"]:
-        if not os.getenv(env_var):
-            missing_vars.append(env_var)
+    if not os.getenv("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER"):
+        missing_vars.append("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
     
     if missing_vars:
         raise HTTPException(
             status_code=500, 
             detail=f"Required environment variables not configured: {', '.join(missing_vars)}"
+        )
+        
+    # Check if user has required API keys
+    from third_party_keys import user_has_api_keys
+    
+    user_id = user.get("user_id", "")
+    if not user_has_api_keys(user_id, "openai") or not user_has_api_keys(user_id, "anthropic"):
+        raise HTTPException(
+            status_code=403,
+            detail="You need to provide both OpenAI and Anthropic API keys in your settings to use this feature."
         )
 
     # Set user ID in environment for background task access
@@ -1544,10 +1553,18 @@ async def get_top_content_repurposing(request_data: schemas.TopContentRepurposin
     *This performs an automatic selection of high-performing content before repurposing.*
     *This endpoint supports both JWT and API key authentication.*
     """
-    if not os.getenv("ANTHROPIC_API_KEY"):
-        raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY not configured")
     if not os.getenv("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER"):
         raise HTTPException(status_code=500, detail="ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
+    
+    # Check if user has required API keys
+    from third_party_keys import user_has_api_keys
+    
+    user_id = user.get("user_id", "")
+    if not user_has_api_keys(user_id, "anthropic"):
+        raise HTTPException(
+            status_code=403,
+            detail="You need to provide an Anthropic API key in your settings to use this feature."
+        )
 
     try:
         # Set current user ID in environment
@@ -1587,8 +1604,15 @@ async def generate_social_post(request_data: schemas.SocialPostGenerationRequest
     *Unlike other generation endpoints, this returns the content immediately.*
     *This endpoint supports both JWT and API key authentication.*
     """
-    if not os.getenv("ANTHROPIC_API_KEY"):
-        raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY not configured")
+    # Check if user has required API keys
+    from third_party_keys import user_has_api_keys
+    
+    user_id = user.get("user_id", "")
+    if not user_has_api_keys(user_id, "anthropic"):
+        raise HTTPException(
+            status_code=403,
+            detail="You need to provide an Anthropic API key in your settings to use this feature."
+        )
 
     try:
         result = social_post_generation_with_json(
@@ -1619,10 +1643,15 @@ async def create_template_embedding(request_data: schemas.TemplateContextRequest
     *This is a prerequisite step before templates can be used with the `/multitemplate` endpoint.*
     *This endpoint supports both JWT and API key authentication.*
     """
-    if not os.getenv("OPENAI_API_KEY"):
-        raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
-    if not os.getenv("ANTHROPIC_API_KEY"):
-        raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY not configured")
+    # Check if user has required API keys
+    from third_party_keys import user_has_api_keys
+    
+    user_id = user.get("user_id", "")
+    if not user_has_api_keys(user_id, "openai") or not user_has_api_keys(user_id, "anthropic"):
+        raise HTTPException(
+            status_code=403,
+            detail="You need to provide both OpenAI and Anthropic API keys in your settings to use this feature."
+        )
 
     try:
         result = template_context_and_uploader(
@@ -1680,10 +1709,15 @@ async def create_template(request_data: schemas.TemplatizerRequest, user: dict =
     *After creating a template, use `/template-context-and-uploader` to index it for future retrieval.*
     *This endpoint supports both JWT and API key authentication.*
     """
-    if not os.getenv("OPENAI_API_KEY"):
-        raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
-    if not os.getenv("ANTHROPIC_API_KEY"):
-        raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY not configured")
+    # Check if user has required API keys
+    from third_party_keys import user_has_api_keys
+    
+    user_id = user.get("user_id", "")
+    if not user_has_api_keys(user_id, "openai") or not user_has_api_keys(user_id, "anthropic"):
+        raise HTTPException(
+            status_code=403,
+            detail="You need to provide both OpenAI and Anthropic API keys in your settings to use this feature."
+        )
 
     try:
         template = Templatizer(request_data.social_post)
@@ -1709,12 +1743,18 @@ async def get_multitemplate(request_data: schemas.MultitemplateRequest, user: di
     *This endpoint requires templates to be previously processed with `/template-context-and-uploader`.*
     *This endpoint supports both JWT and API key authentication.*
     """
-    if not os.getenv("OPENAI_API_KEY"):
-        raise HTTPException(status_code=500, detail="OPENAI_API_KEY not configured")
     if not os.getenv("ASTRA_DB_APPLICATION_TOKEN"):
         raise HTTPException(status_code=500, detail="ASTRA_DB_APPLICATION_TOKEN not configured")
-    if not os.getenv("ANTHROPIC_API_KEY"):
-        raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY not configured")
+    
+    # Check if user has required API keys
+    from third_party_keys import user_has_api_keys
+    
+    user_id = user.get("user_id", "")
+    if not user_has_api_keys(user_id, "openai") or not user_has_api_keys(user_id, "anthropic"):
+        raise HTTPException(
+            status_code=403,
+            detail="You need to provide both OpenAI and Anthropic API keys in your settings to use this feature."
+        )
 
     try:
         result = multitemplate_retriever(
