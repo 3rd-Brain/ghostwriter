@@ -443,10 +443,27 @@
                     .then(response => response.json())
                     .then(data => {
                         if (!data.has_keys) {
-                            // Show notification about missing API keys
-                            window.showNotification('API keys not configured. To use Ghostwriter AI features, please add your API keys in Settings.', true, 6000);
+                            // Remove existing notification if it exists
+                            const existingNotification = document.getElementById('api-key-notification');
+                            if (existingNotification) {
+                                existingNotification.remove();
+                            }
+                            
+                            // Create the dedicated API key notification
+                            const apiKeyNotification = document.createElement('div');
+                            apiKeyNotification.id = 'api-key-notification';
+                            apiKeyNotification.innerHTML = 'API keys not configured. To use Ghostwriter AI features, please add your API keys in Settings.';
+                            
+                            // Add click handler to go to settings
+                            apiKeyNotification.style.cursor = 'pointer';
+                            apiKeyNotification.addEventListener('click', function() {
+                                window.location.href = '/settings#api-keys-section';
+                            });
+                            
+                            // Add the notification to the page
+                            document.body.appendChild(apiKeyNotification);
 
-                            // Add a visual indicator in the header
+                            // Add a visual indicator in the header as well
                             const headerActions = document.querySelector('.header-actions');
                             if (headerActions && !document.querySelector('.api-key-indicator')) {
                                 const keyIndicator = document.createElement('button');
