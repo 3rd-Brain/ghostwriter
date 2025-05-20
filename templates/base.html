@@ -286,6 +286,11 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Check for API key requirements in a way that doesn't affect the chat agent
+            if (typeof safeCheckApiKeys === 'function') {
+                safeCheckApiKeys();
+            }
+            
             // Sidebar toggle functionality
             const sidebarToggle = document.querySelector('.sidebar-toggle');
             const appContainer = document.querySelector('.app-container');

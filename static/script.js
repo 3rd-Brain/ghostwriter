@@ -60,14 +60,36 @@ function checkApiKeyRequirement() {
                 
                 // Add to navbar if it doesn't exist already
                 if (!document.querySelector('.key-setup-required')) {
-                    document.querySelector('.navbar-items').appendChild(keyIndicator);
-                    lucide.createIcons();
+                    const navbarItems = document.querySelector('.header-actions');
+                    if (navbarItems) {
+                        navbarItems.prepend(keyIndicator);
+                        lucide.createIcons();
+                    }
                 }
             }
         })
         .catch(error => {
             console.error('Error checking API key requirement:', error);
         });
+}
+
+// Safe check for API key requirements that won't affect Ghostwriter agent
+function safeCheckApiKeys() {
+    // AI feature pages that should check for API keys
+    const aiFeaturePages = [
+        '/generate-content',
+        '/generation/repurpose',
+        '/generation/top-content',
+        '/generation/posts-templates',
+        '/template-management'
+    ];
+    
+    const currentPath = window.location.pathname;
+    
+    // Only check if we're on an AI feature page
+    if (aiFeaturePages.some(page => currentPath.includes(page))) {
+        checkApiKeyRequirement();
+    }
 }
 
 // Call this when the page loads for pages that use AI features
