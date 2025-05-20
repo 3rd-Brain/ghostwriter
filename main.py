@@ -343,27 +343,52 @@ async def check_api_key_requirement(request: Request):
     to set up their API keys.
     """
     try:
+        print("\n=== DEBUG: /api/key-requirement-status endpoint called ===")
+        
         # Get the current user
         current_user = await get_current_user(request)
         user_id = current_user["user_id"]
-
+        print(f"Current user ID: {user_id}")
+        
         # Import here to avoid circular imports
         from third_party_keys import user_has_api_keys, get_third_party_key
 
         # Check if default keys exist in environment
         has_default_openai = bool(os.getenv("OPENAI_API_KEY"))
         has_default_anthropic = bool(os.getenv("ANTHROPIC_API_KEY"))
-
+        print(f"Default keys: OpenAI={has_default_openai}, Anthropic={has_default_anthropic}")
+        
         # Check if user has their own keys
+        print("Checking for user-specific OpenAI key...")
         has_user_openai = bool(get_third_party_key(user_id, "openai"))
+        print(f"Has user OpenAI key: {has_user_openai}")
+        
+        print("Checking for user-specific Anthropic key...")
         has_user_anthropic = bool(get_third_party_key(user_id, "anthropic"))
-
-        return {
-            "requires_keys": not (has_default_openai or has_user_openai) or not (has_default_anthropic or has_user_anthropic),
+        print(f"Has user Anthropic key: {has_user_anthropic}")
+        
+        # General check if user has any API keys
+        print("Checking if user has any API keys...")
+        has_any_keys = user_has_api_keys(user_id)
+        print(f"User has any API keys: {has_any_keys}")
+        
+        requires_keys = not (has_default_openai or has_user_openai) or not (has_default_anthropic or has_user_anthropic)
+        print(f"Final result - requires keys: {requires_keys}")
+        
+        response = {
+            "requires_keys": requires_keys,
             "has_openai": has_default_openai or has_user_openai,
-            "has_anthropic": has_default_anthropic or has_user_anthropic
+            "has_anthropic": has_default_anthropic or has_user_anthropic,
+            "has_any_keys": has_any_keys
         }
+        print(f"Returning response: {response}")
+        print("=== DEBUG: /api/key-requirement-status endpoint completed ===\n")
+        
+        return response
     except Exception as e:
+        print(f"ERROR in /api/key-requirement-status: {str(e)}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

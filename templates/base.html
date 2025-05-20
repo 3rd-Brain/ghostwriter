@@ -445,32 +445,32 @@
                     .then(response => response.json())
                     .then(data => {
                         console.log("API key status check:", data);
-                        
+
                         // Remove existing notification if it exists
                         const existingNotification = document.getElementById('api-key-notification');
                         if (existingNotification) {
                             existingNotification.remove();
                         }
-                        
+
                         // Remove existing header indicator if it exists
                         const existingIndicator = document.querySelector('.api-key-indicator');
                         if (existingIndicator) {
                             existingIndicator.remove();
                         }
-                        
+
                         // Only show the notification if no keys are configured
                         if (!data.has_keys) {
                             // Create the dedicated API key notification
                             const apiKeyNotification = document.createElement('div');
                             apiKeyNotification.id = 'api-key-notification';
                             apiKeyNotification.innerHTML = 'API keys not configured. To use Ghostwriter AI features, please add your API keys in Settings.';
-                            
+
                             // Add click handler to go to settings
                             apiKeyNotification.style.cursor = 'pointer';
                             apiKeyNotification.addEventListener('click', function() {
                                 window.location.href = '/settings#api-keys-section';
                             });
-                            
+
                             // Add the notification to the page
                             document.body.appendChild(apiKeyNotification);
 
@@ -499,6 +499,31 @@
                     });
             }
         });
+    </script>
+    <script>
+        // Check if API keys are required
+        console.log("Checking API key requirement status...");
+        fetch('/api/key-requirement-status')
+            .then(response => {
+                console.log("API key requirement status response:", response.status);
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error('Failed to fetch API key requirement status');
+            })
+            .then(data => {
+                console.log("API key requirement data:", data);
+                if (data.requires_keys) {
+                    console.log("User requires API keys, showing notification");
+                    // Show notification
+                    document.getElementById('api-key-notification').classList.remove('hidden');
+                } else {
+                    console.log("User has all required API keys, hiding notification");
+                }
+            })
+            .catch(error => {
+                console.error('Error checking API key requirements:', error);
+            });
     </script>
     <script src="/static/chat.js"></script>
     {% block extra_js %}{% endblock %}
