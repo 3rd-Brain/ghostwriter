@@ -305,6 +305,36 @@ def update_third_party_key(user_id: str, key_id: str, new_api_key: str) -> bool:
         
         if not updated:
             return False
+
+def user_has_api_keys(user_id: str, service: Optional[str] = None) -> bool:
+    """
+    Check if a user has API keys configured.
+    
+    Args:
+        user_id: ID of the user to check
+        service: Optional specific service to check (e.g., "openai", "anthropic")
+                If None, checks if the user has any API keys configured
+        
+    Returns:
+        True if the user has the specified API keys, False otherwise
+    """
+    try:
+        keys = list_third_party_keys(user_id)
+        
+        if not keys:
+            return False
+            
+        if service:
+            # Check for specific service
+            return any(key.get("service") == service and key.get("is_active") for key in keys)
+        else:
+            # Check for any active key
+            return any(key.get("is_active") for key in keys)
+            
+    except Exception as e:
+        print(f"Error checking if user has API keys: {str(e)}")
+        return False
+
         
         # Update the user document
         update_payload = {
