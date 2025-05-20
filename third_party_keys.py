@@ -468,29 +468,17 @@ def user_has_api_keys(user_id: str, service: Optional[str] = None) -> bool:
         True if the user has the specified API keys, False otherwise
     """
     try:
-        print(f"\n=== DEBUG: user_has_api_keys called ===")
-        print(f"Checking API keys for user_id: {user_id}")
-        print(f"Specific service check: {service}")
-        
         keys = list_third_party_keys(user_id)
-        print(f"Keys retrieved: {len(keys)}")
-        
+
         if not keys:
-            print("No keys found")
             return False
 
         if service:
             # Check for specific service
-            has_service_key = any(key.get("service") == service and key.get("is_active") for key in keys)
-            print(f"Has active key for service '{service}': {has_service_key}")
-            return has_service_key
+            return any(key.get("service") == service and key.get("is_active") for key in keys)
         else:
             # Check for any active key
-            has_any_key = any(key.get("is_active") for key in keys)
-            print(f"Has any active key: {has_any_key}")
-            active_keys = [f"{key.get('service')} ({key.get('key_id')})" for key in keys if key.get("is_active")]
-            print(f"Active keys: {active_keys}")
-            return has_any_key
+            return any(key.get("is_active") for key in keys)
 
     except Exception as e:
         print(f"Error checking if user has API keys: {str(e)}")

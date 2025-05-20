@@ -1031,13 +1031,7 @@ async def check_api_key_status(current_user: dict = Depends(get_current_api_user
     Returns:
         dict: A dictionary indicating whether the user has API keys configured
     """
-    print("\n=== DEBUG: /api/key-status endpoint called ===")
     user_id = current_user["user_id"]
-    print(f"Current user ID: {user_id}")
-    
-    # Check if user has API keys
     has_keys = user_has_api_keys(user_id)
-    print(f"User has API keys: {has_keys}")
-    
-    print("=== DEBUG: /api/key-status endpoint completed ===\n")
+
     return {"has_keys": has_keys}
