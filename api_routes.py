@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Response
+from fastapi import APIRouter, Depends, HTTPException, Response
 from api_middleware import get_current_api_user, get_admin_api_user, check_api_key_or_jwt
 from schemas import SuccessResponse
 import os
@@ -6,6 +6,7 @@ import requests
 from typing import List, Dict, Any
 from pydantic import BaseModel
 from social_writer import extractProfileTopTweets, topTweetsToTemplate
+from third_party_keys import user_has_api_keys
 
 
 class ProfileURLRequest(BaseModel):
@@ -1021,3 +1022,16 @@ async def delete_template_endpoint(template_id: str,
     except Exception as e:
         print(f"Error deleting template: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/key-status", response_model=dict)
+async def check_api_key_status(current_user: dict = Depends(get_current_api_user)):
+    """
+    Check if the user has any API keys configured.
+
+    Returns:
+        dict: A dictionary indicating whether the user has API keys configured
+    """
+    user_id = current_user["user_id"]
+    has_keys = user_has_api_keys(user_id)
+
+    return {"has_keys": has_keys}
