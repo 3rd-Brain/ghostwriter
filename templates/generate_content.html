@@ -792,6 +792,9 @@
         // Fetch workflows and brands when the page loads
         fetchWorkflows();
         fetchUserBrands();
+        
+        // Check if user has API keys
+        checkApiKeyRequirement();
 
         // Check if user has API keys
         checkForApiKeys();

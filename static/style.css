@@ -996,6 +996,39 @@ textarea.form-control {
 }
 
 .data-table tr:hover {
+
+/* API key requirement indicator styles */
+.key-setup-required {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    margin-left: 10px;
+    background-color: #ff9a3c;
+    color: white;
+    border-radius: 50%;
+    cursor: pointer;
+    position: relative;
+    animation: pulse 2s infinite;
+}
+
+.key-setup-required:hover {
+    background-color: #ff7b00;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 154, 60, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(255, 154, 60, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 154, 60, 0);
+    }
+}
+
     background-color: rgba(107, 53, 255, 0.05);
 }
 

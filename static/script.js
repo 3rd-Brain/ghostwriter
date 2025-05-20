@@ -37,3 +37,52 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+// Check if the user needs to set up API keys
+function checkApiKeyRequirement() {
+    fetch('/api/key-requirement-status')
+        .then(response => response.json())
+        .then(data => {
+            if (data.requires_keys) {
+                // Show notification to user that they need to set up API keys
+                showNotification('Please set up your API keys in Settings to use AI features', true, 10000);
+                
+                // Add a visual indicator that keys are required
+                const keyIndicator = document.createElement('div');
+                keyIndicator.className = 'key-setup-required';
+                keyIndicator.innerHTML = '<i data-lucide="key-alert"></i>';
+                keyIndicator.title = 'API keys required';
+                
+                // Add click handler to go to settings
+                keyIndicator.addEventListener('click', function() {
+                    window.location.href = '/settings#api-keys-tab';
+                });
+                
+                // Add to navbar if it doesn't exist already
+                if (!document.querySelector('.key-setup-required')) {
+                    document.querySelector('.navbar-items').appendChild(keyIndicator);
+                    lucide.createIcons();
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error checking API key requirement:', error);
+        });
+}
+
+// Call this when the page loads for pages that use AI features
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if we're on a page that uses AI features
+    const aiFeaturePages = [
+        '/generate-content',
+        '/generation/repurpose',
+        '/generation/top-content',
+        '/generation/posts-templates'
+    ];
+    
+    const currentPath = window.location.pathname;
+    
+    if (aiFeaturePages.some(page => currentPath.includes(page))) {
+        checkApiKeyRequirement();
+    }
+});
