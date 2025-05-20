@@ -458,26 +458,35 @@
                             existingIndicator.remove();
                         }
 
+                        // Check if the notification already exists
+                        let apiKeyNotification = document.getElementById('api-key-notification');
+
                         // Only show the notification if no keys are configured
                         if (!data.has_keys) {
-                            // Create the dedicated API key notification
-                            const apiKeyNotification = document.createElement('div');
-                            apiKeyNotification.id = 'api-key-notification';
-                            apiKeyNotification.innerHTML = 'API keys not configured. To use Ghostwriter AI features, please add your API keys in Settings.';
+                            if (!apiKeyNotification) {
+                                // Create the dedicated API key notification
+                                apiKeyNotification = document.createElement('div');
+                                apiKeyNotification.id = 'api-key-notification';
+                                apiKeyNotification.innerHTML = 'API keys not configured. To use Ghostwriter AI features, please add your API keys in Settings.';
 
-                            // Add click handler to go to settings
-                            apiKeyNotification.style.cursor = 'pointer';
-                            apiKeyNotification.addEventListener('click', function() {
-                                window.location.href = '/settings#api-keys-section';
-                            });
+                                // Add click handler to go to settings
+                                apiKeyNotification.style.cursor = 'pointer';
+                                apiKeyNotification.addEventListener('click', function() {
+                                    window.location.href = '/settings#api-keys-section';
+                                });
 
-                            // Add the notification to the page
-                            document.body.appendChild(apiKeyNotification);
+                                // Add the notification to the page
+                                document.body.appendChild(apiKeyNotification);
+                            } else {
+                                apiKeyNotification.style.display = 'block';
+                            }
 
                             // Add a visual indicator in the header as well
                             const headerActions = document.querySelector('.header-actions');
-                            if (headerActions) {
-                                const keyIndicator = document.createElement('button');
+                            let keyIndicator = document.querySelector('.api-key-indicator');
+
+                            if (headerActions && !keyIndicator) {
+                                keyIndicator = document.createElement('button');
                                 keyIndicator.className = 'action-button api-key-indicator';
                                 keyIndicator.title = 'API keys required';
                                 keyIndicator.innerHTML = '<i data-lucide="key"></i>';
@@ -491,6 +500,17 @@
                                 if (window.lucide) {
                                     window.lucide.createIcons();
                                 }
+                            }
+                        } else {
+                            // Hide notification if keys are configured
+                            if (apiKeyNotification) {
+                                apiKeyNotification.style.display = 'none';
+                            }
+
+                            // Remove the header indicator if it exists
+                            const headerIndicator = document.querySelector('.api-key-indicator');
+                            if (headerIndicator) {
+                                headerIndicator.remove();
                             }
                         }
                     })
