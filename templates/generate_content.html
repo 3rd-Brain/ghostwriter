@@ -793,9 +793,6 @@
         fetchWorkflows();
         fetchUserBrands();
 
-        // Check if user has API keys
-        checkForApiKeys();
-
         // Initialize workflow creation system
         initWorkflowCreation();
 
@@ -1527,21 +1524,6 @@
                 window.showNotification('Error saving workflow: ' + error.message, true);
             });
         }
-    }
-
-    // Function to check if user has API keys
-    function checkApiKeyRequirement() {
-        fetch('/api/third-party-keys')
-            .then(response => response.json())
-            .then(data => {
-                if (!data || !data.keys || data.keys.length === 0) {
-                    // No API keys found, show warning
-                    window.showNotification('Warning: No AI API keys configured. Please add API keys in Settings to ensure content generation works properly.', true);
-                }
-            })
-            .catch(error => {
-                console.error('Error checking API keys:', error);
-            });
     }
 </script>
 {% endblock %}

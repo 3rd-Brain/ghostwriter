@@ -286,6 +286,21 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Check if user has API keys for AI features
+            const aiFeaturePages = [
+                '/generate-content',
+                '/generation/repurpose',
+                '/generation/top-content',
+                '/generation/posts-templates',
+                '/template-management'
+            ];
+            
+            const currentPath = window.location.pathname;
+            
+            if (aiFeaturePages.some(page => currentPath.includes(page))) {
+                checkApiKeyRequirement();
+            }
+            
             // Sidebar toggle functionality
             const sidebarToggle = document.querySelector('.sidebar-toggle');
             const appContainer = document.querySelector('.app-container');
