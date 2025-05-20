@@ -8,14 +8,18 @@ from datetime import datetime
 import requests
 from openai import OpenAI
 import uuid
+from third_party_keys import get_third_party_key
 
 class DocumentProcessor:
-    def __init__(self):
+    def __init__(self, user_id: str = None):
         self.storage_client = Client()
-        self.openai_client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+        self.user_id = user_id
+        # Initialize without API key first, we'll get it when needed
+        self.openai_client = None
         
     async def store_file(self, file: BinaryIO, filename: str, user_id: str) -> str:
         """Store file in Object Storage and return file ID"""
+        self.user_id = user_id  # Store user_id for later API key retrieval
         try:
             print("\n=== Starting file storage ===")
             print(f"Storing file: {filename}")
@@ -61,6 +65,7 @@ class DocumentProcessor:
     async def process_file_background(self, filename: str, file_id: str, user_id: str) -> Dict:
         """Process file in background after it has been stored"""
         try:
+            self.user_id = user_id  # Store user_id for later API key retrieval
             print(f"\n=== Starting background processing for file: {filename} ===")
             print(f"File ID: {file_id}")
             print(f"User ID: {user_id}")
@@ -158,8 +163,12 @@ class DocumentProcessor:
                     }
                 }
                 
+                astra_token = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+                if not astra_token:
+                    raise ValueError("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER environment variable is required")
+                
                 headers = {
-                    "Token": os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER"),
+                    "Token": astra_token,
                     "Content-Type": "application/json"
                 }
                 
@@ -255,7 +264,19 @@ class DocumentProcessor:
             raise
         
     def _generate_embedding(self, text: str) -> list:
-        """Generate embedding using OpenAI API"""
+        """Generate embedding using OpenAI API with user's API key"""
+        if not self.user_id:
+            raise ValueError("User ID is required to generate embeddings")
+        
+        if not self.openai_client:
+            # Get user-specific OpenAI API key
+            user_api_key = get_third_party_key(self.user_id, "openai")
+            if not user_api_key:
+                raise ValueError("No OpenAI API key found for this user. Please add your API key in the settings.")
+            
+            # Initialize client with user's API key
+            self.openai_client = OpenAI(api_key=user_api_key)
+        
         response = self.openai_client.embeddings.create(
             input=text,
             model="text-embedding-3-small"
