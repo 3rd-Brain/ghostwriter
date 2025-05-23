@@ -1498,3 +1498,64 @@ textarea.form-control {
   cursor: not-allowed;
   pointer-events: none;
 }
+
+/* Third-party API notification styles */
+.third-party-api-notification {
+  position: fixed;
+  top: 72px;
+  left: 0;
+  right: 0;
+  background-color: #f8d7da;
+  border-bottom: 1px solid #f5c6cb;
+  z-index: 99;
+  padding: 0;
+}
+
+.third-party-api-notification-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  margin-left: 280px;
+  transition: margin-left 0.3s ease;
+  color: #721c24;
+}
+
+.app-container.sidebar-collapsed .third-party-api-notification-content {
+  margin-left: 80px;
+}
+
+.third-party-api-notification i {
+  flex-shrink: 0;
+  color: #721c24;
+}
+
+.third-party-api-notification span {
+  flex-grow: 1;
+  font-size: 14px;
+}
+
+.third-party-api-notification a {
+  color: #721c24;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.third-party-api-notification a:hover {
+  text-decoration: none;
+}
+
+.third-party-api-notification-close {
+  background: none;
+  border: none;
+  color: #721c24;
+  font-size: 20px;
+  font-weight: bold;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 5px;
+}
+
+.third-party-api-notification-close:hover {
+  opacity: 0.7;
+}
