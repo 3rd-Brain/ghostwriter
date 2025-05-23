@@ -905,29 +905,7 @@
 
         // Function to check if user has API keys
         function checkForApiKeys() {
-            fetch('/api/third-party-keys')
-                .then(response => response.json())
-                .then(data => {
-                    if (!data || !data.keys || data.keys.length === 0) {
-                        // No API keys found, show warning with extended display time (8 seconds)
-                        const notification = window.showNotification('Warning: No AI API keys configured. Please add API keys in Settings to ensure content generation works properly.', true);
-
-                        // Keep the notification visible for longer (8 seconds)
-                        if (notification && notification.element) {
-                            // If the showNotification returns an object with the element
-                            clearTimeout(notification.timeout);
-                            notification.timeout = setTimeout(() => {
-                                notification.element.classList.remove('show');
-                                setTimeout(() => {
-                                    notification.element.remove();
-                                }, 300);
-                            }, 8000); // 8 seconds
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error checking API keys:', error);
-                });
+            // API key check removed
         }
 
         // Add a single event listener to the new form
