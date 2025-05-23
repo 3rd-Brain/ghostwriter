@@ -192,6 +192,53 @@
         .notification.error {
             background-color: #f44336;
         }
+        
+        /* API Key notification styles */
+        .third-party-api-notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            width: 90%;
+            max-width: 600px;
+            background-color: #f0ecfe;
+            border: 1px solid #6b35ff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .third-party-api-notification-content {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            color: #333;
+        }
+        
+        .third-party-api-notification-content i {
+            margin-right: 12px;
+            color: #6b35ff;
+        }
+        
+        .third-party-api-notification-content span {
+            flex: 1;
+            font-size: 14px;
+        }
+        
+        .third-party-api-notification-content a {
+            color: #6b35ff;
+            font-weight: 500;
+            text-decoration: underline;
+        }
+        
+        .third-party-api-notification-close {
+            background: none;
+            border: none;
+            color: #718096;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0 8px;
+        }
     </style>
 </head>
 <body>
@@ -418,12 +465,20 @@
                     .then(response => {
                         // Always try to parse the response, even if status isn't 200
                         return response.json().catch(() => {
-                            throw new Error('Failed to parse API key status response');
+                            // If we can't parse the response, assume no keys
+                            return { has_keys: false, error: 'Failed to parse response' };
                         });
                     })
                     .then(data => {
-                        // Handle case when API returns has_keys: false
+                        console.log("API key status:", data);
+                        // Handle case when API returns has_keys: false or there's an error
                         if (!data.has_keys) {
+                            // Remove any existing notification first
+                            const existingNotification = document.querySelector('.third-party-api-notification');
+                            if (existingNotification) {
+                                existingNotification.remove();
+                            }
+                            
                             // Create and show the API key notification
                             const apiKeyNotification = document.createElement('div');
                             apiKeyNotification.className = 'third-party-api-notification';
@@ -452,7 +507,28 @@
                     })
                     .catch(error => {
                         console.error('Error checking API key status:', error);
-                        // Don't show an error notification, just silently fail
+                        // Show notification even when errors occur - assume no keys configured
+                        const apiKeyNotification = document.createElement('div');
+                        apiKeyNotification.className = 'third-party-api-notification';
+                        apiKeyNotification.innerHTML = `
+                            <div class="third-party-api-notification-content">
+                                <i data-lucide="key"></i>
+                                <span>Unable to verify API keys. You may need to set up your third-party API keys. <a href="/settings">Go to Settings</a> to add your keys.</span>
+                                <button class="third-party-api-notification-close">×</button>
+                            </div>
+                        `;
+                        document.body.appendChild(apiKeyNotification);
+                        
+                        if (window.lucide) {
+                            window.lucide.createIcons();
+                        }
+                        
+                        const closeButton = apiKeyNotification.querySelector('.third-party-api-notification-close');
+                        if (closeButton) {
+                            closeButton.addEventListener('click', function() {
+                                apiKeyNotification.remove();
+                            });
+                        }
                     });
             }
         });
