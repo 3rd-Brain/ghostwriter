@@ -416,12 +416,13 @@
             function checkThirdPartyApiKeys() {
                 fetch('/api/key-status')
                     .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Failed to check API key status');
-                        }
-                        return response.json();
+                        // Always try to parse the response, even if status isn't 200
+                        return response.json().catch(() => {
+                            throw new Error('Failed to parse API key status response');
+                        });
                     })
                     .then(data => {
+                        // Handle case when API returns has_keys: false
                         if (!data.has_keys) {
                             // Create and show the API key notification
                             const apiKeyNotification = document.createElement('div');
@@ -451,6 +452,7 @@
                     })
                     .catch(error => {
                         console.error('Error checking API key status:', error);
+                        // Don't show an error notification, just silently fail
                     });
             }
         });
