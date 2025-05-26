@@ -291,9 +291,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (steps.length > 0) {
             stepsHtml = steps.map((step, index) => `
                 <div class="workflow-step">
-                    <h4>Step ${index + 1}: ${step.step_name || step.name || 'Unnamed Step'}</h4>
-                    <p><strong>Model:</strong> ${step.model || 'Not specified'}</p>
-                    <p><strong>Prompt:</strong> ${(step.prompt || '').substring(0, 100)}${step.prompt && step.prompt.length > 100 ? '...' : ''}</p>
+                    <h4>Step ${step.Order || index + 1}: ${step.Step_name || step.step_name || step.name || 'Unnamed Step'}</h4>
+                    <p><strong>Model:</strong> ${step.Model || step.model || 'Not specified'}</p>
+                    <p><strong>System Prompt:</strong> ${(step.System_prompt || step.system_prompt || '').substring(0, 100)}${(step.System_prompt || step.system_prompt || '').length > 100 ? '...' : ''}</p>
+                    <p><strong>Temperature:</strong> ${step.Temperature || step.temperature || 'Not specified'}</p>
+                    <p><strong>Max Tokens:</strong> ${step.Max_tokens || step.max_tokens || 'Not specified'}</p>
                 </div>
             `).join('');
         }
