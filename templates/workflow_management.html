@@ -287,19 +287,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const workflowType = workflow.workflowType || workflow.workflow_type || 'unknown';
         const steps = workflow.steps?.steps || [];
 
-        let stepsHtml = '';
-        if (steps.length > 0) {
-            stepsHtml = steps.map((step, index) => `
-                <div class="workflow-step">
-                    <h4>Step ${step.Order || index + 1}: ${step.Step_name || step.step_name || step.name || 'Unnamed Step'}</h4>
-                    <p><strong>Model:</strong> ${step.Model || step.model || 'Not specified'}</p>
-                    <p><strong>System Prompt:</strong> ${(step.System_prompt || step.system_prompt || '').substring(0, 100)}${(step.System_prompt || step.system_prompt || '').length > 100 ? '...' : ''}</p>
-                    <p><strong>Temperature:</strong> ${step.Temperature || step.temperature || 'Not specified'}</p>
-                    <p><strong>Max Tokens:</strong> ${step.Max_tokens || step.max_tokens || 'Not specified'}</p>
-                </div>
-            `).join('');
-        }
-
         detailContent.innerHTML = `
             <div class="workflow-detail-info">
                 <h3>${workflowName}</h3>
@@ -313,13 +300,143 @@ document.addEventListener('DOMContentLoaded', function() {
                 ${stepCount > 0 ? `
                     <div class="workflow-steps-section">
                         <h4>Workflow Steps</h4>
-                        <div class="workflow-steps">
-                            ${stepsHtml}
+                        <div class="workflow-steps-nav">
+                            <div class="workflow-steps-carousel" id="workflow-steps-carousel">
+                                <!-- Step cards will be populated here -->
+                            </div>
+                        </div>
+                        <div id="workflow-step-detail-container">
+                            <!-- Selected step details will be shown here -->
                         </div>
                     </div>
                 ` : ''}
             </div>
         `;
+
+        // Populate step navigation if steps exist
+        if (steps.length > 0) {
+            populateStepNavigation(steps);
+            showStepDetail(steps[0], 0); // Show first step by default
+        }
+    }
+
+    // Function to populate step navigation carousel
+    function populateStepNavigation(steps) {
+        const carousel = document.getElementById('workflow-steps-carousel');
+        carousel.innerHTML = '';
+
+        steps.forEach((step, index) => {
+            const stepCard = createStepCard(step, index);
+            carousel.appendChild(stepCard);
+        });
+    }
+
+    // Function to create a step navigation card
+    function createStepCard(step, index) {
+        const card = document.createElement('div');
+        card.className = 'workflow-step-card';
+        card.dataset.stepIndex = index;
+
+        const stepName = step.Step_name || step.step_name || step.name || 'Unnamed Step';
+        const stepModel = step.Model || step.model || 'Unknown Model';
+        const stepOrder = step.Order || index + 1;
+
+        card.innerHTML = `
+            <div class="workflow-step-card-header">
+                <div class="workflow-step-number">${stepOrder}</div>
+                <div class="workflow-step-card-name" title="${stepName}">${stepName}</div>
+            </div>
+            <div class="workflow-step-card-model">${stepModel}</div>
+        `;
+
+        // Add click handler
+        card.addEventListener('click', function() {
+            selectStepCard(this);
+            showStepDetail(step, index);
+        });
+
+        return card;
+    }
+
+    // Function to select a step card
+    function selectStepCard(selectedCard) {
+        // Remove active class from all cards
+        document.querySelectorAll('.workflow-step-card').forEach(card => {
+            card.classList.remove('active');
+        });
+
+        // Add active class to selected card
+        selectedCard.classList.add('active');
+    }
+
+    // Function to show detailed step information
+    function showStepDetail(step, index) {
+        const container = document.getElementById('workflow-step-detail-container');
+        
+        const stepName = step.Step_name || step.step_name || step.name || 'Unnamed Step';
+        const stepOrder = step.Order || index + 1;
+        const stepModel = step.Model || step.model || 'Not specified';
+        const systemPrompt = step.System_prompt || step.system_prompt || '';
+        const temperature = step.Temperature || step.temperature || 'Not specified';
+        const maxTokens = step.Max_tokens || step.max_tokens || 'Not specified';
+        const messages = step.Message || step.messages || [];
+
+        let messagesHtml = '';
+        if (messages && messages.length > 0) {
+            messagesHtml = messages.map(message => `
+                <div class="workflow-step-message">
+                    <div class="workflow-step-message-role">${message.role || 'Unknown'}</div>
+                    <div class="workflow-step-message-content">${message.content || ''}</div>
+                </div>
+            `).join('');
+        }
+
+        container.innerHTML = `
+            <div class="workflow-step-detail-container">
+                <div class="workflow-step-detail-header">
+                    <div class="workflow-step-detail-number">${stepOrder}</div>
+                    <div class="workflow-step-detail-title">${stepName}</div>
+                </div>
+                <div class="workflow-step-detail-grid">
+                    <div class="workflow-step-detail-section">
+                        <div class="workflow-step-detail-label">Model</div>
+                        <div class="workflow-step-detail-value">${stepModel}</div>
+                    </div>
+                    <div class="workflow-step-detail-section">
+                        <div class="workflow-step-detail-label">Temperature</div>
+                        <div class="workflow-step-detail-value">${temperature}</div>
+                    </div>
+                    <div class="workflow-step-detail-section">
+                        <div class="workflow-step-detail-label">Max Tokens</div>
+                        <div class="workflow-step-detail-value">${maxTokens}</div>
+                    </div>
+                    <div class="workflow-step-detail-section">
+                        <div class="workflow-step-detail-label">Order</div>
+                        <div class="workflow-step-detail-value">${stepOrder}</div>
+                    </div>
+                    ${systemPrompt ? `
+                        <div class="workflow-step-detail-section full-width">
+                            <div class="workflow-step-detail-label">System Prompt</div>
+                            <div class="workflow-step-detail-value large">${systemPrompt}</div>
+                        </div>
+                    ` : ''}
+                    ${messagesHtml ? `
+                        <div class="workflow-step-detail-section full-width">
+                            <div class="workflow-step-detail-label">Messages</div>
+                            <div class="workflow-step-messages">
+                                ${messagesHtml}
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+
+        // Select the first step card by default
+        const firstCard = document.querySelector('.workflow-step-card');
+        if (firstCard && !document.querySelector('.workflow-step-card.active')) {
+            selectStepCard(firstCard);
+        }
     }
 });
 </script>
