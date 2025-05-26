@@ -212,6 +212,77 @@ document.addEventListener('DOMContentLoaded', function() {
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
         }
+
+        // Add click handlers for step cards
+        const stepCards = document.querySelectorAll('.workflow-step-card');
+        stepCards.forEach(card => {
+            card.addEventListener('click', function() {
+                const stepIndex = parseInt(this.dataset.stepIndex);
+                selectWorkflowStep(stepIndex, steps);
+            });
+        });
+    }
+
+    // Function to handle step selection and show details
+    function selectWorkflowStep(stepIndex, steps) {
+        // Remove previous selection
+        document.querySelectorAll('.workflow-step-card.selected').forEach(card => {
+            card.classList.remove('selected');
+        });
+
+        // Add selection to clicked step
+        const selectedCard = document.querySelector(`[data-step-index="${stepIndex}"]`);
+        if (selectedCard) {
+            selectedCard.classList.add('selected');
+        }
+
+        // Update step details
+        const step = steps[stepIndex];
+        const detailsContainer = document.getElementById('workflow-step-details');
+
+        if (step) {
+            let messagesHtml = '';
+            if (step.Message && Array.isArray(step.Message)) {
+                messagesHtml = step.Message.map((message, index) => `
+                    <div class="workflow-step-message">
+                        <div class="workflow-step-message-role">${message.role || 'unknown'}</div>
+                        <div class="workflow-step-message-content">${message.content || 'No content'}</div>
+                    </div>
+                `).join('');
+            }
+
+            detailsContainer.innerHTML = `
+                <div class="workflow-step-detail-header">
+                    <h5>Step ${step.Order || stepIndex + 1}: ${step.Step_name || step.step_name || step.name || 'Unnamed Step'}</h5>
+                </div>
+                <div class="workflow-step-detail-content">
+                    <div class="workflow-step-detail-group">
+                        <label class="workflow-step-detail-label">Model</label>
+                        <div class="workflow-step-detail-value">${step.Model || step.model || 'Not specified'}</div>
+                    </div>
+                    <div class="workflow-step-detail-group">
+                        <label class="workflow-step-detail-label">System Prompt</label>
+                        <div class="workflow-step-detail-value">${step.System_prompt || step.system_prompt || 'No system prompt'}</div>
+                    </div>
+                    <div class="workflow-step-detail-group">
+                        <label class="workflow-step-detail-label">Temperature</label>
+                        <div class="workflow-step-detail-value">${step.Temperature || step.temperature || 'Not specified'}</div>
+                    </div>
+                    <div class="workflow-step-detail-group">
+                        <label class="workflow-step-detail-label">Max Tokens</label>
+                        <div class="workflow-step-detail-value">${step.Max_tokens || step.max_tokens || 'Not specified'}</div>
+                    </div>
+                    ${messagesHtml ? `
+                        <div class="workflow-step-detail-group">
+                            <label class="workflow-step-detail-label">Messages</label>
+                            <div class="workflow-step-messages">
+                                ${messagesHtml}
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
     }
 
     // Function to create a workflow item element
