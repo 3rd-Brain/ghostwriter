@@ -356,6 +356,20 @@
     margin-bottom: 0;
 }
 
+.workflow-step-messages {
+    margin-top: var(--spacing-sm);
+}
+
+.workflow-step-message {
+    background-color: var(--surface);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    margin: var(--spacing-xs) 0;
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--primary-light);
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
 /* Workflow List Empty State */
 .workflow-list-empty {
     text-align: center;

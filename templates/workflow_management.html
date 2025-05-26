@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 
 {% block title %}Workflow Management{% endblock %}
@@ -24,7 +23,7 @@
                 User Workflows
             </button>
         </div>
-        
+
         <!-- Workflow Lists -->
         <div class="workflow-list-container">
             <!-- System Workflows List -->
@@ -34,7 +33,7 @@
                     Loading workflows...
                 </div>
             </div>
-            
+
             <!-- User Workflows List (hidden by default) -->
             <div id="user-workflows" class="workflow-list" style="display: none;">
                 <div class="workflow-loading">
@@ -43,7 +42,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Action Toolbar -->
         <div class="workflow-action-toolbar">
             <button class="workflow-action-btn primary" id="create-workflow-btn">
@@ -60,14 +59,14 @@
             </button>
         </div>
     </div>
-    
+
     <!-- Right Panel - Workflow Details -->
     <div class="workflow-right-panel">
         <div class="workflow-detail-header">
             <h2 class="workflow-detail-title">Workflow Details</h2>
             <p class="workflow-detail-subtitle">Select a workflow to view its configuration</p>
         </div>
-        
+
         <div class="workflow-detail-content">
             <div class="workflow-detail-empty">
                 <i data-lucide="git-branch" class="workflow-detail-empty-icon"></i>
@@ -88,14 +87,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const tabs = document.querySelectorAll('.workflow-tab');
     const systemList = document.getElementById('system-workflows');
     const userList = document.getElementById('user-workflows');
-    
+
     tabs.forEach(tab => {
         tab.addEventListener('click', function() {
             // Remove active class from all tabs
             tabs.forEach(t => t.classList.remove('active'));
             // Add active class to clicked tab
             this.classList.add('active');
-            
+
             // Show/hide appropriate workflow list
             const tabType = this.dataset.tab;
             if (tabType === 'system') {
@@ -107,44 +106,44 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-    
+
     // Action button handlers (placeholder for now)
     const createBtn = document.getElementById('create-workflow-btn');
     const editBtn = document.getElementById('edit-workflow-btn');
     const duplicateBtn = document.getElementById('duplicate-workflow-btn');
     const deleteBtn = document.getElementById('delete-workflow-btn');
-    
+
     createBtn.addEventListener('click', function() {
         console.log('Create workflow clicked');
         // TODO: Implement create workflow functionality
     });
-    
+
     editBtn.addEventListener('click', function() {
         console.log('Edit workflow clicked');
         // TODO: Implement edit workflow functionality
     });
-    
+
     duplicateBtn.addEventListener('click', function() {
         console.log('Duplicate workflow clicked');
         // TODO: Implement duplicate workflow functionality
     });
-    
+
     deleteBtn.addEventListener('click', function() {
         console.log('Delete workflow clicked');
         // TODO: Implement delete workflow functionality
     });
-    
+
     // Function to enable/disable action buttons based on selection
     function updateActionButtons(hasSelection) {
         editBtn.disabled = !hasSelection;
         duplicateBtn.disabled = !hasSelection;
         deleteBtn.disabled = !hasSelection;
     }
-    
+
     // Load workflows on page initialization
     loadWorkflows();
     console.log('Workflow management page initialized');
-    
+
     // Function to load workflows from both endpoints
     function loadWorkflows() {
         // Fetch both system and user workflows
@@ -155,7 +154,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(([systemData, userData]) => {
             console.log('System workflows:', systemData);
             console.log('User workflows:', userData);
-            
+
             // Process system workflows
             let systemWorkflows = [];
             if (systemData.status === 'success' && systemData.workflows) {
@@ -164,7 +163,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     type: 'system'
                 }));
             }
-            
+
             // Process user workflows
             let userWorkflows = [];
             if (userData.data && userData.data.documents) {
@@ -173,7 +172,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     type: 'user'
                 }));
             }
-            
+
             // Populate the lists
             populateWorkflowList('system-workflows', systemWorkflows);
             populateWorkflowList('user-workflows', userWorkflows);
@@ -184,12 +183,12 @@ document.addEventListener('DOMContentLoaded', function() {
             showErrorInList('user-workflows', 'Failed to load user workflows');
         });
     }
-    
+
     // Function to populate a workflow list
     function populateWorkflowList(containerId, workflows) {
         const container = document.getElementById(containerId);
         container.innerHTML = '';
-        
+
         if (workflows.length === 0) {
             container.innerHTML = `
                 <div class="workflow-list-empty">
@@ -203,30 +202,30 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             return;
         }
-        
+
         workflows.forEach(workflow => {
             const workflowItem = createWorkflowItem(workflow);
             container.appendChild(workflowItem);
         });
-        
+
         // Re-initialize Lucide icons for the new content
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
         }
     }
-    
+
     // Function to create a workflow item element
     function createWorkflowItem(workflow) {
         const item = document.createElement('div');
         item.className = 'workflow-item';
         item.dataset.workflowId = workflow.workflow_id || workflow._id;
         item.dataset.workflowType = workflow.type;
-        
+
         // Get workflow name and description
         const workflowName = workflow.workflow_name || workflow.workflowId || 'Unnamed Workflow';
         const description = workflow.description || 'No description available';
-        const stepCount = workflow.steps?.steps?.length || workflow.steps?.length || 0;
-        
+        const stepCount = workflow.steps?.steps?.length || 0;
+
         item.innerHTML = `
             <div class="workflow-item-name">${workflowName}</div>
             <div class="workflow-item-meta">
@@ -234,15 +233,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 <span class="workflow-step-count">${stepCount} steps</span>
             </div>
         `;
-        
+
         // Add click handler for selection
         item.addEventListener('click', function() {
             selectWorkflow(this, workflow);
         });
-        
+
         return item;
     }
-    
+
     // Function to show error in workflow list
     function showErrorInList(containerId, message) {
         const container = document.getElementById(containerId);
@@ -257,37 +256,37 @@ document.addEventListener('DOMContentLoaded', function() {
             lucide.createIcons();
         }
     }
-    
+
     // Function to handle workflow selection
     function selectWorkflow(element, workflow) {
         // Remove previous selection
         document.querySelectorAll('.workflow-item.selected').forEach(item => {
             item.classList.remove('selected');
         });
-        
+
         // Add selection to clicked item
         element.classList.add('selected');
-        
+
         // Update action buttons
         updateActionButtons(true);
-        
+
         // Update workflow details panel
         updateWorkflowDetails(workflow);
-        
+
         // Store selected workflow globally
         window.selectedWorkflow = workflow;
     }
-    
+
     // Function to update workflow details panel
     function updateWorkflowDetails(workflow) {
         const detailContent = document.querySelector('.workflow-detail-content');
-        
+
         const workflowName = workflow.workflow_name || workflow.workflowId || 'Unnamed Workflow';
         const description = workflow.description || 'No description available';
-        const stepCount = workflow.steps?.steps?.length || workflow.steps?.length || 0;
+        const stepCount = workflow.steps?.steps?.length || 0;
         const workflowType = workflow.workflowType || workflow.workflow_type || 'unknown';
-        const steps = workflow.steps?.steps || workflow.steps || [];
-        
+        const steps = workflow.steps?.steps || [];
+
         let stepsHtml = '';
         if (steps.length > 0) {
             stepsHtml = steps.map((step, index) => `
@@ -298,7 +297,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             `).join('');
         }
-        
+
         detailContent.innerHTML = `
             <div class="workflow-detail-info">
                 <h3>${workflowName}</h3>
@@ -308,7 +307,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <span class="workflow-detail-workflow-type">${workflowType}</span>
                 </div>
                 <p class="workflow-detail-description">${description}</p>
-                
+
                 ${stepCount > 0 ? `
                     <div class="workflow-steps-section">
                         <h4>Workflow Steps</h4>
