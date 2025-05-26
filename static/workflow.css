@@ -560,7 +560,6 @@
     border-radius: var(--radius-sm);
     display: inline-flex;
     align-items: center;
-    gap: var(--spacing-xs);
 }
 
 .workflow-step-message.user-message .workflow-step-message-role {
@@ -654,21 +653,9 @@
     font-weight: 500;
 }
 
-/* Message count indicator */
+/* Message header */
 .workflow-step-messages-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
     margin-bottom: var(--spacing-md);
-}
-
-.workflow-step-messages-count {
-    background-color: var(--primary);
-    color: white;
-    padding: 2px 8px;
-    border-radius: var(--radius-full);
-    font-size: 0.7rem;
-    font-weight: 600;
 }
 
 .workflow-steps {

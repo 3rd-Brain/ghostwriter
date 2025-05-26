@@ -386,7 +386,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const messagesHeaderHtml = `
                 <div class="workflow-step-messages-header">
                     <span class="workflow-step-detail-label">Conversation Messages</span>
-                    <span class="workflow-step-messages-count">${messages.length}</span>
                 </div>
             `;
             
@@ -406,7 +405,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="workflow-step-message ${role}-message" data-message-id="${messageId}">
                         <div class="workflow-step-message-header">
                             <div class="workflow-step-message-role">
-                                <i data-lucide="${getRoleIcon(role)}" style="width: 12px; height: 12px;"></i>
                                 ${role}
                             </div>
                             <div class="workflow-step-message-actions">
@@ -415,9 +413,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 </button>
                             </div>
                         </div>
-                        <div class="workflow-step-message-content ${isLongContent ? 'collapsed' : ''}" id="${messageId}-content">
-                            ${formattedContent}
-                        </div>
+                        <div class="workflow-step-message-content ${isLongContent ? 'collapsed' : ''}" id="${messageId}-content">${formattedContent}</div>
                         ${isLongContent ? `
                             <button class="workflow-step-message-expand" onclick="toggleMessageContent('${messageId}')">
                                 <span class="expand-text">Show more</span>
