@@ -383,12 +383,52 @@ document.addEventListener('DOMContentLoaded', function() {
 
         let messagesHtml = '';
         if (messages && messages.length > 0) {
-            messagesHtml = messages.map(message => `
-                <div class="workflow-step-message">
-                    <div class="workflow-step-message-role">${message.role || 'Unknown'}</div>
-                    <div class="workflow-step-message-content">${message.content || ''}</div>
+            const messagesHeaderHtml = `
+                <div class="workflow-step-messages-header">
+                    <span class="workflow-step-detail-label">Conversation Messages</span>
+                    <span class="workflow-step-messages-count">${messages.length}</span>
                 </div>
-            `).join('');
+            `;
+            
+            const messagesListHtml = messages.map((message, index) => {
+                const role = (message.role || 'unknown').toLowerCase();
+                const content = message.content || '';
+                const isLongContent = content.length > 300;
+                const messageId = `message-${index}`;
+                
+                // Format content to highlight template variables
+                let formattedContent = content
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/\{([^}]+)\}/g, '<span class="template-variable">{$1}</span>');
+                
+                return `
+                    <div class="workflow-step-message ${role}-message" data-message-id="${messageId}">
+                        <div class="workflow-step-message-header">
+                            <div class="workflow-step-message-role">
+                                <i data-lucide="${getRoleIcon(role)}" style="width: 12px; height: 12px;"></i>
+                                ${role}
+                            </div>
+                            <div class="workflow-step-message-actions">
+                                <button class="workflow-step-message-action" onclick="copyMessageContent('${messageId}')" title="Copy content">
+                                    <i data-lucide="copy" style="width: 12px; height: 12px;"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="workflow-step-message-content ${isLongContent ? 'collapsed' : ''}" id="${messageId}-content">
+                            ${formattedContent}
+                        </div>
+                        ${isLongContent ? `
+                            <button class="workflow-step-message-expand" onclick="toggleMessageContent('${messageId}')">
+                                <span class="expand-text">Show more</span>
+                                <span class="collapse-text" style="display: none;">Show less</span>
+                            </button>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+            
+            messagesHtml = messagesHeaderHtml + messagesListHtml;
         }
 
         container.innerHTML = `
@@ -422,7 +462,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     ` : ''}
                     ${messagesHtml ? `
                         <div class="workflow-step-detail-section full-width">
-                            <div class="workflow-step-detail-label">Messages</div>
                             <div class="workflow-step-messages">
                                 ${messagesHtml}
                             </div>
@@ -438,6 +477,52 @@ document.addEventListener('DOMContentLoaded', function() {
             selectStepCard(firstCard);
         }
     }
+
+    // Helper function to get role icon
+    function getRoleIcon(role) {
+        switch (role.toLowerCase()) {
+            case 'user':
+                return 'user';
+            case 'assistant':
+                return 'bot';
+            case 'system':
+                return 'settings';
+            default:
+                return 'message-circle';
+        }
+    }
+
+    // Function to copy message content
+    window.copyMessageContent = function(messageId) {
+        const contentElement = document.getElementById(messageId + '-content');
+        if (contentElement) {
+            const text = contentElement.textContent || contentElement.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                // You could add a toast notification here
+                console.log('Message content copied to clipboard');
+            }).catch(err => {
+                console.error('Failed to copy message content:', err);
+            });
+        }
+    };
+
+    // Function to toggle message content expansion
+    window.toggleMessageContent = function(messageId) {
+        const contentElement = document.getElementById(messageId + '-content');
+        const button = contentElement.parentElement.querySelector('.workflow-step-message-expand');
+        const expandText = button.querySelector('.expand-text');
+        const collapseText = button.querySelector('.collapse-text');
+        
+        if (contentElement.classList.contains('collapsed')) {
+            contentElement.classList.remove('collapsed');
+            expandText.style.display = 'none';
+            collapseText.style.display = 'inline';
+        } else {
+            contentElement.classList.add('collapsed');
+            expandText.style.display = 'inline';
+            collapseText.style.display = 'none';
+        }
+    };
 });
 </script>
 {% endblock %}

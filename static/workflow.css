@@ -516,31 +516,159 @@
 .workflow-step-message {
     background-color: var(--background);
     border: 1px solid var(--border);
-    border-left: 3px solid var(--primary-light);
     border-radius: var(--radius-md);
     padding: var(--spacing-md);
-    margin-bottom: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+    position: relative;
+    overflow: hidden;
 }
 
 .workflow-step-message:last-child {
     margin-bottom: 0;
 }
 
+.workflow-step-message.user-message {
+    background-color: rgba(107, 53, 255, 0.05);
+    border-left: 4px solid var(--primary);
+}
+
+.workflow-step-message.assistant-message {
+    background-color: rgba(66, 153, 225, 0.05);
+    border-left: 4px solid var(--info);
+}
+
+.workflow-step-message.system-message {
+    background-color: rgba(245, 101, 101, 0.05);
+    border-left: 4px solid #f56565;
+}
+
+.workflow-step-message-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-sm);
+    padding-bottom: var(--spacing-xs);
+    border-bottom: 1px solid var(--border);
+}
+
 .workflow-step-message-role {
-    font-weight: 500;
-    color: var(--primary);
-    font-size: 0.8rem;
+    font-weight: 600;
+    font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    margin-bottom: var(--spacing-xs);
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.workflow-step-message.user-message .workflow-step-message-role {
+    background-color: var(--primary);
+    color: white;
+}
+
+.workflow-step-message.assistant-message .workflow-step-message-role {
+    background-color: var(--info);
+    color: white;
+}
+
+.workflow-step-message.system-message .workflow-step-message-role {
+    background-color: #f56565;
+    color: white;
+}
+
+.workflow-step-message-actions {
+    display: flex;
+    gap: var(--spacing-xs);
+}
+
+.workflow-step-message-action {
+    background: none;
+    border: none;
+    padding: 2px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.workflow-step-message-action:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: var(--text-primary);
 }
 
 .workflow-step-message-content {
     color: var(--text-primary);
     font-size: 0.85rem;
-    line-height: 1.5;
+    line-height: 1.6;
     white-space: pre-wrap;
     overflow-wrap: break-word;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.workflow-step-message-content.collapsed {
+    max-height: 120px;
+    overflow: hidden;
+    position: relative;
+}
+
+.workflow-step-message-content.collapsed::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 30px;
+    background: linear-gradient(transparent, var(--background));
+}
+
+.workflow-step-message-expand {
+    margin-top: var(--spacing-sm);
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--primary);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.workflow-step-message-expand:hover {
+    background-color: rgba(107, 53, 255, 0.05);
+    border-color: var(--primary);
+}
+
+/* Template variable highlighting in message content */
+.workflow-step-message-content .template-variable {
+    background-color: rgba(107, 53, 255, 0.1);
+    color: var(--primary);
+    padding: 1px 4px;
+    border-radius: var(--radius-sm);
+    font-family: 'Courier New', monospace;
+    font-size: 0.8em;
+    font-weight: 500;
+}
+
+/* Message count indicator */
+.workflow-step-messages-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-md);
+}
+
+.workflow-step-messages-count {
+    background-color: var(--primary);
+    color: white;
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    font-size: 0.7rem;
+    font-weight: 600;
 }
 
 .workflow-steps {
