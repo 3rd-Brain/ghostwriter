@@ -126,14 +126,12 @@
     padding: var(--spacing-md);
     border-top: 1px solid var(--border);
     background-color: var(--background);
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: var(--spacing-sm);
-    flex-wrap: wrap;
 }
 
 .workflow-action-btn {
-    flex: 1;
-    min-width: 60px;
     padding: var(--spacing-sm) var(--spacing-md);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
@@ -143,6 +141,7 @@
     font-weight: 500;
     cursor: pointer;
     transition: var(--transition-fast);
+    text-align: center;
 }
 
 .workflow-action-btn:hover:not(:disabled) {
@@ -245,14 +244,15 @@
     }
     
     .workflow-action-toolbar {
-        flex-wrap: nowrap;
-        overflow-x: auto;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--spacing-xs);
     }
     
     .workflow-action-btn {
         white-space: nowrap;
-        flex: none;
         min-width: 80px;
+        font-size: 0.8rem;
+        padding: var(--spacing-xs) var(--spacing-sm);
     }
 }
 
