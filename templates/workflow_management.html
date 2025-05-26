@@ -141,8 +141,185 @@ document.addEventListener('DOMContentLoaded', function() {
         deleteBtn.disabled = !hasSelection;
     }
     
-    // TODO: Load workflows and implement selection functionality
+    // Load workflows on page initialization
+    loadWorkflows();
     console.log('Workflow management page initialized');
+    
+    // Function to load workflows from both endpoints
+    function loadWorkflows() {
+        // Fetch both system and user workflows
+        Promise.all([
+            fetch('/api/workflows').then(response => response.json()),
+            fetch('/api/user-workflows').then(response => response.json())
+        ])
+        .then(([systemData, userData]) => {
+            console.log('System workflows:', systemData);
+            console.log('User workflows:', userData);
+            
+            // Process system workflows
+            let systemWorkflows = [];
+            if (systemData.status === 'success' && systemData.workflows) {
+                systemWorkflows = systemData.workflows.map(workflow => ({
+                    ...workflow,
+                    type: 'system'
+                }));
+            }
+            
+            // Process user workflows
+            let userWorkflows = [];
+            if (userData.data && userData.data.documents) {
+                userWorkflows = userData.data.documents.map(workflow => ({
+                    ...workflow,
+                    type: 'user'
+                }));
+            }
+            
+            // Populate the lists
+            populateWorkflowList('system-workflows', systemWorkflows);
+            populateWorkflowList('user-workflows', userWorkflows);
+        })
+        .catch(error => {
+            console.error('Error loading workflows:', error);
+            showErrorInList('system-workflows', 'Failed to load system workflows');
+            showErrorInList('user-workflows', 'Failed to load user workflows');
+        });
+    }
+    
+    // Function to populate a workflow list
+    function populateWorkflowList(containerId, workflows) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
+        
+        if (workflows.length === 0) {
+            container.innerHTML = `
+                <div class="workflow-list-empty">
+                    <i data-lucide="git-branch" class="workflow-list-empty-icon"></i>
+                    <p>No workflows found</p>
+                </div>
+            `;
+            // Re-initialize Lucide icons for the new content
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+            return;
+        }
+        
+        workflows.forEach(workflow => {
+            const workflowItem = createWorkflowItem(workflow);
+            container.appendChild(workflowItem);
+        });
+        
+        // Re-initialize Lucide icons for the new content
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    }
+    
+    // Function to create a workflow item element
+    function createWorkflowItem(workflow) {
+        const item = document.createElement('div');
+        item.className = 'workflow-item';
+        item.dataset.workflowId = workflow.workflow_id || workflow._id;
+        item.dataset.workflowType = workflow.type;
+        
+        // Get workflow name and description
+        const workflowName = workflow.workflow_name || workflow.workflowId || 'Unnamed Workflow';
+        const description = workflow.description || 'No description available';
+        const stepCount = workflow.steps?.steps?.length || workflow.steps?.length || 0;
+        
+        item.innerHTML = `
+            <div class="workflow-item-name">${workflowName}</div>
+            <div class="workflow-item-meta">
+                <span class="workflow-item-type ${workflow.type}">${workflow.type}</span>
+                <span class="workflow-step-count">${stepCount} steps</span>
+            </div>
+        `;
+        
+        // Add click handler for selection
+        item.addEventListener('click', function() {
+            selectWorkflow(this, workflow);
+        });
+        
+        return item;
+    }
+    
+    // Function to show error in workflow list
+    function showErrorInList(containerId, message) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = `
+            <div class="workflow-list-empty">
+                <i data-lucide="alert-circle" class="workflow-list-empty-icon"></i>
+                <p>${message}</p>
+            </div>
+        `;
+        // Re-initialize Lucide icons for the new content
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    }
+    
+    // Function to handle workflow selection
+    function selectWorkflow(element, workflow) {
+        // Remove previous selection
+        document.querySelectorAll('.workflow-item.selected').forEach(item => {
+            item.classList.remove('selected');
+        });
+        
+        // Add selection to clicked item
+        element.classList.add('selected');
+        
+        // Update action buttons
+        updateActionButtons(true);
+        
+        // Update workflow details panel
+        updateWorkflowDetails(workflow);
+        
+        // Store selected workflow globally
+        window.selectedWorkflow = workflow;
+    }
+    
+    // Function to update workflow details panel
+    function updateWorkflowDetails(workflow) {
+        const detailContent = document.querySelector('.workflow-detail-content');
+        
+        const workflowName = workflow.workflow_name || workflow.workflowId || 'Unnamed Workflow';
+        const description = workflow.description || 'No description available';
+        const stepCount = workflow.steps?.steps?.length || workflow.steps?.length || 0;
+        const workflowType = workflow.workflowType || workflow.workflow_type || 'unknown';
+        const steps = workflow.steps?.steps || workflow.steps || [];
+        
+        let stepsHtml = '';
+        if (steps.length > 0) {
+            stepsHtml = steps.map((step, index) => `
+                <div class="workflow-step">
+                    <h4>Step ${index + 1}: ${step.step_name || step.name || 'Unnamed Step'}</h4>
+                    <p><strong>Model:</strong> ${step.model || 'Not specified'}</p>
+                    <p><strong>Prompt:</strong> ${(step.prompt || '').substring(0, 100)}${step.prompt && step.prompt.length > 100 ? '...' : ''}</p>
+                </div>
+            `).join('');
+        }
+        
+        detailContent.innerHTML = `
+            <div class="workflow-detail-info">
+                <h3>${workflowName}</h3>
+                <div class="workflow-detail-meta">
+                    <span class="workflow-detail-type ${workflow.type}">${workflow.type} workflow</span>
+                    <span class="workflow-detail-step-count">${stepCount} steps</span>
+                    <span class="workflow-detail-workflow-type">${workflowType}</span>
+                </div>
+                <p class="workflow-detail-description">${description}</p>
+                
+                ${stepCount > 0 ? `
+                    <div class="workflow-steps-section">
+                        <h4>Workflow Steps</h4>
+                        <div class="workflow-steps">
+                            ${stepsHtml}
+                        </div>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }
 });
 </script>
 {% endblock %}

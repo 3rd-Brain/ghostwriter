@@ -281,6 +281,81 @@
     100% { transform: rotate(360deg); }
 }
 
+/* Workflow Details Styles */
+.workflow-detail-info h3 {
+    margin-bottom: var(--spacing-md);
+    color: var(--text-primary);
+    font-size: 1.25rem;
+}
+
+.workflow-detail-meta {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+    flex-wrap: wrap;
+}
+
+.workflow-detail-type,
+.workflow-detail-step-count,
+.workflow-detail-workflow-type {
+    background-color: var(--background);
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.workflow-detail-type.system {
+    background-color: rgba(66, 153, 225, 0.1);
+    color: var(--info);
+}
+
+.workflow-detail-type.user {
+    background-color: rgba(107, 53, 255, 0.1);
+    color: var(--primary);
+}
+
+.workflow-detail-description {
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-lg);
+    line-height: 1.5;
+}
+
+.workflow-steps-section h4 {
+    margin-bottom: var(--spacing-md);
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.workflow-steps {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.workflow-step {
+    background-color: var(--background);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+}
+
+.workflow-step h4 {
+    margin-bottom: var(--spacing-sm);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.workflow-step p {
+    margin-bottom: var(--spacing-xs);
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.workflow-step p:last-child {
+    margin-bottom: 0;
+}
+
 /* Workflow List Empty State */
 .workflow-list-empty {
     text-align: center;
