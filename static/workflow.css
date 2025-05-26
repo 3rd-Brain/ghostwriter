@@ -1,0 +1,296 @@
+
+/* Workflow Management Specific Styles */
+
+.workflow-container {
+    display: flex;
+    gap: var(--spacing-lg);
+    height: calc(100vh - 144px); /* Account for header and page title */
+    max-height: calc(100vh - 144px);
+}
+
+/* Left Panel - Workflow List */
+.workflow-left-panel {
+    width: 320px;
+    min-width: 320px;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    overflow: hidden;
+}
+
+/* Tab System */
+.workflow-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    background-color: var(--background);
+}
+
+.workflow-tab {
+    flex: 1;
+    padding: var(--spacing-md);
+    text-align: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: var(--transition-fast);
+    border-bottom: 2px solid transparent;
+}
+
+.workflow-tab.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+    background-color: var(--surface);
+}
+
+.workflow-tab:hover:not(.active) {
+    color: var(--text-primary);
+    background-color: rgba(107, 53, 255, 0.05);
+}
+
+/* Workflow List */
+.workflow-list-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--spacing-md);
+}
+
+.workflow-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.workflow-item {
+    padding: var(--spacing-md);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: var(--transition-fast);
+    background-color: var(--surface);
+}
+
+.workflow-item:hover {
+    border-color: var(--primary-light);
+    background-color: rgba(107, 53, 255, 0.05);
+}
+
+.workflow-item.selected {
+    border-color: var(--primary);
+    background-color: rgba(107, 53, 255, 0.1);
+    box-shadow: 0 0 0 1px var(--primary);
+}
+
+.workflow-item-name {
+    font-weight: 500;
+    margin-bottom: var(--spacing-xs);
+    color: var(--text-primary);
+}
+
+.workflow-item-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.workflow-item-type {
+    background-color: var(--background);
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.workflow-item-type.system {
+    background-color: rgba(66, 153, 225, 0.1);
+    color: var(--info);
+}
+
+.workflow-item-type.user {
+    background-color: rgba(107, 53, 255, 0.1);
+    color: var(--primary);
+}
+
+.workflow-step-count {
+    font-size: 0.75rem;
+}
+
+/* Action Toolbar */
+.workflow-action-toolbar {
+    padding: var(--spacing-md);
+    border-top: 1px solid var(--border);
+    background-color: var(--background);
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+}
+
+.workflow-action-btn {
+    flex: 1;
+    min-width: 60px;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background-color: var(--surface);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.workflow-action-btn:hover:not(:disabled) {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.workflow-action-btn.primary {
+    background-color: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.workflow-action-btn.primary:hover {
+    background-color: var(--primary-dark);
+}
+
+.workflow-action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    color: var(--text-secondary);
+}
+
+/* Right Panel - Workflow Details */
+.workflow-right-panel {
+    flex: 1;
+    background-color: var(--surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.workflow-detail-header {
+    padding: var(--spacing-lg);
+    border-bottom: 1px solid var(--border);
+    background-color: var(--background);
+}
+
+.workflow-detail-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: var(--spacing-xs);
+    color: var(--text-primary);
+}
+
+.workflow-detail-subtitle {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.workflow-detail-content {
+    flex: 1;
+    padding: var(--spacing-lg);
+    overflow-y: auto;
+}
+
+.workflow-detail-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.workflow-detail-empty-icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: var(--spacing-md);
+    opacity: 0.5;
+}
+
+.workflow-detail-empty-title {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-bottom: var(--spacing-sm);
+}
+
+.workflow-detail-empty-text {
+    font-size: 0.9rem;
+    max-width: 300px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .workflow-container {
+        flex-direction: column;
+        height: auto;
+        max-height: none;
+    }
+    
+    .workflow-left-panel {
+        width: 100%;
+        min-width: unset;
+        max-height: 400px;
+    }
+    
+    .workflow-action-toolbar {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+    }
+    
+    .workflow-action-btn {
+        white-space: nowrap;
+        flex: none;
+        min-width: 80px;
+    }
+}
+
+/* Loading States */
+.workflow-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-xl);
+    color: var(--text-secondary);
+}
+
+.workflow-loading-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border);
+    border-top: 2px solid var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-right: var(--spacing-sm);
+}
+
+/* Animation */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Workflow List Empty State */
+.workflow-list-empty {
+    text-align: center;
+    padding: var(--spacing-xl);
+    color: var(--text-secondary);
+}
+
+.workflow-list-empty-icon {
+    width: 32px;
+    height: 32px;
+    margin: 0 auto var(--spacing-md);
+    opacity: 0.5;
+}

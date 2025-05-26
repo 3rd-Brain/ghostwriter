@@ -7,6 +7,142 @@
 
 {% block page_subtitle %}Create and manage your content generation workflows{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="/static/workflow.css">
+{% endblock %}
+
 {% block content %}
-<!-- Content will be added later -->
+<div class="workflow-container">
+    <!-- Left Panel - Workflow List -->
+    <div class="workflow-left-panel">
+        <!-- Tab System -->
+        <div class="workflow-tabs">
+            <button class="workflow-tab active" data-tab="system">
+                System Workflows
+            </button>
+            <button class="workflow-tab" data-tab="user">
+                User Workflows
+            </button>
+        </div>
+        
+        <!-- Workflow Lists -->
+        <div class="workflow-list-container">
+            <!-- System Workflows List -->
+            <div id="system-workflows" class="workflow-list">
+                <div class="workflow-loading">
+                    <div class="workflow-loading-spinner"></div>
+                    Loading workflows...
+                </div>
+            </div>
+            
+            <!-- User Workflows List (hidden by default) -->
+            <div id="user-workflows" class="workflow-list" style="display: none;">
+                <div class="workflow-loading">
+                    <div class="workflow-loading-spinner"></div>
+                    Loading workflows...
+                </div>
+            </div>
+        </div>
+        
+        <!-- Action Toolbar -->
+        <div class="workflow-action-toolbar">
+            <button class="workflow-action-btn primary" id="create-workflow-btn">
+                Create
+            </button>
+            <button class="workflow-action-btn" id="edit-workflow-btn" disabled>
+                Edit
+            </button>
+            <button class="workflow-action-btn" id="duplicate-workflow-btn" disabled>
+                Duplicate
+            </button>
+            <button class="workflow-action-btn" id="delete-workflow-btn" disabled>
+                Delete
+            </button>
+        </div>
+    </div>
+    
+    <!-- Right Panel - Workflow Details -->
+    <div class="workflow-right-panel">
+        <div class="workflow-detail-header">
+            <h2 class="workflow-detail-title">Workflow Details</h2>
+            <p class="workflow-detail-subtitle">Select a workflow to view its configuration</p>
+        </div>
+        
+        <div class="workflow-detail-content">
+            <div class="workflow-detail-empty">
+                <i data-lucide="git-branch" class="workflow-detail-empty-icon"></i>
+                <h3 class="workflow-detail-empty-title">No Workflow Selected</h3>
+                <p class="workflow-detail-empty-text">
+                    Choose a workflow from the left panel to view its details and configuration, or create a new one to get started.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Tab switching functionality
+    const tabs = document.querySelectorAll('.workflow-tab');
+    const systemList = document.getElementById('system-workflows');
+    const userList = document.getElementById('user-workflows');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            // Remove active class from all tabs
+            tabs.forEach(t => t.classList.remove('active'));
+            // Add active class to clicked tab
+            this.classList.add('active');
+            
+            // Show/hide appropriate workflow list
+            const tabType = this.dataset.tab;
+            if (tabType === 'system') {
+                systemList.style.display = 'block';
+                userList.style.display = 'none';
+            } else {
+                systemList.style.display = 'none';
+                userList.style.display = 'block';
+            }
+        });
+    });
+    
+    // Action button handlers (placeholder for now)
+    const createBtn = document.getElementById('create-workflow-btn');
+    const editBtn = document.getElementById('edit-workflow-btn');
+    const duplicateBtn = document.getElementById('duplicate-workflow-btn');
+    const deleteBtn = document.getElementById('delete-workflow-btn');
+    
+    createBtn.addEventListener('click', function() {
+        console.log('Create workflow clicked');
+        // TODO: Implement create workflow functionality
+    });
+    
+    editBtn.addEventListener('click', function() {
+        console.log('Edit workflow clicked');
+        // TODO: Implement edit workflow functionality
+    });
+    
+    duplicateBtn.addEventListener('click', function() {
+        console.log('Duplicate workflow clicked');
+        // TODO: Implement duplicate workflow functionality
+    });
+    
+    deleteBtn.addEventListener('click', function() {
+        console.log('Delete workflow clicked');
+        // TODO: Implement delete workflow functionality
+    });
+    
+    // Function to enable/disable action buttons based on selection
+    function updateActionButtons(hasSelection) {
+        editBtn.disabled = !hasSelection;
+        duplicateBtn.disabled = !hasSelection;
+        deleteBtn.disabled = !hasSelection;
+    }
+    
+    // TODO: Load workflows and implement selection functionality
+    console.log('Workflow management page initialized');
+});
+</script>
 {% endblock %}
