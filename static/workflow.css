@@ -714,3 +714,255 @@
     margin: 0 auto var(--spacing-md);
     opacity: 0.5;
 }
+
+/* Workflow Creation/Edit Form */
+.workflow-creation-form {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.workflow-creation-form-header {
+    padding: var(--spacing-lg);
+    border-bottom: 1px solid var(--border);
+    background-color: var(--background);
+}
+
+.workflow-creation-form-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: var(--spacing-xs);
+    color: var(--text-primary);
+}
+
+.workflow-creation-form-subtitle {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.workflow-creation-form-content {
+    flex: 1;
+    padding: var(--spacing-lg);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.workflow-form-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.workflow-form-section-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.workflow-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.workflow-form-label {
+    font-weight: 500;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.workflow-form-input,
+.workflow-form-textarea,
+.workflow-form-select {
+    padding: var(--spacing-sm);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background-color: var(--surface);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    transition: var(--transition-fast);
+}
+
+.workflow-form-input:focus,
+.workflow-form-textarea:focus,
+.workflow-form-select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(107, 53, 255, 0.1);
+}
+
+.workflow-form-textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.workflow-form-hint {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+/* Workflow Steps Management */
+.workflow-steps-management {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.workflow-steps-management-header {
+    padding: var(--spacing-md);
+    background-color: var(--background);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.workflow-steps-management-title {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.workflow-add-step-btn {
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.workflow-add-step-btn:hover {
+    background-color: var(--primary-dark);
+}
+
+.workflow-steps-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.workflow-step-form-item {
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--border);
+    background-color: var(--surface);
+}
+
+.workflow-step-form-item:last-child {
+    border-bottom: none;
+}
+
+.workflow-step-form-item-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-sm);
+}
+
+.workflow-step-form-item-title {
+    font-weight: 500;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.workflow-step-form-item-actions {
+    display: flex;
+    gap: var(--spacing-xs);
+}
+
+.workflow-step-action-btn {
+    background: none;
+    border: 1px solid var(--border);
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    color: var(--text-secondary);
+}
+
+.workflow-step-action-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.workflow-step-action-btn.danger:hover {
+    border-color: #dc3545;
+    color: #dc3545;
+}
+
+.workflow-step-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-sm);
+}
+
+.workflow-step-form-grid .workflow-form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+/* Form Actions */
+.workflow-creation-form-actions {
+    padding: var(--spacing-lg);
+    border-top: 1px solid var(--border);
+    background-color: var(--background);
+    display: flex;
+    gap: var(--spacing-sm);
+    justify-content: flex-end;
+}
+
+.workflow-form-button {
+    padding: var(--spacing-sm) var(--spacing-lg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background-color: var(--surface);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.workflow-form-button:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.workflow-form-button.primary {
+    background-color: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.workflow-form-button.primary:hover {
+    background-color: var(--primary-dark);
+}
+
+.workflow-form-button.secondary {
+    background-color: var(--background);
+    color: var(--text-secondary);
+}
+
+.workflow-form-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Responsive adjustments for form */
+@media (max-width: 768px) {
+    .workflow-step-form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .workflow-creation-form-actions {
+        flex-direction: column;
+    }
+    
+    .workflow-form-button {
+        text-align: center;
+    }
+}

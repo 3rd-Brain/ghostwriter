@@ -76,6 +76,71 @@
                 </p>
             </div>
         </div>
+
+        <!-- Workflow Creation/Edit Form (hidden by default) -->
+        <div class="workflow-creation-form" id="workflow-creation-form" style="display: none;">
+            <div class="workflow-creation-form-header">
+                <h2 class="workflow-creation-form-title" id="workflow-form-title">Create New Workflow</h2>
+                <p class="workflow-creation-form-subtitle" id="workflow-form-subtitle">Configure your content generation workflow</p>
+            </div>
+
+            <div class="workflow-creation-form-content">
+                <!-- Basic Information Section -->
+                <div class="workflow-form-section">
+                    <h3 class="workflow-form-section-title">Basic Information</h3>
+                    <div class="workflow-form-group">
+                        <label class="workflow-form-label" for="workflow-form-name">Workflow Name</label>
+                        <input type="text" id="workflow-form-name" class="workflow-form-input" placeholder="Enter workflow name..." required>
+                        <span class="workflow-form-hint">Give your workflow a descriptive name</span>
+                    </div>
+                    <div class="workflow-form-group">
+                        <label class="workflow-form-label" for="workflow-form-type">Workflow Type</label>
+                        <select id="workflow-form-type" class="workflow-form-select" required>
+                            <option value="">Select workflow type</option>
+                            <option value="short_form_social">Short Form Social</option>
+                            <option value="atomic_essay">Atomic Essay</option>
+                            <option value="mid_form_social">Mid Form Social</option>
+                            <option value="long_form_content">Long Form Content</option>
+                            <option value="custom">Custom</option>
+                        </select>
+                    </div>
+                    <div class="workflow-form-group">
+                        <label class="workflow-form-label" for="workflow-form-description">Description</label>
+                        <textarea id="workflow-form-description" class="workflow-form-textarea" placeholder="Describe what this workflow does..." rows="3"></textarea>
+                        <span class="workflow-form-hint">Optional: Provide details about this workflow's purpose</span>
+                    </div>
+                </div>
+
+                <!-- Workflow Steps Section -->
+                <div class="workflow-form-section">
+                    <div class="workflow-steps-management">
+                        <div class="workflow-steps-management-header">
+                            <h3 class="workflow-steps-management-title">Workflow Steps</h3>
+                            <button type="button" class="workflow-add-step-btn" id="workflow-add-step-btn">
+                                Add Step
+                            </button>
+                        </div>
+                        <div class="workflow-steps-list" id="workflow-steps-list">
+                            <div class="workflow-step-placeholder" style="padding: var(--spacing-xl); text-align: center; color: var(--text-secondary);">
+                                No steps added yet. Click "Add Step" to get started.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="workflow-creation-form-actions">
+                <button type="button" class="workflow-form-button secondary" id="workflow-form-cancel">
+                    Cancel
+                </button>
+                <button type="button" class="workflow-form-button" id="workflow-form-save-draft">
+                    Save as Draft
+                </button>
+                <button type="button" class="workflow-form-button primary" id="workflow-form-save">
+                    Save Workflow
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -115,7 +180,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     createBtn.addEventListener('click', function() {
         console.log('Create workflow clicked');
-        // TODO: Implement create workflow functionality
+        showWorkflowForm('create');
     });
 
     editBtn.addEventListener('click', function() {
@@ -519,6 +584,198 @@ document.addEventListener('DOMContentLoaded', function() {
             collapseText.style.display = 'none';
         }
     };
+
+    // Workflow Form Management Functions
+    function showWorkflowForm(mode, workflow = null) {
+        const detailContent = document.querySelector('.workflow-detail-content');
+        const workflowForm = document.getElementById('workflow-creation-form');
+        const formTitle = document.getElementById('workflow-form-title');
+        const formSubtitle = document.getElementById('workflow-form-subtitle');
+        
+        // Hide detail content and show form
+        detailContent.style.display = 'none';
+        workflowForm.style.display = 'flex';
+        
+        // Update form title and subtitle based on mode
+        if (mode === 'create') {
+            formTitle.textContent = 'Create New Workflow';
+            formSubtitle.textContent = 'Configure your content generation workflow';
+            clearWorkflowForm();
+        } else if (mode === 'edit' && workflow) {
+            formTitle.textContent = 'Edit Workflow';
+            formSubtitle.textContent = `Editing: ${workflow.workflow_name || 'Unnamed Workflow'}`;
+            populateWorkflowForm(workflow);
+        }
+
+        // Update action buttons in left panel
+        updateActionButtons(false);
+    }
+
+    function hideWorkflowForm() {
+        const detailContent = document.querySelector('.workflow-detail-content');
+        const workflowForm = document.getElementById('workflow-creation-form');
+        
+        // Show detail content and hide form
+        detailContent.style.display = 'block';
+        workflowForm.style.display = 'none';
+        
+        // Clear form
+        clearWorkflowForm();
+    }
+
+    function clearWorkflowForm() {
+        document.getElementById('workflow-form-name').value = '';
+        document.getElementById('workflow-form-type').value = '';
+        document.getElementById('workflow-form-description').value = '';
+        
+        // Clear steps
+        const stepsList = document.getElementById('workflow-steps-list');
+        stepsList.innerHTML = `
+            <div class="workflow-step-placeholder" style="padding: var(--spacing-xl); text-align: center; color: var(--text-secondary);">
+                No steps added yet. Click "Add Step" to get started.
+            </div>
+        `;
+    }
+
+    function populateWorkflowForm(workflow) {
+        document.getElementById('workflow-form-name').value = workflow.workflow_name || '';
+        document.getElementById('workflow-form-type').value = workflow.workflow_type || workflow.workflowType || '';
+        document.getElementById('workflow-form-description').value = workflow.description || '';
+        
+        // Populate steps if they exist
+        const steps = workflow.steps?.steps || [];
+        if (steps.length > 0) {
+            populateWorkflowSteps(steps);
+        }
+    }
+
+    function populateWorkflowSteps(steps) {
+        const stepsList = document.getElementById('workflow-steps-list');
+        stepsList.innerHTML = '';
+        
+        steps.forEach((step, index) => {
+            addWorkflowStepToForm(step, index);
+        });
+    }
+
+    function addWorkflowStepToForm(stepData = null, index = null) {
+        const stepsList = document.getElementById('workflow-steps-list');
+        
+        // Remove placeholder if it exists
+        const placeholder = stepsList.querySelector('.workflow-step-placeholder');
+        if (placeholder) {
+            placeholder.remove();
+        }
+        
+        const stepIndex = index !== null ? index : stepsList.children.length;
+        const stepItem = document.createElement('div');
+        stepItem.className = 'workflow-step-form-item';
+        stepItem.dataset.stepIndex = stepIndex;
+        
+        const stepName = stepData ? (stepData.Step_name || stepData.step_name || `Step ${stepIndex + 1}`) : `Step ${stepIndex + 1}`;
+        const stepModel = stepData ? (stepData.Model || stepData.model || '') : '';
+        const stepOrder = stepData ? (stepData.Order || stepIndex + 1) : stepIndex + 1;
+        const systemPrompt = stepData ? (stepData.System_prompt || stepData.system_prompt || '') : '';
+        const temperature = stepData ? (stepData.Temperature || stepData.temperature || 0.7) : 0.7;
+        const maxTokens = stepData ? (stepData.Max_tokens || stepData.max_tokens || 1000) : 1000;
+        
+        stepItem.innerHTML = `
+            <div class="workflow-step-form-item-header">
+                <div class="workflow-step-form-item-title">${stepName}</div>
+                <div class="workflow-step-form-item-actions">
+                    <button type="button" class="workflow-step-action-btn" onclick="moveStepUp(${stepIndex})">↑</button>
+                    <button type="button" class="workflow-step-action-btn" onclick="moveStepDown(${stepIndex})">↓</button>
+                    <button type="button" class="workflow-step-action-btn danger" onclick="removeWorkflowStep(${stepIndex})">×</button>
+                </div>
+            </div>
+            <div class="workflow-step-form-grid">
+                <div class="workflow-form-group">
+                    <label class="workflow-form-label">Step Name</label>
+                    <input type="text" class="workflow-form-input step-name" value="${stepName}" placeholder="Enter step name">
+                </div>
+                <div class="workflow-form-group">
+                    <label class="workflow-form-label">Model</label>
+                    <select class="workflow-form-select step-model">
+                        <option value="">Select model</option>
+                        <option value="claude-3-5-sonnet-20241022" ${stepModel === 'claude-3-5-sonnet-20241022' ? 'selected' : ''}>Claude 3.5 Sonnet</option>
+                        <option value="gpt-4o" ${stepModel === 'gpt-4o' ? 'selected' : ''}>GPT-4O</option>
+                        <option value="gpt-4o-mini" ${stepModel === 'gpt-4o-mini' ? 'selected' : ''}>GPT-4O Mini</option>
+                    </select>
+                </div>
+                <div class="workflow-form-group">
+                    <label class="workflow-form-label">Order</label>
+                    <input type="number" class="workflow-form-input step-order" value="${stepOrder}" min="1">
+                </div>
+                <div class="workflow-form-group">
+                    <label class="workflow-form-label">Temperature</label>
+                    <input type="number" class="workflow-form-input step-temperature" value="${temperature}" min="0" max="2" step="0.1">
+                </div>
+                <div class="workflow-form-group">
+                    <label class="workflow-form-label">Max Tokens</label>
+                    <input type="number" class="workflow-form-input step-max-tokens" value="${maxTokens}" min="1">
+                </div>
+                <div class="workflow-form-group full-width">
+                    <label class="workflow-form-label">System Prompt</label>
+                    <textarea class="workflow-form-textarea step-system-prompt" rows="4" placeholder="Enter system prompt...">${systemPrompt}</textarea>
+                </div>
+            </div>
+        `;
+        
+        stepsList.appendChild(stepItem);
+    }
+
+    // Global functions for step management
+    window.removeWorkflowStep = function(stepIndex) {
+        const stepItem = document.querySelector(`[data-step-index="${stepIndex}"]`);
+        if (stepItem) {
+            stepItem.remove();
+            
+            // Show placeholder if no steps remain
+            const stepsList = document.getElementById('workflow-steps-list');
+            if (stepsList.children.length === 0) {
+                stepsList.innerHTML = `
+                    <div class="workflow-step-placeholder" style="padding: var(--spacing-xl); text-align: center; color: var(--text-secondary);">
+                        No steps added yet. Click "Add Step" to get started.
+                    </div>
+                `;
+            }
+        }
+    };
+
+    window.moveStepUp = function(stepIndex) {
+        const stepItem = document.querySelector(`[data-step-index="${stepIndex}"]`);
+        const prevStep = stepItem?.previousElementSibling;
+        if (stepItem && prevStep && !prevStep.classList.contains('workflow-step-placeholder')) {
+            stepItem.parentNode.insertBefore(stepItem, prevStep);
+        }
+    };
+
+    window.moveStepDown = function(stepIndex) {
+        const stepItem = document.querySelector(`[data-step-index="${stepIndex}"]`);
+        const nextStep = stepItem?.nextElementSibling;
+        if (stepItem && nextStep) {
+            stepItem.parentNode.insertBefore(nextStep, stepItem);
+        }
+    };
+
+    // Form event handlers
+    document.getElementById('workflow-add-step-btn').addEventListener('click', function() {
+        addWorkflowStepToForm();
+    });
+
+    document.getElementById('workflow-form-cancel').addEventListener('click', function() {
+        hideWorkflowForm();
+    });
+
+    document.getElementById('workflow-form-save-draft').addEventListener('click', function() {
+        console.log('Save as draft clicked');
+        // TODO: Implement save as draft functionality
+    });
+
+    document.getElementById('workflow-form-save').addEventListener('click', function() {
+        console.log('Save workflow clicked');
+        // TODO: Implement save workflow functionality
+    });
 });
 </script>
 {% endblock %}
