@@ -288,19 +288,16 @@ def workflow_delete(workflow_id: str) -> dict:
         raise Exception(
             "ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
 
-    # Get the current user's username from the environment
-    CURRENT_USERNAME = os.environ.get(
-        "CURRENT_USERNAME", "GentOfTech")  # Default to GentOfTech if not set
-
-    # Use the current user's username for the URL path
-    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/{CURRENT_USERNAME}/workflows"
+    # Use the proper user workflow collection
+    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/user_content_keyspace/user_workflows"
 
     headers = {
         "Token": ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER,
         "Content-Type": "application/json"
     }
 
-    payload = {"deleteOne": {"filter": {"Workflow_ID": workflow_id}}}
+    # Use the correct field name for workflow ID (matching the update function)
+    payload = {"deleteOne": {"filter": {"workflowId": workflow_id}}}
 
     try:
         print(f"Sending delete request to AstraDB...")
