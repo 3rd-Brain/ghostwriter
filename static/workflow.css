@@ -395,6 +395,404 @@
     100% { transform: rotate(360deg); }
 }
 
+/* Edit Mode Specific Styles */
+.workflow-edit-form {
+    padding: var(--spacing-lg);
+}
+
+.workflow-edit-section {
+    margin-bottom: var(--spacing-xl);
+    padding: var(--spacing-lg);
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+}
+
+.workflow-edit-section h3 {
+    margin: 0 0 var(--spacing-lg) 0;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.workflow-edit-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-lg);
+}
+
+.workflow-edit-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.workflow-edit-field.full-width {
+    grid-column: 1 / -1;
+}
+
+.workflow-edit-label {
+    font-weight: 500;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin-bottom: var(--spacing-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.workflow-edit-input,
+.workflow-edit-select,
+.workflow-edit-textarea {
+    padding: var(--spacing-md);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.9rem;
+    transition: var(--transition-fast);
+    background-color: var(--background);
+}
+
+.workflow-edit-input:focus,
+.workflow-edit-select:focus,
+.workflow-edit-textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(107, 53, 255, 0.1);
+}
+
+.workflow-edit-textarea {
+    resize: vertical;
+    min-height: 80px;
+    line-height: 1.5;
+}
+
+.workflow-edit-textarea.large {
+    min-height: 150px;
+}
+
+.workflow-edit-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background-color: var(--surface);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    text-decoration: none;
+}
+
+.workflow-edit-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.workflow-edit-btn-primary {
+    background-color: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.workflow-edit-btn-primary:hover {
+    background-color: var(--primary-dark);
+}
+
+.workflow-edit-btn-secondary {
+    background-color: var(--background);
+    color: var(--text-secondary);
+}
+
+.workflow-edit-btn-secondary:hover {
+    background-color: var(--surface);
+    color: var(--text-primary);
+}
+
+/* Steps Header */
+.workflow-steps-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-md);
+}
+
+.workflow-steps-header h3 {
+    margin: 0;
+}
+
+/* Edit Step Cards */
+.edit-step-card {
+    position: relative;
+}
+
+.workflow-step-card-actions {
+    display: flex;
+    gap: 2px;
+    margin-top: var(--spacing-xs);
+}
+
+.step-action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background-color: rgba(0, 0, 0, 0.1);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: var(--transition-fast);
+    padding: 0;
+}
+
+.step-action-btn:hover:not(:disabled) {
+    background-color: rgba(0, 0, 0, 0.2);
+    color: var(--text-primary);
+}
+
+.step-action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.step-action-btn.step-delete:hover:not(:disabled) {
+    background-color: rgba(245, 101, 101, 0.2);
+    color: #f56565;
+}
+
+/* Temperature Slider */
+.temperature-slider-container {
+    position: relative;
+    margin-top: var(--spacing-xs);
+}
+
+.workflow-edit-slider {
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: linear-gradient(to right, #4299e1, #9f7aea, #f56565);
+    outline: none;
+    -webkit-appearance: none;
+}
+
+.workflow-edit-slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--primary);
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.workflow-edit-slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--primary);
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.slider-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: var(--spacing-xs);
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+/* Step Edit Container */
+.workflow-step-edit-container {
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    margin-top: var(--spacing-md);
+}
+
+.workflow-step-edit-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 1px solid var(--border);
+}
+
+.workflow-step-edit-title {
+    flex: 1;
+}
+
+.workflow-step-edit-title input {
+    width: 100%;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.workflow-step-edit-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: var(--spacing-lg);
+}
+
+/* Messages Editor */
+.messages-editor-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-md);
+}
+
+.messages-editor {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background-color: var(--background);
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.messages-editor-empty {
+    padding: var(--spacing-lg);
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.message-editor-item {
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--border);
+}
+
+.message-editor-item:last-child {
+    border-bottom: none;
+}
+
+.message-editor-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-sm);
+}
+
+.message-role-select {
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    background-color: var(--surface);
+}
+
+.message-editor-actions {
+    display: flex;
+    gap: 2px;
+}
+
+.message-action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background-color: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.message-action-btn:hover:not(:disabled) {
+    background-color: rgba(0, 0, 0, 0.1);
+    color: var(--text-primary);
+}
+
+.message-action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.message-action-btn.message-delete:hover:not(:disabled) {
+    background-color: rgba(245, 101, 101, 0.1);
+    color: #f56565;
+}
+
+.message-content-editor {
+    width: 100%;
+    min-height: 80px;
+    padding: var(--spacing-sm);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    resize: vertical;
+    background-color: var(--surface);
+}
+
+.message-content-editor:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(107, 53, 255, 0.1);
+}
+
+/* Empty Step Editor */
+.workflow-step-empty-editor {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    margin-top: var(--spacing-md);
+}
+
+.workflow-step-empty-content {
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.workflow-step-empty-icon {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto var(--spacing-md);
+    opacity: 0.5;
+}
+
+.workflow-step-empty-content h4 {
+    margin: 0 0 var(--spacing-sm) 0;
+    color: var(--text-primary);
+}
+
+.workflow-step-empty-content p {
+    margin: 0 0 var(--spacing-lg) 0;
+    max-width: 300px;
+}
+
+/* Responsive adjustments for edit mode */
+@media (max-width: 768px) {
+    .workflow-edit-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .workflow-step-edit-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .workflow-steps-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--spacing-sm);
+    }
+    
+    .workflow-step-card-actions {
+        flex-wrap: wrap;
+    }
+}
+
 /* Workflow Details Styles */
 .workflow-detail-info h3 {
     margin-bottom: var(--spacing-md);
