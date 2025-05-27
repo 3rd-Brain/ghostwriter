@@ -566,8 +566,20 @@ document.addEventListener('DOMContentLoaded', function() {
                             </button>
                         </div>
                         
-                        <div id="workflow-steps-container" class="workflow-steps-container">
-                            <!-- Steps will be added here -->
+                        <!-- Horizontal Step Navigation -->
+                        <div class="workflow-steps-nav">
+                            <div class="workflow-steps-carousel" id="workflow-creation-steps-carousel">
+                                <!-- Step navigation cards will be populated here -->
+                            </div>
+                        </div>
+                        
+                        <!-- Step Editor Container -->
+                        <div id="workflow-step-editor-container" class="workflow-step-detail-container" style="margin-top: var(--spacing-lg);">
+                            <div class="workflow-creation-placeholder">
+                                <p style="text-align: center; color: var(--text-secondary); padding: var(--spacing-xl);">
+                                    Click "Add Step" to create your first workflow step
+                                </p>
+                            </div>
                         </div>
                     </div>
 
@@ -598,81 +610,32 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Function to add a new workflow step
     function addWorkflowStep() {
-        const container = document.getElementById('workflow-steps-container');
-        const stepNumber = container.children.length + 1;
+        const carousel = document.getElementById('workflow-creation-steps-carousel');
+        const stepNumber = carousel.children.length + 1;
         
-        const stepElement = document.createElement('div');
-        stepElement.className = 'workflow-step-form';
-        stepElement.dataset.stepNumber = stepNumber;
+        // Create step data object
+        const stepData = {
+            stepNumber: stepNumber,
+            stepName: `Step ${stepNumber}`,
+            model: '',
+            systemPrompt: '',
+            temperature: '',
+            messages: []
+        };
         
-        stepElement.innerHTML = `
-            <div class="workflow-step-header">
-                <h4 class="workflow-step-title">Step ${stepNumber}</h4>
-                <button type="button" class="workflow-step-remove" onclick="removeWorkflowStep(this)">
-                    <i data-lucide="x" style="width: 16px; height: 16px;"></i>
-                </button>
-            </div>
-            
-            <div class="workflow-step-content">
-                <div class="workflow-form-row">
-                    <div class="workflow-form-group">
-                        <label class="workflow-form-label">Step Name</label>
-                        <input type="text" name="step_name" class="workflow-form-input" placeholder="e.g., initial_generation" required>
-                    </div>
-                </div>
-                
-                <div class="workflow-form-row">
-                    <div class="workflow-form-group">
-                        <label class="workflow-form-label">Model</label>
-                        <select name="model" class="workflow-form-select" required>
-                            <option value="">Select model</option>
-                            <option value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet</option>
-                            <option value="claude-3-haiku-20240307">Claude 3 Haiku</option>
-                            <option value="gpt-4o">GPT-4o</option>
-                            <option value="gpt-4o-mini">GPT-4o Mini</option>
-                            <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                        </select>
-                    </div>
-                    
-                    <div class="workflow-form-group">
-                        <label class="workflow-form-label">Temperature</label>
-                        <select name="temperature" class="workflow-form-select" required>
-                            <option value="">Select creativity level</option>
-                            <option value="0.3">Strict (0.3)</option>
-                            <option value="0.5">Balanced (0.5)</option>
-                            <option value="0.8">Creative (0.8)</option>
-                            <option value="1.0">Highly Imaginative (1.0)</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="workflow-form-group">
-                    <label class="workflow-form-label">System Prompt</label>
-                    <textarea name="system_prompt" class="workflow-form-textarea" rows="4" placeholder="Enter the system prompt for this step" required></textarea>
-                </div>
-                
-                <div class="workflow-form-group">
-                    <div class="workflow-form-group-header">
-                        <label class="workflow-form-label">Messages</label>
-                        <button type="button" class="workflow-form-btn workflow-form-btn-sm" onclick="addMessage(this)">
-                            <i data-lucide="plus" style="width: 14px; height: 14px;"></i>
-                            Add Message
-                        </button>
-                    </div>
-                    <div class="workflow-messages-container">
-                        <!-- Messages will be added here -->
-                    </div>
-                </div>
-            </div>
-        `;
+        // Add step to global array
+        if (!window.workflowSteps) {
+            window.workflowSteps = [];
+        }
+        window.workflowSteps.push(stepData);
         
-        container.appendChild(stepElement);
+        // Create step navigation card
+        const stepCard = createWorkflowStepCard(stepData, stepNumber - 1);
+        carousel.appendChild(stepCard);
         
-        // Add initial message
-        addMessage(stepElement.querySelector('.workflow-messages-container'));
-        
-        // Update step numbers
-        updateStepNumbers();
+        // Select the new step and show its editor
+        selectWorkflowStepCard(stepCard);
+        showWorkflowStepEditor(stepData, stepNumber - 1);
         
         // Re-initialize Lucide icons
         if (typeof lucide !== 'undefined') {
@@ -680,52 +643,281 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Function to remove a workflow step
-    window.removeWorkflowStep = function(button) {
-        const stepElement = button.closest('.workflow-step-form');
-        stepElement.remove();
-        updateStepNumbers();
-    };
+    // Function to create a workflow step card for navigation
+    function createWorkflowStepCard(stepData, index) {
+        const card = document.createElement('div');
+        card.className = 'workflow-step-card';
+        card.dataset.stepIndex = index;
 
-    // Function to add a message to a step
-    window.addMessage = function(button) {
-        let messagesContainer;
-        if (button.classList && button.classList.contains('workflow-messages-container')) {
-            messagesContainer = button;
-        } else {
-            messagesContainer = button.closest('.workflow-form-group').querySelector('.workflow-messages-container');
-        }
+        const stepName = stepData.stepName || `Step ${stepData.stepNumber}`;
+        const stepModel = stepData.model || 'No model selected';
+
+        card.innerHTML = `
+            <div class="workflow-step-card-header">
+                <div class="workflow-step-number">${stepData.stepNumber}</div>
+                <div class="workflow-step-card-name" title="${stepName}">${stepName}</div>
+            </div>
+            <div class="workflow-step-card-model">${stepModel}</div>
+        `;
+
+        // Add click handler
+        card.addEventListener('click', function() {
+            selectWorkflowStepCard(this);
+            showWorkflowStepEditor(stepData, index);
+        });
+
+        return card;
+    }
+
+    // Function to select a step card
+    function selectWorkflowStepCard(selectedCard) {
+        // Remove active class from all cards
+        document.querySelectorAll('.workflow-step-card').forEach(card => {
+            card.classList.remove('active');
+        });
+
+        // Add active class to selected card
+        selectedCard.classList.add('active');
+    }
+
+    // Function to show workflow step editor
+    function showWorkflowStepEditor(stepData, index) {
+        const container = document.getElementById('workflow-step-editor-container');
         
-        const messageElement = document.createElement('div');
-        messageElement.className = 'workflow-message-form';
-        
-        messageElement.innerHTML = `
-            <div class="workflow-message-header">
-                <select name="message_role" class="workflow-form-select workflow-form-select-sm" required>
-                    <option value="">Select role</option>
-                    <option value="user">User</option>
-                    <option value="assistant">Assistant</option>
-                </select>
-                <button type="button" class="workflow-message-remove" onclick="removeMessage(this)">
-                    <i data-lucide="x" style="width: 14px; height: 14px;"></i>
+        container.innerHTML = `
+            <div class="workflow-step-detail-header">
+                <div class="workflow-step-detail-number">${stepData.stepNumber}</div>
+                <div class="workflow-step-detail-title">
+                    <input type="text" value="${stepData.stepName}" class="workflow-form-input" 
+                           onchange="updateStepName(${index}, this.value)" 
+                           placeholder="Step name" style="border: none; background: transparent; font-size: 1.1rem; font-weight: 600; padding: 0;">
+                </div>
+                <button type="button" class="workflow-step-remove" onclick="removeWorkflowStep(${index})" 
+                        style="margin-left: auto;">
+                    <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
                 </button>
             </div>
-            <textarea name="message_content" class="workflow-form-textarea" rows="3" placeholder="Enter message content" required></textarea>
+            
+            <div class="workflow-step-detail-grid">
+                <div class="workflow-step-detail-section">
+                    <div class="workflow-step-detail-label">Model</div>
+                    <select class="workflow-form-select" onchange="updateStepField(${index}, 'model', this.value)" required>
+                        <option value="">Select model</option>
+                        <option value="claude-3-5-sonnet-20241022" ${stepData.model === 'claude-3-5-sonnet-20241022' ? 'selected' : ''}>Claude 3.5 Sonnet</option>
+                        <option value="claude-3-haiku-20240307" ${stepData.model === 'claude-3-haiku-20240307' ? 'selected' : ''}>Claude 3 Haiku</option>
+                        <option value="gpt-4o" ${stepData.model === 'gpt-4o' ? 'selected' : ''}>GPT-4o</option>
+                        <option value="gpt-4o-mini" ${stepData.model === 'gpt-4o-mini' ? 'selected' : ''}>GPT-4o Mini</option>
+                        <option value="gpt-3.5-turbo" ${stepData.model === 'gpt-3.5-turbo' ? 'selected' : ''}>GPT-3.5 Turbo</option>
+                    </select>
+                </div>
+                
+                <div class="workflow-step-detail-section">
+                    <div class="workflow-step-detail-label">Temperature</div>
+                    <select class="workflow-form-select" onchange="updateStepField(${index}, 'temperature', this.value)" required>
+                        <option value="">Select creativity level</option>
+                        <option value="0.3" ${stepData.temperature === '0.3' ? 'selected' : ''}>Strict (0.3)</option>
+                        <option value="0.5" ${stepData.temperature === '0.5' ? 'selected' : ''}>Balanced (0.5)</option>
+                        <option value="0.8" ${stepData.temperature === '0.8' ? 'selected' : ''}>Creative (0.8)</option>
+                        <option value="1.0" ${stepData.temperature === '1.0' ? 'selected' : ''}>Highly Imaginative (1.0)</option>
+                    </select>
+                </div>
+                
+                <div class="workflow-step-detail-section full-width">
+                    <div class="workflow-step-detail-label">System Prompt</div>
+                    <textarea class="workflow-form-textarea" rows="4" 
+                              onchange="updateStepField(${index}, 'systemPrompt', this.value)"
+                              placeholder="Enter the system prompt for this step" required>${stepData.systemPrompt || ''}</textarea>
+                </div>
+                
+                <div class="workflow-step-detail-section full-width">
+                    <div class="workflow-form-group-header">
+                        <div class="workflow-step-detail-label">Messages</div>
+                        <button type="button" class="workflow-form-btn workflow-form-btn-sm" onclick="addMessageToStep(${index})">
+                            <i data-lucide="plus" style="width: 14px; height: 14px;"></i>
+                            Add Message
+                        </button>
+                    </div>
+                    <div class="workflow-messages-container" id="messages-container-${index}">
+                        ${renderStepMessages(stepData.messages, index)}
+                    </div>
+                </div>
+            </div>
         `;
+
+        // Re-initialize Lucide icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    }
+
+    // Function to render step messages
+    function renderStepMessages(messages, stepIndex) {
+        if (!messages || messages.length === 0) {
+            return '<p style="color: var(--text-secondary); font-style: italic; padding: var(--spacing-md);">No messages added yet</p>';
+        }
+
+        return messages.map((message, messageIndex) => `
+            <div class="workflow-message-form">
+                <div class="workflow-message-header">
+                    <select class="workflow-form-select workflow-form-select-sm" 
+                            onchange="updateMessageField(${stepIndex}, ${messageIndex}, 'role', this.value)" required>
+                        <option value="">Select role</option>
+                        <option value="user" ${message.role === 'user' ? 'selected' : ''}>User</option>
+                        <option value="assistant" ${message.role === 'assistant' ? 'selected' : ''}>Assistant</option>
+                    </select>
+                    <button type="button" class="workflow-message-remove" onclick="removeMessageFromStep(${stepIndex}, ${messageIndex})">
+                        <i data-lucide="x" style="width: 14px; height: 14px;"></i>
+                    </button>
+                </div>
+                <textarea class="workflow-form-textarea" rows="3" 
+                          onchange="updateMessageField(${stepIndex}, ${messageIndex}, 'content', this.value)"
+                          placeholder="Enter message content" required>${message.content || ''}</textarea>
+            </div>
+        `).join('');
+    }
+
+    // Function to remove a workflow step
+    window.removeWorkflowStep = function(index) {
+        if (!window.workflowSteps || window.workflowSteps.length <= 1) {
+            alert('You must have at least one step in your workflow.');
+            return;
+        }
+
+        // Remove from data array
+        window.workflowSteps.splice(index, 1);
+
+        // Update step numbers
+        window.workflowSteps.forEach((step, i) => {
+            step.stepNumber = i + 1;
+            step.stepName = step.stepName.replace(/Step \d+/, `Step ${i + 1}`);
+        });
+
+        // Refresh the carousel
+        refreshStepCarousel();
+
+        // Show first step or placeholder
+        if (window.workflowSteps.length > 0) {
+            const firstCard = document.querySelector('.workflow-step-card');
+            if (firstCard) {
+                selectWorkflowStepCard(firstCard);
+                showWorkflowStepEditor(window.workflowSteps[0], 0);
+            }
+        } else {
+            showPlaceholder();
+        }
+    };
+
+    // Function to update step name
+    window.updateStepName = function(index, newName) {
+        if (window.workflowSteps && window.workflowSteps[index]) {
+            window.workflowSteps[index].stepName = newName || `Step ${index + 1}`;
+            // Update the corresponding card
+            const card = document.querySelector(`[data-step-index="${index}"]`);
+            if (card) {
+                const nameElement = card.querySelector('.workflow-step-card-name');
+                if (nameElement) {
+                    nameElement.textContent = newName || `Step ${index + 1}`;
+                    nameElement.title = newName || `Step ${index + 1}`;
+                }
+            }
+        }
+    };
+
+    // Function to update step field
+    window.updateStepField = function(index, field, value) {
+        if (window.workflowSteps && window.workflowSteps[index]) {
+            window.workflowSteps[index][field] = value;
+            
+            // Update the corresponding card if it's the model field
+            if (field === 'model') {
+                const card = document.querySelector(`[data-step-index="${index}"]`);
+                if (card) {
+                    const modelElement = card.querySelector('.workflow-step-card-model');
+                    if (modelElement) {
+                        modelElement.textContent = value || 'No model selected';
+                    }
+                }
+            }
+        }
+    };
+
+    // Function to add message to step
+    window.addMessageToStep = function(stepIndex) {
+        if (!window.workflowSteps || !window.workflowSteps[stepIndex]) return;
         
-        messagesContainer.appendChild(messageElement);
+        if (!window.workflowSteps[stepIndex].messages) {
+            window.workflowSteps[stepIndex].messages = [];
+        }
+        
+        window.workflowSteps[stepIndex].messages.push({
+            role: '',
+            content: ''
+        });
+        
+        // Re-render messages
+        const container = document.getElementById(`messages-container-${stepIndex}`);
+        if (container) {
+            container.innerHTML = renderStepMessages(window.workflowSteps[stepIndex].messages, stepIndex);
+            // Re-initialize Lucide icons
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
+    };
+
+    // Function to remove message from step
+    window.removeMessageFromStep = function(stepIndex, messageIndex) {
+        if (!window.workflowSteps || !window.workflowSteps[stepIndex] || !window.workflowSteps[stepIndex].messages) return;
+        
+        window.workflowSteps[stepIndex].messages.splice(messageIndex, 1);
+        
+        // Re-render messages
+        const container = document.getElementById(`messages-container-${stepIndex}`);
+        if (container) {
+            container.innerHTML = renderStepMessages(window.workflowSteps[stepIndex].messages, stepIndex);
+            // Re-initialize Lucide icons
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
+    };
+
+    // Function to update message field
+    window.updateMessageField = function(stepIndex, messageIndex, field, value) {
+        if (!window.workflowSteps || !window.workflowSteps[stepIndex] || !window.workflowSteps[stepIndex].messages || !window.workflowSteps[stepIndex].messages[messageIndex]) return;
+        
+        window.workflowSteps[stepIndex].messages[messageIndex][field] = value;
+    };
+
+    // Function to refresh step carousel
+    function refreshStepCarousel() {
+        const carousel = document.getElementById('workflow-creation-steps-carousel');
+        carousel.innerHTML = '';
+        
+        if (window.workflowSteps && window.workflowSteps.length > 0) {
+            window.workflowSteps.forEach((stepData, index) => {
+                const stepCard = createWorkflowStepCard(stepData, index);
+                carousel.appendChild(stepCard);
+            });
+        }
         
         // Re-initialize Lucide icons
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
         }
-    };
+    }
 
-    // Function to remove a message
-    window.removeMessage = function(button) {
-        const messageElement = button.closest('.workflow-message-form');
-        messageElement.remove();
-    };
+    // Function to show placeholder
+    function showPlaceholder() {
+        const container = document.getElementById('workflow-step-editor-container');
+        container.innerHTML = `
+            <div class="workflow-creation-placeholder">
+                <p style="text-align: center; color: var(--text-secondary); padding: var(--spacing-xl);">
+                    Click "Add Step" to create your first workflow step
+                </p>
+            </div>
+        `;
+    }
 
     // Function to update step numbers
     function updateStepNumbers() {
@@ -780,6 +972,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const form = document.getElementById('workflow-creation-form');
         const formData = new FormData(form);
         
+        // Validate that we have steps
+        if (!window.workflowSteps || window.workflowSteps.length === 0) {
+            alert('Please add at least one step to your workflow.');
+            return;
+        }
+
         // Build the workflow object
         const workflow = {
             workflowId: generateWorkflowId(),
@@ -789,28 +987,23 @@ document.addEventListener('DOMContentLoaded', function() {
             steps: []
         };
 
-        // Process steps
-        const stepForms = document.querySelectorAll('.workflow-step-form');
-        stepForms.forEach((stepForm, index) => {
+        // Process steps from our data structure
+        window.workflowSteps.forEach((stepData, index) => {
             const step = {
-                Order: index + 1, // Automatically assign order based on position
-                Step_name: stepForm.querySelector('input[name="step_name"]').value,
-                Model: stepForm.querySelector('select[name="model"]').value,
-                System_prompt: stepForm.querySelector('textarea[name="system_prompt"]').value,
+                Order: index + 1,
+                Step_name: stepData.stepName || `Step ${index + 1}`,
+                Model: stepData.model,
+                System_prompt: stepData.systemPrompt,
                 Max_tokens: 4096, // Default to 4096 tokens
-                Temperature: parseFloat(stepForm.querySelector('select[name="temperature"]').value),
-                Message: []
+                Temperature: parseFloat(stepData.temperature),
+                Message: stepData.messages || []
             };
 
-            // Process messages for this step
-            const messageForms = stepForm.querySelectorAll('.workflow-message-form');
-            messageForms.forEach(messageForm => {
-                const message = {
-                    role: messageForm.querySelector('select[name="message_role"]').value,
-                    content: messageForm.querySelector('textarea[name="message_content"]').value
-                };
-                step.Message.push(message);
-            });
+            // Validate required fields
+            if (!step.Step_name || !step.Model || !step.System_prompt || !step.Temperature) {
+                alert(`Please fill in all required fields for ${step.Step_name}`);
+                return;
+            }
 
             workflow.steps.push(step);
         });
