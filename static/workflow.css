@@ -653,39 +653,86 @@
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
     background-color: var(--background);
-    max-height: 400px;
+    max-height: 500px;
     overflow-y: auto;
 }
 
 .messages-editor-empty {
-    padding: var(--spacing-lg);
+    padding: var(--spacing-xl);
     text-align: center;
     color: var(--text-secondary);
     font-size: 0.9rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.messages-editor-empty-icon {
+    width: 32px;
+    height: 32px;
+    opacity: 0.5;
 }
 
 .message-editor-item {
-    padding: var(--spacing-md);
+    padding: var(--spacing-lg);
     border-bottom: 1px solid var(--border);
+    background-color: var(--surface);
+    transition: var(--transition-fast);
+    position: relative;
 }
 
 .message-editor-item:last-child {
     border-bottom: none;
 }
 
+.message-editor-item:hover {
+    background-color: rgba(107, 53, 255, 0.02);
+}
+
 .message-editor-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+}
+
+.message-role-selector {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
 }
 
 .message-role-select {
-    padding: 4px 8px;
+    padding: 6px 12px;
     border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    font-size: 0.85rem;
+    background-color: var(--background);
+    font-weight: 500;
+    min-width: 120px;
+}
+
+.message-role-select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(107, 53, 255, 0.1);
+}
+
+.template-vars-indicator {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background-color: rgba(107, 53, 255, 0.1);
+    color: var(--primary);
+    padding: 4px 8px;
     border-radius: var(--radius-sm);
-    font-size: 0.8rem;
-    background-color: var(--surface);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.message-content-container {
+    position: relative;
 }
 
 .message-editor-actions {
@@ -724,21 +771,93 @@
 
 .message-content-editor {
     width: 100%;
-    min-height: 80px;
-    padding: var(--spacing-sm);
+    min-height: 100px;
+    padding: var(--spacing-md);
     border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-md);
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    font-size: 0.85rem;
-    line-height: 1.5;
+    font-size: 0.9rem;
+    line-height: 1.6;
     resize: vertical;
-    background-color: var(--surface);
+    background-color: var(--background);
+    transition: var(--transition-fast);
 }
 
 .message-content-editor:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 2px rgba(107, 53, 255, 0.1);
+    box-shadow: 0 0 0 3px rgba(107, 53, 255, 0.1);
+    background-color: var(--surface);
+}
+
+.message-content-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: var(--spacing-sm);
+    padding-top: var(--spacing-sm);
+    border-top: 1px solid var(--border);
+}
+
+.message-stats {
+    display: flex;
+    gap: var(--spacing-md);
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.char-count {
+    color: var(--text-secondary);
+}
+
+.template-count {
+    color: var(--primary);
+    font-weight: 500;
+}
+
+.message-content-actions {
+    display: flex;
+    gap: 2px;
+}
+
+.content-action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background-color: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.content-action-btn:hover {
+    background-color: rgba(107, 53, 255, 0.1);
+    color: var(--primary);
+}
+
+.template-variables-list {
+    margin-top: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    background-color: rgba(107, 53, 255, 0.05);
+    border: 1px solid rgba(107, 53, 255, 0.2);
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+}
+
+.template-variable-tag {
+    display: inline-block;
+    background-color: var(--primary);
+    color: white;
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    font-family: 'Courier New', monospace;
+    font-size: 0.75rem;
+    margin-right: var(--spacing-xs);
+    margin-bottom: 2px;
 }
 
 /* Empty Step Editor */

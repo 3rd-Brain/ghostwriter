@@ -1034,9 +1034,18 @@ document.addEventListener('DOMContentLoaded', function() {
         if (messages.length === 0) {
             editor.innerHTML = `
                 <div class="messages-editor-empty">
+                    <i data-lucide="message-circle" class="messages-editor-empty-icon"></i>
                     <p>No messages yet. Add your first message to get started.</p>
+                    <button type="button" class="workflow-edit-btn workflow-edit-btn-primary" onclick="addMessage()">
+                        <i data-lucide="plus" style="width: 14px; height: 14px;"></i>
+                        Add First Message
+                    </button>
                 </div>
             `;
+            // Re-initialize Lucide icons
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
             return;
         }
         
@@ -1044,6 +1053,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const messageEditor = createMessageEditor(message, index);
             editor.appendChild(messageEditor);
         });
+        
+        // Re-initialize Lucide icons for new content
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
     }
 
     function createMessageEditor(message, index) {
@@ -1053,15 +1067,35 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const role = message.role || 'user';
         const content = message.content || '';
+        const isLongContent = content.length > 300;
+        const messageId = `edit-message-${index}`;
+        
+        // Process content for template variable highlighting
+        const highlightedContent = highlightTemplateVariables(content);
+        const templateVars = extractTemplateVariables(content);
         
         messageDiv.innerHTML = `
             <div class="message-editor-header">
-                <select class="message-role-select" data-message-index="${index}">
-                    <option value="user" ${role === 'user' ? 'selected' : ''}>User</option>
-                    <option value="assistant" ${role === 'assistant' ? 'selected' : ''}>Assistant</option>
-                    <option value="system" ${role === 'system' ? 'selected' : ''}>System</option>
-                </select>
+                <div class="message-role-selector">
+                    <select class="message-role-select" data-message-index="${index}">
+                        <option value="user" ${role === 'user' ? 'selected' : ''}>👤 User</option>
+                        <option value="assistant" ${role === 'assistant' ? 'selected' : ''}>🤖 Assistant</option>
+                        <option value="system" ${role === 'system' ? 'selected' : ''}>⚙️ System</option>
+                    </select>
+                    ${templateVars.length > 0 ? `
+                        <div class="template-vars-indicator" title="Template variables: ${templateVars.join(', ')}">
+                            <i data-lucide="code" style="width: 12px; height: 12px;"></i>
+                            <span>${templateVars.length}</span>
+                        </div>
+                    ` : ''}
+                </div>
                 <div class="message-editor-actions">
+                    <button type="button" class="message-action-btn" onclick="copyMessageContent(${index})" title="Copy Content">
+                        <i data-lucide="copy" style="width: 12px; height: 12px;"></i>
+                    </button>
+                    <button type="button" class="message-action-btn" onclick="pasteMessageContent(${index})" title="Paste Content">
+                        <i data-lucide="clipboard" style="width: 12px; height: 12px;"></i>
+                    </button>
                     <button type="button" class="message-action-btn" onclick="moveMessage(${index}, ${index - 1})" 
                             ${index === 0 ? 'disabled' : ''} title="Move Up">
                         <i data-lucide="chevron-up" style="width: 12px; height: 12px;"></i>
@@ -1078,15 +1112,48 @@ document.addEventListener('DOMContentLoaded', function() {
                     </button>
                 </div>
             </div>
-            <textarea class="message-content-editor" data-message-index="${index}" 
-                      placeholder="Enter message content" rows="4">${content}</textarea>
+            <div class="message-content-container">
+                <textarea class="message-content-editor" id="${messageId}" data-message-index="${index}" 
+                          placeholder="Enter message content (use {variable_name} for template variables)" 
+                          rows="${isLongContent ? '8' : '4'}">${content}</textarea>
+                <div class="message-content-footer">
+                    <div class="message-stats">
+                        <span class="char-count">${content.length} characters</span>
+                        ${templateVars.length > 0 ? `
+                            <span class="template-count">${templateVars.length} template variables</span>
+                        ` : ''}
+                    </div>
+                    <div class="message-content-actions">
+                        ${isLongContent ? `
+                            <button type="button" class="content-action-btn" onclick="toggleMessageExpanded(${index})" 
+                                    title="Toggle Expansion">
+                                <i data-lucide="maximize-2" style="width: 12px; height: 12px;"></i>
+                            </button>
+                        ` : ''}
+                        <button type="button" class="content-action-btn" onclick="formatMessageContent(${index})" 
+                                title="Format Content">
+                            <i data-lucide="align-left" style="width: 12px; height: 12px;"></i>
+                        </button>
+                        <button type="button" class="content-action-btn" onclick="validateMessage(${index})" 
+                                title="Validate Template Variables">
+                            <i data-lucide="check-circle" style="width: 12px; height: 12px;"></i>
+                        </button>
+                    </div>
+                </div>
+                ${templateVars.length > 0 ? `
+                    <div class="template-variables-list">
+                        <strong>Template Variables:</strong>
+                        ${templateVars.map(varName => `<span class="template-variable-tag">{${varName}}</span>`).join('')}
+                    </div>
+                ` : ''}
+            </div>
         `;
         
         return messageDiv;
     }
 
     // Message Management Functions
-    window.addMessage = function() {
+    window.addMessage = function(role = 'user') {
         const currentStepIndex = getCurrentStepIndex();
         if (currentStepIndex === -1) return;
         
@@ -1096,11 +1163,20 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         currentStep.Message.push({
-            role: 'user',
+            role: role,
             content: ''
         });
         
         populateMessagesEditor(currentStep.Message);
+        
+        // Focus on the new message editor
+        setTimeout(() => {
+            const newMessageIndex = currentStep.Message.length - 1;
+            const newEditor = document.querySelector(`[data-message-index="${newMessageIndex}"] .message-content-editor`);
+            if (newEditor) {
+                newEditor.focus();
+            }
+        }, 100);
     };
 
     window.deleteMessage = function(messageIndex) {
@@ -1108,9 +1184,17 @@ document.addEventListener('DOMContentLoaded', function() {
         if (currentStepIndex === -1) return;
         
         const currentStep = selectedWorkflow.steps.steps[currentStepIndex];
-        currentStep.Message.splice(messageIndex, 1);
         
+        if (currentStep.Message.length === 1) {
+            if (!confirm('This is the last message. Are you sure you want to delete it?')) {
+                return;
+            }
+        }
+        
+        currentStep.Message.splice(messageIndex, 1);
         populateMessagesEditor(currentStep.Message);
+        
+        showNotification(`Message ${messageIndex + 1} deleted`);
     };
 
     window.duplicateMessage = function(messageIndex) {
@@ -1121,8 +1205,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const messageToDuplicate = currentStep.Message[messageIndex];
         const duplicatedMessage = JSON.parse(JSON.stringify(messageToDuplicate));
         
-        currentStep.Message.push(duplicatedMessage);
+        // Insert the duplicate right after the original
+        currentStep.Message.splice(messageIndex + 1, 0, duplicatedMessage);
         populateMessagesEditor(currentStep.Message);
+        
+        showNotification(`Message ${messageIndex + 1} duplicated`);
     };
 
     window.moveMessage = function(fromIndex, toIndex) {
@@ -1136,7 +1223,219 @@ document.addEventListener('DOMContentLoaded', function() {
         currentStep.Message.splice(toIndex, 0, messageToMove);
         
         populateMessagesEditor(currentStep.Message);
+        
+        showNotification(`Message moved from position ${fromIndex + 1} to ${toIndex + 1}`);
     };
+
+    // Advanced Message Features
+    window.copyMessageContent = function(messageIndex) {
+        const currentStepIndex = getCurrentStepIndex();
+        if (currentStepIndex === -1) return;
+        
+        const currentStep = selectedWorkflow.steps.steps[currentStepIndex];
+        const message = currentStep.Message[messageIndex];
+        
+        if (message && message.content) {
+            navigator.clipboard.writeText(message.content).then(() => {
+                showNotification('Message content copied to clipboard');
+            }).catch(err => {
+                console.error('Failed to copy message content:', err);
+                showNotification('Failed to copy message content', true);
+            });
+        }
+    };
+
+    window.pasteMessageContent = function(messageIndex) {
+        const currentStepIndex = getCurrentStepIndex();
+        if (currentStepIndex === -1) return;
+        
+        navigator.clipboard.readText().then(text => {
+            const currentStep = selectedWorkflow.steps.steps[currentStepIndex];
+            const message = currentStep.Message[messageIndex];
+            
+            if (message) {
+                message.content = text;
+                const editor = document.querySelector(`[data-message-index="${messageIndex}"] .message-content-editor`);
+                if (editor) {
+                    editor.value = text;
+                    updateMessageStats(messageIndex);
+                }
+                showNotification('Content pasted from clipboard');
+            }
+        }).catch(err => {
+            console.error('Failed to paste content:', err);
+            showNotification('Failed to paste content from clipboard', true);
+        });
+    };
+
+    window.toggleMessageExpanded = function(messageIndex) {
+        const editor = document.querySelector(`[data-message-index="${messageIndex}"] .message-content-editor`);
+        if (editor) {
+            const currentRows = parseInt(editor.rows);
+            const newRows = currentRows > 6 ? 4 : 12;
+            editor.rows = newRows;
+            
+            const toggleBtn = document.querySelector(`[data-message-index="${messageIndex}"] .content-action-btn[onclick*="toggleMessageExpanded"]`);
+            if (toggleBtn) {
+                const icon = toggleBtn.querySelector('i');
+                if (newRows > 6) {
+                    icon.setAttribute('data-lucide', 'minimize-2');
+                    toggleBtn.title = 'Collapse';
+                } else {
+                    icon.setAttribute('data-lucide', 'maximize-2');
+                    toggleBtn.title = 'Expand';
+                }
+                
+                // Re-initialize Lucide icons
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            }
+        }
+    };
+
+    window.formatMessageContent = function(messageIndex) {
+        const currentStepIndex = getCurrentStepIndex();
+        if (currentStepIndex === -1) return;
+        
+        const currentStep = selectedWorkflow.steps.steps[currentStepIndex];
+        const message = currentStep.Message[messageIndex];
+        
+        if (message && message.content) {
+            // Basic formatting: normalize whitespace and line breaks
+            let formatted = message.content
+                .replace(/\s+/g, ' ')  // Replace multiple spaces with single space
+                .replace(/\n\s*\n/g, '\n\n')  // Normalize paragraph breaks
+                .trim();
+            
+            message.content = formatted;
+            const editor = document.querySelector(`[data-message-index="${messageIndex}"] .message-content-editor`);
+            if (editor) {
+                editor.value = formatted;
+                updateMessageStats(messageIndex);
+            }
+            
+            showNotification('Message content formatted');
+        }
+    };
+
+    window.validateMessage = function(messageIndex) {
+        const currentStepIndex = getCurrentStepIndex();
+        if (currentStepIndex === -1) return;
+        
+        const currentStep = selectedWorkflow.steps.steps[currentStepIndex];
+        const message = currentStep.Message[messageIndex];
+        
+        if (message && message.content) {
+            const templateVars = extractTemplateVariables(message.content);
+            const duplicateVars = findDuplicateTemplateVariables(templateVars);
+            const invalidVars = findInvalidTemplateVariables(templateVars);
+            
+            let validationMessage = 'Validation complete:\n';
+            validationMessage += `• ${templateVars.length} template variables found\n`;
+            
+            if (duplicateVars.length > 0) {
+                validationMessage += `• Duplicate variables: ${duplicateVars.join(', ')}\n`;
+            }
+            
+            if (invalidVars.length > 0) {
+                validationMessage += `• Invalid variable names: ${invalidVars.join(', ')}\n`;
+            }
+            
+            if (duplicateVars.length === 0 && invalidVars.length === 0) {
+                validationMessage += '• All template variables are valid ✓';
+                showNotification('Message validation passed');
+            } else {
+                showNotification('Message validation found issues', true);
+            }
+            
+            console.log(validationMessage);
+        }
+    };
+
+    // Template Variable Functions
+    function extractTemplateVariables(content) {
+        const regex = /\{([^}]+)\}/g;
+        const variables = [];
+        let match;
+        
+        while ((match = regex.exec(content)) !== null) {
+            variables.push(match[1].trim());
+        }
+        
+        return [...new Set(variables)]; // Remove duplicates
+    }
+
+    function findDuplicateTemplateVariables(variables) {
+        const seen = new Set();
+        const duplicates = new Set();
+        
+        variables.forEach(variable => {
+            if (seen.has(variable)) {
+                duplicates.add(variable);
+            } else {
+                seen.add(variable);
+            }
+        });
+        
+        return Array.from(duplicates);
+    }
+
+    function findInvalidTemplateVariables(variables) {
+        const invalidPattern = /[^a-zA-Z0-9_]/;
+        return variables.filter(variable => invalidPattern.test(variable) || variable.length === 0);
+    }
+
+    function highlightTemplateVariables(content) {
+        return content.replace(/\{([^}]+)\}/g, '<span class="template-variable">{$1}</span>');
+    }
+
+    function updateMessageStats(messageIndex) {
+        const currentStepIndex = getCurrentStepIndex();
+        if (currentStepIndex === -1) return;
+        
+        const currentStep = selectedWorkflow.steps.steps[currentStepIndex];
+        const message = currentStep.Message[messageIndex];
+        
+        if (message) {
+            const content = message.content || '';
+            const templateVars = extractTemplateVariables(content);
+            
+            const charCountElement = document.querySelector(`[data-message-index="${messageIndex}"] .char-count`);
+            const templateCountElement = document.querySelector(`[data-message-index="${messageIndex}"] .template-count`);
+            
+            if (charCountElement) {
+                charCountElement.textContent = `${content.length} characters`;
+            }
+            
+            if (templateCountElement) {
+                templateCountElement.textContent = `${templateVars.length} template variables`;
+            }
+            
+            // Update template variables list
+            const templateListElement = document.querySelector(`[data-message-index="${messageIndex}"] .template-variables-list`);
+            if (templateListElement) {
+                if (templateVars.length > 0) {
+                    templateListElement.innerHTML = `
+                        <strong>Template Variables:</strong>
+                        ${templateVars.map(varName => `<span class="template-variable-tag">{${varName}}</span>`).join('')}
+                    `;
+                    templateListElement.style.display = 'block';
+                } else {
+                    templateListElement.style.display = 'none';
+                }
+            }
+        }
+    }
+
+    // Notification function (if not already defined globally)
+    function showNotification(message, isError = false) {
+        if (window.showNotification) {
+            window.showNotification(message, isError);
+        } else {
+            console.log((isError ? 'Error: ' : 'Info: ') + message);
+        }
+    }
 
     function getCurrentStepIndex() {
         const activeCard = document.querySelector('.workflow-step-card.active');
@@ -1206,11 +1505,59 @@ document.addEventListener('DOMContentLoaded', function() {
             if (e.target.classList.contains('message-content-editor')) {
                 const messageIndex = parseInt(e.target.dataset.messageIndex);
                 updateMessageContent(stepIndex, messageIndex, e.target.value);
+                
+                // Update real-time stats and template variable highlighting
+                setTimeout(() => {
+                    updateMessageStats(messageIndex);
+                }, 100);
             }
             
             if (e.target.classList.contains('message-role-select')) {
                 const messageIndex = parseInt(e.target.dataset.messageIndex);
                 updateMessageRole(stepIndex, messageIndex, e.target.value);
+            }
+        });
+
+        // Enhanced keyboard shortcuts for message editing
+        document.addEventListener('keydown', function(e) {
+            if (e.target.classList.contains('message-content-editor')) {
+                const messageIndex = parseInt(e.target.dataset.messageIndex);
+                
+                // Ctrl+D: Duplicate message
+                if (e.ctrlKey && e.key === 'd') {
+                    e.preventDefault();
+                    duplicateMessage(messageIndex);
+                }
+                
+                // Ctrl+Shift+Up: Move message up
+                if (e.ctrlKey && e.shiftKey && e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    moveMessage(messageIndex, messageIndex - 1);
+                }
+                
+                // Ctrl+Shift+Down: Move message down
+                if (e.ctrlKey && e.shiftKey && e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    moveMessage(messageIndex, messageIndex + 1);
+                }
+                
+                // Ctrl+Shift+C: Copy message content
+                if (e.ctrlKey && e.shiftKey && e.key === 'C') {
+                    e.preventDefault();
+                    copyMessageContent(messageIndex);
+                }
+                
+                // Ctrl+Shift+V: Paste message content
+                if (e.ctrlKey && e.shiftKey && e.key === 'V') {
+                    e.preventDefault();
+                    pasteMessageContent(messageIndex);
+                }
+                
+                // Ctrl+Shift+F: Format message content
+                if (e.ctrlKey && e.shiftKey && e.key === 'F') {
+                    e.preventDefault();
+                    formatMessageContent(messageIndex);
+                }
             }
         });
     }
