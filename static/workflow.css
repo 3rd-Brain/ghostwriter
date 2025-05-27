@@ -1,4 +1,3 @@
-
 /* Workflow Management Specific Styles */
 
 .workflow-container {
@@ -350,18 +349,18 @@
         height: auto;
         max-height: none;
     }
-    
+
     .workflow-left-panel {
         width: 100%;
         min-width: unset;
         max-height: 400px;
     }
-    
+
     .workflow-action-toolbar {
         grid-template-columns: 1fr 1fr;
         gap: var(--spacing-xs);
     }
-    
+
     .workflow-action-btn {
         white-space: nowrap;
         min-width: 80px;
@@ -523,8 +522,12 @@
 }
 
 /* Edit Step Cards */
-.edit-step-card {
+.workflow-step-card.edit-step-card {
     position: relative;
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .workflow-step-card-actions {
@@ -896,17 +899,17 @@
     .workflow-edit-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .workflow-step-edit-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .workflow-steps-header {
         flex-direction: column;
         align-items: stretch;
         gap: var(--spacing-sm);
     }
-    
+
     .workflow-step-card-actions {
         flex-wrap: wrap;
     }
@@ -1623,4 +1626,14 @@
     height: 32px;
     margin: 0 auto var(--spacing-md);
     opacity: 0.5;
+}
+
+.workflow-steps-carousel.edit-mode {
+    display: flex;
+    gap: var(--spacing-sm);
+    overflow-x: auto;
+    padding: var(--spacing-sm) 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+    margin-bottom: var(--spacing-md);
 }
