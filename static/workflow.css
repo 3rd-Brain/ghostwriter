@@ -281,6 +281,13 @@
 }
 
 /* Template Variables Reference */
+.workflow-variables-description {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin-bottom: var(--spacing-md);
+}
+
 .workflow-variables-reference {
     background-color: var(--background);
     border: 1px solid var(--border);
