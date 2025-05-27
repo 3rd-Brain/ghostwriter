@@ -646,7 +646,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     <div class="workflow-form-group">
                         <label class="workflow-form-label">Temperature</label>
-                        <input type="number" name="temperature" class="workflow-form-input" placeholder="e.g., 0.7" min="0" max="2" step="0.1" required>
+                        <select name="temperature" class="workflow-form-select" required>
+                            <option value="">Select creativity level</option>
+                            <option value="0.3">Strict (0.3)</option>
+                            <option value="0.5">Balanced (0.5)</option>
+                            <option value="0.8">Creative (0.8)</option>
+                            <option value="1.0">Highly Imaginative (1.0)</option>
+                        </select>
                     </div>
                 </div>
                 
