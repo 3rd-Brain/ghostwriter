@@ -940,6 +940,47 @@ async def admin_purge_user(user_id: str,
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.put("/generation-flow/{workflow_id}", tags=["Generation Flows"])
+async def update_generation_flow(workflow_id: str, workflow_data: dict, user: dict = Depends(check_api_key_or_jwt)):
+    """
+    **Update an existing generation workflow configuration**
+
+    This endpoint updates an existing workflow configuration in the database.
+
+    ## When to use
+    Use this endpoint when you need to:
+    * **Modify existing workflows** with updated steps or parameters
+    * **Update workflow names** or descriptions
+    * **Change workflow configurations** without creating duplicates
+    * Edit workflows that are already in use
+
+    *This endpoint supports both JWT and API key authentication.*
+    """
+    if not os.getenv("ASTRA_DB_API_ENDPOINT"):
+        raise HTTPException(status_code=500, detail="ASTRA_DB_API_ENDPOINT not configured")
+
+    if not os.getenv("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER"):
+        raise HTTPException(status_code=500, detail="ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER not configured")
+
+    try:
+        from social_dynamic_generation_flow import workflow_update
+        
+        # Add user_id to the workflow data
+        workflow_data["user_id"] = user.get("user_id")
+        
+        # Ensure the workflow_id in the data matches the URL parameter
+        workflow_data["workflowId"] = workflow_id
+        
+        result = workflow_update(workflow_id, workflow_data)
+        
+        # Check if update was successful
+        if result.get("data", {}).get("matchedCount", 0) > 0:
+            return {"status": "success", "message": f"Workflow '{workflow_id}' updated successfully"}
+        else:
+            return {"status": "error", "message": f"Workflow '{workflow_id}' not found"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.delete("/template/{template_id}", tags=["Template Management"])
 async def delete_template_endpoint(template_id: str,
                                    db_to_access: str = "user",

@@ -27,17 +27,17 @@ def social_post_generation_with_json(workflow_name: str,
     """
     # Get the user_id from environment
     user_id = os.environ.get("CURRENT_USER_ID")
-    
+
     # Get Claude client with user API key if available
     from third_party_keys import get_third_party_key
-    
+
     # Try to get user-specific key
     user_api_key = get_third_party_key(user_id, "anthropic")
-    
+
     # Use user's key or handle missing key case
     if not user_api_key:
         raise Exception("No Anthropic API key found for this user. Please add your API key in Settings.")
-    
+
     client = anthropic.Client(api_key=user_api_key)
     print("Using user-specific Anthropic API key")
 
@@ -233,6 +233,39 @@ def flow_config_retriever(workflow_name: str) -> dict:
         raise Exception(
             f"Failed to retrieve flow configuration from AstraDB: {str(e)}")
 
+
+def workflow_update(workflow_id, workflow_data):
+    """
+    Update an existing workflow in the database
+    """
+    ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
+    ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN_GHOSTWRITER")
+
+    url = f"{ASTRA_DB_API_ENDPOINT}/api/json/v1/generation_flows_keyspace/user_generation_flows"
+    headers = {
+        "Token": ASTRA_DB_APPLICATION_TOKEN,
+        "Content-Type": "application/json"
+    }
+
+    payload = {
+        "findOneAndReplace": {
+            "filter": {
+                "workflowId": workflow_id
+            },
+            "replacement": workflow_data
+        }
+    }
+
+    print(f"Updating workflow with ID: {workflow_id}")
+    print(f"Update payload: {json.dumps(payload, indent=2)}")
+
+    response = requests.post(url, headers=headers, json=payload)
+    response.raise_for_status()
+
+    result = response.json()
+    print(f"Update result: {json.dumps(result, indent=2)}")
+
+    return result
 
 def workflow_delete(workflow_id: str) -> dict:
     """
