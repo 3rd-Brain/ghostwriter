@@ -1165,6 +1165,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
         form.addEventListener('submit', function(e) {
             e.preventDefault();
+            
+            // Check if this is a duplication (button text will be different)
+            const submitButton = form.querySelector('button[type="submit"]');
+            const isDuplication = submitButton.textContent.includes('Copy');
+            
+            if (isDuplication) {
+                submitButton.textContent = 'Creating Copy...';
+            } else {
+                submitButton.textContent = 'Creating Workflow...';
+            }
+            
             submitWorkflowForm();
         });
     }
@@ -1190,6 +1201,7 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         // Process steps from our data structure
+        let hasValidationError = false;
         window.workflowSteps.forEach((stepData, index) => {
             const step = {
                 Order: index + 1,
@@ -1202,27 +1214,101 @@ document.addEventListener('DOMContentLoaded', function() {
             };
 
             // Validate required fields
-            if (!step.Step_name || !step.Model || !step.System_prompt || !step.Temperature) {
+            if (!step.Step_name || !step.Model || !step.System_prompt || isNaN(step.Temperature)) {
                 alert(`Please fill in all required fields for ${step.Step_name}`);
+                hasValidationError = true;
                 return;
             }
 
             workflow.steps.push(step);
         });
 
+        // Don't proceed if there are validation errors
+        if (hasValidationError) {
+            return;
+        }
+
         console.log('Submitting workflow:', workflow);
         
-        // Remove temporary placeholder
-        removeTemporaryWorkflowPlaceholder();
+        // Show loading state
+        const submitButton = form.querySelector('button[type="submit"]');
+        const originalText = submitButton.textContent;
+        submitButton.textContent = 'Saving...';
+        submitButton.disabled = true;
         
-        // Here you would typically send the data to your API
-        // For now, we'll just show a success message
-        alert('Workflow created successfully! (This is a placeholder - actual API integration needed)');
+        // Send to API
+        fetch('/api/generation-flow', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(workflow)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Remove temporary placeholder
+                removeTemporaryWorkflowPlaceholder();
+                
+                // Reset form and close creation panel
+                resetWorkflowCreationForm();
+                
+                // Reload user workflows to show the new one
+                loadWorkflows();
+                
+                alert('Workflow created successfully!');
+            } else {
+                alert('Error creating workflow: ' + (data.message || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error creating workflow:', error);
+            alert('Error creating workflow: ' + error.message);
+        })
+        .finally(() => {
+            // Reset button state
+            submitButton.textContent = originalText;
+            submitButton.disabled = false;
+        });
     }
 
     // Function to generate a unique workflow ID
     function generateWorkflowId() {
         return 'workflow_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    }
+
+    // Function to reset the workflow creation form
+    function resetWorkflowCreationForm() {
+        // Reset form fields
+        const form = document.getElementById('workflow-creation-form');
+        if (form) {
+            form.reset();
+        }
+        
+        // Clear workflow steps
+        window.workflowSteps = [];
+        
+        // Go back to the empty state
+        const rightPanel = document.querySelector('.workflow-right-panel');
+        rightPanel.innerHTML = `
+            <div class="workflow-detail-header">
+                <h2 class="workflow-detail-title">Workflow Details</h2>
+                <p class="workflow-detail-subtitle">Select a workflow to view its configuration</p>
+            </div>
+            <div class="workflow-detail-content">
+                <div class="workflow-detail-empty">
+                    <i data-lucide="git-branch" class="workflow-detail-empty-icon"></i>
+                    <h3 class="workflow-detail-empty-title">No Workflow Selected</h3>
+                    <p class="workflow-detail-empty-text">
+                        Choose a workflow from the left panel to view its details and configuration, or create a new one to get started.
+                    </p>
+                </div>
+            </div>
+        `;
+        
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
     }
 
     // Function to switch to User Workflows tab
