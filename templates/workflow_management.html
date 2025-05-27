@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     createBtn.addEventListener('click', function() {
         console.log('Create workflow clicked');
-        // TODO: Implement create workflow functionality
+        showWorkflowCreationPanel();
     });
 
     editBtn.addEventListener('click', function() {
@@ -519,6 +519,32 @@ document.addEventListener('DOMContentLoaded', function() {
             collapseText.style.display = 'none';
         }
     };
+
+    // Function to show workflow creation panel
+    function showWorkflowCreationPanel() {
+        const rightPanel = document.querySelector('.workflow-right-panel');
+        
+        rightPanel.innerHTML = `
+            <div class="workflow-detail-header">
+                <h2 class="workflow-detail-title">Workflow Creation</h2>
+                <p class="workflow-detail-subtitle">Create a new content generation workflow</p>
+            </div>
+            <div class="workflow-detail-content">
+                <div class="workflow-detail-empty">
+                    <i data-lucide="plus-circle" class="workflow-detail-empty-icon"></i>
+                    <h3 class="workflow-detail-empty-title">Create New Workflow</h3>
+                    <p class="workflow-detail-empty-text">
+                        Configure your workflow settings and add steps to create a custom content generation process.
+                    </p>
+                </div>
+            </div>
+        `;
+
+        // Re-initialize Lucide icons for the new content
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    }
 });
 </script>
 {% endblock %}
