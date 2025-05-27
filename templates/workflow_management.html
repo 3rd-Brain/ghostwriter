@@ -279,6 +279,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Function to update workflow details panel
     function updateWorkflowDetails(workflow) {
+        const rightPanel = document.querySelector('.workflow-right-panel');
+        
+        // Reset the header back to default workflow details view
+        rightPanel.innerHTML = `
+            <div class="workflow-detail-header">
+                <h2 class="workflow-detail-title">Workflow Details</h2>
+                <p class="workflow-detail-subtitle">Select a workflow to view its configuration</p>
+            </div>
+            <div class="workflow-detail-content">
+            </div>
+        `;
+        
         const detailContent = document.querySelector('.workflow-detail-content');
 
         const workflowName = workflow.workflow_name || workflow.workflowId || 'Unnamed Workflow';
