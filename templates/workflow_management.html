@@ -120,7 +120,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     editBtn.addEventListener('click', function() {
         console.log('Edit workflow clicked');
-        // TODO: Implement edit workflow functionality
+        if (window.selectedWorkflow) {
+            showWorkflowEditPanel(window.selectedWorkflow);
+        }
     });
 
     duplicateBtn.addEventListener('click', function() {
@@ -533,6 +535,167 @@ document.addEventListener('DOMContentLoaded', function() {
             collapseText.style.display = 'none';
         }
     };
+
+    // Function to show workflow edit panel
+    function showWorkflowEditPanel(sourceWorkflow) {
+        // Only allow editing user workflows
+        if (sourceWorkflow.type !== 'user') {
+            alert('System workflows cannot be edited. Please duplicate the workflow to create an editable copy.');
+            return;
+        }
+        
+        // Switch to User Workflows tab
+        switchToUserWorkflowsTab();
+        
+        const rightPanel = document.querySelector('.workflow-right-panel');
+        
+        // Pre-fill values from source workflow (keeping original name and data)
+        const workflowName = sourceWorkflow.workflow_name || sourceWorkflow.workflowId || 'Unnamed Workflow';
+        const workflowType = sourceWorkflow.workflowType || sourceWorkflow.workflow_type || 'short_form_social';
+        const description = sourceWorkflow.description || '';
+        const sourceSteps = sourceWorkflow.steps?.steps || sourceWorkflow.steps || [];
+        
+        rightPanel.innerHTML = `
+            <div class="workflow-detail-header">
+                <h2 class="workflow-detail-title">Edit Workflow</h2>
+                <p class="workflow-detail-subtitle">Modify "${workflowName}"</p>
+            </div>
+            <div class="workflow-detail-content">
+                <form id="workflow-creation-form" class="workflow-creation-form">
+                    <!-- Hidden field to store the original workflow ID -->
+                    <input type="hidden" id="original-workflow-id" value="${sourceWorkflow.workflow_id || sourceWorkflow._id || sourceWorkflow.workflowId}">
+                    
+                    <!-- Basic Workflow Information -->
+                    <div class="workflow-form-section">
+                        <h3 class="workflow-form-section-title">Basic Information</h3>
+                        
+                        <div class="workflow-form-group">
+                            <label for="workflow-name" class="workflow-form-label">Workflow Name</label>
+                            <input type="text" id="workflow-name" name="workflow_name" class="workflow-form-input" placeholder="Enter workflow name" value="${workflowName}" required>
+                        </div>
+                        
+                        <div class="workflow-form-group">
+                            <label for="workflow-type" class="workflow-form-label">Workflow Type</label>
+                            <select id="workflow-type" name="workflow_type" class="workflow-form-select" required>
+                                <option value="">Select workflow type</option>
+                                <option value="short_form_social" ${workflowType === 'short_form_social' ? 'selected' : ''}>Short Form Social</option>
+                                <option value="atomic_essay" ${workflowType === 'atomic_essay' ? 'selected' : ''}>Atomic Essay</option>
+                                <option value="mid_form_social" ${workflowType === 'mid_form_social' ? 'selected' : ''}>Mid Form Social</option>
+                            </select>
+                        </div>
+                        
+                        <div class="workflow-form-group">
+                            <label for="workflow-description" class="workflow-form-label">Description</label>
+                            <textarea id="workflow-description" name="description" class="workflow-form-textarea" rows="3" placeholder="Describe what this workflow does" required>${description}</textarea>
+                        </div>
+                    </div>
+
+                    <!-- Template Variables Reference -->
+                    <div class="workflow-form-section">
+                        <h3 class="workflow-form-section-title">Template Variables</h3>
+                        <p class="workflow-variables-description">Use the following variables within the system prompt or within the messages to dynamically inject content into your workflow steps. These variables will be replaced with actual values during workflow execution.</p>
+                        <div class="workflow-variables-reference">
+                            <div class="workflow-variable-item">
+                                <span class="workflow-variable-name">{template}</span>
+                                <span class="workflow-variable-description">Content template from your template management system.</span>
+                            </div>
+                            <div class="workflow-variable-item">
+                                <span class="workflow-variable-name">{content_chunks}</span>
+                                <span class="workflow-variable-description">Source content pieces that will be repurposed for generation.</span>
+                            </div>
+                            <div class="workflow-variable-item">
+                                <span class="workflow-variable-name">{client_brief}</span>
+                                <span class="workflow-variable-description">Brand voice and style guidelines for consistent content creation.</span>
+                            </div>
+                            <div class="workflow-variable-item">
+                                <span class="workflow-variable-name">{prev_ai_output}</span>
+                                <span class="workflow-variable-description">Output from the previous step in the workflow chain.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Workflow Steps -->
+                    <div class="workflow-form-section">
+                        <div class="workflow-form-section-header">
+                            <h3 class="workflow-form-section-title">Workflow Steps</h3>
+                            <button type="button" id="add-step-btn" class="workflow-form-btn workflow-form-btn-secondary">
+                                <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+                                Add Step
+                            </button>
+                        </div>
+                        
+                        <!-- Horizontal Step Navigation -->
+                        <div class="workflow-steps-nav">
+                            <div class="workflow-steps-carousel" id="workflow-creation-steps-carousel">
+                                <!-- Step navigation cards will be populated here -->
+                            </div>
+                        </div>
+                        
+                        <!-- Step Editor Container -->
+                        <div id="workflow-step-editor-container" class="workflow-step-detail-container" style="margin-top: var(--spacing-lg);">
+                            <div class="workflow-creation-placeholder">
+                                <p style="text-align: center; color: var(--text-secondary); padding: var(--spacing-xl);">
+                                    Click "Add Step" to create your first workflow step
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="workflow-form-actions">
+                        <button type="button" id="cancel-workflow-btn" class="workflow-form-btn workflow-form-btn-outline">
+                            Cancel
+                        </button>
+                        <button type="submit" class="workflow-form-btn workflow-form-btn-primary">
+                            Update Workflow
+                        </button>
+                    </div>
+                </form>
+            </div>
+        `;
+
+        // Initialize workflow steps from source
+        window.workflowSteps = [];
+        
+        // Copy steps from source workflow
+        sourceSteps.forEach((sourceStep, index) => {
+            const stepData = {
+                stepNumber: index + 1,
+                stepName: sourceStep.Step_name || sourceStep.step_name || sourceStep.name || `Step ${index + 1}`,
+                model: sourceStep.Model || sourceStep.model || '',
+                systemPrompt: sourceStep.System_prompt || sourceStep.system_prompt || '',
+                temperature: sourceStep.Temperature?.toString() || sourceStep.temperature?.toString() || '',
+                messages: sourceStep.Message || sourceStep.messages || []
+            };
+            
+            window.workflowSteps.push(stepData);
+            
+            // Create step navigation card
+            const carousel = document.getElementById('workflow-creation-steps-carousel');
+            const stepCard = createWorkflowStepCard(stepData, index);
+            carousel.appendChild(stepCard);
+        });
+
+        // Show first step if any steps exist
+        if (window.workflowSteps.length > 0) {
+            const firstCard = document.querySelector('.workflow-step-card');
+            if (firstCard) {
+                selectWorkflowStepCard(firstCard);
+                showWorkflowStepEditor(window.workflowSteps[0], 0);
+            }
+        } else {
+            // If no steps, add a default step
+            addWorkflowStep();
+        }
+
+        // Set up event listeners
+        setupWorkflowFormEventListeners();
+
+        // Re-initialize Lucide icons for the new content
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    }
 
     // Function to show workflow duplication panel
     function showWorkflowDuplicationPanel(sourceWorkflow) {
@@ -1137,7 +1300,7 @@ document.addEventListener('DOMContentLoaded', function() {
         addStepBtn.addEventListener('click', addWorkflowStep);
 
         cancelBtn.addEventListener('click', function() {
-            // Remove temporary placeholder
+            // Remove temporary placeholder (only if it exists - for new workflows)
             removeTemporaryWorkflowPlaceholder();
             
             // Go back to the empty state
@@ -1191,9 +1354,13 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
+        // Check if this is an edit (has original workflow ID) or create new
+        const originalWorkflowId = document.getElementById('original-workflow-id')?.value;
+        const isEdit = !!originalWorkflowId;
+
         // Build the workflow object
         const workflow = {
-            workflowId: generateWorkflowId(),
+            workflowId: isEdit ? originalWorkflowId : generateWorkflowId(),
             workflow_name: formData.get('workflow_name'),
             workflowType: formData.get('workflow_type'),
             description: formData.get('description'),
@@ -1233,12 +1400,16 @@ document.addEventListener('DOMContentLoaded', function() {
         // Show loading state
         const submitButton = form.querySelector('button[type="submit"]');
         const originalText = submitButton.textContent;
-        submitButton.textContent = 'Saving...';
+        submitButton.textContent = isEdit ? 'Updating...' : 'Saving...';
         submitButton.disabled = true;
         
+        // Determine API endpoint and method based on operation type
+        const apiUrl = isEdit ? `/api/generation-flow/${originalWorkflowId}` : '/api/generation-flow';
+        const method = isEdit ? 'PUT' : 'POST';
+        
         // Send to API
-        fetch('/api/generation-flow', {
-            method: 'POST',
+        fetch(apiUrl, {
+            method: method,
             headers: {
                 'Content-Type': 'application/json'
             },
@@ -1247,23 +1418,25 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.status === 'success') {
-                // Remove temporary placeholder
-                removeTemporaryWorkflowPlaceholder();
+                // Remove temporary placeholder (only for new workflows)
+                if (!isEdit) {
+                    removeTemporaryWorkflowPlaceholder();
+                }
                 
                 // Reset form and close creation panel
                 resetWorkflowCreationForm();
                 
-                // Reload user workflows to show the new one
+                // Reload user workflows to show the updated list
                 loadWorkflows();
                 
-                alert('Workflow created successfully!');
+                alert(isEdit ? 'Workflow updated successfully!' : 'Workflow created successfully!');
             } else {
-                alert('Error creating workflow: ' + (data.message || 'Unknown error'));
+                alert(`Error ${isEdit ? 'updating' : 'creating'} workflow: ` + (data.message || 'Unknown error'));
             }
         })
         .catch(error => {
-            console.error('Error creating workflow:', error);
-            alert('Error creating workflow: ' + error.message);
+            console.error(`Error ${isEdit ? 'updating' : 'creating'} workflow:`, error);
+            alert(`Error ${isEdit ? 'updating' : 'creating'} workflow: ` + error.message);
         })
         .finally(() => {
             // Reset button state
