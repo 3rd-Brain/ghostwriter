@@ -912,6 +912,285 @@
     }
 }
 
+/* Phase 4: Validation & Error Styling */
+
+/* Validation error states */
+.workflow-edit-input.validation-error,
+.workflow-edit-select.validation-error,
+.workflow-edit-textarea.validation-error,
+.message-content-editor.validation-error {
+    border-color: #f56565;
+    background-color: rgba(245, 101, 101, 0.05);
+    box-shadow: 0 0 0 2px rgba(245, 101, 101, 0.1);
+}
+
+.workflow-edit-input.validation-error:focus,
+.workflow-edit-select.validation-error:focus,
+.workflow-edit-textarea.validation-error:focus,
+.message-content-editor.validation-error:focus {
+    border-color: #f56565;
+    box-shadow: 0 0 0 3px rgba(245, 101, 101, 0.2);
+}
+
+/* Validation error messages */
+.validation-error-message {
+    margin-top: var(--spacing-xs);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background-color: rgba(245, 101, 101, 0.1);
+    border: 1px solid rgba(245, 101, 101, 0.3);
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    color: #c53030;
+}
+
+.error-item {
+    display: block;
+    margin-bottom: 2px;
+}
+
+.error-item:last-child {
+    margin-bottom: 0;
+}
+
+/* Disabled save button due to validation */
+.workflow-action-btn.validation-disabled {
+    background-color: #fbb6b6;
+    color: #c53030;
+    border-color: #f56565;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.workflow-action-btn.validation-disabled:hover {
+    background-color: #fbb6b6;
+    color: #c53030;
+    border-color: #f56565;
+}
+
+/* Success state for valid fields */
+.workflow-edit-input.validation-success,
+.workflow-edit-select.validation-success,
+.workflow-edit-textarea.validation-success,
+.message-content-editor.validation-success {
+    border-color: #48bb78;
+    background-color: rgba(72, 187, 120, 0.05);
+}
+
+/* Unsaved changes indicator */
+.workflow-edit-indicator.unsaved {
+    background-color: #f56565;
+    animation: pulse-warning 2s infinite;
+}
+
+@keyframes pulse-warning {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+/* Validation summary styling */
+.validation-summary {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: var(--surface);
+    border: 2px solid #f56565;
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    max-width: 500px;
+    max-height: 70vh;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.validation-summary-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-lg);
+    color: #c53030;
+    font-weight: 600;
+}
+
+.validation-summary-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.validation-summary-item {
+    padding: var(--spacing-sm);
+    margin-bottom: var(--spacing-xs);
+    background-color: rgba(245, 101, 101, 0.1);
+    border-radius: var(--radius-sm);
+    border-left: 4px solid #f56565;
+    font-size: 0.9rem;
+}
+
+.validation-summary-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-lg);
+    justify-content: flex-end;
+}
+
+/* Enhanced step validation indicators */
+.workflow-step-card.validation-error {
+    border-color: #f56565;
+    background-color: rgba(245, 101, 101, 0.1);
+}
+
+.workflow-step-card.validation-error .workflow-step-number {
+    background-color: #f56565;
+}
+
+.workflow-step-card.validation-success {
+    border-color: #48bb78;
+    background-color: rgba(72, 187, 120, 0.05);
+}
+
+.workflow-step-card.validation-success .workflow-step-number {
+    background-color: #48bb78;
+}
+
+/* Message validation indicators */
+.message-editor-item.validation-error {
+    border-left: 4px solid #f56565;
+    background-color: rgba(245, 101, 101, 0.02);
+}
+
+.message-editor-item.validation-success {
+    border-left: 4px solid #48bb78;
+    background-color: rgba(72, 187, 120, 0.02);
+}
+
+/* Real-time validation feedback */
+.validation-feedback {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    margin-top: var(--spacing-xs);
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.validation-feedback.success {
+    color: #48bb78;
+}
+
+.validation-feedback.error {
+    color: #f56565;
+}
+
+.validation-feedback.warning {
+    color: #ed8936;
+}
+
+.validation-icon {
+    width: 12px;
+    height: 12px;
+}
+
+/* Business rule validation panel */
+.business-rules-panel {
+    margin-top: var(--spacing-lg);
+    padding: var(--spacing-lg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background-color: var(--background);
+}
+
+.business-rules-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.business-rule-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    margin-bottom: var(--spacing-xs);
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+}
+
+.business-rule-item.valid {
+    background-color: rgba(72, 187, 120, 0.1);
+    color: #2f855a;
+}
+
+.business-rule-item.invalid {
+    background-color: rgba(245, 101, 101, 0.1);
+    color: #c53030;
+}
+
+.business-rule-icon {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+/* Loading states for validation */
+.validation-loading {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.validation-spinner {
+    width: 12px;
+    height: 12px;
+    border: 1px solid var(--border);
+    border-top: 1px solid var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* Tooltip for validation errors */
+.validation-tooltip {
+    position: relative;
+    cursor: help;
+}
+
+.validation-tooltip:hover::after {
+    content: attr(data-validation-error);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #2d3748;
+    color: white;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    white-space: nowrap;
+    z-index: 1000;
+    margin-bottom: 4px;
+}
+
+.validation-tooltip:hover::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 4px solid transparent;
+    border-top-color: #2d3748;
+    z-index: 1000;
+}
+
 /* Workflow Details Styles */
 .workflow-detail-info h3 {
     margin-bottom: var(--spacing-md);

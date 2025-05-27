@@ -1454,6 +1454,560 @@ document.addEventListener('DOMContentLoaded', function() {
         if (addMessageBtn) {
             addMessageBtn.addEventListener('click', window.addMessage);
         }
+        
+        // Set up form validation
+        setupFormValidation();
+    }
+
+    // Phase 4: Validation & Save Logic
+    
+    // Global validation state
+    let validationErrors = {};
+    let isValidationEnabled = true;
+    let hasUnsavedChanges = false;
+    
+    // Real-time form validation
+    function setupFormValidation() {
+        // Listen for input changes across all form fields
+        document.addEventListener('input', function(e) {
+            if (!isEditMode || !isValidationEnabled) return;
+            
+            markAsUnsaved();
+            
+            // Validate based on field type
+            const fieldId = e.target.id;
+            const fieldValue = e.target.value;
+            
+            switch (fieldId) {
+                case 'edit-workflow-name':
+                    validateWorkflowName(fieldValue);
+                    break;
+                case 'edit-workflow-description':
+                    validateWorkflowDescription(fieldValue);
+                    break;
+                case 'edit-step-name':
+                    validateStepName(fieldValue);
+                    break;
+                case 'edit-step-max-tokens':
+                    validateMaxTokens(fieldValue);
+                    break;
+                case 'edit-step-system-prompt':
+                    validateSystemPrompt(fieldValue);
+                    break;
+            }
+            
+            // Validate message content
+            if (e.target.classList.contains('message-content-editor')) {
+                const messageIndex = parseInt(e.target.dataset.messageIndex);
+                validateMessageContent(messageIndex, fieldValue);
+            }
+            
+            // Update save button state
+            updateSaveButtonState();
+        });
+        
+        // Listen for select changes
+        document.addEventListener('change', function(e) {
+            if (!isEditMode || !isValidationEnabled) return;
+            
+            markAsUnsaved();
+            
+            const fieldId = e.target.id;
+            const fieldValue = e.target.value;
+            
+            switch (fieldId) {
+                case 'edit-workflow-type':
+                    validateWorkflowType(fieldValue);
+                    break;
+                case 'edit-step-model':
+                    validateStepModel(fieldValue);
+                    break;
+            }
+            
+            // Validate message role changes
+            if (e.target.classList.contains('message-role-select')) {
+                const messageIndex = parseInt(e.target.dataset.messageIndex);
+                validateMessageRole(messageIndex, fieldValue);
+            }
+            
+            updateSaveButtonState();
+        });
+        
+        // Listen for slider changes
+        document.addEventListener('input', function(e) {
+            if (!isEditMode || !isValidationEnabled) return;
+            
+            if (e.target.id === 'edit-step-temperature') {
+                markAsUnsaved();
+                validateTemperature(parseFloat(e.target.value));
+                updateSaveButtonState();
+            }
+        });
+    }
+    
+    // Individual validation functions
+    function validateWorkflowName(name) {
+        const errors = [];
+        
+        if (!name || name.trim().length === 0) {
+            errors.push('Workflow name is required');
+        } else if (name.trim().length < 3) {
+            errors.push('Workflow name must be at least 3 characters');
+        } else if (name.length > 100) {
+            errors.push('Workflow name must be less than 100 characters');
+        } else if (!/^[a-zA-Z0-9\s\-_()]+$/.test(name)) {
+            errors.push('Workflow name contains invalid characters');
+        }
+        
+        updateFieldValidation('edit-workflow-name', errors);
+        return errors.length === 0;
+    }
+    
+    function validateWorkflowDescription(description) {
+        const errors = [];
+        
+        if (description && description.length > 500) {
+            errors.push('Description must be less than 500 characters');
+        }
+        
+        updateFieldValidation('edit-workflow-description', errors);
+        return errors.length === 0;
+    }
+    
+    function validateWorkflowType(type) {
+        const errors = [];
+        const validTypes = ['Short Form Social', 'Long Form Content', 'Video Script', 'Email Marketing', 'Custom'];
+        
+        if (!type || !validTypes.includes(type)) {
+            errors.push('Please select a valid workflow type');
+        }
+        
+        updateFieldValidation('edit-workflow-type', errors);
+        return errors.length === 0;
+    }
+    
+    function validateStepName(name) {
+        const errors = [];
+        
+        if (!name || name.trim().length === 0) {
+            errors.push('Step name is required');
+        } else if (name.trim().length < 2) {
+            errors.push('Step name must be at least 2 characters');
+        } else if (name.length > 50) {
+            errors.push('Step name must be less than 50 characters');
+        }
+        
+        updateFieldValidation('edit-step-name', errors);
+        return errors.length === 0;
+    }
+    
+    function validateStepModel(model) {
+        const errors = [];
+        const validModels = [
+            'claude-3-5-sonnet-20241022',
+            'claude-3-haiku-20240307',
+            'gpt-4o',
+            'gpt-4o-mini',
+            'gpt-3.5-turbo'
+        ];
+        
+        if (!model || !validModels.includes(model)) {
+            errors.push('Please select a valid model');
+        }
+        
+        updateFieldValidation('edit-step-model', errors);
+        return errors.length === 0;
+    }
+    
+    function validateTemperature(temperature) {
+        const errors = [];
+        
+        if (temperature < 0 || temperature > 2) {
+            errors.push('Temperature must be between 0 and 2');
+        }
+        
+        updateFieldValidation('edit-step-temperature', errors);
+        return errors.length === 0;
+    }
+    
+    function validateMaxTokens(tokens) {
+        const errors = [];
+        const tokenNum = parseInt(tokens);
+        
+        if (!tokens || isNaN(tokenNum)) {
+            errors.push('Max tokens must be a number');
+        } else if (tokenNum < 1) {
+            errors.push('Max tokens must be at least 1');
+        } else if (tokenNum > 8000) {
+            errors.push('Max tokens cannot exceed 8000');
+        }
+        
+        updateFieldValidation('edit-step-max-tokens', errors);
+        return errors.length === 0;
+    }
+    
+    function validateSystemPrompt(prompt) {
+        const errors = [];
+        
+        if (prompt && prompt.length > 5000) {
+            errors.push('System prompt must be less than 5000 characters');
+        }
+        
+        updateFieldValidation('edit-step-system-prompt', errors);
+        return errors.length === 0;
+    }
+    
+    function validateMessageContent(messageIndex, content) {
+        const errors = [];
+        
+        if (!content || content.trim().length === 0) {
+            errors.push('Message content cannot be empty');
+        } else if (content.length > 10000) {
+            errors.push('Message content must be less than 10000 characters');
+        }
+        
+        // Validate template variables
+        const templateVars = extractTemplateVariables(content);
+        const invalidVars = findInvalidTemplateVariables(templateVars);
+        
+        if (invalidVars.length > 0) {
+            errors.push(`Invalid template variables: ${invalidVars.join(', ')}`);
+        }
+        
+        updateFieldValidation(`edit-message-${messageIndex}`, errors);
+        return errors.length === 0;
+    }
+    
+    function validateMessageRole(messageIndex, role) {
+        const errors = [];
+        const validRoles = ['user', 'assistant', 'system'];
+        
+        if (!role || !validRoles.includes(role)) {
+            errors.push('Please select a valid message role');
+        }
+        
+        updateFieldValidation(`message-role-${messageIndex}`, errors);
+        return errors.length === 0;
+    }
+    
+    // Business rule validation
+    function validateBusinessRules() {
+        const errors = [];
+        
+        if (!selectedWorkflow || !selectedWorkflow.steps || !selectedWorkflow.steps.steps) {
+            errors.push('Workflow must have at least one step');
+            return errors;
+        }
+        
+        const steps = selectedWorkflow.steps.steps;
+        
+        // Minimum steps requirement
+        if (steps.length === 0) {
+            errors.push('Workflow must have at least one step');
+        }
+        
+        // Maximum steps limit
+        if (steps.length > 10) {
+            errors.push('Workflow cannot have more than 10 steps');
+        }
+        
+        // Each step must have at least one message
+        steps.forEach((step, index) => {
+            if (!step.Message || step.Message.length === 0) {
+                errors.push(`Step ${index + 1} must have at least one message`);
+            }
+        });
+        
+        // Check for duplicate step names
+        const stepNames = steps.map(step => (step.Step_name || '').toLowerCase().trim());
+        const duplicateNames = stepNames.filter((name, index) => 
+            name && stepNames.indexOf(name) !== index
+        );
+        
+        if (duplicateNames.length > 0) {
+            errors.push('Step names must be unique');
+        }
+        
+        validationErrors.businessRules = errors;
+        return errors;
+    }
+    
+    // Update field validation display
+    function updateFieldValidation(fieldId, errors) {
+        const field = document.getElementById(fieldId);
+        if (!field) return;
+        
+        // Store errors for this field
+        if (errors.length > 0) {
+            validationErrors[fieldId] = errors;
+        } else {
+            delete validationErrors[fieldId];
+        }
+        
+        // Remove existing error display
+        const existingError = field.parentElement.querySelector('.validation-error');
+        if (existingError) {
+            existingError.remove();
+        }
+        
+        // Update field styling
+        if (errors.length > 0) {
+            field.classList.add('validation-error');
+            
+            // Add error message
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'validation-error-message';
+            errorDiv.innerHTML = errors.map(error => `<span class="error-item">⚠️ ${error}</span>`).join('');
+            field.parentElement.appendChild(errorDiv);
+        } else {
+            field.classList.remove('validation-error');
+        }
+    }
+    
+    // Update save button state based on validation
+    function updateSaveButtonState() {
+        const saveBtn = document.getElementById('save-workflow-btn');
+        if (!saveBtn) return;
+        
+        const hasErrors = Object.keys(validationErrors).length > 0;
+        const businessRuleErrors = validateBusinessRules();
+        const hasBusinessRuleErrors = businessRuleErrors.length > 0;
+        
+        if (hasErrors || hasBusinessRuleErrors) {
+            saveBtn.disabled = true;
+            saveBtn.classList.add('validation-disabled');
+            
+            const errorCount = Object.keys(validationErrors).length + businessRuleErrors.length;
+            saveBtn.title = `Cannot save: ${errorCount} validation error${errorCount !== 1 ? 's' : ''}`;
+        } else {
+            saveBtn.disabled = false;
+            saveBtn.classList.remove('validation-disabled');
+            saveBtn.title = 'Save workflow changes';
+        }
+    }
+    
+    // Draft state management
+    function markAsUnsaved() {
+        if (!hasUnsavedChanges) {
+            hasUnsavedChanges = true;
+            updateEditModeIndicator();
+            
+            // Add beforeunload handler to warn about unsaved changes
+            window.addEventListener('beforeunload', handleBeforeUnload);
+        }
+    }
+    
+    function markAsSaved() {
+        hasUnsavedChanges = false;
+        updateEditModeIndicator();
+        
+        // Remove beforeunload handler
+        window.removeEventListener('beforeunload', handleBeforeUnload);
+    }
+    
+    function updateEditModeIndicator() {
+        const header = document.querySelector('.workflow-detail-header');
+        if (!header) return;
+        
+        const indicator = header.querySelector('.workflow-edit-indicator');
+        
+        if (hasUnsavedChanges && indicator) {
+            indicator.textContent = '✏️ EDITING (UNSAVED)';
+            indicator.style.backgroundColor = '#f56565';
+        } else if (indicator) {
+            indicator.textContent = '✏️ EDITING';
+            indicator.style.backgroundColor = 'var(--primary)';
+        }
+    }
+    
+    function handleBeforeUnload(e) {
+        if (hasUnsavedChanges) {
+            e.preventDefault();
+            e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+            return e.returnValue;
+        }
+    }
+    
+    // Enhanced save workflow with proper API integration
+    function saveWorkflowChanges() {
+        console.log('Initiating workflow save...');
+        
+        // Perform final validation
+        const businessRuleErrors = validateBusinessRules();
+        const hasFieldErrors = Object.keys(validationErrors).length > 0;
+        
+        if (hasFieldErrors || businessRuleErrors.length > 0) {
+            showValidationSummary();
+            return;
+        }
+        
+        const saveBtn = document.getElementById('save-workflow-btn');
+        if (saveBtn) {
+            saveBtn.classList.add('loading');
+            saveBtn.disabled = true;
+        }
+        
+        // Prepare workflow data for saving
+        const workflowData = prepareWorkflowForSave();
+        
+        // Determine if this is a new workflow or update
+        const isNewWorkflow = !selectedWorkflow._id;
+        const apiUrl = isNewWorkflow ? '/api/user-workflows' : `/api/user-workflows/${selectedWorkflow._id}`;
+        const method = isNewWorkflow ? 'POST' : 'PUT';
+        
+        console.log(`Saving workflow via ${method} to ${apiUrl}`);
+        
+        fetch(apiUrl, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify(workflowData)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Workflow saved successfully:', data);
+            
+            // Update the selected workflow with saved data
+            if (data.data && data.data.document) {
+                selectedWorkflow = { ...data.data.document, type: 'user' };
+            }
+            
+            // Mark as saved
+            markAsSaved();
+            
+            // Show success notification
+            showNotification('Workflow saved successfully!', false);
+            
+            // Exit edit mode
+            exitEditMode();
+            
+            // Refresh workflow list to show updated data
+            loadWorkflows();
+            
+            // Re-select the saved workflow
+            setTimeout(() => {
+                if (selectedWorkflow._id) {
+                    const workflowElement = document.querySelector(`[data-workflow-id="${selectedWorkflow._id}"]`);
+                    if (workflowElement) {
+                        selectWorkflow(workflowElement, selectedWorkflow);
+                    }
+                }
+            }, 500);
+        })
+        .catch(error => {
+            console.error('Error saving workflow:', error);
+            showNotification('Failed to save workflow. Please try again.', true);
+        })
+        .finally(() => {
+            if (saveBtn) {
+                saveBtn.classList.remove('loading');
+                saveBtn.disabled = false;
+            }
+        });
+    }
+    
+    function prepareWorkflowForSave() {
+        const workflowName = document.getElementById('edit-workflow-name')?.value || '';
+        const workflowType = document.getElementById('edit-workflow-type')?.value || 'Custom';
+        const description = document.getElementById('edit-workflow-description')?.value || '';
+        
+        // Prepare steps data
+        const steps = selectedWorkflow.steps?.steps || [];
+        const preparedSteps = steps.map((step, index) => ({
+            Step_name: step.Step_name || `Step ${index + 1}`,
+            Model: step.Model || 'claude-3-5-sonnet-20241022',
+            System_prompt: step.System_prompt || '',
+            Message: step.Message || [],
+            Max_tokens: parseInt(step.Max_tokens) || 2000,
+            Temperature: parseFloat(step.Temperature) || 0.7,
+            Order: index + 1
+        }));
+        
+        return {
+            workflow_name: workflowName.trim(),
+            workflow_type: workflowType,
+            description: description.trim(),
+            steps: {
+                steps: preparedSteps
+            }
+        };
+    }
+    
+    // Enhanced cancel with unsaved changes warning
+    function cancelWorkflowEdit() {
+        if (hasUnsavedChanges) {
+            const confirmed = confirm(
+                'You have unsaved changes that will be lost. Are you sure you want to cancel editing?'
+            );
+            
+            if (!confirmed) {
+                return;
+            }
+        }
+        
+        // Reset validation state
+        validationErrors = {};
+        hasUnsavedChanges = false;
+        
+        // Remove beforeunload handler
+        window.removeEventListener('beforeunload', handleBeforeUnload);
+        
+        if (originalWorkflowData) {
+            // Restore original workflow data
+            selectedWorkflow = JSON.parse(JSON.stringify(originalWorkflowData));
+            updateWorkflowDetails(selectedWorkflow);
+        }
+        
+        exitEditMode();
+        showNotification('Edit cancelled', false);
+    }
+    
+    // Show validation summary modal
+    function showValidationSummary() {
+        const allErrors = [];
+        
+        // Collect field errors
+        Object.entries(validationErrors).forEach(([fieldId, errors]) => {
+            const fieldName = getFieldDisplayName(fieldId);
+            errors.forEach(error => {
+                allErrors.push(`${fieldName}: ${error}`);
+            });
+        });
+        
+        // Add business rule errors
+        const businessRuleErrors = validateBusinessRules();
+        allErrors.push(...businessRuleErrors);
+        
+        const errorMessage = `Cannot save workflow due to the following errors:\n\n${allErrors.map((error, index) => `${index + 1}. ${error}`).join('\n')}`;
+        
+        alert(errorMessage);
+    }
+    
+    function getFieldDisplayName(fieldId) {
+        const fieldNames = {
+            'edit-workflow-name': 'Workflow Name',
+            'edit-workflow-description': 'Workflow Description',
+            'edit-workflow-type': 'Workflow Type',
+            'edit-step-name': 'Step Name',
+            'edit-step-model': 'Step Model',
+            'edit-step-temperature': 'Temperature',
+            'edit-step-max-tokens': 'Max Tokens',
+            'edit-step-system-prompt': 'System Prompt'
+        };
+        
+        if (fieldId.startsWith('edit-message-')) {
+            const messageIndex = fieldId.split('-')[2];
+            return `Message ${parseInt(messageIndex) + 1}`;
+        }
+        
+        return fieldNames[fieldId] || fieldId;
     }
 
     function setupStepEditEventListeners(stepIndex) {
