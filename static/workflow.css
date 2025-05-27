@@ -280,6 +280,43 @@
     100% { transform: rotate(360deg); }
 }
 
+/* Template Variables Reference */
+.workflow-variables-reference {
+    background-color: var(--background);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.workflow-variable-item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+    padding: var(--spacing-xs) 0;
+}
+
+.workflow-variable-name {
+    font-family: 'Courier New', monospace;
+    background-color: rgba(107, 53, 255, 0.1);
+    color: var(--primary);
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    font-weight: 500;
+    min-width: 140px;
+    text-align: center;
+}
+
+.workflow-variable-description {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    flex: 1;
+}
+
 /* Workflow Details Styles */
 .workflow-detail-info h3 {
     margin-bottom: var(--spacing-md);
