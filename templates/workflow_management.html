@@ -57,6 +57,13 @@
             <button class="workflow-action-btn" id="delete-workflow-btn" disabled>
                 Delete
             </button>
+            <!-- Edit mode buttons (hidden by default) -->
+            <button class="workflow-action-btn primary" id="save-workflow-btn" style="display: none;">
+                Save
+            </button>
+            <button class="workflow-action-btn workflow-cancel-btn" id="cancel-edit-btn" style="display: none;">
+                Cancel
+            </button>
         </div>
     </div>
 
@@ -120,7 +127,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
     editBtn.addEventListener('click', function() {
         console.log('Edit workflow clicked');
-        // TODO: Implement edit workflow functionality
+        
+        if (!selectedWorkflow) {
+            console.log('No workflow selected');
+            return;
+        }
+
+        if (selectedWorkflow.type === 'system') {
+            console.log('Cannot edit system workflow');
+            return;
+        }
+
+        // Store original data for cancellation
+        originalWorkflowData = JSON.parse(JSON.stringify(selectedWorkflow));
+        editModeWorkflowType = selectedWorkflow.type;
+        
+        // Enter edit mode
+        enterEditMode();
     });
 
     duplicateBtn.addEventListener('click', function() {
@@ -134,11 +157,45 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Function to enable/disable action buttons based on selection
-    function updateActionButtons(hasSelection) {
-        editBtn.disabled = !hasSelection;
-        duplicateBtn.disabled = !hasSelection;
-        deleteBtn.disabled = !hasSelection;
+    function updateActionButtons(hasSelection, workflowType = null) {
+        if (!hasSelection) {
+            editBtn.disabled = true;
+            duplicateBtn.disabled = true;
+            deleteBtn.disabled = true;
+            editBtn.removeAttribute('title');
+            return;
+        }
+
+        const isSystemWorkflow = workflowType === 'system';
+        
+        // Edit button: disabled for system workflows
+        editBtn.disabled = isSystemWorkflow;
+        if (isSystemWorkflow) {
+            editBtn.setAttribute('title', 'System workflows cannot be modified');
+            editBtn.classList.add('disabled-system');
+        } else {
+            editBtn.removeAttribute('title');
+            editBtn.classList.remove('disabled-system');
+        }
+
+        // Other buttons are enabled for all workflows
+        duplicateBtn.disabled = false;
+        deleteBtn.disabled = !hasSelection || isSystemWorkflow; // Only allow delete for user workflows
+        
+        if (isSystemWorkflow) {
+            deleteBtn.setAttribute('title', 'System workflows cannot be deleted');
+            deleteBtn.classList.add('disabled-system');
+        } else {
+            deleteBtn.removeAttribute('title');
+            deleteBtn.classList.remove('disabled-system');
+        }
     }
+
+    // Global state variables for edit mode
+    let isEditMode = false;
+    let selectedWorkflow = null;
+    let originalWorkflowData = null;
+    let editModeWorkflowType = null; // 'system' or 'user'
 
     // Load workflows on page initialization
     loadWorkflows();
@@ -267,13 +324,14 @@ document.addEventListener('DOMContentLoaded', function() {
         // Add selection to clicked item
         element.classList.add('selected');
 
-        // Update action buttons
-        updateActionButtons(true);
+        // Update action buttons with workflow type
+        updateActionButtons(true, workflow.type);
 
         // Update workflow details panel
         updateWorkflowDetails(workflow);
 
         // Store selected workflow globally
+        selectedWorkflow = workflow;
         window.selectedWorkflow = workflow;
     }
 
@@ -519,6 +577,104 @@ document.addEventListener('DOMContentLoaded', function() {
             collapseText.style.display = 'none';
         }
     };
+
+    // Edit Mode Functions
+    function enterEditMode() {
+        if (!selectedWorkflow || selectedWorkflow.type === 'system') {
+            console.log('Cannot enter edit mode for system workflow');
+            return;
+        }
+
+        isEditMode = true;
+        
+        // Update UI to show edit mode
+        const rightPanel = document.querySelector('.workflow-right-panel');
+        const detailHeader = document.querySelector('.workflow-detail-header');
+        
+        rightPanel.classList.add('edit-mode');
+        detailHeader.classList.add('edit-mode');
+        
+        // Update action buttons for edit mode
+        updateActionButtonsForEditMode();
+        
+        console.log('Entered edit mode for workflow:', selectedWorkflow.workflow_name);
+    }
+
+    function exitEditMode() {
+        isEditMode = false;
+        originalWorkflowData = null;
+        editModeWorkflowType = null;
+        
+        // Update UI to exit edit mode
+        const rightPanel = document.querySelector('.workflow-right-panel');
+        const detailHeader = document.querySelector('.workflow-detail-header');
+        
+        rightPanel.classList.remove('edit-mode');
+        detailHeader.classList.remove('edit-mode');
+        
+        // Restore normal action buttons
+        if (selectedWorkflow) {
+            updateActionButtons(true, selectedWorkflow.type);
+        }
+        
+        console.log('Exited edit mode');
+    }
+
+    function updateActionButtonsForEditMode() {
+        // In edit mode, show Save and Cancel buttons instead of normal actions
+        editBtn.style.display = 'none';
+        duplicateBtn.style.display = 'none';
+        deleteBtn.style.display = 'none';
+        
+        // Create Save and Cancel buttons if they don't exist
+        let saveBtn = document.getElementById('save-workflow-btn');
+        let cancelBtn = document.getElementById('cancel-edit-btn');
+        
+        if (!saveBtn) {
+            saveBtn = document.createElement('button');
+            saveBtn.id = 'save-workflow-btn';
+            saveBtn.className = 'workflow-action-btn primary';
+            saveBtn.textContent = 'Save';
+            saveBtn.addEventListener('click', saveWorkflowChanges);
+            
+            cancelBtn = document.createElement('button');
+            cancelBtn.id = 'cancel-edit-btn';
+            cancelBtn.className = 'workflow-action-btn workflow-cancel-btn';
+            cancelBtn.textContent = 'Cancel';
+            cancelBtn.addEventListener('click', cancelWorkflowEdit);
+            
+            const toolbar = document.querySelector('.workflow-action-toolbar');
+            toolbar.appendChild(saveBtn);
+            toolbar.appendChild(cancelBtn);
+        }
+        
+        saveBtn.style.display = 'block';
+        cancelBtn.style.display = 'block';
+    }
+
+    function saveWorkflowChanges() {
+        console.log('Saving workflow changes...');
+        // TODO: Implement save logic
+        const saveBtn = document.getElementById('save-workflow-btn');
+        saveBtn.classList.add('loading');
+        
+        // Simulate save operation
+        setTimeout(() => {
+            saveBtn.classList.remove('loading');
+            exitEditMode();
+            // Refresh workflow list
+            loadWorkflows();
+        }, 1000);
+    }
+
+    function cancelWorkflowEdit() {
+        if (originalWorkflowData) {
+            // Restore original workflow data
+            selectedWorkflow = originalWorkflowData;
+            updateWorkflowDetails(selectedWorkflow);
+        }
+        exitEditMode();
+    }
 });
 </script>
 {% endblock %}

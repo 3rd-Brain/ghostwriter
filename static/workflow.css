@@ -165,6 +165,120 @@
     color: var(--text-secondary);
 }
 
+.workflow-action-btn.disabled-system {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: var(--background);
+    color: var(--text-secondary);
+    border-color: var(--border);
+}
+
+.workflow-action-btn.disabled-system:hover {
+    background-color: var(--background);
+    color: var(--text-secondary);
+    border-color: var(--border);
+}
+
+/* Edit Mode Styles */
+.workflow-right-panel.edit-mode {
+    border-left: 4px solid var(--primary);
+    background-color: rgba(107, 53, 255, 0.02);
+}
+
+.workflow-detail-header.edit-mode {
+    background-color: rgba(107, 53, 255, 0.05);
+    border-bottom: 2px solid var(--primary-light);
+}
+
+.workflow-detail-header.edit-mode::before {
+    content: "✏️ EDITING";
+    display: inline-block;
+    background-color: var(--primary);
+    color: white;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 0.7rem;
+    font-weight: 600;
+    margin-right: var(--spacing-sm);
+    letter-spacing: 0.05em;
+}
+
+.workflow-edit-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    background-color: var(--primary);
+    color: white;
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+}
+
+.workflow-edit-indicator::before {
+    content: "✏️";
+    font-size: 0.7rem;
+}
+
+/* Loading states for save operations */
+.workflow-action-btn.loading {
+    position: relative;
+    color: transparent;
+    pointer-events: none;
+}
+
+.workflow-action-btn.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 14px;
+    height: 14px;
+    margin: -7px 0 0 -7px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.workflow-action-btn.loading.primary::after {
+    border-top-color: white;
+}
+
+/* Edit mode form styles */
+.workflow-edit-form {
+    padding: var(--spacing-lg);
+    background-color: var(--surface);
+    border-radius: var(--radius-lg);
+    border: 2px solid var(--primary-light);
+    margin-top: var(--spacing-md);
+}
+
+.workflow-edit-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-lg);
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--border);
+}
+
+.workflow-edit-actions .workflow-action-btn {
+    min-width: 80px;
+}
+
+.workflow-cancel-btn {
+    background-color: var(--background);
+    color: var(--text-secondary);
+    border-color: var(--border);
+}
+
+.workflow-cancel-btn:hover {
+    background-color: var(--text-secondary);
+    color: white;
+    border-color: var(--text-secondary);
+}
+
 /* Right Panel - Workflow Details */
 .workflow-right-panel {
     flex: 1;
