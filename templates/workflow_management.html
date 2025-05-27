@@ -616,11 +616,6 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="workflow-step-content">
                 <div class="workflow-form-row">
                     <div class="workflow-form-group">
-                        <label class="workflow-form-label">Order</label>
-                        <input type="number" name="order" class="workflow-form-input" value="${stepNumber}" min="1" required>
-                    </div>
-                    
-                    <div class="workflow-form-group">
                         <label class="workflow-form-label">Step Name</label>
                         <input type="text" name="step_name" class="workflow-form-input" placeholder="e.g., initial_generation" required>
                     </div>
@@ -745,7 +740,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const stepNumber = index + 1;
             step.dataset.stepNumber = stepNumber;
             step.querySelector('.workflow-step-title').textContent = `Step ${stepNumber}`;
-            step.querySelector('input[name="order"]').value = stepNumber;
         });
     }
 
@@ -803,14 +797,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Process steps
         const stepForms = document.querySelectorAll('.workflow-step-form');
-        stepForms.forEach(stepForm => {
+        stepForms.forEach((stepForm, index) => {
             const step = {
-                Order: parseInt(stepForm.querySelector('input[name="order"]').value),
+                Order: index + 1, // Automatically assign order based on position
                 Step_name: stepForm.querySelector('input[name="step_name"]').value,
                 Model: stepForm.querySelector('select[name="model"]').value,
                 System_prompt: stepForm.querySelector('textarea[name="system_prompt"]').value,
                 Max_tokens: parseInt(stepForm.querySelector('input[name="max_tokens"]').value),
-                Temperature: parseFloat(stepForm.querySelector('input[name="temperature"]').value),
+                Temperature: parseFloat(stepForm.querySelector('select[name="temperature"]').value),
                 Message: []
             };
 
