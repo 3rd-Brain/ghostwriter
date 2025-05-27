@@ -720,12 +720,21 @@
     display: flex;
     flex-direction: column;
     height: 100%;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--surface);
+    z-index: 1;
 }
 
 .workflow-creation-form-header {
     padding: var(--spacing-lg);
     border-bottom: 1px solid var(--border);
     background-color: var(--background);
+    flex-shrink: 0;
 }
 
 .workflow-creation-form-title {
@@ -733,11 +742,13 @@
     font-weight: 600;
     margin-bottom: var(--spacing-xs);
     color: var(--text-primary);
+    margin: 0 0 var(--spacing-xs) 0;
 }
 
 .workflow-creation-form-subtitle {
     color: var(--text-secondary);
     font-size: 0.9rem;
+    margin: 0;
 }
 
 .workflow-creation-form-content {
@@ -753,37 +764,52 @@
     display: flex;
     flex-direction: column;
     gap: var(--spacing-md);
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-lg);
 }
 
 .workflow-form-section-title {
     font-size: 1rem;
     font-weight: 600;
     color: var(--text-primary);
-    margin-bottom: var(--spacing-sm);
+    margin: 0 0 var(--spacing-md) 0;
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px solid var(--border);
 }
 
 .workflow-form-group {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-xs);
+    margin-bottom: var(--spacing-md);
+}
+
+.workflow-form-group:last-child {
+    margin-bottom: 0;
 }
 
 .workflow-form-label {
     font-weight: 500;
     color: var(--text-primary);
     font-size: 0.9rem;
+    margin-bottom: var(--spacing-xs);
 }
 
 .workflow-form-input,
 .workflow-form-textarea,
 .workflow-form-select {
-    padding: var(--spacing-sm);
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
-    background-color: var(--surface);
+    background-color: var(--background);
     color: var(--text-primary);
     font-size: 0.9rem;
+    font-family: inherit;
     transition: var(--transition-fast);
+    box-sizing: border-box;
 }
 
 .workflow-form-input:focus,
@@ -807,8 +833,9 @@
 
 /* Workflow Steps Management */
 .workflow-steps-management {
+    background-color: var(--surface);
     border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-md);
     overflow: hidden;
 }
 
@@ -822,34 +849,41 @@
 }
 
 .workflow-steps-management-title {
-    font-weight: 500;
+    font-weight: 600;
     color: var(--text-primary);
+    font-size: 1rem;
+    margin: 0;
 }
 
 .workflow-add-step-btn {
     background-color: var(--primary);
     color: white;
     border: none;
-    padding: var(--spacing-xs) var(--spacing-sm);
+    padding: var(--spacing-xs) var(--spacing-md);
     border-radius: var(--radius-sm);
-    font-size: 0.8rem;
+    font-size: 0.85rem;
+    font-weight: 500;
     cursor: pointer;
     transition: var(--transition-fast);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
 }
 
 .workflow-add-step-btn:hover {
     background-color: var(--primary-dark);
+    transform: translateY(-1px);
 }
 
 .workflow-steps-list {
-    max-height: 300px;
+    max-height: 400px;
     overflow-y: auto;
 }
 
 .workflow-step-form-item {
-    padding: var(--spacing-md);
+    padding: var(--spacing-lg);
     border-bottom: 1px solid var(--border);
-    background-color: var(--surface);
+    background-color: var(--background);
 }
 
 .workflow-step-form-item:last-child {
@@ -860,13 +894,16 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px solid var(--border);
 }
 
 .workflow-step-form-item-title {
-    font-weight: 500;
+    font-weight: 600;
     color: var(--text-primary);
-    font-size: 0.9rem;
+    font-size: 1rem;
+    margin: 0;
 }
 
 .workflow-step-form-item-actions {
@@ -875,30 +912,38 @@
 }
 
 .workflow-step-action-btn {
-    background: none;
+    background: var(--surface);
     border: 1px solid var(--border);
-    padding: 4px 8px;
+    padding: 6px 10px;
     border-radius: var(--radius-sm);
-    font-size: 0.7rem;
+    font-size: 0.8rem;
+    font-weight: 500;
     cursor: pointer;
     transition: var(--transition-fast);
     color: var(--text-secondary);
+    min-width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .workflow-step-action-btn:hover {
     border-color: var(--primary);
     color: var(--primary);
+    background-color: rgba(107, 53, 255, 0.05);
 }
 
 .workflow-step-action-btn.danger:hover {
     border-color: #dc3545;
     color: #dc3545;
+    background-color: rgba(220, 53, 69, 0.05);
 }
 
 .workflow-step-form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: var(--spacing-sm);
+    gap: var(--spacing-md);
 }
 
 .workflow-step-form-grid .workflow-form-group.full-width {
@@ -913,6 +958,8 @@
     display: flex;
     gap: var(--spacing-sm);
     justify-content: flex-end;
+    flex-shrink: 0;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .workflow-form-button {
@@ -925,11 +972,18 @@
     font-weight: 500;
     cursor: pointer;
     transition: var(--transition-fast);
+    min-width: 100px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .workflow-form-button:hover {
     border-color: var(--primary);
     color: var(--primary);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(107, 53, 255, 0.15);
 }
 
 .workflow-form-button.primary {
@@ -940,16 +994,27 @@
 
 .workflow-form-button.primary:hover {
     background-color: var(--primary-dark);
+    box-shadow: 0 2px 12px rgba(107, 53, 255, 0.3);
 }
 
 .workflow-form-button.secondary {
     background-color: var(--background);
     color: var(--text-secondary);
+    border-color: var(--border);
+}
+
+.workflow-form-button.secondary:hover {
+    color: var(--text-primary);
+    border-color: var(--text-secondary);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .workflow-form-button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }
 
 /* Responsive adjustments for form */
