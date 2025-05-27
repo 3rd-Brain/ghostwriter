@@ -635,11 +635,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     
                     <div class="workflow-form-group">
-                        <label class="workflow-form-label">Max Tokens</label>
-                        <input type="number" name="max_tokens" class="workflow-form-input" placeholder="e.g., 4000" min="1" required>
-                    </div>
-                    
-                    <div class="workflow-form-group">
                         <label class="workflow-form-label">Temperature</label>
                         <select name="temperature" class="workflow-form-select" required>
                             <option value="">Select creativity level</option>
@@ -803,7 +798,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 Step_name: stepForm.querySelector('input[name="step_name"]').value,
                 Model: stepForm.querySelector('select[name="model"]').value,
                 System_prompt: stepForm.querySelector('textarea[name="system_prompt"]').value,
-                Max_tokens: parseInt(stepForm.querySelector('input[name="max_tokens"]').value),
+                Max_tokens: 4096, // Default to 4096 tokens
                 Temperature: parseFloat(stepForm.querySelector('select[name="temperature"]').value),
                 Message: []
             };
