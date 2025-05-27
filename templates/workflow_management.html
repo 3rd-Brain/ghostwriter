@@ -134,7 +134,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     deleteBtn.addEventListener('click', function() {
         console.log('Delete workflow clicked');
-        // TODO: Implement delete workflow functionality
+        if (window.selectedWorkflow) {
+            deleteWorkflow(window.selectedWorkflow);
+        }
     });
 
     // Function to enable/disable action buttons based on selection
@@ -1548,6 +1550,80 @@ document.addEventListener('DOMContentLoaded', function() {
         if (tempPlaceholder) {
             tempPlaceholder.remove();
         }
+    }
+
+    // Function to delete a workflow
+    function deleteWorkflow(workflow) {
+        // Check if it's a system workflow
+        if (workflow.type === 'system') {
+            alert('System workflows cannot be deleted. Only user workflows can be deleted.');
+            return;
+        }
+
+        // Get the workflow ID and name for confirmation
+        const workflowId = workflow.workflow_id || workflow._id || workflow.workflowId;
+        const workflowName = workflow.workflow_name || workflow.workflowId || 'Unnamed Workflow';
+
+        // Confirm deletion
+        if (!confirm(`Are you sure you want to delete the workflow "${workflowName}"?\n\nThis action cannot be undone.`)) {
+            return;
+        }
+
+        // Show loading state
+        console.log('Deleting workflow:', workflowId);
+
+        // Send delete request to API
+        fetch(`/api/generation-flow/${workflowId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Show success message
+                alert('Workflow deleted successfully!');
+                
+                // Remove selection
+                window.selectedWorkflow = null;
+                updateActionButtons(false);
+                
+                // Clear the detail panel
+                const rightPanel = document.querySelector('.workflow-right-panel');
+                rightPanel.innerHTML = `
+                    <div class="workflow-detail-header">
+                        <h2 class="workflow-detail-title">Workflow Details</h2>
+                        <p class="workflow-detail-subtitle">Select a workflow to view its configuration</p>
+                    </div>
+                    <div class="workflow-detail-content">
+                        <div class="workflow-detail-empty">
+                            <i data-lucide="git-branch" class="workflow-detail-empty-icon"></i>
+                            <h3 class="workflow-detail-empty-title">No Workflow Selected</h3>
+                            <p class="workflow-detail-empty-text">
+                                Choose a workflow from the left panel to view its details and configuration, or create a new one to get started.
+                            </p>
+                        </div>
+                    </div>
+                `;
+                
+                // Re-initialize Lucide icons
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+                
+                // Reload workflows to update the list
+                loadWorkflows();
+            } else {
+                // Show error message
+                alert('Error deleting workflow: ' + (data.message || 'Unknown error'));
+                console.error('Delete workflow error:', data);
+            }
+        })
+        .catch(error => {
+            console.error('Error deleting workflow:', error);
+            alert('Error deleting workflow: ' + error.message);
+        });
     }
 });
 </script>
