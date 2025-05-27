@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     createBtn.addEventListener('click', function() {
         console.log('Create workflow clicked');
-        // TODO: Implement create workflow functionality
+        createNewWorkflow();
     });
 
     editBtn.addEventListener('click', function() {
@@ -1442,6 +1442,89 @@ document.addEventListener('DOMContentLoaded', function() {
         return activeCard ? parseInt(activeCard.dataset.stepIndex) : -1;
     }
 
+    // Create New Workflow Function
+    function createNewWorkflow() {
+        // Create a new blank workflow structure
+        const newWorkflow = {
+            workflow_name: 'New Workflow',
+            workflow_type: 'Short Form Social',
+            description: '',
+            steps: {
+                steps: []
+            },
+            type: 'user' // Mark as user workflow
+        };
+
+        // Set as selected workflow
+        selectedWorkflow = newWorkflow;
+        originalWorkflowData = JSON.parse(JSON.stringify(newWorkflow));
+        editModeWorkflowType = 'user';
+
+        // Switch to user workflows tab
+        const userTab = document.querySelector('[data-tab="user"]');
+        const tabs = document.querySelectorAll('.workflow-tab');
+        tabs.forEach(t => t.classList.remove('active'));
+        userTab.classList.add('active');
+
+        const systemList = document.getElementById('system-workflows');
+        const userList = document.getElementById('user-workflows');
+        systemList.style.display = 'none';
+        userList.style.display = 'block';
+
+        // Add a temporary workflow item to the user list for visual feedback
+        addTemporaryWorkflowToList(newWorkflow);
+
+        // Update action buttons for new workflow selection
+        updateActionButtons(true, 'user');
+
+        // Enter edit mode immediately
+        enterEditMode();
+
+        // Render the edit form
+        updateWorkflowDetails(newWorkflow);
+
+        console.log('Created new workflow and entered edit mode');
+    }
+
+    // Add temporary workflow item to user list
+    function addTemporaryWorkflowToList(workflow) {
+        const userList = document.getElementById('user-workflows');
+        
+        // Clear any existing temporary items
+        const existingTemp = userList.querySelector('.workflow-item.temporary');
+        if (existingTemp) {
+            existingTemp.remove();
+        }
+
+        // Clear "no workflows found" message if it exists
+        const emptyMessage = userList.querySelector('.workflow-list-empty');
+        if (emptyMessage) {
+            emptyMessage.remove();
+        }
+
+        // Create temporary workflow item
+        const tempItem = document.createElement('div');
+        tempItem.className = 'workflow-item temporary selected';
+        tempItem.dataset.workflowId = 'temp-new-workflow';
+        tempItem.dataset.workflowType = 'user';
+
+        tempItem.innerHTML = `
+            <div class="workflow-item-name">${workflow.workflow_name} <span style="font-style: italic; color: var(--text-secondary); font-size: 0.8rem;">(unsaved)</span></div>
+            <div class="workflow-item-meta">
+                <span class="workflow-item-type user">user</span>
+                <span class="workflow-step-count">0 steps</span>
+            </div>
+        `;
+
+        // Add click handler
+        tempItem.addEventListener('click', function() {
+            selectWorkflow(this, workflow);
+        });
+
+        // Add to top of user list
+        userList.insertBefore(tempItem, userList.firstChild);
+    }
+
     // Event Listeners Setup
     function setupEditModeEventListeners() {
         const addNewStepBtn = document.getElementById('add-new-step');
@@ -1879,6 +1962,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 selectedWorkflow = { ...data.data.document, type: 'user' };
             }
             
+            // Remove temporary workflow item if it exists
+            const tempItem = document.querySelector('.workflow-item.temporary');
+            if (tempItem) {
+                tempItem.remove();
+            }
+            
             // Mark as saved
             markAsSaved();
             
@@ -1959,8 +2048,37 @@ document.addEventListener('DOMContentLoaded', function() {
         // Remove beforeunload handler
         window.removeEventListener('beforeunload', handleBeforeUnload);
         
-        if (originalWorkflowData) {
-            // Restore original workflow data
+        // Handle canceling new workflow creation
+        const isNewWorkflow = !selectedWorkflow._id;
+        if (isNewWorkflow) {
+            // Remove temporary workflow item
+            const tempItem = document.querySelector('.workflow-item.temporary');
+            if (tempItem) {
+                tempItem.remove();
+            }
+            
+            // Clear selection
+            selectedWorkflow = null;
+            updateActionButtons(false);
+            
+            // Show empty state
+            const detailContent = document.querySelector('.workflow-detail-content');
+            detailContent.innerHTML = `
+                <div class="workflow-detail-empty">
+                    <i data-lucide="git-branch" class="workflow-detail-empty-icon"></i>
+                    <h3 class="workflow-detail-empty-title">No Workflow Selected</h3>
+                    <p class="workflow-detail-empty-text">
+                        Choose a workflow from the left panel to view its details and configuration, or create a new one to get started.
+                    </p>
+                </div>
+            `;
+            
+            // Re-initialize Lucide icons
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        } else if (originalWorkflowData) {
+            // Restore original workflow data for existing workflows
             selectedWorkflow = JSON.parse(JSON.stringify(originalWorkflowData));
             updateWorkflowDetails(selectedWorkflow);
         }
