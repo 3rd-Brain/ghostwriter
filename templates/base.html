@@ -202,10 +202,13 @@
             z-index: 1000;
             width: 90%;
             max-width: 600px;
+            min-height: auto;
+            height: auto;
             background-color: #f0ecfe;
             border: 1px solid #6b35ff;
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: visible;
         }
         
         .third-party-api-notification-content {
@@ -213,16 +216,22 @@
             align-items: center;
             padding: 12px 16px;
             color: #333;
+            height: auto;
+            min-height: auto;
+            flex-wrap: nowrap;
         }
         
         .third-party-api-notification-content i {
             margin-right: 12px;
             color: #6b35ff;
+            flex-shrink: 0;
         }
         
         .third-party-api-notification-content span {
             flex: 1;
             font-size: 14px;
+            line-height: 1.4;
+            overflow-wrap: break-word;
         }
         
         .third-party-api-notification-content a {
@@ -238,6 +247,8 @@
             font-size: 20px;
             cursor: pointer;
             padding: 0 8px;
+            flex-shrink: 0;
+            line-height: 1;
         }
     </style>
 </head>
