@@ -1499,6 +1499,7 @@ textarea.form-control {
   pointer-events: none;
 }
 
+
 /* Third-party API notification styles */
 .third-party-api-notification {
   position: fixed;
