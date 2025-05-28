@@ -1509,23 +1509,16 @@ textarea.form-control {
   border-bottom: 1px solid #f5c6cb;
   z-index: 99;
   padding: 0;
-  height: auto;
-  min-height: 48px;
-  max-height: 80px;
 }
 
 .third-party-api-notification-content {
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 12px;
-  padding: 12px 20px;
+  padding: 10px 20px;
   margin-left: 280px;
-  margin-right: 20px;
   transition: margin-left 0.3s ease;
   color: #721c24;
-  text-align: center;
-  min-height: 48px;
 }
 
 .app-container.sidebar-collapsed .third-party-api-notification-content {
