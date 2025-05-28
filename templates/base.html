@@ -192,48 +192,52 @@
         .notification.error {
             background-color: #f44336;
         }
-
-        /* Third-party API notification styles */
+        
+        /* API Key notification styles */
         .third-party-api-notification {
             position: fixed;
-            top: 80px;
-            right: 20px;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
             z-index: 1000;
-            width: 300px;
-            max-width: 300px;
-            height: auto;
+            width: 90%;
+            max-width: 600px;
             background-color: #f0ecfe;
             border: 1px solid #6b35ff;
             border-radius: 8px;
-            padding: 12px;
-            box-sizing: border-box;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
-
+        
         .third-party-api-notification-content {
-            display: block;
-            font-size: 14px;
-            line-height: 1.4;
-        }
-
-        .third-party-api-notification-content a {
-            color: #6b35ff;
-            text-decoration: underline;
-        }
-
-        .third-party-api-notification-close {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background: none;
-            border: none;
-            color: #666;
-            font-size: 16px;
-            cursor: pointer;
-            width: 20px;
-            height: 20px;
             display: flex;
             align-items: center;
-            justify-content: center;
+            padding: 12px 16px;
+            color: #333;
+        }
+        
+        .third-party-api-notification-content i {
+            margin-right: 12px;
+            color: #6b35ff;
+        }
+        
+        .third-party-api-notification-content span {
+            flex: 1;
+            font-size: 14px;
+        }
+        
+        .third-party-api-notification-content a {
+            color: #6b35ff;
+            font-weight: 500;
+            text-decoration: underline;
+        }
+        
+        .third-party-api-notification-close {
+            background: none;
+            border: none;
+            color: #718096;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0 8px;
         }
     </style>
 </head>
@@ -474,23 +478,24 @@
                             if (existingNotification) {
                                 existingNotification.remove();
                             }
-
+                            
                             // Create and show the API key notification
                             const apiKeyNotification = document.createElement('div');
                             apiKeyNotification.className = 'third-party-api-notification';
                             apiKeyNotification.innerHTML = `
                                 <div class="third-party-api-notification-content">
-                                    API keys required. <a href="/settings">Go to Settings</a>
+                                    <i data-lucide="key"></i>
+                                    <span>You need to set up your third-party API keys to use AI features. <a href="/settings">Go to Settings</a> to add your keys. Features won't function as expected.</span>
+                                    <button class="third-party-api-notification-close">×</button>
                                 </div>
-                                <button class="third-party-api-notification-close">×</button>
                             `;
                             document.body.appendChild(apiKeyNotification);
-
+                            
                             // Initialize the Lucide icon for the key
                             if (window.lucide) {
                                 window.lucide.createIcons();
                             }
-
+                            
                             // Add event listener to close button
                             const closeButton = apiKeyNotification.querySelector('.third-party-api-notification-close');
                             if (closeButton) {
@@ -507,16 +512,17 @@
                         apiKeyNotification.className = 'third-party-api-notification';
                         apiKeyNotification.innerHTML = `
                             <div class="third-party-api-notification-content">
-                                Unable to verify API keys. <a href="/settings">Go to Settings</a>
+                                <i data-lucide="key"></i>
+                                <span>Unable to verify API keys. You may need to set up your third-party API keys. <a href="/settings">Go to Settings</a> to add your keys.</span>
+                                <button class="third-party-api-notification-close">×</button>
                             </div>
-                            <button class="third-party-api-notification-close">×</button>
                         `;
                         document.body.appendChild(apiKeyNotification);
-
+                        
                         if (window.lucide) {
                             window.lucide.createIcons();
                         }
-
+                        
                         const closeButton = apiKeyNotification.querySelector('.third-party-api-notification-close');
                         if (closeButton) {
                             closeButton.addEventListener('click', function() {
