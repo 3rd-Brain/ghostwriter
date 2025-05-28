@@ -199,24 +199,20 @@
             top: 80px;
             right: 20px;
             z-index: 1000;
-            width: 400px;
+            width: 300px;
+            max-width: 300px;
+            height: auto;
             background-color: #f0ecfe;
             border: 1px solid #6b35ff;
             border-radius: 8px;
-            padding: 12px 16px;
+            padding: 12px;
+            box-sizing: border-box;
         }
 
         .third-party-api-notification-content {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            text-align: left;
-        }
-
-        .third-party-api-notification-content span {
-            flex: 1;
+            display: block;
             font-size: 14px;
-            text-align: left;
+            line-height: 1.4;
         }
 
         .third-party-api-notification-content a {
@@ -225,12 +221,19 @@
         }
 
         .third-party-api-notification-close {
+            position: absolute;
+            top: 8px;
+            right: 8px;
             background: none;
             border: none;
             color: #666;
-            font-size: 18px;
+            font-size: 16px;
             cursor: pointer;
-            margin-left: 8px;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
     </style>
 </head>
@@ -477,9 +480,9 @@
                             apiKeyNotification.className = 'third-party-api-notification';
                             apiKeyNotification.innerHTML = `
                                 <div class="third-party-api-notification-content">
-                                    <span>API keys required. <a href="/settings">Go to Settings</a></span>
-                                    <button class="third-party-api-notification-close">×</button>
+                                    API keys required. <a href="/settings">Go to Settings</a>
                                 </div>
+                                <button class="third-party-api-notification-close">×</button>
                             `;
                             document.body.appendChild(apiKeyNotification);
 
@@ -504,9 +507,9 @@
                         apiKeyNotification.className = 'third-party-api-notification';
                         apiKeyNotification.innerHTML = `
                             <div class="third-party-api-notification-content">
-                                <span>Unable to verify API keys. <a href="/settings">Go to Settings</a></span>
-                                <button class="third-party-api-notification-close">×</button>
+                                Unable to verify API keys. <a href="/settings">Go to Settings</a>
                             </div>
+                            <button class="third-party-api-notification-close">×</button>
                         `;
                         document.body.appendChild(apiKeyNotification);
 
