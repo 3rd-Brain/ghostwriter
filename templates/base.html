@@ -196,46 +196,47 @@
         /* API Key notification styles */
         .third-party-api-notification {
             position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
+            top: 20px;
+            right: 20px;
             z-index: 1000;
-            width: 90%;
-            max-width: 600px;
-            background-color: #f0ecfe;
-            border: 1px solid #6b35ff;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            background-color: #ffebee;
+            border: 2px solid #f44336;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(244, 67, 54, 0.2);
         }
         
         .third-party-api-notification-content {
             display: flex;
             align-items: center;
-            padding: 12px 16px;
-            color: #333;
+            padding: 16px 20px;
+            color: #c62828;
         }
         
         .third-party-api-notification-content i {
-            margin-right: 12px;
-            color: #6b35ff;
+            margin-right: 16px;
+            color: #f44336;
+            font-size: 18px;
         }
         
         .third-party-api-notification-content span {
             flex: 1;
-            font-size: 14px;
+            font-size: 15px;
+            font-weight: 500;
         }
         
         .third-party-api-notification-content a {
-            color: #6b35ff;
-            font-weight: 500;
+            color: #d32f2f;
+            font-weight: 600;
             text-decoration: underline;
         }
         
         .third-party-api-notification-close {
             background: none;
             border: none;
-            color: #718096;
-            font-size: 20px;
+            color: #f44336;
+            font-size: 24px;
+            font-weight: bold;
             cursor: pointer;
             padding: 0 8px;
         }
