@@ -1116,9 +1116,7 @@ textarea.form-control {
 
 .text-center {
     text-align: center;
-}
-
-.pagination-button {
+}.pagination-button {
     padding: 8px 12px;
     background-color: #f5f5f5;
     border: 1px solid #ddd;
@@ -1499,7 +1497,6 @@ textarea.form-control {
   pointer-events: none;
 }
 
-
 /* Third-party API notification styles */
 .third-party-api-notification {
   position: fixed;
@@ -1522,39 +1519,33 @@ textarea.form-control {
   color: #333;
 }
 
-.app-container.sidebar-collapsed .third-party-api-notification-content {
-  /* Remove sidebar-specific margins since this is now centered */
-}
-
-.third-party-api-notification i {
+.third-party-api-notification-content i {
   margin-right: 12px;
   color: #6b35ff;
 }
 
-.third-party-api-notification span {
-  flex-grow: 1;
+.third-party-api-notification-content span {
+  flex: 1;
   font-size: 14px;
 }
 
-.third-party-api-notification a {
-  color: #721c24;
-  font-weight: 600;
+.third-party-api-notification-content a {
+  color: #6b35ff;
+  font-weight: 500;
   text-decoration: underline;
 }
 
-.third-party-api-notification a:hover {
+.third-party-api-notification-content a:hover {
   text-decoration: none;
 }
 
 .third-party-api-notification-close {
   background: none;
   border: none;
-  color: #721c24;
+  color: #718096;
   font-size: 20px;
-  font-weight: bold;
-  line-height: 1;
   cursor: pointer;
-  padding: 0 5px;
+  padding: 0 8px;
 }
 
 .third-party-api-notification-close:hover {
