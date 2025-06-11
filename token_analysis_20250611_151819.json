@@ -1,0 +1,1319 @@
+{
+  "metadata": {
+    "generated_at": "2025-06-11T15:18:19.826886",
+    "user_id": "d117a572-12b8-46d6-92a8-33ab150b0b25",
+    "analysis_type": "workflow_token_usage"
+  },
+  "workflow_stats": {
+    "Standard Short-Form Flow (Tweets)": {
+      "successful_runs": 5,
+      "failed_runs": 0,
+      "token_stats": {
+        "total_tokens": {
+          "min": 5006,
+          "max": 5129,
+          "mean": 5052.8,
+          "median": 5048,
+          "stdev": 47.08184363425035
+        },
+        "input_tokens": {
+          "min": 4647,
+          "max": 4711,
+          "mean": 4674,
+          "median": 4674,
+          "stdev": 23.853720883753127
+        },
+        "output_tokens": {
+          "min": 359,
+          "max": 418,
+          "mean": 378.8,
+          "median": 374,
+          "stdev": 23.46699810372004
+        }
+      },
+      "step_breakdown": {
+        "initial_generation": {
+          "model": "claude-3-5-sonnet-20241022",
+          "input_tokens": [
+            1398,
+            1398,
+            1398,
+            1398,
+            1398
+          ],
+          "output_tokens": [
+            142,
+            136,
+            128,
+            150,
+            144
+          ],
+          "total_tokens": [
+            1540,
+            1534,
+            1526,
+            1548,
+            1542
+          ],
+          "avg_input_tokens": 1398,
+          "avg_output_tokens": 140,
+          "avg_total_tokens": 1538
+        },
+        "voice_brand_edit": {
+          "model": "claude-3-5-haiku-20241022",
+          "input_tokens": [
+            1557,
+            1551,
+            1543,
+            1565,
+            1559
+          ],
+          "output_tokens": [
+            124,
+            108,
+            108,
+            111,
+            155
+          ],
+          "total_tokens": [
+            1681,
+            1659,
+            1651,
+            1676,
+            1714
+          ],
+          "avg_input_tokens": 1555,
+          "avg_output_tokens": 121.2,
+          "avg_total_tokens": 1676.2
+        },
+        "content_length_trimmer": {
+          "model": "claude-3-5-sonnet-20241022",
+          "input_tokens": [
+            233,
+            217,
+            217,
+            220,
+            264
+          ],
+          "output_tokens": [
+            59,
+            68,
+            62,
+            67,
+            63
+          ],
+          "total_tokens": [
+            292,
+            285,
+            279,
+            287,
+            327
+          ],
+          "avg_input_tokens": 230.2,
+          "avg_output_tokens": 63.8,
+          "avg_total_tokens": 294
+        },
+        "cringe_edit": {
+          "model": "claude-3-5-haiku-20241022",
+          "input_tokens": [
+            1486,
+            1495,
+            1489,
+            1494,
+            1490
+          ],
+          "output_tokens": [
+            49,
+            51,
+            61,
+            52,
+            56
+          ],
+          "total_tokens": [
+            1535,
+            1546,
+            1550,
+            1546,
+            1546
+          ],
+          "avg_input_tokens": 1490.8,
+          "avg_output_tokens": 53.8,
+          "avg_total_tokens": 1544.6
+        }
+      },
+      "raw_runs": [
+        {
+          "workflow_name": "Standard Short-Form Flow (Tweets)",
+          "steps": [
+            {
+              "step_name": "initial_generation",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 1398,
+              "output_tokens": 142,
+              "total_tokens": 1540
+            },
+            {
+              "step_name": "voice_brand_edit",
+              "model": "claude-3-5-haiku-20241022",
+              "input_tokens": 1557,
+              "output_tokens": 124,
+              "total_tokens": 1681
+            },
+            {
+              "step_name": "content_length_trimmer",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 233,
+              "output_tokens": 59,
+              "total_tokens": 292
+            },
+            {
+              "step_name": "cringe_edit",
+              "model": "claude-3-5-haiku-20241022",
+              "input_tokens": 1486,
+              "output_tokens": 49,
+              "total_tokens": 1535
+            }
+          ],
+          "total_input_tokens": 4674,
+          "total_output_tokens": 374,
+          "total_tokens": 5048,
+          "final_output": "The Startup Growth Playbook:\n\n- One laser-focused market\n- 100 true believers\n- One critical problem\n- One data-driven solution\n- One strategic approach\n\nEverything else is just noise."
+        },
+        {
+          "workflow_name": "Standard Short-Form Flow (Tweets)",
+          "steps": [
+            {
+              "step_name": "initial_generation",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 1398,
+              "output_tokens": 136,
+              "total_tokens": 1534
+            },
+            {
+              "step_name": "voice_brand_edit",
+              "model": "claude-3-5-haiku-20241022",
+              "input_tokens": 1551,
+              "output_tokens": 108,
+              "total_tokens": 1659
+            },
+            {
+              "step_name": "content_length_trimmer",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 217,
+              "output_tokens": 68,
+              "total_tokens": 285
+            },
+            {
+              "step_name": "cringe_edit",
+              "model": "claude-3-5-haiku-20241022",
+              "input_tokens": 1495,
+              "output_tokens": 51,
+              "total_tokens": 1546
+            }
+          ],
+          "total_input_tokens": 4661,
+          "total_output_tokens": 363,
+          "total_tokens": 5024,
+          "final_output": "The B2B Growth Playbook:\n\n- Laser-focused customer acquisition\n- 100 strategic partnerships\n- Complex sales cycle challenge\n- Content-driven approach\n- Targeted channel experiments\n\nEverything else is noise."
+        },
+        {
+          "workflow_name": "Standard Short-Form Flow (Tweets)",
+          "steps": [
+            {
+              "step_name": "initial_generation",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 1398,
+              "output_tokens": 128,
+              "total_tokens": 1526
+            },
+            {
+              "step_name": "voice_brand_edit",
+              "model": "claude-3-5-haiku-20241022",
+              "input_tokens": 1543,
+              "output_tokens": 108,
+              "total_tokens": 1651
+            },
+            {
+              "step_name": "content_length_trimmer",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 217,
+              "output_tokens": 62,
+              "total_tokens": 279
+            },
+            {
+              "step_name": "cringe_edit",
+              "model": "claude-3-5-haiku-20241022",
+              "input_tokens": 1489,
+              "output_tokens": 61,
+              "total_tokens": 1550
+            }
+          ],
+          "total_input_tokens": 4647,
+          "total_output_tokens": 359,
+          "total_tokens": 5006,
+          "final_output": "The B2B Growth Playbook:\n\n- Laser-focused market targeting\n- 100 true believers\n- One critical problem: growth stagnation\n- One tactical solution: customer lifecycle mapping\n- One strategic solution: experimental acquisition\n\nEverything else is just noise."
+        },
+        {
+          "workflow_name": "Standard Short-Form Flow (Tweets)",
+          "steps": [
+            {
+              "step_name": "initial_generation",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 1398,
+              "output_tokens": 150,
+              "total_tokens": 1548
+            },
+            {
+              "step_name": "voice_brand_edit",
+              "model": "claude-3-5-haiku-20241022",
+              "input_tokens": 1565,
+              "output_tokens": 111,
+              "total_tokens": 1676
+            },
+            {
+              "step_name": "content_length_trimmer",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 220,
+              "output_tokens": 67,
+              "total_tokens": 287
+            },
+            {
+              "step_name": "cringe_edit",
+              "model": "claude-3-5-haiku-20241022",
+              "input_tokens": 1494,
+              "output_tokens": 52,
+              "total_tokens": 1546
+            }
+          ],
+          "total_input_tokens": 4677,
+          "total_output_tokens": 380,
+          "total_tokens": 5057,
+          "final_output": "The B2B Growth Playbook:\n\n- Laser-focused customer acquisition\n- 100 true believers\n- Eliminate marketing waste\n- Precision targeting\n- Data-driven channels\n\nEverything else is just distraction."
+        },
+        {
+          "workflow_name": "Standard Short-Form Flow (Tweets)",
+          "steps": [
+            {
+              "step_name": "initial_generation",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 1398,
+              "output_tokens": 144,
+              "total_tokens": 1542
+            },
+            {
+              "step_name": "voice_brand_edit",
+              "model": "claude-3-5-haiku-20241022",
+              "input_tokens": 1559,
+              "output_tokens": 155,
+              "total_tokens": 1714
+            },
+            {
+              "step_name": "content_length_trimmer",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 264,
+              "output_tokens": 63,
+              "total_tokens": 327
+            },
+            {
+              "step_name": "cringe_edit",
+              "model": "claude-3-5-haiku-20241022",
+              "input_tokens": 1490,
+              "output_tokens": 56,
+              "total_tokens": 1546
+            }
+          ],
+          "total_input_tokens": 4711,
+          "total_output_tokens": 418,
+          "total_tokens": 5129,
+          "final_output": "The B2B Growth Playbook:\n\n- Laser-focused customer acquisition\n- 3 key growth principles\n- Eliminate wasted marketing spend\n- Data-driven targeting solution\n- Precision partnership strategy\n\nEverything else is just noise."
+        }
+      ]
+    },
+    "Atomic Essay Flow": {
+      "successful_runs": 5,
+      "failed_runs": 0,
+      "token_stats": {
+        "total_tokens": {
+          "min": 3276,
+          "max": 3395,
+          "mean": 3325.6,
+          "median": 3305,
+          "stdev": 48.13834230631545
+        },
+        "input_tokens": {
+          "min": 2862,
+          "max": 2895,
+          "mean": 2876,
+          "median": 2873,
+          "stdev": 13.856406460551018
+        },
+        "output_tokens": {
+          "min": 414,
+          "max": 500,
+          "mean": 449.6,
+          "median": 440,
+          "stdev": 34.93279261668039
+        }
+      },
+      "step_breakdown": {
+        "initial_generation": {
+          "model": "claude-3-5-sonnet-20241022",
+          "input_tokens": [
+            1298,
+            1298,
+            1298,
+            1298,
+            1298
+          ],
+          "output_tokens": [
+            222,
+            242,
+            252,
+            219,
+            230
+          ],
+          "total_tokens": [
+            1520,
+            1540,
+            1550,
+            1517,
+            1528
+          ],
+          "avg_input_tokens": 1298,
+          "avg_output_tokens": 233,
+          "avg_total_tokens": 1531
+        },
+        "voice_brand_edit": {
+          "model": "claude-3-5-sonnet-20241022",
+          "input_tokens": [
+            1567,
+            1587,
+            1597,
+            1564,
+            1575
+          ],
+          "output_tokens": [
+            218,
+            227,
+            248,
+            195,
+            195
+          ],
+          "total_tokens": [
+            1785,
+            1814,
+            1845,
+            1759,
+            1770
+          ],
+          "avg_input_tokens": 1578,
+          "avg_output_tokens": 216.6,
+          "avg_total_tokens": 1794.6
+        }
+      },
+      "raw_runs": [
+        {
+          "workflow_name": "Atomic Essay Flow",
+          "steps": [
+            {
+              "step_name": "initial_generation",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 1298,
+              "output_tokens": 222,
+              "total_tokens": 1520
+            },
+            {
+              "step_name": "voice_brand_edit",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 1567,
+              "output_tokens": 218,
+              "total_tokens": 1785
+            }
+          ],
+          "total_input_tokens": 2865,
+          "total_output_tokens": 440,
+          "total_tokens": 3305,
+          "final_output": "Market specialization isn't just a strategy - it's the difference between surviving and thriving in business.\n\nConsider three distinct approaches to market positioning. The generalist approach is like using a floodlight - you can see everything, but nothing stands out clearly. This is the common trap of trying to serve everyone.\n\nMoving to an industry focus is like switching to a spotlight. You gain better visibility and understanding of a specific sector, but still lack the precision needed for maximum impact.\n\nTrue specialization, however, works like a laser:\n\n\u2022 Your expertise becomes immediately apparent\n\u2022 Your message resonates with decision-makers\n\u2022 Your solutions address specific pain points\n\u2022 Your value proposition becomes undeniable\n\nA recent case study demonstrated this principle when a marketing consultancy shifted from broad-based services to specializing in entertainment industry partnerships.\n\nTheir transformation led to a 300% growth in annual revenue - not because they changed their capabilities, but because they changed their focus.\n\nThe key insight: Strategic market focus creates clarity, and clarity drives growth."
+        },
+        {
+          "workflow_name": "Atomic Essay Flow",
+          "steps": [
+            {
+              "step_name": "initial_generation",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 1298,
+              "output_tokens": 242,
+              "total_tokens": 1540
+            },
+            {
+              "step_name": "voice_brand_edit",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 1587,
+              "output_tokens": 227,
+              "total_tokens": 1814
+            }
+          ],
+          "total_input_tokens": 2885,
+          "total_output_tokens": 469,
+          "total_tokens": 3354,
+          "final_output": "Your business positioning is the foundation of your market success.\n\nWhen companies try to be everything to everyone, they often end up meaning nothing to anybody. It's like trying to illuminate an entire warehouse with a single flashlight - the light becomes too diffuse to be useful.\n\nStrategic positioning requires focus. A general \"marketing agency\" struggles to stand out in a crowded marketplace, while an \"entertainment digital marketing agency\" begins to capture attention.\n\n\u2022 Effective positioning requires three elements:\n- Clear market definition\n- Specific customer focus\n- Distinct service offering\n\nTake it further: \"We're an entertainment marketing agency specializing in TikTok campaigns for independent music labels.\" This level of specificity immediately communicates value to the right audience.\n\nThe common concern is that specialization limits opportunity. However, data consistently shows that focused positioning leads to:\n- Higher conversion rates\n- Increased referral business\n- Premium pricing power\n\nThe most successful businesses start with a precise focus and expand thoughtfully over time. Your positioning should be a spotlight, not a floodlight."
+        },
+        {
+          "workflow_name": "Atomic Essay Flow",
+          "steps": [
+            {
+              "step_name": "initial_generation",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 1298,
+              "output_tokens": 252,
+              "total_tokens": 1550
+            },
+            {
+              "step_name": "voice_brand_edit",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 1597,
+              "output_tokens": 248,
+              "total_tokens": 1845
+            }
+          ],
+          "total_input_tokens": 2895,
+          "total_output_tokens": 500,
+          "total_tokens": 3395,
+          "final_output": "Market specialization isn't just a strategy - it's the foundation of sustainable business growth.\n\nI've analyzed hundreds of successful companies and noticed a consistent pattern: the ones that thrive don't try to serve everyone. They excel by serving specific customer segments exceptionally well.\n\nThis focused approach delivers three key advantages:\n\u2022 Higher conversion rates from targeted messaging\n\u2022 Increased pricing power through specialized expertise\n\u2022 More efficient customer acquisition via word-of-mouth\n\nConsider the difference in market positioning:\nA generalist financial advisor struggles to stand out among thousands of competitors. But one who specifically serves tech executives managing equity compensation becomes the go-to expert for that audience.\n\nThis principle applies across industries:\n\u2022 A marketing agency moves from \"digital marketing\" to \"ecommerce email marketing for DTC brands\"\n\u2022 A software company shifts from \"project management\" to \"construction project management for commercial builders\"\n\nYour market position should be narrow enough to be memorable, yet large enough to be profitable. Find that sweet spot and you'll build a defensible business that grows through reputation, not just advertising.\n\nThe path to market leadership starts with choosing the right corner of the market to dominate."
+        },
+        {
+          "workflow_name": "Atomic Essay Flow",
+          "steps": [
+            {
+              "step_name": "initial_generation",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 1298,
+              "output_tokens": 219,
+              "total_tokens": 1517
+            },
+            {
+              "step_name": "voice_brand_edit",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 1564,
+              "output_tokens": 195,
+              "total_tokens": 1759
+            }
+          ],
+          "total_input_tokens": 2862,
+          "total_output_tokens": 414,
+          "total_tokens": 3276,
+          "final_output": "Specialization is the Secret Weapon of Business Growth.\n\nMost successful companies don't start by trying to capture entire markets. They begin by solving specific problems for specific customers with remarkable precision.\n\nThink of market positioning like directing light. A broad approach scatters your resources like a floodlight, while specialization focuses your efforts like a precision beam.\n\nThe most effective business strategy involves:\n\u2022 Identifying an underserved market segment\n\u2022 Developing deep expertise in that area\n\u2022 Building a reputation for exceptional results\n\nConsider two consulting firms:\n\u2022 One offers general business advice to everyone\n\u2022 Another specializes in supply chain optimization for manufacturers\n\nThe specialist firm consistently:\n\u2022 Commands higher fees\n\u2022 Attracts better-fit clients\n\u2022 Generates stronger referrals\n\nThe path to market leadership often starts with choosing a narrow focus and expanding strategically over time. Your expertise multiplies when you concentrate your efforts."
+        },
+        {
+          "workflow_name": "Atomic Essay Flow",
+          "steps": [
+            {
+              "step_name": "initial_generation",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 1298,
+              "output_tokens": 230,
+              "total_tokens": 1528
+            },
+            {
+              "step_name": "voice_brand_edit",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 1575,
+              "output_tokens": 195,
+              "total_tokens": 1770
+            }
+          ],
+          "total_input_tokens": 2873,
+          "total_output_tokens": 425,
+          "total_tokens": 3298,
+          "final_output": "Success in business comes from strategic rejection, not endless acceptance.\n\nEvery time we say \"yes\" to an average opportunity, we inadvertently close the door on potentially transformative ones that require our full attention and expertise.\n\nThis principle became clear through years of consulting with growing businesses:\n\n\u2022 Spreading resources too thin dilutes impact\n\u2022 Mediocre projects rarely lead to exceptional outcomes\n\u2022 Quality suffers when capacity is stretched\n\u2022 Market positioning becomes unclear\n\nThe solution lies in disciplined selectivity:\n\n\u2022 Carefully evaluate each opportunity against strategic goals\n\u2022 Focus resources on projects with the highest potential impact\n\u2022 Maintain strict quality standards\n\u2022 Build deeper relationships with fewer, better-aligned partners\n\nThe results speak for themselves: increased project success rates, stronger client relationships, and more strategic growth opportunities.\n\nRemember: In business, your ability to say \"no\" often determines how far your \"yes\" can take you."
+        }
+      ]
+    },
+    "Mid Form Flow": {
+      "successful_runs": 5,
+      "failed_runs": 0,
+      "token_stats": {
+        "total_tokens": {
+          "min": 3265,
+          "max": 3307,
+          "mean": 3280.8,
+          "median": 3277,
+          "stdev": 15.786069808536892
+        },
+        "input_tokens": {
+          "min": 2849,
+          "max": 2873,
+          "mean": 2861.2,
+          "median": 2862,
+          "stdev": 9.497368056467012
+        },
+        "output_tokens": {
+          "min": 410,
+          "max": 434,
+          "mean": 419.6,
+          "median": 415,
+          "stdev": 9.762171889492624
+        }
+      },
+      "step_breakdown": {
+        "initial_generation": {
+          "model": "claude-3-5-sonnet-20241022",
+          "input_tokens": [
+            1300,
+            1300,
+            1300,
+            1300,
+            1300
+          ],
+          "output_tokens": [
+            220,
+            215,
+            208,
+            202,
+            226
+          ],
+          "total_tokens": [
+            1520,
+            1515,
+            1508,
+            1502,
+            1526
+          ],
+          "avg_input_tokens": 1300,
+          "avg_output_tokens": 214.2,
+          "avg_total_tokens": 1514.2
+        },
+        "voice_brand_edit": {
+          "model": "claude-3-5-sonnet-20241022",
+          "input_tokens": [
+            1567,
+            1562,
+            1555,
+            1549,
+            1573
+          ],
+          "output_tokens": [
+            194,
+            200,
+            202,
+            223,
+            208
+          ],
+          "total_tokens": [
+            1761,
+            1762,
+            1757,
+            1772,
+            1781
+          ],
+          "avg_input_tokens": 1561.2,
+          "avg_output_tokens": 205.4,
+          "avg_total_tokens": 1766.6
+        }
+      },
+      "raw_runs": [
+        {
+          "workflow_name": "Mid Form Flow",
+          "steps": [
+            {
+              "step_name": "initial_generation",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 1300,
+              "output_tokens": 220,
+              "total_tokens": 1520
+            },
+            {
+              "step_name": "voice_brand_edit",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 1567,
+              "output_tokens": 194,
+              "total_tokens": 1761
+            }
+          ],
+          "total_input_tokens": 2867,
+          "total_output_tokens": 414,
+          "total_tokens": 3281,
+          "final_output": "Marketing Success Begins With Focused Specialization\n\nI spent years watching businesses dilute their message trying to serve everyone. The data shows this approach consistently underperforms compared to specialized positioning.\n\nThe most successful companies don't try to be everything to everyone. Instead, they excel by deeply understanding and serving a specific market segment.\n\nConsider this progression:\n\u2022 A general \"business consulting firm\" competes with thousands of similar providers\n\u2022 A \"digital transformation consultancy\" narrows the competitive field significantly\n\u2022 A \"healthcare IT modernization specialist\" commands premium rates and referrals\n\nThe benefits of specialization are clear:\n\u2022 You build deeper expertise faster\n\u2022 Your marketing resonates more strongly\n\u2022 Your ideal clients find you more readily\n\u2022 Your services command higher rates\n\nThe evidence is conclusive: Strategic specialization isn't limiting - it's the foundation for sustainable growth. Choose your focus deliberately and own it completely."
+        },
+        {
+          "workflow_name": "Mid Form Flow",
+          "steps": [
+            {
+              "step_name": "initial_generation",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 1300,
+              "output_tokens": 215,
+              "total_tokens": 1515
+            },
+            {
+              "step_name": "voice_brand_edit",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 1562,
+              "output_tokens": 200,
+              "total_tokens": 1762
+            }
+          ],
+          "total_input_tokens": 2862,
+          "total_output_tokens": 415,
+          "total_tokens": 3277,
+          "final_output": "The most effective business growth comes from understanding exactly who your best customers are.\n\nMost companies try to appeal to everyone, spreading their resources thin and getting mediocre results. But the data shows a focused approach yields better returns.\n\nThe key elements of strategic growth are straightforward:\n\n\u2022 Identify high-value customers who align with your offering\n\u2022 Develop messaging that addresses their specific challenges\n\u2022 Invest in channels where these customers are already active\n\u2022 Reallocate resources away from underperforming initiatives\n\u2022 Create targeted touchpoints for each stage of engagement\n\u2022 Use performance data to continuously refine your approach\n\nThis methodology isn't just theory - it's backed by consistent results across industries. When you understand your ideal customer deeply, every marketing dollar works harder.\n\nThe true path to sustainable growth isn't casting a wider net - it's fishing with precision where you know the best catches are.\n\nRemember: Strategic focus beats scattered effort every time."
+        },
+        {
+          "workflow_name": "Mid Form Flow",
+          "steps": [
+            {
+              "step_name": "initial_generation",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 1300,
+              "output_tokens": 208,
+              "total_tokens": 1508
+            },
+            {
+              "step_name": "voice_brand_edit",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 1555,
+              "output_tokens": 202,
+              "total_tokens": 1757
+            }
+          ],
+          "total_input_tokens": 2855,
+          "total_output_tokens": 410,
+          "total_tokens": 3265,
+          "final_output": "The most effective business growth happens when you focus on quality over quantity.\n\nI've seen countless companies drain their resources trying to appeal to everyone in their market. It's an understandable impulse, but it's fundamentally flawed.\n\nSmart growth requires precision:\n\u2022 Understanding your customer segments\n\u2022 Knowing their specific pain points\n\u2022 Meeting them where they already are\n\nThe data consistently shows that successful companies:\n\u2022 Build relationships with ideal customers first\n\u2022 Create messaging that addresses real needs\n\u2022 Test and refine their approach systematically\n\nThink of it like precision agriculture:\n\u2022 Plant in fertile ground\n\u2022 Nurture what grows well\n\u2022 Prune what doesn't thrive\n\nThe results speak for themselves - companies that take this focused approach typically see:\n\u2022 Higher customer retention\n\u2022 Lower acquisition costs\n\u2022 Better return on marketing investment\n\nSuccess in business isn't about reaching the masses - it's about building meaningful connections with the right audience."
+        },
+        {
+          "workflow_name": "Mid Form Flow",
+          "steps": [
+            {
+              "step_name": "initial_generation",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 1300,
+              "output_tokens": 202,
+              "total_tokens": 1502
+            },
+            {
+              "step_name": "voice_brand_edit",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 1549,
+              "output_tokens": 223,
+              "total_tokens": 1772
+            }
+          ],
+          "total_input_tokens": 2849,
+          "total_output_tokens": 425,
+          "total_tokens": 3274,
+          "final_output": "The most successful businesses aren't the ones doing everything - they're the ones doing the essential things exceptionally well.\n\nI've analyzed hundreds of growth strategies across industries, and there's a clear pattern: companies that try to be everything to everyone end up serving no one particularly well.\n\nWhat actually drives sustainable growth is laser-focusing on your highest-value customers - the ones who stay longest, spend more, and cost less to acquire.\n\nHere's what the data consistently shows works:\n\n\u2022 Deeply understand your customer's complete journey\n\u2022 Invest heavily in your most effective acquisition channels\n\u2022 Eliminate spending on underperforming initiatives\n\u2022 Customize your approach for each stage of engagement\n\nThink of it like precision medicine versus a blanket treatment. You want to target specific pain points with focused solutions, not spray generic messages everywhere.\n\nThe companies that master this focused approach consistently outperform their scattered competitors by 3-5x on key metrics.\n\nRemember: Strategic focus beats tactical sprawl every time. Choose your targets carefully and serve them exceptionally well."
+        },
+        {
+          "workflow_name": "Mid Form Flow",
+          "steps": [
+            {
+              "step_name": "initial_generation",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 1300,
+              "output_tokens": 226,
+              "total_tokens": 1526
+            },
+            {
+              "step_name": "voice_brand_edit",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 1573,
+              "output_tokens": 208,
+              "total_tokens": 1781
+            }
+          ],
+          "total_input_tokens": 2873,
+          "total_output_tokens": 434,
+          "total_tokens": 3307,
+          "final_output": "The Hidden Power of Narrow Market Focus\n\nMost business advice suggests casting a wide net to capture more customers. But two decades of marketing data tells a different story.\n\nCompanies that start with laser-focused positioning tend to scale faster and more profitably than generalists. The math is surprisingly simple:\n\nWhen you target everyone, your message gets diluted. Your marketing spend becomes inefficient. Your product development loses direction.\n\nNarrow positioning allows you to:\n\u2022 Master one clear value proposition\n\u2022 Build deep expertise in your niche\n\u2022 Develop strong referral networks\n\u2022 Command premium pricing\n\nConsider the evolution of specialized firms:\n\"Business consulting\" becomes \"SaaS revenue optimization\"\n\"Marketing agency\" becomes \"B2B content marketing for fintech\"\n\nThe data shows that establishing dominance in a focused market creates a stronger foundation for expansion than trying to be everything to everyone from day one.\n\nSuccess in business often means having the discipline to start small and grow intentionally."
+        }
+      ]
+    },
+    "Informal/Casual Short-Form Flow (Tweets)": {
+      "successful_runs": 5,
+      "failed_runs": 0,
+      "token_stats": {
+        "total_tokens": {
+          "min": 2284,
+          "max": 2344,
+          "mean": 2301.2,
+          "median": 2295,
+          "stdev": 24.38647165950827
+        },
+        "input_tokens": {
+          "min": 2139,
+          "max": 2156,
+          "mean": 2146.2,
+          "median": 2142,
+          "stdev": 7.726577508832743
+        },
+        "output_tokens": {
+          "min": 142,
+          "max": 188,
+          "mean": 155,
+          "median": 149,
+          "stdev": 18.986837546047525
+        }
+      },
+      "step_breakdown": {
+        "initial_generation": {
+          "model": "claude-3-5-sonnet-20241022",
+          "input_tokens": [
+            969,
+            969,
+            969,
+            969,
+            969
+          ],
+          "output_tokens": [
+            54,
+            56,
+            50,
+            59,
+            58
+          ],
+          "total_tokens": [
+            1023,
+            1025,
+            1019,
+            1028,
+            1027
+          ],
+          "avg_input_tokens": 969,
+          "avg_output_tokens": 55.4,
+          "avg_total_tokens": 1024.4
+        },
+        "content_length_trimmer": {
+          "model": "claude-3-5-sonnet-20241022",
+          "input_tokens": [
+            1053,
+            1055,
+            1049,
+            1058,
+            1057
+          ],
+          "output_tokens": [
+            29,
+            26,
+            30,
+            38,
+            36
+          ],
+          "total_tokens": [
+            1082,
+            1081,
+            1079,
+            1096,
+            1093
+          ],
+          "avg_input_tokens": 1054.4,
+          "avg_output_tokens": 31.8,
+          "avg_total_tokens": 1086.2
+        },
+        "sample_content_filter": {
+          "model": "claude-3-5-sonnet-20241022",
+          "input_tokens": [
+            120,
+            117,
+            121,
+            129,
+            127
+          ],
+          "output_tokens": [
+            70,
+            61,
+            69,
+            91,
+            48
+          ],
+          "total_tokens": [
+            190,
+            178,
+            190,
+            220,
+            175
+          ],
+          "avg_input_tokens": 122.8,
+          "avg_output_tokens": 67.8,
+          "avg_total_tokens": 190.6
+        }
+      },
+      "raw_runs": [
+        {
+          "workflow_name": "Informal/Casual Short-Form Flow (Tweets)",
+          "steps": [
+            {
+              "step_name": "initial_generation",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 969,
+              "output_tokens": 54,
+              "total_tokens": 1023
+            },
+            {
+              "step_name": "content_length_trimmer",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 1053,
+              "output_tokens": 29,
+              "total_tokens": 1082
+            },
+            {
+              "step_name": "sample_content_filter",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 120,
+              "output_tokens": 70,
+              "total_tokens": 190
+            }
+          ],
+          "total_input_tokens": 2142,
+          "total_output_tokens": 153,
+          "total_tokens": 2295,
+          "final_output": "Accelerate Your Customer Acquisition Strategy\n\n1. Identify Your Ideal Customer Profile\n2. Implement Comprehensive Testing Methods\n3. Focus Resources on Proven Success Metrics\n4. Rely on Data-Driven Decision Making\n5. Define Clear Target Demographics\n6. Maintain Streamlined Processes"
+        },
+        {
+          "workflow_name": "Informal/Casual Short-Form Flow (Tweets)",
+          "steps": [
+            {
+              "step_name": "initial_generation",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 969,
+              "output_tokens": 56,
+              "total_tokens": 1025
+            },
+            {
+              "step_name": "content_length_trimmer",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 1055,
+              "output_tokens": 26,
+              "total_tokens": 1081
+            },
+            {
+              "step_name": "sample_content_filter",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 117,
+              "output_tokens": 61,
+              "total_tokens": 178
+            }
+          ],
+          "total_input_tokens": 2141,
+          "total_output_tokens": 143,
+          "total_tokens": 2284,
+          "final_output": "Prioritize resources on retaining and nurturing paying customers. Systematically test various outreach strategies while measuring their effectiveness. Discontinue underperforming initiatives based on clear metrics. Maintain detailed analytics to inform decision-making and continuously refine your approach for optimal results."
+        },
+        {
+          "workflow_name": "Informal/Casual Short-Form Flow (Tweets)",
+          "steps": [
+            {
+              "step_name": "initial_generation",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 969,
+              "output_tokens": 50,
+              "total_tokens": 1019
+            },
+            {
+              "step_name": "content_length_trimmer",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 1049,
+              "output_tokens": 30,
+              "total_tokens": 1079
+            },
+            {
+              "step_name": "sample_content_filter",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 121,
+              "output_tokens": 69,
+              "total_tokens": 190
+            }
+          ],
+          "total_input_tokens": 2139,
+          "total_output_tokens": 149,
+          "total_tokens": 2288,
+          "final_output": "Optimize Your Marketing Strategy:\n\n1. Prioritize high-potential channels\n2. Quickly evaluate distribution methods\n3. Eliminate underperforming initiatives\n4. Invest in proven tactics\n5. Implement comprehensive tracking\n6. Make data-driven decisions\n7. Iterate and refine continuously"
+        },
+        {
+          "workflow_name": "Informal/Casual Short-Form Flow (Tweets)",
+          "steps": [
+            {
+              "step_name": "initial_generation",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 969,
+              "output_tokens": 59,
+              "total_tokens": 1028
+            },
+            {
+              "step_name": "content_length_trimmer",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 1058,
+              "output_tokens": 38,
+              "total_tokens": 1096
+            },
+            {
+              "step_name": "sample_content_filter",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 129,
+              "output_tokens": 91,
+              "total_tokens": 220
+            }
+          ],
+          "total_input_tokens": 2156,
+          "total_output_tokens": 188,
+          "total_tokens": 2344,
+          "final_output": "Find Your Perfect Customers First: Start by identifying your ideal target audience. Then, develop products and services that directly address their needs and wants. Test various outreach methods to connect with them effectively. Eliminate unnecessary processes and focus on what drives results. Track the customer journey to understand their experience. Continuously improve based on data and feedback.\n\nStay focused on high-impact activities and avoid spreading resources too thin across ineffective channels."
+        },
+        {
+          "workflow_name": "Informal/Casual Short-Form Flow (Tweets)",
+          "steps": [
+            {
+              "step_name": "initial_generation",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 969,
+              "output_tokens": 58,
+              "total_tokens": 1027
+            },
+            {
+              "step_name": "content_length_trimmer",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 1057,
+              "output_tokens": 36,
+              "total_tokens": 1093
+            },
+            {
+              "step_name": "sample_content_filter",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 127,
+              "output_tokens": 48,
+              "total_tokens": 175
+            }
+          ],
+          "total_input_tokens": 2153,
+          "total_output_tokens": 142,
+          "total_tokens": 2295,
+          "final_output": "Identify Your Ideal Customer Base\nDeliver Targeted Messaging That Resonates\nSelect and Test Strategic Marketing Channels\nFocus on Essential Elements\nMonitor Performance Metrics\n\nLet Data Drive Your Marketing Investment Decisions"
+        }
+      ]
+    },
+    "Flow for Using Tweets as Templates": {
+      "successful_runs": 5,
+      "failed_runs": 0,
+      "token_stats": {
+        "total_tokens": {
+          "min": 4977,
+          "max": 5049,
+          "mean": 5008.8,
+          "median": 5009,
+          "stdev": 27.517267306184312
+        },
+        "input_tokens": {
+          "min": 4617,
+          "max": 4651,
+          "mean": 4630.8,
+          "median": 4629,
+          "stdev": 12.77497553813705
+        },
+        "output_tokens": {
+          "min": 360,
+          "max": 398,
+          "mean": 378,
+          "median": 380,
+          "stdev": 14.983324063771697
+        }
+      },
+      "step_breakdown": {
+        "initial_generation": {
+          "model": "claude-3-5-sonnet-20241022",
+          "input_tokens": [
+            1381,
+            1381,
+            1381,
+            1381,
+            1381
+          ],
+          "output_tokens": [
+            127,
+            144,
+            134,
+            153,
+            144
+          ],
+          "total_tokens": [
+            1508,
+            1525,
+            1515,
+            1534,
+            1525
+          ],
+          "avg_input_tokens": 1381,
+          "avg_output_tokens": 140.4,
+          "avg_total_tokens": 1521.4
+        },
+        "voice_brand_edit": {
+          "model": "claude-3-5-haiku-20241022",
+          "input_tokens": [
+            1525,
+            1542,
+            1532,
+            1551,
+            1542
+          ],
+          "output_tokens": [
+            131,
+            126,
+            176,
+            112,
+            117
+          ],
+          "total_tokens": [
+            1656,
+            1668,
+            1708,
+            1663,
+            1659
+          ],
+          "avg_input_tokens": 1538.4,
+          "avg_output_tokens": 132.4,
+          "avg_total_tokens": 1670.8
+        },
+        "content_length_trimmer": {
+          "model": "claude-3-5-sonnet-20241022",
+          "input_tokens": [
+            240,
+            235,
+            285,
+            221,
+            226
+          ],
+          "output_tokens": [
+            57,
+            57,
+            39,
+            66,
+            61
+          ],
+          "total_tokens": [
+            297,
+            292,
+            324,
+            287,
+            287
+          ],
+          "avg_input_tokens": 241.4,
+          "avg_output_tokens": 56,
+          "avg_total_tokens": 297.4
+        },
+        "cringe_edit": {
+          "model": "claude-3-5-haiku-20241022",
+          "input_tokens": [
+            1471,
+            1471,
+            1453,
+            1480,
+            1475
+          ],
+          "output_tokens": [
+            45,
+            53,
+            49,
+            54,
+            45
+          ],
+          "total_tokens": [
+            1516,
+            1524,
+            1502,
+            1534,
+            1520
+          ],
+          "avg_input_tokens": 1470,
+          "avg_output_tokens": 49.2,
+          "avg_total_tokens": 1519.2
+        }
+      },
+      "raw_runs": [
+        {
+          "workflow_name": "Flow for Using Tweets as Templates",
+          "steps": [
+            {
+              "step_name": "initial_generation",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 1381,
+              "output_tokens": 127,
+              "total_tokens": 1508
+            },
+            {
+              "step_name": "voice_brand_edit",
+              "model": "claude-3-5-haiku-20241022",
+              "input_tokens": 1525,
+              "output_tokens": 131,
+              "total_tokens": 1656
+            },
+            {
+              "step_name": "content_length_trimmer",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 240,
+              "output_tokens": 57,
+              "total_tokens": 297
+            },
+            {
+              "step_name": "cringe_edit",
+              "model": "claude-3-5-haiku-20241022",
+              "input_tokens": 1471,
+              "output_tokens": 45,
+              "total_tokens": 1516
+            }
+          ],
+          "total_input_tokens": 4617,
+          "total_output_tokens": 360,
+          "total_tokens": 4977,
+          "final_output": "The B2B Growth Playbook:\n\n- Laser-focused customer targeting\n- High-value acquisitions\n- Minimize wasted spend\n- Strategic channel optimization\n\nEverything else is noise."
+        },
+        {
+          "workflow_name": "Flow for Using Tweets as Templates",
+          "steps": [
+            {
+              "step_name": "initial_generation",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 1381,
+              "output_tokens": 144,
+              "total_tokens": 1525
+            },
+            {
+              "step_name": "voice_brand_edit",
+              "model": "claude-3-5-haiku-20241022",
+              "input_tokens": 1542,
+              "output_tokens": 126,
+              "total_tokens": 1668
+            },
+            {
+              "step_name": "content_length_trimmer",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 235,
+              "output_tokens": 57,
+              "total_tokens": 292
+            },
+            {
+              "step_name": "cringe_edit",
+              "model": "claude-3-5-haiku-20241022",
+              "input_tokens": 1471,
+              "output_tokens": 53,
+              "total_tokens": 1524
+            }
+          ],
+          "total_input_tokens": 4629,
+          "total_output_tokens": 380,
+          "total_tokens": 5009,
+          "final_output": "The Startup Growth Playbook:\n\nNarrow your focus to win. Target high-value customers with precision. Specialize ruthlessly. Zero in on your niche. Broad is forgettable; laser-focused is memorable."
+        },
+        {
+          "workflow_name": "Flow for Using Tweets as Templates",
+          "steps": [
+            {
+              "step_name": "initial_generation",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 1381,
+              "output_tokens": 134,
+              "total_tokens": 1515
+            },
+            {
+              "step_name": "voice_brand_edit",
+              "model": "claude-3-5-haiku-20241022",
+              "input_tokens": 1532,
+              "output_tokens": 176,
+              "total_tokens": 1708
+            },
+            {
+              "step_name": "content_length_trimmer",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 285,
+              "output_tokens": 39,
+              "total_tokens": 324
+            },
+            {
+              "step_name": "cringe_edit",
+              "model": "claude-3-5-haiku-20241022",
+              "input_tokens": 1453,
+              "output_tokens": 49,
+              "total_tokens": 1502
+            }
+          ],
+          "total_input_tokens": 4651,
+          "total_output_tokens": 398,
+          "total_tokens": 5049,
+          "final_output": "The B2B Growth Playbook:\n\n- Target high-value customers\n- Optimize acquisition channels\n- Map customer journeys\n- Test relentlessly\n- Scale strategically\n\nPrecision trumps complexity."
+        },
+        {
+          "workflow_name": "Flow for Using Tweets as Templates",
+          "steps": [
+            {
+              "step_name": "initial_generation",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 1381,
+              "output_tokens": 153,
+              "total_tokens": 1534
+            },
+            {
+              "step_name": "voice_brand_edit",
+              "model": "claude-3-5-haiku-20241022",
+              "input_tokens": 1551,
+              "output_tokens": 112,
+              "total_tokens": 1663
+            },
+            {
+              "step_name": "content_length_trimmer",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 221,
+              "output_tokens": 66,
+              "total_tokens": 287
+            },
+            {
+              "step_name": "cringe_edit",
+              "model": "claude-3-5-haiku-20241022",
+              "input_tokens": 1480,
+              "output_tokens": 54,
+              "total_tokens": 1534
+            }
+          ],
+          "total_input_tokens": 4633,
+          "total_output_tokens": 385,
+          "total_tokens": 5018,
+          "final_output": "The Growth Strategist Playbook:\n\nLaser-focus trumps broad marketing. Target high-value customers with precision. \n\nNarrow positioning beats scattered efforts. Understand your ideal customer's journey.\n\nEverything else is just noise."
+        },
+        {
+          "workflow_name": "Flow for Using Tweets as Templates",
+          "steps": [
+            {
+              "step_name": "initial_generation",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 1381,
+              "output_tokens": 144,
+              "total_tokens": 1525
+            },
+            {
+              "step_name": "voice_brand_edit",
+              "model": "claude-3-5-haiku-20241022",
+              "input_tokens": 1542,
+              "output_tokens": 117,
+              "total_tokens": 1659
+            },
+            {
+              "step_name": "content_length_trimmer",
+              "model": "claude-3-5-sonnet-20241022",
+              "input_tokens": 226,
+              "output_tokens": 61,
+              "total_tokens": 287
+            },
+            {
+              "step_name": "cringe_edit",
+              "model": "claude-3-5-haiku-20241022",
+              "input_tokens": 1475,
+              "output_tokens": 45,
+              "total_tokens": 1520
+            }
+          ],
+          "total_input_tokens": 4624,
+          "total_output_tokens": 367,
+          "total_tokens": 4991,
+          "final_output": "The B2B Growth Playbook:\n\nNarrow your focus. Target high-value customers. Map their journey. Test aggressively. Optimize relentlessly.\n\nEverything else is noise."
+        }
+      ]
+    }
+  }
+}
