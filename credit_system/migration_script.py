@@ -70,6 +70,10 @@ def migrate_users_to_credit_system(initial_balance: float = 5.0) -> Dict:
             {"$set": credit_fields}
         )
 
+        print(f"Direct update_result response: {update_result}")
+        print(f"Type of update_result: {type(update_result)}")
+        print(f"Available attributes: {dir(update_result)}")
+
         print(f"Migration completed successfully")
         print(f"Users updated: {update_result.modified_count}")
 
