@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Dict, List
 from astrapy import DataAPIClient
 
-def migrate_users_to_credit_system(initial_balance: float = 100.0) -> Dict:
+def migrate_users_to_credit_system(initial_balance: float = 5.0) -> Dict:
     """
     Add credit fields to all existing user documents in AstraDB
     
@@ -367,7 +367,7 @@ def initialize_user_credits(user_id: str, initial_balance: float) -> Dict:
 # Main execution for testing
 if __name__ == "__main__":
     print("Credit System Migration Script")
-    print("1. Run migration with default 100 credits")
+    print("1. Run migration with default 5 credits")
     print("2. Verify migration")
     print("3. Check progress")
     print("4. Rollback (WARNING: Destructive)")
@@ -375,7 +375,7 @@ if __name__ == "__main__":
     choice = input("Enter choice (1-4): ")
     
     if choice == "1":
-        result = migrate_users_to_credit_system(100.0)
+        result = migrate_users_to_credit_system(5.0)
         print(f"Migration result: {result}")
     elif choice == "2":
         result = verify_migration_success()
