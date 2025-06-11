@@ -6,6 +6,10 @@ import statistics
 from typing import Dict, List, Tuple
 from datetime import datetime
 import requests
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from social_dynamic_generation_flow import flow_config_retriever, social_post_generation_with_json
 from social_writer import get_client_brand_voice, source_content_retriever, multitemplate_retriever
 from third_party_keys import get_third_party_key
