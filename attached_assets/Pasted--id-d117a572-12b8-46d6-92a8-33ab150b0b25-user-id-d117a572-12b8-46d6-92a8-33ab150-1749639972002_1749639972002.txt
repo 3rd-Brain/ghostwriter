@@ -1,0 +1,71 @@
+{
+    "_id": "d117a572-12b8-46d6-92a8-33ab150b0b25",
+    "user_id": "d117a572-12b8-46d6-92a8-33ab150b0b25",
+    "username": "showcase_james",
+    "email": "james_showcase@test.com",
+    "password_hash": "$2b$12$YriNRBZE0vzW2Amj66I1YOAZG0r.zr3iD7mlse1C8HuB2TXXETbY2",
+    "created_at": "2025-05-08T18:19:52.301728",
+    "last_login": "",
+    "role": "user",
+    "is_active": true,
+    "first_login": true,
+    "profile": {
+        "full_name": "",
+        "bio": "",
+        "company": "AI Automation",
+        "job_title": "",
+        "profile_picture": "",
+        "preferences": {
+            "default_brand_id": "showcase_james",
+            "default_workflow_id": "Legacy Generation Flow",
+            "notification_settings": {
+                "email_notifications": false,
+                "content_approval_alerts": false
+            }
+        },
+        "socials": {
+            "twitter": "https://x.com/gentoftech"
+        },
+        "twitter_processing": "pending",
+        "follower_count": 7193,
+        "processed_tweets_count": 100,
+        "twitter_processed": true,
+        "publications_added": 100
+    },
+    "settings": {
+        "theme": "",
+        "language": "",
+        "timezone": "",
+        "content_generation": {
+            "default_repurpose_count": 5,
+            "default_template_count": 5,
+            "auto_approval": false
+        }
+    },
+    "verification": {
+        "is_verified": false,
+        "verification_token": "",
+        "token_expiry": "",
+        "last_password_reset": ""
+    },
+    "third_party_api_keys": [
+        {
+            "key_id": "test",
+            "service": "openai",
+            "key_hash": "here",
+            "key_prefix": "sk-proj-...",
+            "created_at": "2025-05-15T16:31:52.692508",
+            "is_active": true,
+            "description": "OpenAI API key for GPT models"
+        },
+        {
+            "key_id": "test",
+            "service": "anthropic",
+            "key_hash": "here",
+            "key_prefix": "sk-ant-a...",
+            "created_at": "2025-05-15T16:31:53.357921",
+            "is_active": true,
+            "description": "Anthropic API key for Claude models"
+        }
+    ]
+}
