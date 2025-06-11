@@ -1,3 +1,4 @@
+# Applying the changes to correctly access the number of modified documents in AstraDB responses.
 import os
 import requests
 from datetime import datetime
@@ -75,7 +76,7 @@ def migrate_users_to_credit_system(initial_balance: float = 5.0) -> Dict:
         print(f"Available attributes: {dir(update_result)}")
 
         print(f"Migration completed successfully")
-        print(f"Users updated: {update_result.modified_count}")
+        print(f"Users updated: {update_result.update_info['nModified']}")
 
         # Create the credit_transactions collection if it doesn't exist
         try:
@@ -88,8 +89,8 @@ def migrate_users_to_credit_system(initial_balance: float = 5.0) -> Dict:
 
         return {
             "status": "success",
-            "message": f"Successfully migrated {update_result.modified_count} users to credit system",
-            "users_migrated": update_result.modified_count,
+            "message": f"Successfully migrated {update_result.update_info['nModified']} users to credit system",
+            "users_migrated": update_result.update_info['nModified'],
             "total_users": total_users,
             "initial_balance": initial_balance,
             "migration_time": current_time
@@ -160,7 +161,7 @@ def add_credit_fields_to_user(user_id: str, initial_balance: float) -> Dict:
             {"$set": credit_fields}
         )
 
-        if result.modified_count > 0:
+        if result.update_info['nModified'] > 0:
             print(f"Successfully added credit fields to user {user_id}")
             return {
                 "status": "success",
@@ -274,12 +275,12 @@ def rollback_migration() -> Dict:
             }}
         )
 
-        print(f"Rollback completed: {result.modified_count} users updated")
+        print(f"Rollback completed: {result.update_info['nModified']} users updated")
 
         return {
             "status": "success",
-            "message": f"Rollback completed - removed credit fields from {result.modified_count} users",
-            "users_affected": result.modified_count,
+            "message": f"Rollback completed - removed credit fields from {result.update_info['nModified']} users",
+            "users_affected": result.update_info['nModified'],
             "rollback_time": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
         }
 
