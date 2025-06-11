@@ -34,7 +34,7 @@ def migrate_users_to_credit_system(initial_balance: float = 5.0) -> Dict:
 
         # Get all users that don't already have credit fields
         users_without_credits = users_collection.find(
-            {"current_balance": {"$exists": False}},
+            {"credits": {"$exists": False}},
             projection={"user_id": 1, "username": 1, "email": 1}
         )
 
@@ -51,20 +51,22 @@ def migrate_users_to_credit_system(initial_balance: float = 5.0) -> Dict:
                 "total_users": 0
             }
 
-        # Prepare the credit fields to add
+        # Prepare the credit fields to add under 'credits' umbrella
         current_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
         credit_fields = {
-            "current_balance": initial_balance,
-            "total_purchased": initial_balance,  # Initial balance counts as purchased
-            "total_consumed": 0.0,
-            "reserved_credits": 0.0,
-            "last_credit_update": current_time,
-            "credit_history_enabled": True
+            "credits": {
+                "current_balance": initial_balance,
+                "total_purchased": initial_balance,  # Initial balance counts as purchased
+                "total_consumed": 0.0,
+                "reserved_credits": 0.0,
+                "last_credit_update": current_time,
+                "credit_history_enabled": True
+            }
         }
 
         # Update all users without credit fields
         update_result = users_collection.update_many(
-            {"current_balance": {"$exists": False}},
+            {"credits": {"$exists": False}},
             {"$set": credit_fields}
         )
 
@@ -128,22 +130,24 @@ def add_credit_fields_to_user(user_id: str, initial_balance: float) -> Dict:
         if not user:
             return {"status": "error", "message": f"User {user_id} not found"}
 
-        if "current_balance" in user:
+        if "credits" in user:
             return {
                 "status": "warning", 
                 "message": f"User {user_id} already has credit fields",
-                "current_balance": user.get("current_balance")
+                "current_balance": user.get("credits", {}).get("current_balance")
             }
 
-        # Prepare credit fields
+        # Prepare credit fields under 'credits' umbrella
         current_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
         credit_fields = {
-            "current_balance": initial_balance,
-            "total_purchased": initial_balance,
-            "total_consumed": 0.0,
-            "reserved_credits": 0.0,
-            "last_credit_update": current_time,
-            "credit_history_enabled": True
+            "credits": {
+                "current_balance": initial_balance,
+                "total_purchased": initial_balance,
+                "total_consumed": 0.0,
+                "reserved_credits": 0.0,
+                "last_credit_update": current_time,
+                "credit_history_enabled": True
+            }
         }
 
         # Update the user document
@@ -193,15 +197,15 @@ def verify_migration_success() -> Dict:
         total_users = users_collection.count_documents({})
 
         # Count users with credit fields
-        users_with_credits = users_collection.count_documents({"current_balance": {"$exists": True}})
+        users_with_credits = users_collection.count_documents({"credits": {"$exists": True}})
 
         # Count users without credit fields
-        users_without_credits = users_collection.count_documents({"current_balance": {"$exists": False}})
+        users_without_credits = users_collection.count_documents({"credits": {"$exists": False}})
 
         # Get sample user with credits
         sample_user = users_collection.find_one(
-            {"current_balance": {"$exists": True}},
-            projection={"user_id": 1, "current_balance": 1, "total_purchased": 1}
+            {"credits": {"$exists": True}},
+            projection={"user_id": 1, "credits.current_balance": 1, "credits.total_purchased": 1}
         )
 
         # Check if credit_transactions collection exists
@@ -260,14 +264,9 @@ def rollback_migration() -> Dict:
 
         # Remove credit fields from all users
         result = users_collection.update_many(
-            {"current_balance": {"$exists": True}},
+            {"credits": {"$exists": True}},
             {"$unset": {
-                "current_balance": "",
-                "total_purchased": "",
-                "total_consumed": "",
-                "reserved_credits": "",
-                "last_credit_update": "",
-                "credit_history_enabled": ""
+                "credits": ""
             }}
         )
 
@@ -308,7 +307,7 @@ def get_migration_progress() -> Dict:
 
         # Get counts
         total_users = users_collection.count_documents({})
-        users_with_credits = users_collection.count_documents({"current_balance": {"$exists": True}})
+        users_with_credits = users_collection.count_documents({"credits": {"$exists": True}})
         users_without_credits = total_users - users_with_credits
 
         # Calculate progress percentage
@@ -319,13 +318,13 @@ def get_migration_progress() -> Dict:
         if users_with_credits > 0:
             # Use aggregation to get credit statistics
             pipeline = [
-                {"$match": {"current_balance": {"$exists": True}}},
+                {"$match": {"credits": {"$exists": True}}},
                 {"$group": {
                     "_id": None,
-                    "total_balance": {"$sum": "$current_balance"},
-                    "avg_balance": {"$avg": "$current_balance"},
-                    "total_purchased": {"$sum": "$total_purchased"},
-                    "total_consumed": {"$sum": "$total_consumed"}
+                    "total_balance": {"$sum": "$credits.current_balance"},
+                    "avg_balance": {"$avg": "$credits.current_balance"},
+                    "total_purchased": {"$sum": "$credits.total_purchased"},
+                    "total_consumed": {"$sum": "$credits.total_consumed"}
                 }}
             ]
 
