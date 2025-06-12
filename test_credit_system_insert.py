@@ -8,8 +8,8 @@ def test_credit_purchase():
     print("-" * 50)
     
     try:
-        # Test credit purchase
-        user_id = "test_user_credit_system"
+        # Use the existing user ID that already has credits
+        user_id = "d117a572-12b8-46d6-92a8-33ab150b0b25"
         amount = 10.0
         purchase_details = {
             "payment_method": "credit_system_test",
@@ -21,7 +21,7 @@ def test_credit_purchase():
         print(f"🔍 Testing credit purchase for user: {user_id}")
         print(f"   Amount: ${amount}")
         
-        # This should now work with the fixed PostgreSQL connection
+        # This should now work with the existing user
         transaction_id = log_credit_purchase(user_id, amount, purchase_details)
         
         print(f"✅ SUCCESS: Credit purchase logged!")
@@ -35,6 +35,26 @@ def test_credit_purchase():
         if history:
             latest = history[0]
             print(f"   Latest transaction: {latest['type']} ${latest['amount']}")
+            print(f"   Balance after: ${latest['balance_after']}")
+        
+        # Check PostgreSQL directly
+        print(f"\n🔍 Verifying PostgreSQL records...")
+        from credit_system.postgres_setup import PostgresConnection
+        postgres = PostgresConnection()
+        
+        check_query = """
+        SELECT COUNT(*) as count, SUM(amount) as total_amount
+        FROM credit_transactions 
+        WHERE user_id = %s
+        """
+        
+        result = postgres.execute_query(check_query, (user_id,), fetch=True)
+        if result:
+            count = result[0]['count']
+            total = result[0]['total_amount'] or 0
+            print(f"✅ PostgreSQL verification:")
+            print(f"   Records found: {count}")
+            print(f"   Total amount: ${total}")
         
     except Exception as e:
         print(f"❌ Error: {str(e)}")
