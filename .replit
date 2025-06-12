@@ -1,5 +1,5 @@
 run = ["uvicorn", "main:app", "--host", "0.0.0.0", "--reload"]
-modules = ["python-3.11"]
+modules = ["python-3.11", "postgresql-16"]
 
 hidden = [".pythonlibs"]
 
@@ -39,3 +39,12 @@ args = "pip install -r requirements.txt"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "uvicorn main:app --host 0.0.0.0 --reload"
+
+[[workflows.workflow]]
+name = "Pricing Config Manager"
+mode = "sequential"
+author = 39776920
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python admin_scripts/pricing_config_manager.py"
