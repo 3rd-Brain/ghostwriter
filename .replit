@@ -5,6 +5,7 @@ hidden = [".pythonlibs"]
 
 [nix]
 channel = "stable-24_05"
+packages = ["cargo", "freetype", "gmp", "gumbo", "harfbuzz", "jbig2dec", "libiconv", "libjpeg_turbo", "libxcrypt", "mupdf", "openjpeg", "rustc", "swig", "xcbuild"]
 
 [deployment]
 run = ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
