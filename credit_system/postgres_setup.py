@@ -1,4 +1,3 @@
-
 import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -12,27 +11,32 @@ class PostgresConnection:
         self.database_url = os.environ.get('DATABASE_URL')
         if not self.database_url:
             raise ValueError("DATABASE_URL environment variable not set")
-    
+
     def get_connection(self):
-        """Get a database connection"""
+        """Get a PostgreSQL connection"""
         return psycopg2.connect(self.database_url)
-    
+
     def execute_query(self, query: str, params: tuple = None, fetch: bool = False):
-        """Execute a query and optionally fetch results"""
+        """Execute a query with optional parameters"""
         conn = None
         cur = None
         try:
             conn = self.get_connection()
             cur = conn.cursor(cursor_factory=RealDictCursor)
-            cur.execute(query, params)
-            
-            if fetch:
-                result = cur.fetchall()
-                conn.commit()  # Always commit, even when fetching
-                return result
+
+            if params:
+                cur.execute(query, params)
             else:
-                conn.commit()
-                return cur.rowcount
+                cur.execute(query)
+
+            # CRITICAL: Always commit the transaction
+            conn.commit()
+
+            if fetch:
+                return cur.fetchall()
+
+            return True
+
         except Exception as e:
             if conn:
                 conn.rollback()
@@ -46,7 +50,7 @@ class PostgresConnection:
 def create_credit_transactions_table():
     """Create the credit_transactions table"""
     postgres = PostgresConnection()
-    
+
     create_table_query = """
     CREATE TABLE IF NOT EXISTS credit_transactions (
         transaction_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -60,7 +64,7 @@ def create_credit_transactions_table():
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
     );
     """
-    
+
     # Create indexes for better performance
     create_indexes_query = """
     CREATE INDEX IF NOT EXISTS idx_credit_transactions_user_id ON credit_transactions(user_id);
@@ -68,7 +72,7 @@ def create_credit_transactions_table():
     CREATE INDEX IF NOT EXISTS idx_credit_transactions_created_at ON credit_transactions(created_at);
     CREATE INDEX IF NOT EXISTS idx_credit_transactions_reference_id ON credit_transactions(reference_id);
     """
-    
+
     try:
         postgres.execute_query(create_table_query)
         postgres.execute_query(create_indexes_query)
@@ -81,7 +85,7 @@ def create_credit_transactions_table():
 def verify_table_creation():
     """Verify that the table was created correctly"""
     postgres = PostgresConnection()
-    
+
     # Check if table exists and get its structure
     check_query = """
     SELECT column_name, data_type, is_nullable, column_default
@@ -89,7 +93,7 @@ def verify_table_creation():
     WHERE table_name = 'credit_transactions'
     ORDER BY ordinal_position;
     """
-    
+
     try:
         columns = postgres.execute_query(check_query, fetch=True)
         if columns:
@@ -107,10 +111,10 @@ def verify_table_creation():
 if __name__ == "__main__":
     print("🗄️  Setting up PostgreSQL Credit Transactions Table")
     print("-" * 50)
-    
+
     # Create table
     result = create_credit_transactions_table()
-    
+
     if result["status"] == "success":
         # Verify creation
         verify_result = verify_table_creation()
