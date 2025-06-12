@@ -27,7 +27,9 @@ class PostgresConnection:
             cur.execute(query, params)
             
             if fetch:
-                return cur.fetchall()
+                result = cur.fetchall()
+                conn.commit()  # Always commit, even when fetching
+                return result
             else:
                 conn.commit()
                 return cur.rowcount
