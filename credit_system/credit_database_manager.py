@@ -16,6 +16,7 @@ Key Functions:
 """
 
 import os
+import json
 from datetime import datetime
 from typing import Dict, Optional, List
 import uuid
@@ -108,7 +109,7 @@ class CreditDatabaseManager:
                 transaction_data['balance_before'],
                 transaction_data['balance_after'],
                 transaction_data.get('reference_id'),
-                transaction_data.get('metadata'),
+                json.dumps(transaction_data.get('metadata')) if transaction_data.get('metadata') else None,
                 transaction_data.get('created_at', datetime.utcnow())
             )
             
