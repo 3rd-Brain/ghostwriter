@@ -67,6 +67,38 @@ class CreditDatabaseManager:
         except Exception as e:
             return {"status": "error", "message": str(e)}
     
+    def update_user_credit_balance_and_purchased(self, user_id: str, new_balance: float, purchase_amount: float) -> Dict:
+        """Update user's credit balance and increment total_purchased in AstraDB"""
+        try:
+            users_collection = self.get_astra_collection()
+            current_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+            
+            result = users_collection.update_one(
+                {"user_id": user_id},
+                {
+                    "$set": {
+                        "credits.current_balance": new_balance,
+                        "credits.last_credit_update": current_time
+                    },
+                    "$inc": {
+                        "credits.total_purchased": purchase_amount
+                    }
+                }
+            )
+            
+            if result.update_info['nModified'] > 0:
+                return {
+                    "status": "success",
+                    "message": f"Updated balance and total_purchased for user {user_id}",
+                    "new_balance": new_balance,
+                    "purchase_amount_added": purchase_amount
+                }
+            else:
+                return {"status": "error", "message": "User not found or no changes made"}
+                
+        except Exception as e:
+            return {"status": "error", "message": str(e)}
+    
     def get_user_credit_info(self, user_id: str) -> Dict:
         """Get user's credit information from AstraDB"""
         try:

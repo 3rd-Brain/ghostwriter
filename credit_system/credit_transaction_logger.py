@@ -115,9 +115,9 @@ class CreditTransactionLogger:
             transaction_id = self.db_manager.create_credit_transaction_record(transaction_data)
             print(f"✅ DEBUG: PostgreSQL transaction created with ID: {transaction_id}")
             
-            # Update user balance in AstraDB
-            update_result = self.db_manager.update_user_credit_balance(user_id, balance_after)
-            print(f"✅ DEBUG: AstraDB balance update result: {update_result}")
+            # Update user balance and total_purchased in AstraDB
+            update_result = self.db_manager.update_user_credit_balance_and_purchased(user_id, balance_after, amount)
+            print(f"✅ DEBUG: AstraDB balance and total_purchased update result: {update_result}")
             
             return transaction_id
             
