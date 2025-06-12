@@ -23,8 +23,8 @@ import json
 import os
 from typing import Dict, Optional, List
 from decimal import Decimal, ROUND_HALF_UP
-from credit_database_manager import CreditDatabaseManager
-from credit_transaction_logger import CreditTransactionLogger
+from credit_system.credit_database_manager import CreditDatabaseManager
+from credit_system.credit_transaction_logger import CreditTransactionLogger
 
 
 class CreditManager:

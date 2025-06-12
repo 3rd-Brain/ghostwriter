@@ -20,7 +20,7 @@ from datetime import datetime
 from typing import Dict, Optional, List
 import uuid
 from astrapy import DataAPIClient
-from postgres_setup import PostgresConnection
+from credit_system.postgres_setup import PostgresConnection
 
 class CreditDatabaseManager:
     def __init__(self):

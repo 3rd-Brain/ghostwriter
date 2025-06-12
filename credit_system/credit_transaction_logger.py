@@ -21,7 +21,7 @@ Key Functions:
 from typing import Dict, List, Optional
 import uuid
 from datetime import datetime
-from credit_database_manager import CreditDatabaseManager
+from credit_system.credit_database_manager import CreditDatabaseManager
 
 class CreditTransactionLogger:
     def __init__(self):
