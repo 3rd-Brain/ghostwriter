@@ -109,14 +109,22 @@ class CreditTransactionLogger:
                 }
             }
             
+            print(f"🔍 DEBUG: Creating transaction record with data: {transaction_data}")
+            
+            # Create PostgreSQL transaction record first
             transaction_id = self.db_manager.create_credit_transaction_record(transaction_data)
+            print(f"✅ DEBUG: PostgreSQL transaction created with ID: {transaction_id}")
             
             # Update user balance in AstraDB
-            self.db_manager.update_user_credit_balance(user_id, balance_after)
+            update_result = self.db_manager.update_user_credit_balance(user_id, balance_after)
+            print(f"✅ DEBUG: AstraDB balance update result: {update_result}")
             
             return transaction_id
             
         except Exception as e:
+            print(f"❌ DEBUG: Error in log_credit_purchase: {str(e)}")
+            import traceback
+            print(f"❌ DEBUG: Full traceback: {traceback.format_exc()}")
             raise Exception(f"Error logging credit purchase: {str(e)}")
     
     def log_credit_bonus(self, user_id: str, amount: float, bonus_details: Dict) -> str:

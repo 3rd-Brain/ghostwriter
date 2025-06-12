@@ -94,6 +94,8 @@ class CreditDatabaseManager:
             # Generate transaction ID if not provided
             transaction_id = transaction_data.get('transaction_id', str(uuid.uuid4()))
             
+            print(f"🔍 DEBUG: Attempting to create PostgreSQL transaction with ID: {transaction_id}")
+            
             insert_query = """
             INSERT INTO credit_transactions 
             (transaction_id, user_id, type, amount, balance_before, balance_after, reference_id, metadata, created_at)
@@ -113,14 +115,24 @@ class CreditDatabaseManager:
                 transaction_data.get('created_at', datetime.utcnow())
             )
             
+            print(f"🔍 DEBUG: Query params: {params}")
+            print(f"🔍 DEBUG: Executing PostgreSQL query...")
+            
             result = self.postgres.execute_query(insert_query, params, fetch=True)
             
+            print(f"🔍 DEBUG: PostgreSQL query result: {result}")
+            
             if result:
-                return str(result[0]['transaction_id'])
+                final_transaction_id = str(result[0]['transaction_id'])
+                print(f"✅ DEBUG: PostgreSQL transaction created successfully: {final_transaction_id}")
+                return final_transaction_id
             else:
-                raise Exception("Failed to create transaction record")
+                raise Exception("Failed to create transaction record - no result returned")
                 
         except Exception as e:
+            print(f"❌ DEBUG: PostgreSQL transaction creation failed: {str(e)}")
+            import traceback
+            print(f"❌ DEBUG: Full PostgreSQL traceback: {traceback.format_exc()}")
             raise Exception(f"Error creating transaction record: {str(e)}")
     
     def get_user_transaction_history(self, user_id: str, limit: int = 50) -> List[Dict]:
