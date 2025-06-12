@@ -8,7 +8,7 @@
     },
     "claude-3-5-haiku-20241022": {
       "provider": "anthropic",
-      "input_cost_per_1M_tokens": 0.80,
+      "input_cost_per_1M_tokens": 0.8,
       "output_cost_per_1M_tokens": 4,
       "status": "active"
     },
@@ -34,6 +34,36 @@
       "provider": "anthropic",
       "input_cost_per_1M_tokens": 3.0,
       "output_cost_per_1M_tokens": 15.0,
+      "status": "active"
+    },
+    "o4-mini-2025-04-16": {
+      "provider": "openai",
+      "input_cost_per_1M_tokens": 1.1,
+      "output_cost_per_1M_tokens": 4.4,
+      "status": "active"
+    },
+    "gpt-4.1-nano-2025-04-14": {
+      "provider": "openai",
+      "input_cost_per_1M_tokens": 0.1,
+      "output_cost_per_1M_tokens": 0.4,
+      "status": "active"
+    },
+    "gpt-4.1-mini-2025-04-14": {
+      "provider": "openai",
+      "input_cost_per_1M_tokens": 0.4,
+      "output_cost_per_1M_tokens": 1.6,
+      "status": "active"
+    },
+    "gpt-4o-mini-2024-07-18": {
+      "provider": "openai",
+      "input_cost_per_1M_tokens": 0.15,
+      "output_cost_per_1M_tokens": 0.6,
+      "status": "active"
+    },
+    "gpt-4.1-2025-04-14": {
+      "provider": "openai",
+      "input_cost_per_1M_tokens": 2.0,
+      "output_cost_per_1M_tokens": 8.0,
       "status": "active"
     }
   },
