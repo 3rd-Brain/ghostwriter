@@ -30,7 +30,8 @@ def test_postgres_connection():
             );
         """)
         
-        table_exists = cur.fetchone()[0]
+        result = cur.fetchone()
+        table_exists = result['exists']
         print(f"✅ credit_transactions table exists: {table_exists}")
         
         if table_exists:
@@ -48,8 +49,8 @@ def test_postgres_connection():
                 print(f"   - {col['column_name']}: {col['data_type']}")
             
             # Check existing records count
-            cur.execute("SELECT COUNT(*) FROM credit_transactions;")
-            count = cur.fetchone()[0]
+            cur.execute("SELECT COUNT(*) as count FROM credit_transactions;")
+            count = cur.fetchone()['count']
             print(f"✅ Existing records count: {count}")
             
             # Show recent records if any
