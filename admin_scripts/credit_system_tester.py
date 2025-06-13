@@ -649,6 +649,9 @@ class CreditSystemTester:
         print("\n🔬 REAL WORKFLOW GENERATION WITH TOKEN TRACKING")
         print("-" * 60)
 
+        # Get user ID for testing
+        user_id = self.get_user_input("User ID for testing", "test_user_123")
+        
         # Get workflow name
         workflow_name = self.get_user_input("Workflow name", "Standard Short-Form Flow")
 
@@ -665,15 +668,48 @@ class CreditSystemTester:
             print("❌ Invalid number entered, using default of 3")
             num_posts = 3
 
+        # Check if user has API keys, and if not, offer to set them up
+        from third_party_keys import user_has_api_keys, store_third_party_key
+        
+        if not user_has_api_keys(user_id, "anthropic"):
+            print(f"\n⚠️ User {user_id} doesn't have Anthropic API key configured.")
+            setup_keys = self.get_user_input("Would you like to set up API keys for testing? (y/n)", "y")
+            
+            if setup_keys.lower() == 'y':
+                anthropic_key = self.get_user_input("Enter Anthropic API key (or 'demo' for demo key)")
+                
+                if anthropic_key and anthropic_key != 'demo':
+                    try:
+                        store_third_party_key(user_id, "anthropic", anthropic_key, "Testing key")
+                        print("✅ Anthropic API key stored successfully!")
+                    except Exception as e:
+                        print(f"❌ Failed to store API key: {str(e)}")
+                        return
+                elif anthropic_key == 'demo':
+                    # Store a demo key for testing (this won't work for real API calls)
+                    demo_key = "sk-ant-demo-key-for-testing-12345"
+                    try:
+                        store_third_party_key(user_id, "anthropic", demo_key, "Demo testing key")
+                        print("✅ Demo API key stored! Note: This won't work for real API calls.")
+                    except Exception as e:
+                        print(f"❌ Failed to store demo key: {str(e)}")
+                        return
+                else:
+                    print("❌ No API key provided. Cannot proceed with real generation.")
+                    return
+            else:
+                print("❌ Cannot proceed without API keys.")
+                return
+
         print(f"\n🔄 Starting real generation process...")
+        print(f"User ID: {user_id}")
         print(f"Workflow: {workflow_name}")
         print(f"Topic: {topic}")
         print(f"Brand: {brand_name}")
         print(f"Number of posts: {num_posts}")
 
         try:
-            # Get user ID from environment
-            user_id = os.environ.get("CURRENT_USER_ID", "test_user_123")
+            # Set user ID in environment for the generation process
             os.environ["CURRENT_USER_ID"] = user_id
 
             # Import required modules
