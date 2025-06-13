@@ -806,13 +806,13 @@ class CreditSystemTester:
                     for msg in step["Message"]:
                         content = msg["content"]
                         
-                        # Replace placeholders
-                        if "{prev_output}" in content:
-                            content = content.replace("{prev_output}", prev_output)
-                        if "{combined_chunks}" in content:
-                            content = content.replace("{combined_chunks}", combined_chunks)
-                        if "{brand_voice}" in content:
-                            content = content.replace("{brand_voice}", brand_voice)
+                        # Replace placeholders to match workflow JSON variables
+                        if "{prev_ai_output}" in content:
+                            content = content.replace("{prev_ai_output}", prev_output)
+                        if "{content_chunks}" in content:
+                            content = content.replace("{content_chunks}", combined_chunks)
+                        if "{client_brief}" in content:
+                            content = content.replace("{client_brief}", brand_voice)
                         if "{template}" in content:
                             content = content.replace("{template}", template_content)
                         if "{topic}" in content:
