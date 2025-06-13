@@ -761,3 +761,179 @@ class CreditSystemTester:
                     # Prepare messages
                     messages = []
                     for msg in step["Message"]:
+                        content = msg["content"]
+                        
+                        # Replace placeholders
+                        if "{prev_output}" in content:
+                            content = content.replace("{prev_output}", prev_output)
+                        if "{combined_chunks}" in content:
+                            content = content.replace("{combined_chunks}", combined_chunks)
+                        if "{brand_voice}" in content:
+                            content = content.replace("{brand_voice}", brand_voice)
+                        if "{template}" in content:
+                            content = content.replace("{template}", template_content)
+                        if "{topic}" in content:
+                            content = content.replace("{topic}", topic)
+                        
+                        messages.append({
+                            "role": msg["role"],
+                            "content": content
+                        })
+
+                    # Make API call and track tokens
+                    try:
+                        response = anthropic_client.messages.create(
+                            model=step["Model"],
+                            max_tokens=step.get("max_tokens", 4000),
+                            messages=messages
+                        )
+                        
+                        # Extract token usage
+                        input_tokens = response.usage.input_tokens
+                        output_tokens = response.usage.output_tokens
+                        total_tokens = input_tokens + output_tokens
+                        
+                        # Calculate cost for this step
+                        step_cost = self.credit_manager.calculate_actual_cost({
+                            "input": input_tokens,
+                            "output": output_tokens
+                        }, step["Model"])
+                        
+                        # Track step data
+                        step_data = {
+                            "step_name": step["Step_name"],
+                            "model": step["Model"],
+                            "input_tokens": input_tokens,
+                            "output_tokens": output_tokens,
+                            "total_tokens": total_tokens,
+                            "cost": step_cost,
+                            "output_content": response.content[0].text
+                        }
+                        
+                        generation_data["steps"].append(step_data)
+                        generation_data["total_input_tokens"] += input_tokens
+                        generation_data["total_output_tokens"] += output_tokens
+                        generation_data["total_cost"] += step_cost
+                        
+                        # Update prev_output for next step
+                        prev_output = response.content[0].text
+                        
+                        print(f"✅ Step completed:")
+                        print(f"   Input tokens: {input_tokens}")
+                        print(f"   Output tokens: {output_tokens}")
+                        print(f"   Cost: ${step_cost:.6f}")
+                        print(f"   Output preview: {prev_output[:100]}...")
+                        
+                    except Exception as e:
+                        print(f"❌ Step failed: {str(e)}")
+                        step_data = {
+                            "step_name": step["Step_name"],
+                            "model": step["Model"],
+                            "error": str(e),
+                            "input_tokens": 0,
+                            "output_tokens": 0,
+                            "total_tokens": 0,
+                            "cost": 0.0
+                        }
+                        generation_data["steps"].append(step_data)
+                        break
+
+                # Set final content
+                generation_data["final_content"] = prev_output
+                total_cost_all += generation_data["total_cost"]
+                all_generations.append(generation_data)
+
+            # Print detailed results at the end
+            print(f"\n{'='*60}")
+            print(f"🎯 GENERATION COMPLETE - DETAILED RESULTS")
+            print(f"{'='*60}")
+
+            for gen_data in all_generations:
+                print(f"\n📝 POST {gen_data['post_number']}:")
+                print(f"Template: {gen_data['template'][:100]}...")
+                print(f"\n🔢 Token Usage:")
+                print(f"   Total Input Tokens: {gen_data['total_input_tokens']}")
+                print(f"   Total Output Tokens: {gen_data['total_output_tokens']}")
+                print(f"   Total Cost: ${gen_data['total_cost']:.6f}")
+                
+                print(f"\n📊 Step-by-Step Breakdown:")
+                for i, step in enumerate(gen_data['steps'], 1):
+                    if 'error' in step:
+                        print(f"   {i}. {step['step_name']} ({step['model']}): ❌ FAILED - {step['error']}")
+                    else:
+                        print(f"   {i}. {step['step_name']} ({step['model']}):")
+                        print(f"      Input: {step['input_tokens']} | Output: {step['output_tokens']} | Cost: ${step['cost']:.6f}")
+                
+                print(f"\n📄 Generated Content:")
+                print("-" * 40)
+                print(gen_data['final_content'])
+                print("-" * 40)
+
+            # Overall summary
+            print(f"\n🏆 OVERALL SUMMARY:")
+            print(f"   Total Posts Generated: {len(all_generations)}")
+            print(f"   Total Cost Across All Posts: ${total_cost_all:.6f}")
+            
+            total_input_tokens = sum(gen['total_input_tokens'] for gen in all_generations)
+            total_output_tokens = sum(gen['total_output_tokens'] for gen in all_generations)
+            
+            print(f"   Total Input Tokens: {total_input_tokens}")
+            print(f"   Total Output Tokens: {total_output_tokens}")
+            print(f"   Average Cost per Post: ${total_cost_all / len(all_generations):.6f}")
+
+        except Exception as e:
+            print(f"❌ Real workflow generation failed: {str(e)}")
+            import traceback
+            print(f"Full error: {traceback.format_exc()}")
+
+    def run(self):
+        """Main testing loop"""
+        while True:
+            try:
+                self.display_menu()
+                choice = self.get_user_input("\nSelect an option")
+
+                if choice == "0":
+                    print("\n👋 Goodbye!")
+                    break
+                elif choice == "1":
+                    self.test_buy_credits()
+                elif choice == "2":
+                    self.test_workflow_generation()
+                elif choice == "3":
+                    self.test_check_balance()
+                elif choice == "4":
+                    self.test_transaction_history()
+                elif choice == "5":
+                    self.test_reserve_credits()
+                elif choice == "6":
+                    self.test_release_credits()
+                elif choice == "7":
+                    self.test_bonus_credits()
+                elif choice == "8":
+                    self.test_refund()
+                elif choice == "9":
+                    self.test_user_summary()
+                elif choice == "10":
+                    self.test_cost_estimation()
+                elif choice == "11":
+                    self.test_bulk_users()
+                elif choice == "12":
+                    self.test_validate_operations()
+                elif choice == "13":
+                    self.test_transaction_analytics()
+                elif choice == "14":
+                    self.test_real_workflow_generation()
+                else:
+                    print("❌ Invalid choice. Please try again.")
+
+            except KeyboardInterrupt:
+                print("\n\n👋 Goodbye!")
+                break
+            except Exception as e:
+                print(f"\n❌ An error occurred: {str(e)}")
+                print("Please try again or choose a different option.")
+
+if __name__ == "__main__":
+    tester = CreditSystemTester()
+    tester.run()
