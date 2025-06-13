@@ -650,16 +650,16 @@ class CreditSystemTester:
         print("-" * 60)
 
         # Get user ID for testing
-        user_id = self.get_user_input("User ID for testing", "test_user_123")
+        user_id = self.get_user_input("User ID for testing", "d117a572-12b8-46d6-92a8-33ab150b0b25")
         
         # Get workflow name
-        workflow_name = self.get_user_input("Workflow name", "Standard Short-Form Flow")
+        workflow_name = self.get_user_input("Workflow name", "Standard Short-Form Flow (Tweets)")
 
         # Get topic for content generation
-        topic = self.get_user_input("Content topic", "digital marketing strategy")
+        topic = self.get_user_input("Content topic", "Agentic AI Techniques")
 
         # Get brand name
-        brand_name = self.get_user_input("Brand name", "Test Brand")
+        brand_name = self.get_user_input("Brand name", "elonmusk")
 
         # Get number of posts to generate
         try:
@@ -738,7 +738,14 @@ class CreditSystemTester:
                 combined_chunks = f"Sample content about {topic} and best practices for digital marketing engagement."
             else:
                 combined_chunks = "\n\n".join(content_chunks)
-
+                
+            # Verify combination of chunks
+            if combined_chunks:
+                print("🚀 Content chunks combined successfully.")
+                print(f"First 500 characters of the combined content:\n{combined_chunks[:500]}")
+            else:
+                print("❌ Error combining content chunks.")
+                
             # Step 2: Get templates
             print("📋 Retrieving templates...")
             template_results = multitemplate_retriever(combined_chunks, template_count_to_retrieve=num_posts)
