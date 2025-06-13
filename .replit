@@ -49,3 +49,12 @@ author = 39776920
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python admin_scripts/pricing_config_manager.py"
+
+[[workflows.workflow]]
+name = "Credit System Tester"
+mode = "sequential"
+author = 39776920
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python admin_scripts/credit_system_tester.py"
