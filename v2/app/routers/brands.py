@@ -28,10 +28,13 @@ async def create_brand(
 
 @router.get("/brands", response_model=list[BrandVoiceResponse])
 async def list_brands(
+    limit: int = 50,
+    offset: int = 0,
     account: Account = Depends(get_current_account),
     db: AsyncSession = Depends(get_db),
 ):
-    result = await db.execute(select(BrandVoice).where(BrandVoice.account_id == account.id))
+    stmt = select(BrandVoice).where(BrandVoice.account_id == account.id).limit(limit).offset(offset)
+    result = await db.execute(stmt)
     return result.scalars().all()
 
 

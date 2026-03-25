@@ -121,6 +121,8 @@ async def generate(
 
 @router.get("/generated-content", response_model=list[GeneratedContentResponse])
 async def list_generated_content(
+    limit: int = 50,
+    offset: int = 0,
     account: Account = Depends(get_current_account),
     db: AsyncSession = Depends(get_db),
 ):
@@ -128,6 +130,7 @@ async def list_generated_content(
         select(GeneratedContent)
         .where(GeneratedContent.account_id == account.id)
         .order_by(GeneratedContent.created_at.desc())
+        .limit(limit).offset(offset)
     )
     return result.scalars().all()
 

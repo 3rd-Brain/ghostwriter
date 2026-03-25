@@ -139,12 +139,17 @@ async def import_twitter(
 
 @router.get("", response_model=list[SourceContentResponse])
 async def list_source_content(
+    limit: int = 50,
+    offset: int = 0,
     account: Account = Depends(get_current_account),
     db: AsyncSession = Depends(get_db),
 ):
-    result = await db.execute(
-        select(SourceContent).where(SourceContent.account_id == account.id)
+    stmt = (
+        select(SourceContent)
+        .where(SourceContent.account_id == account.id)
+        .limit(limit).offset(offset)
     )
+    result = await db.execute(stmt)
     return result.scalars().all()
 
 

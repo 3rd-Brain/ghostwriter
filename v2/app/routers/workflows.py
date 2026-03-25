@@ -33,14 +33,17 @@ async def create_workflow(
 
 @router.get("/workflows", response_model=list[WorkflowResponse])
 async def list_workflows(
+    limit: int = 50,
+    offset: int = 0,
     account: Account = Depends(get_current_account),
     db: AsyncSession = Depends(get_db),
 ):
-    result = await db.execute(
-        select(Workflow).where(
-            or_(Workflow.account_id == account.id, Workflow.account_id.is_(None))
-        )
+    stmt = (
+        select(Workflow)
+        .where(or_(Workflow.account_id == account.id, Workflow.account_id.is_(None)))
+        .limit(limit).offset(offset)
     )
+    result = await db.execute(stmt)
     return result.scalars().all()
 
 

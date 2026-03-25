@@ -39,6 +39,8 @@ async def create_template(
 @router.get("/templates", response_model=list[TemplateResponse])
 async def list_templates(
     category: TemplateCategory | None = None,
+    limit: int = 50,
+    offset: int = 0,
     account: Account = Depends(get_current_account),
     db: AsyncSession = Depends(get_db),
 ):
@@ -47,6 +49,7 @@ async def list_templates(
     )
     if category:
         stmt = stmt.where(Template.category == category)
+    stmt = stmt.limit(limit).offset(offset)
     result = await db.execute(stmt)
     return result.scalars().all()
 
