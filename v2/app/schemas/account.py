@@ -1,10 +1,10 @@
 import uuid
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class AccountCreate(BaseModel):
-    name: str
+    name: str = Field(min_length=1, max_length=255)
 
 
 class AccountResponse(BaseModel):

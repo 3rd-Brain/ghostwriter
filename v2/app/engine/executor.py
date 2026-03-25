@@ -33,14 +33,20 @@ async def execute_workflow(
         if provider_keys:
             api_key = provider_keys.get(provider.provider_name)
 
-        result: GenerationResult = await provider.generate(
-            model=step["model"],
-            system_prompt=system_prompt,
-            user_prompt=user_prompt,
-            max_tokens=step.get("max_tokens", 4096),
-            temperature=step.get("temperature", 0.7),
-            api_key=api_key,
-        )
+        try:
+            result: GenerationResult = await provider.generate(
+                model=step["model"],
+                system_prompt=system_prompt,
+                user_prompt=user_prompt,
+                max_tokens=step.get("max_tokens", 4096),
+                temperature=step.get("temperature", 0.7),
+                api_key=api_key,
+            )
+        except Exception as e:
+            raise RuntimeError(
+                f"Workflow step {step['order']} ({step['name']}) failed "
+                f"using model {step['model']}: {e}"
+            ) from e
 
         prev_output = result.text
         step_results.append({

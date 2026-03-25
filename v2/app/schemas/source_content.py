@@ -1,24 +1,24 @@
 import uuid
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class SourceContentCreate(BaseModel):
-    content: str
+    content: str = Field(min_length=1)
     source: str = "manual"
     channel_source: str = "manual"
     metadata: dict | None = None
 
 
 class SourceContentBatchItem(BaseModel):
-    content: str
+    content: str = Field(min_length=1)
     source: str = "manual"
     channel_source: str = "manual"
     metadata: dict | None = None
 
 
 class SourceContentBatchRequest(BaseModel):
-    items: list[SourceContentBatchItem]
+    items: list[SourceContentBatchItem] = Field(max_length=100)
 
 
 class SourceContentResponse(BaseModel):
@@ -34,7 +34,7 @@ class SourceContentResponse(BaseModel):
 
 class SourceContentSearchRequest(BaseModel):
     query: str
-    limit: int = 5
+    limit: int = Field(default=5, ge=1, le=50)
 
 
 class SourceContentSearchResponse(BaseModel):
@@ -43,7 +43,7 @@ class SourceContentSearchResponse(BaseModel):
 
 class TwitterImportRequest(BaseModel):
     profile_url: str
-    max_tweets: int = 50
+    max_tweets: int = Field(default=50, ge=1, le=500)
 
 
 class TwitterImportResponse(BaseModel):

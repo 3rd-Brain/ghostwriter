@@ -27,8 +27,12 @@ class GoogleProvider(BaseProvider):
                 temperature=temperature,
             ),
         )
+        try:
+            text = response.text
+        except ValueError:
+            raise RuntimeError("Google API response was blocked by safety filters or returned no content")
         return GenerationResult(
-            text=response.text,
+            text=text,
             input_tokens=response.usage_metadata.prompt_token_count or 0,
             output_tokens=response.usage_metadata.candidates_token_count or 0,
         )

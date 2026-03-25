@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class ProviderKeys(BaseModel):
@@ -19,7 +19,7 @@ class GenerateRequest(BaseModel):
     # Template input
     template: str | None = None
     template_query: str | None = None
-    template_count: int = 1
+    template_count: int = Field(default=1, ge=1, le=10)
 
     # Context
     brand_id: uuid.UUID | None = None

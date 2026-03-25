@@ -74,6 +74,8 @@ async def upload_file(
     db: AsyncSession = Depends(get_db),
 ):
     file_bytes = await file.read()
+    if len(file_bytes) > 10 * 1024 * 1024:  # 10MB
+        raise HTTPException(status_code=413, detail="File too large (max 10MB)")
     text = extract_text(file_bytes, file.filename)
     chunks = chunk_text(text)
 

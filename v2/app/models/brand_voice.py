@@ -12,7 +12,7 @@ class BrandVoice(Base):
     __tablename__ = "brand_voices"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    account_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("accounts.id", ondelete="CASCADE"), nullable=False)
+    account_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("accounts.id", ondelete="CASCADE"), nullable=False, index=True)
     name: Mapped[str] = mapped_column(String, nullable=False)
     voice_guidelines: Mapped[str] = mapped_column(Text, nullable=False)
     sample_content: Mapped[str | None] = mapped_column(Text, nullable=True)

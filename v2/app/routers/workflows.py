@@ -67,8 +67,8 @@ async def update_workflow(
     if not wf or wf.account_id != account.id:
         raise HTTPException(status_code=404, detail="Workflow not found")
     update_data = body.model_dump(exclude_unset=True)
-    if "steps" in update_data and update_data["steps"] is not None:
-        update_data["steps"] = [s.model_dump() for s in body.steps]
+    if "steps" in update_data:
+        update_data["steps"] = [s.model_dump() for s in body.steps] if body.steps else []
     for field, value in update_data.items():
         setattr(wf, field, value)
     await db.commit()

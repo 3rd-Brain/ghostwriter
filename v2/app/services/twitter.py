@@ -6,22 +6,15 @@ from app.config import settings
 async def fetch_tweets(profile_url: str, max_tweets: int = 50) -> list[dict]:
     handle = profile_url.rstrip("/").split("/")[-1].lstrip("@")
 
-    async with httpx.AsyncClient(timeout=120) as client:
+    async with httpx.AsyncClient(timeout=300) as client:
         resp = await client.post(
-            "https://api.apify.com/v2/acts/apidojo~tweet-scraper/runs",
+            "https://api.apify.com/v2/acts/apidojo~tweet-scraper/run-sync-get-dataset-items",
             params={"token": settings.apify_api_token},
             json={
                 "handles": [handle],
                 "tweetsDesired": max_tweets,
                 "proxyConfig": {"useApifyProxy": True},
             },
-        )
-        resp.raise_for_status()
-        run_id = resp.json()["data"]["id"]
-
-        resp = await client.get(
-            f"https://api.apify.com/v2/actor-runs/{run_id}/dataset/items",
-            params={"token": settings.apify_api_token},
         )
         resp.raise_for_status()
         return resp.json()

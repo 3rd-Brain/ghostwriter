@@ -1,5 +1,3 @@
-import asyncio
-
 import pytest
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
@@ -11,13 +9,6 @@ TEST_DATABASE_URL = settings.database_url.replace("/ghostwriter", "/ghostwriter_
 
 test_engine = create_async_engine(TEST_DATABASE_URL)
 TestSession = async_sessionmaker(test_engine, expire_on_commit=False)
-
-
-@pytest.fixture(scope="session")
-def event_loop():
-    loop = asyncio.new_event_loop()
-    yield loop
-    loop.close()
 
 
 @pytest.fixture(autouse=True)

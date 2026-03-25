@@ -27,7 +27,7 @@ class OpenAIProvider(BaseProvider):
             temperature=temperature,
         )
         return GenerationResult(
-            text=response.choices[0].message.content,
+            text=response.choices[0].message.content or "",
             input_tokens=response.usage.prompt_tokens,
             output_tokens=response.usage.completion_tokens,
         )

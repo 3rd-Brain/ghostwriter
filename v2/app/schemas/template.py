@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.models.template import TemplateCategory
 
@@ -25,7 +25,7 @@ class TemplateResponse(BaseModel):
 class TemplateSearchRequest(BaseModel):
     query: str
     category: TemplateCategory | None = None
-    limit: int = 5
+    limit: int = Field(default=5, ge=1, le=50)
 
 
 class TemplateSearchResponse(BaseModel):
