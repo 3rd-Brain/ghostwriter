@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     openai_api_key: str = ""
     google_api_key: str = ""
 
-    # Apify for Twitter scraping
+    # Apify for scraping (Twitter, LinkedIn, YouTube)
     apify_api_token: str = ""
 
     # Embedding model

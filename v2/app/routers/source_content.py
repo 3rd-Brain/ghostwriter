@@ -13,10 +13,14 @@ from app.schemas.source_content import (
     SourceContentBatchRequest,
     SourceContentSearchRequest, SourceContentSearchResponse,
     TwitterImportRequest, TwitterImportResponse,
+    LinkedInImportRequest, LinkedInImportResponse,
+    YouTubeChannelImportRequest, YouTubeVideoImportRequest, YouTubeImportResponse,
 )
 from app.services.embeddings import generate_embedding
 from app.services.documents import extract_text, chunk_text
 from app.services.twitter import fetch_tweets, score_tweet
+from app.services.linkedin import fetch_linkedin_posts, score_linkedin_post
+from app.services.youtube import fetch_youtube_channel, fetch_youtube_video
 
 router = APIRouter(prefix="/source-content", tags=["source-content"])
 
@@ -135,6 +139,124 @@ async def import_twitter(
     for sc in results:
         await db.refresh(sc)
     return TwitterImportResponse(imported_count=len(results), items=results)
+
+
+@router.post("/import-linkedin", response_model=LinkedInImportResponse, status_code=201)
+async def import_linkedin(
+    body: LinkedInImportRequest,
+    account: Account = Depends(get_current_account),
+    db: AsyncSession = Depends(get_db),
+):
+    posts = await fetch_linkedin_posts(body.profile_url, body.max_posts)
+    if not isinstance(posts, list):
+        posts = []
+
+    results = []
+    for post in posts:
+        text = post.get("text") or post.get("commentary") or ""
+        if not text:
+            continue
+
+        metrics = score_linkedin_post(post)
+        embedding = await generate_embedding(text)
+        sc = SourceContent(
+            account_id=account.id,
+            content=text,
+            source="LinkedIn",
+            channel_source="LinkedIn",
+            embedding=embedding,
+            metadata_=metrics,
+        )
+        db.add(sc)
+        results.append(sc)
+
+    await db.commit()
+    for sc in results:
+        await db.refresh(sc)
+    return LinkedInImportResponse(imported_count=len(results), items=results)
+
+
+@router.post("/import-youtube/channel", response_model=YouTubeImportResponse, status_code=201)
+async def import_youtube_channel(
+    body: YouTubeChannelImportRequest,
+    account: Account = Depends(get_current_account),
+    db: AsyncSession = Depends(get_db),
+):
+    videos = await fetch_youtube_channel(body.channel_url, body.max_videos, body.sort_by)
+    if not isinstance(videos, list):
+        videos = []
+
+    results = []
+    for video in videos:
+        transcript = video.get("subtitles") or video.get("transcript") or ""
+        title = video.get("title") or ""
+        text = f"{title}\n\n{transcript}".strip() if transcript else title
+        if not text:
+            continue
+
+        metadata = {
+            "title": title,
+            "url": video.get("url", ""),
+            "views": video.get("viewCount", 0),
+            "likes": video.get("likes", 0),
+            "duration": video.get("duration", ""),
+        }
+
+        embedding = await generate_embedding(text[:8000])
+        sc = SourceContent(
+            account_id=account.id,
+            content=text,
+            source="YouTube",
+            channel_source="YouTube",
+            embedding=embedding,
+            metadata_=metadata,
+        )
+        db.add(sc)
+        results.append(sc)
+
+    await db.commit()
+    for sc in results:
+        await db.refresh(sc)
+    return YouTubeImportResponse(imported_count=len(results), items=results)
+
+
+@router.post("/import-youtube/video", response_model=YouTubeImportResponse, status_code=201)
+async def import_youtube_video(
+    body: YouTubeVideoImportRequest,
+    account: Account = Depends(get_current_account),
+    db: AsyncSession = Depends(get_db),
+):
+    video = await fetch_youtube_video(body.video_url)
+    if not video:
+        return YouTubeImportResponse(imported_count=0, items=[])
+
+    transcript = video.get("subtitles") or video.get("transcript") or ""
+    title = video.get("title") or ""
+    text = f"{title}\n\n{transcript}".strip() if transcript else title
+    if not text:
+        return YouTubeImportResponse(imported_count=0, items=[])
+
+    metadata = {
+        "title": title,
+        "url": video.get("url", body.video_url),
+        "views": video.get("viewCount", 0),
+        "likes": video.get("likes", 0),
+        "duration": video.get("duration", ""),
+    }
+
+    embedding = await generate_embedding(text[:8000])
+    sc = SourceContent(
+        account_id=account.id,
+        content=text,
+        source="YouTube",
+        channel_source="YouTube",
+        embedding=embedding,
+        metadata_=metadata,
+    )
+    db.add(sc)
+    await db.commit()
+    await db.refresh(sc)
+    return YouTubeImportResponse(imported_count=1, items=[sc])
 
 
 @router.get("", response_model=list[SourceContentResponse])

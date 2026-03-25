@@ -49,3 +49,28 @@ class TwitterImportRequest(BaseModel):
 class TwitterImportResponse(BaseModel):
     imported_count: int
     items: list[SourceContentResponse]
+
+
+class LinkedInImportRequest(BaseModel):
+    profile_url: str
+    max_posts: int = Field(default=50, ge=1, le=500)
+
+
+class LinkedInImportResponse(BaseModel):
+    imported_count: int
+    items: list[SourceContentResponse]
+
+
+class YouTubeChannelImportRequest(BaseModel):
+    channel_url: str
+    max_videos: int = Field(default=20, ge=1, le=100)
+    sort_by: str = Field(default="POPULAR", pattern="^(POPULAR|NEWEST)$")
+
+
+class YouTubeVideoImportRequest(BaseModel):
+    video_url: str
+
+
+class YouTubeImportResponse(BaseModel):
+    imported_count: int
+    items: list[SourceContentResponse]
