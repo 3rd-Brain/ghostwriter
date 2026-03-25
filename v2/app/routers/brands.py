@@ -1,0 +1,77 @@
+import uuid
+
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.database import get_db
+from app.auth import get_current_account
+from app.models.account import Account
+from app.models.brand_voice import BrandVoice
+from app.schemas.brand_voice import BrandVoiceCreate, BrandVoiceUpdate, BrandVoiceResponse
+
+router = APIRouter(tags=["brands"])
+
+
+@router.post("/brands", response_model=BrandVoiceResponse, status_code=201)
+async def create_brand(
+    body: BrandVoiceCreate,
+    account: Account = Depends(get_current_account),
+    db: AsyncSession = Depends(get_db),
+):
+    brand = BrandVoice(account_id=account.id, **body.model_dump())
+    db.add(brand)
+    await db.commit()
+    await db.refresh(brand)
+    return brand
+
+
+@router.get("/brands", response_model=list[BrandVoiceResponse])
+async def list_brands(
+    account: Account = Depends(get_current_account),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(BrandVoice).where(BrandVoice.account_id == account.id))
+    return result.scalars().all()
+
+
+@router.get("/brands/{brand_id}", response_model=BrandVoiceResponse)
+async def get_brand(
+    brand_id: uuid.UUID,
+    account: Account = Depends(get_current_account),
+    db: AsyncSession = Depends(get_db),
+):
+    brand = await db.get(BrandVoice, brand_id)
+    if not brand or brand.account_id != account.id:
+        raise HTTPException(status_code=404, detail="Brand not found")
+    return brand
+
+
+@router.put("/brands/{brand_id}", response_model=BrandVoiceResponse)
+async def update_brand(
+    brand_id: uuid.UUID,
+    body: BrandVoiceUpdate,
+    account: Account = Depends(get_current_account),
+    db: AsyncSession = Depends(get_db),
+):
+    brand = await db.get(BrandVoice, brand_id)
+    if not brand or brand.account_id != account.id:
+        raise HTTPException(status_code=404, detail="Brand not found")
+    for field, value in body.model_dump(exclude_unset=True).items():
+        setattr(brand, field, value)
+    await db.commit()
+    await db.refresh(brand)
+    return brand
+
+
+@router.delete("/brands/{brand_id}", status_code=204)
+async def delete_brand(
+    brand_id: uuid.UUID,
+    account: Account = Depends(get_current_account),
+    db: AsyncSession = Depends(get_db),
+):
+    brand = await db.get(BrandVoice, brand_id)
+    if not brand or brand.account_id != account.id:
+        raise HTTPException(status_code=404, detail="Brand not found")
+    await db.delete(brand)
+    await db.commit()
