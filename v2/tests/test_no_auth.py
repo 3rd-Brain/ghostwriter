@@ -32,13 +32,12 @@ async def test_no_auth_brands_crud(disable_auth, mock_embedding):
 
 
 @pytest.mark.asyncio
-async def test_no_auth_accounts_excluded(disable_auth):
-    """In no-auth mode, /accounts endpoint should not exist."""
+async def test_no_auth_accounts_returns_404(disable_auth):
+    """In no-auth mode, POST /accounts returns 404."""
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         resp = await client.post("/accounts", json={"name": "Test"})
-        # Should be 404 or 405 since accounts router is not included
-        assert resp.status_code in (404, 405)
+        assert resp.status_code == 404
 
 
 @pytest.mark.asyncio

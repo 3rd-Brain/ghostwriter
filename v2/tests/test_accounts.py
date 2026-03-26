@@ -19,7 +19,7 @@ async def test_get_me(authed_client):
 
 async def test_get_me_unauthenticated(client):
     resp = await client.get("/accounts/me")
-    assert resp.status_code == 403
+    assert resp.status_code == 401
 
 
 async def test_get_me_invalid_key(client):

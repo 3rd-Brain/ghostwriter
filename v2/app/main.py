@@ -23,10 +23,8 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-if settings.auth_enabled:
-    from app.routers import accounts
-    app.include_router(accounts.router)
-
+from app.routers import accounts
+app.include_router(accounts.router)
 app.include_router(brands.router)
 app.include_router(workflows.router)
 app.include_router(templates.router)
@@ -35,6 +33,6 @@ app.include_router(generation.router)
 app.include_router(templatize.router)
 
 
-@app.get("/health")
+@app.get("/health", summary="Health check", description="Returns API health status.")
 async def health():
     return {"status": "ok"}

@@ -45,9 +45,10 @@ def enable_auth():
 @pytest.fixture
 def disable_auth():
     """Use this fixture to test no-auth mode."""
+    original = settings.auth_enabled
     settings.auth_enabled = False
     yield
-    settings.auth_enabled = True
+    settings.auth_enabled = original
 
 
 @pytest.fixture
