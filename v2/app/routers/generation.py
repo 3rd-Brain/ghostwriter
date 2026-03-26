@@ -20,7 +20,7 @@ from app.services.embeddings import generate_embedding
 router = APIRouter(tags=["generation"])
 
 
-@router.post("/generate", response_model=GenerateResponse)
+@router.post("/generate", response_model=GenerateResponse, summary="Generate content", description="Execute a workflow to generate social content. Resolves source content and templates by semantic similarity if queries are provided.")
 async def generate(
     body: GenerateRequest,
     account: Account = Depends(get_current_account),
@@ -119,7 +119,7 @@ async def generate(
     return GenerateResponse(generations=generations)
 
 
-@router.get("/generated-content", response_model=list[GeneratedContentResponse])
+@router.get("/generated-content", response_model=list[GeneratedContentResponse], summary="List generated content", description="List previously generated content with pagination.")
 async def list_generated_content(
     limit: int = 50,
     offset: int = 0,
@@ -135,7 +135,7 @@ async def list_generated_content(
     return result.scalars().all()
 
 
-@router.get("/generated-content/{content_id}", response_model=GeneratedContentResponse)
+@router.get("/generated-content/{content_id}", response_model=GeneratedContentResponse, summary="Get generated content", description="Get a specific generated content item by ID.")
 async def get_generated_content(
     content_id: uuid.UUID,
     account: Account = Depends(get_current_account),

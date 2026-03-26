@@ -28,7 +28,7 @@ class TemplatizeResponse(BaseModel):
     template: str
 
 
-@router.post("/templatize", response_model=TemplatizeResponse)
+@router.post("/templatize", response_model=TemplatizeResponse, summary="Extract template", description="Use an LLM to extract a reusable structural template from a social media post.")
 async def templatize(
     body: TemplatizeRequest,
     account: Account = Depends(get_current_account),

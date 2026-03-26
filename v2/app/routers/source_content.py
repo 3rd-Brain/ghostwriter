@@ -25,7 +25,7 @@ from app.services.youtube import fetch_youtube_channel, fetch_youtube_video
 router = APIRouter(prefix="/source-content", tags=["source-content"])
 
 
-@router.post("", response_model=SourceContentResponse, status_code=201)
+@router.post("", response_model=SourceContentResponse, status_code=201, summary="Create source content", description="Add source content with auto-generated embedding for semantic search.")
 async def create_source_content(
     body: SourceContentCreate,
     account: Account = Depends(get_current_account),
@@ -46,7 +46,7 @@ async def create_source_content(
     return sc
 
 
-@router.post("/batch", response_model=list[SourceContentResponse], status_code=201)
+@router.post("/batch", response_model=list[SourceContentResponse], status_code=201, summary="Batch import source content", description="Add multiple source content items in a single request.")
 async def batch_import(
     body: SourceContentBatchRequest,
     account: Account = Depends(get_current_account),
@@ -71,7 +71,7 @@ async def batch_import(
     return results
 
 
-@router.post("/upload", response_model=list[SourceContentResponse], status_code=201)
+@router.post("/upload", response_model=list[SourceContentResponse], status_code=201, summary="Upload file", description="Upload a document (PDF, DOCX, TXT, MD) to be chunked and embedded as source content.")
 async def upload_file(
     file: UploadFile = File(...),
     account: Account = Depends(get_current_account),
@@ -101,7 +101,7 @@ async def upload_file(
     return results
 
 
-@router.post("/import-twitter", response_model=TwitterImportResponse, status_code=201)
+@router.post("/import-twitter", response_model=TwitterImportResponse, status_code=201, summary="Import tweets", description="Scrape tweets from a Twitter profile and import as source content. Requires APIFY_API_TOKEN.")
 async def import_twitter(
     body: TwitterImportRequest,
     account: Account = Depends(get_current_account),
@@ -141,7 +141,7 @@ async def import_twitter(
     return TwitterImportResponse(imported_count=len(results), items=results)
 
 
-@router.post("/import-linkedin", response_model=LinkedInImportResponse, status_code=201)
+@router.post("/import-linkedin", response_model=LinkedInImportResponse, status_code=201, summary="Import LinkedIn posts", description="Scrape posts from a LinkedIn profile and import as source content. Requires APIFY_API_TOKEN.")
 async def import_linkedin(
     body: LinkedInImportRequest,
     account: Account = Depends(get_current_account),
@@ -176,7 +176,7 @@ async def import_linkedin(
     return LinkedInImportResponse(imported_count=len(results), items=results)
 
 
-@router.post("/import-youtube/channel", response_model=YouTubeImportResponse, status_code=201)
+@router.post("/import-youtube/channel", response_model=YouTubeImportResponse, status_code=201, summary="Import YouTube channel", description="Scrape video transcripts from a YouTube channel. Requires APIFY_API_TOKEN.")
 async def import_youtube_channel(
     body: YouTubeChannelImportRequest,
     account: Account = Depends(get_current_account),
@@ -220,7 +220,7 @@ async def import_youtube_channel(
     return YouTubeImportResponse(imported_count=len(results), items=results)
 
 
-@router.post("/import-youtube/video", response_model=YouTubeImportResponse, status_code=201)
+@router.post("/import-youtube/video", response_model=YouTubeImportResponse, status_code=201, summary="Import YouTube video", description="Extract transcript from a single YouTube video. Requires APIFY_API_TOKEN.")
 async def import_youtube_video(
     body: YouTubeVideoImportRequest,
     account: Account = Depends(get_current_account),
@@ -259,7 +259,7 @@ async def import_youtube_video(
     return YouTubeImportResponse(imported_count=1, items=[sc])
 
 
-@router.get("", response_model=list[SourceContentResponse])
+@router.get("", response_model=list[SourceContentResponse], summary="List source content", description="List all source content with pagination.")
 async def list_source_content(
     limit: int = 50,
     offset: int = 0,
@@ -275,7 +275,7 @@ async def list_source_content(
     return result.scalars().all()
 
 
-@router.post("/search", response_model=SourceContentSearchResponse)
+@router.post("/search", response_model=SourceContentSearchResponse, summary="Search source content", description="Semantic search across source content using vector similarity.")
 async def search_source_content(
     body: SourceContentSearchRequest,
     account: Account = Depends(get_current_account),
@@ -292,7 +292,7 @@ async def search_source_content(
     return SourceContentSearchResponse(results=list(result.scalars().all()))
 
 
-@router.delete("/{content_id}", status_code=204)
+@router.delete("/{content_id}", status_code=204, summary="Delete source content", description="Delete a source content item.")
 async def delete_source_content(
     content_id: uuid.UUID,
     account: Account = Depends(get_current_account),

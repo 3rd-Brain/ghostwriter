@@ -9,7 +9,7 @@ from app.models.account import Account
 router = APIRouter(tags=["accounts"])
 
 
-@router.post("/accounts", response_model=AccountCreateResponse, status_code=201)
+@router.post("/accounts", response_model=AccountCreateResponse, status_code=201, summary="Create account", description="Create a new account and receive an API key. Only available when AUTH_ENABLED=true.")
 async def create_account(body: AccountCreate, db: AsyncSession = Depends(get_db)):
     account, raw_key = await create_account_with_key(db, body.name)
     return AccountCreateResponse(
@@ -18,6 +18,6 @@ async def create_account(body: AccountCreate, db: AsyncSession = Depends(get_db)
     )
 
 
-@router.get("/accounts/me", response_model=AccountResponse)
+@router.get("/accounts/me", response_model=AccountResponse, summary="Get current account", description="Get the authenticated account's details.")
 async def get_me(account: Account = Depends(get_current_account)):
     return AccountResponse.model_validate(account)

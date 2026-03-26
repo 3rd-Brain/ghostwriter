@@ -13,7 +13,7 @@ from app.schemas.workflow import WorkflowCreate, WorkflowUpdate, WorkflowRespons
 router = APIRouter(tags=["workflows"])
 
 
-@router.post("/workflows", response_model=WorkflowResponse, status_code=201)
+@router.post("/workflows", response_model=WorkflowResponse, status_code=201, summary="Create workflow", description="Create a multi-step LLM workflow with ordered prompt steps.")
 async def create_workflow(
     body: WorkflowCreate,
     account: Account = Depends(get_current_account),
@@ -31,7 +31,7 @@ async def create_workflow(
     return workflow
 
 
-@router.get("/workflows", response_model=list[WorkflowResponse])
+@router.get("/workflows", response_model=list[WorkflowResponse], summary="List workflows", description="List all workflows with pagination.")
 async def list_workflows(
     limit: int = 50,
     offset: int = 0,
@@ -47,7 +47,7 @@ async def list_workflows(
     return result.scalars().all()
 
 
-@router.get("/workflows/{workflow_id}", response_model=WorkflowResponse)
+@router.get("/workflows/{workflow_id}", response_model=WorkflowResponse, summary="Get workflow", description="Get a specific workflow by ID.")
 async def get_workflow(
     workflow_id: uuid.UUID,
     account: Account = Depends(get_current_account),
@@ -59,7 +59,7 @@ async def get_workflow(
     return wf
 
 
-@router.put("/workflows/{workflow_id}", response_model=WorkflowResponse)
+@router.put("/workflows/{workflow_id}", response_model=WorkflowResponse, summary="Update workflow", description="Update an existing workflow's name, description, or steps.")
 async def update_workflow(
     workflow_id: uuid.UUID,
     body: WorkflowUpdate,
@@ -79,7 +79,7 @@ async def update_workflow(
     return wf
 
 
-@router.delete("/workflows/{workflow_id}", status_code=204)
+@router.delete("/workflows/{workflow_id}", status_code=204, summary="Delete workflow", description="Delete a workflow.")
 async def delete_workflow(
     workflow_id: uuid.UUID,
     account: Account = Depends(get_current_account),

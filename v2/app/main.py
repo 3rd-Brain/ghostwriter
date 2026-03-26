@@ -16,7 +16,12 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="Ghostwriter V2", version="2.0.0", lifespan=lifespan)
+app = FastAPI(
+    title="Ghostwriter",
+    version="2.0.0",
+    description="AI content generation API. Ingest source content, define brand voices and templates, then generate social posts using multi-step LLM workflows.",
+    lifespan=lifespan,
+)
 
 if settings.auth_enabled:
     from app.routers import accounts

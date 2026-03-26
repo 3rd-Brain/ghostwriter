@@ -13,7 +13,7 @@ from app.schemas.brand_voice import BrandVoiceCreate, BrandVoiceUpdate, BrandVoi
 router = APIRouter(tags=["brands"])
 
 
-@router.post("/brands", response_model=BrandVoiceResponse, status_code=201)
+@router.post("/brands", response_model=BrandVoiceResponse, status_code=201, summary="Create brand voice", description="Create a brand voice profile with guidelines and optional sample content.")
 async def create_brand(
     body: BrandVoiceCreate,
     account: Account = Depends(get_current_account),
@@ -26,7 +26,7 @@ async def create_brand(
     return brand
 
 
-@router.get("/brands", response_model=list[BrandVoiceResponse])
+@router.get("/brands", response_model=list[BrandVoiceResponse], summary="List brand voices", description="List all brand voice profiles with pagination.")
 async def list_brands(
     limit: int = 50,
     offset: int = 0,
@@ -38,7 +38,7 @@ async def list_brands(
     return result.scalars().all()
 
 
-@router.get("/brands/{brand_id}", response_model=BrandVoiceResponse)
+@router.get("/brands/{brand_id}", response_model=BrandVoiceResponse, summary="Get brand voice", description="Get a specific brand voice profile by ID.")
 async def get_brand(
     brand_id: uuid.UUID,
     account: Account = Depends(get_current_account),
@@ -50,7 +50,7 @@ async def get_brand(
     return brand
 
 
-@router.put("/brands/{brand_id}", response_model=BrandVoiceResponse)
+@router.put("/brands/{brand_id}", response_model=BrandVoiceResponse, summary="Update brand voice", description="Update an existing brand voice profile.")
 async def update_brand(
     brand_id: uuid.UUID,
     body: BrandVoiceUpdate,
@@ -67,7 +67,7 @@ async def update_brand(
     return brand
 
 
-@router.delete("/brands/{brand_id}", status_code=204)
+@router.delete("/brands/{brand_id}", status_code=204, summary="Delete brand voice", description="Delete a brand voice profile.")
 async def delete_brand(
     brand_id: uuid.UUID,
     account: Account = Depends(get_current_account),

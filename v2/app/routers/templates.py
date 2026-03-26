@@ -14,7 +14,7 @@ from app.services.embeddings import generate_embedding
 router = APIRouter(tags=["templates"])
 
 
-@router.post("/templates", response_model=TemplateResponse, status_code=201)
+@router.post("/templates", response_model=TemplateResponse, status_code=201, summary="Create template", description="Create a post template with auto-generated embedding for semantic search.")
 async def create_template(
     body: TemplateCreate,
     account: Account = Depends(get_current_account),
@@ -36,7 +36,7 @@ async def create_template(
     return template
 
 
-@router.get("/templates", response_model=list[TemplateResponse])
+@router.get("/templates", response_model=list[TemplateResponse], summary="List templates", description="List templates with optional category filter and pagination.")
 async def list_templates(
     category: TemplateCategory | None = None,
     limit: int = 50,
@@ -54,7 +54,7 @@ async def list_templates(
     return result.scalars().all()
 
 
-@router.get("/templates/{template_id}", response_model=TemplateResponse)
+@router.get("/templates/{template_id}", response_model=TemplateResponse, summary="Get template", description="Get a specific template by ID.")
 async def get_template(
     template_id: uuid.UUID,
     account: Account = Depends(get_current_account),
@@ -66,7 +66,7 @@ async def get_template(
     return t
 
 
-@router.post("/templates/search", response_model=TemplateSearchResponse)
+@router.post("/templates/search", response_model=TemplateSearchResponse, summary="Search templates", description="Semantic search across templates using vector similarity.")
 async def search_templates(
     body: TemplateSearchRequest,
     account: Account = Depends(get_current_account),
@@ -85,7 +85,7 @@ async def search_templates(
     return TemplateSearchResponse(templates=list(result.scalars().all()))
 
 
-@router.delete("/templates/{template_id}", status_code=204)
+@router.delete("/templates/{template_id}", status_code=204, summary="Delete template", description="Delete a template.")
 async def delete_template(
     template_id: uuid.UUID,
     account: Account = Depends(get_current_account),
