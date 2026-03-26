@@ -33,6 +33,23 @@ async def override_db():
     app.dependency_overrides.clear()
 
 
+@pytest.fixture(autouse=True)
+def enable_auth():
+    """Tests run with auth enabled by default (original behavior)."""
+    original = settings.auth_enabled
+    settings.auth_enabled = True
+    yield
+    settings.auth_enabled = original
+
+
+@pytest.fixture
+def disable_auth():
+    """Use this fixture to test no-auth mode."""
+    settings.auth_enabled = False
+    yield
+    settings.auth_enabled = True
+
+
 @pytest.fixture
 async def client():
     transport = ASGITransport(app=app)
