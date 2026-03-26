@@ -4,6 +4,9 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     database_url: str = "postgresql+asyncpg://ghostwriter:ghostwriter@db:5432/ghostwriter"
 
+    # Auth toggle (false = no auth, single-user mode)
+    auth_enabled: bool = False
+
     # System-level fallback API keys
     anthropic_api_key: str = ""
     openai_api_key: str = ""
@@ -11,6 +14,8 @@ class Settings(BaseSettings):
 
     # Apify for scraping (Twitter, LinkedIn, YouTube)
     apify_api_token: str = ""
+    apify_linkedin_actor_id: str = "2unkl1RhsfCXQhOWP"
+    apify_youtube_actor_id: str = "h7sDV25sFTGbpGkgE"
 
     # Embedding model
     embedding_model: str = "text-embedding-3-small"
