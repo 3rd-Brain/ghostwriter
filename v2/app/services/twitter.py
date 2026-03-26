@@ -1,9 +1,19 @@
 import httpx
+from fastapi import HTTPException
 
 from app.config import settings
 
 
+def _require_apify_token():
+    if not settings.apify_api_token:
+        raise HTTPException(
+            status_code=503,
+            detail="Scraping requires APIFY_API_TOKEN to be configured",
+        )
+
+
 async def fetch_tweets(profile_url: str, max_tweets: int = 50) -> list[dict]:
+    _require_apify_token()
     handle = profile_url.rstrip("/").split("/")[-1].lstrip("@")
 
     async with httpx.AsyncClient(timeout=300) as client:

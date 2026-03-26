@@ -1,17 +1,24 @@
 import httpx
+from fastapi import HTTPException
 
 from app.config import settings
 
 
+def _require_apify_token():
+    if not settings.apify_api_token:
+        raise HTTPException(
+            status_code=503,
+            detail="Scraping requires APIFY_API_TOKEN to be configured",
+        )
+
+
 async def fetch_linkedin_posts(profile_url: str, max_posts: int = 50) -> list[dict]:
+    _require_apify_token()
+    actor_id = settings.apify_linkedin_actor_id
     async with httpx.AsyncClient(timeout=300) as client:
         resp = await client.post(
-            "https://api.apify.com/v2/actor-tasks/james-3rdbrain~ghostwriter-linkedin-posts-scraper/run-sync-get-dataset-items",
-            headers={
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-                "Authorization": f"Bearer {settings.apify_api_token}",
-            },
+            f"https://api.apify.com/v2/acts/{actor_id}/run-sync-get-dataset-items",
+            params={"token": settings.apify_api_token},
             json={
                 "limit": max_posts,
                 "username": profile_url,
