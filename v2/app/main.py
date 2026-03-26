@@ -1,10 +1,27 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 
-from app.routers import accounts, brands, workflows, templates, source_content, generation, templatize
+from app.config import settings
+from app.database import async_session
+from app.auth.service import get_or_create_default_account
+from app.routers import brands, workflows, templates, source_content, generation, templatize
 
-app = FastAPI(title="Ghostwriter V2", version="2.0.0")
 
-app.include_router(accounts.router)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    if not settings.auth_enabled:
+        async with async_session() as db:
+            await get_or_create_default_account(db)
+    yield
+
+
+app = FastAPI(title="Ghostwriter V2", version="2.0.0", lifespan=lifespan)
+
+if settings.auth_enabled:
+    from app.routers import accounts
+    app.include_router(accounts.router)
+
 app.include_router(brands.router)
 app.include_router(workflows.router)
 app.include_router(templates.router)

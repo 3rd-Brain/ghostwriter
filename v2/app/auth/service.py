@@ -1,10 +1,23 @@
 import hashlib
 import secrets
+import uuid as _uuid
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.account import Account, ApiKey
+
+DEFAULT_ACCOUNT_ID = _uuid.UUID("00000000-0000-0000-0000-000000000000")
+
+
+async def get_or_create_default_account(db: AsyncSession) -> Account:
+    account = await db.get(Account, DEFAULT_ACCOUNT_ID)
+    if account is None:
+        account = Account(id=DEFAULT_ACCOUNT_ID, name="default")
+        db.add(account)
+        await db.commit()
+        await db.refresh(account)
+    return account
 
 
 def hash_api_key(key: str) -> str:
