@@ -1,0 +1,3 @@
+ghostwriter.3rdbrainhosting.com {
+    reverse_proxy api:8000
+}

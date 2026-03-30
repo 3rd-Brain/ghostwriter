@@ -5,8 +5,6 @@ services:
       POSTGRES_USER: ghostwriter
       POSTGRES_PASSWORD: ghostwriter
       POSTGRES_DB: ghostwriter
-    ports:
-      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql
@@ -18,8 +16,8 @@ services:
 
   api:
     build: .
-    ports:
-      - "8000:8000"
+    expose:
+      - "8000"
     env_file:
       - .env
     depends_on:
@@ -28,5 +26,19 @@ services:
     volumes:
       - .:/app
 
+  caddy:
+    image: caddy:2
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - api
+
 volumes:
   pgdata:
+  caddy_data:
+  caddy_config:
