@@ -15,6 +15,12 @@ async def get_current_account(
     db: AsyncSession = Depends(get_db),
 ) -> Account:
     if not settings.auth_enabled:
+        # Self-host mode: optionally require a static API key from .env
+        if settings.self_host_api_key:
+            if credentials is None:
+                raise HTTPException(status_code=401, detail="Missing API key")
+            if credentials.credentials != settings.self_host_api_key:
+                raise HTTPException(status_code=401, detail="Invalid API key")
         return await get_or_create_default_account(db)
 
     if credentials is None:

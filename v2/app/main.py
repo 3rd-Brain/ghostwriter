@@ -4,6 +4,7 @@ from fastapi import FastAPI, Depends
 from fastapi.routing import APIRoute
 from fastapi.staticfiles import StaticFiles
 from fastapi_mcp import FastApiMCP, AuthConfig
+from sqlalchemy import text
 
 from app.config import settings
 from app.database import async_session
@@ -19,6 +20,14 @@ def use_route_names_as_operation_ids(route: APIRoute) -> str:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Auto-create tables on startup (dev convenience — use Alembic in production)
+    from app.database import engine, Base
+    import app.models.account, app.models.brand_voice, app.models.workflow
+    import app.models.template, app.models.source_content, app.models.generated_content
+    async with engine.begin() as conn:
+        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+        await conn.run_sync(Base.metadata.create_all)
+
     if not settings.auth_enabled:
         async with async_session() as db:
             await get_or_create_default_account(db)
@@ -58,6 +67,6 @@ mcp = FastApiMCP(
     exclude_operations=["upload_file", "health"],
     auth_config=AuthConfig(
         dependencies=[Depends(get_current_account)],
-    ) if settings.auth_enabled else None,
+    ) if (settings.auth_enabled or settings.self_host_api_key) else None,
 )
 mcp.mount_http()

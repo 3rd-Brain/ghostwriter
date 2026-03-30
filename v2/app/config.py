@@ -7,6 +7,9 @@ class Settings(BaseSettings):
     # Auth toggle (false = no auth, single-user mode)
     auth_enabled: bool = False
 
+    # Self-host API key — if set, all requests must include this key even when auth_enabled=False
+    self_host_api_key: str = ""
+
     # System-level fallback API keys
     anthropic_api_key: str = ""
     openai_api_key: str = ""

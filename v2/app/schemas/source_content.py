@@ -26,7 +26,7 @@ class SourceContentResponse(BaseModel):
     content: str
     source: str
     channel_source: str
-    metadata: dict | None
+    metadata: dict | None = Field(None, validation_alias="metadata_")
     created_at: datetime
 
     model_config = {"from_attributes": True}
