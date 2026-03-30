@@ -5,7 +5,7 @@
 
 {% block content %}
 <!-- Brands Section -->
-<h2 class="section-header">Brand Voices ({{ brands|length }})</h2>
+<h2 class="section-header">Brand Voices ({{ brand_total }})</h2>
 {% if brands %}
 <table class="data-table">
     <thead>
@@ -33,43 +33,21 @@
         {% endfor %}
     </tbody>
 </table>
+{% if brand_pages > 1 %}
+<div class="pagination">
+    {% if bp > 1 %}<a href="?bp={{ bp - 1 }}&tp={{ tp }}&sp={{ sp }}" class="pagination-btn">&larr; Prev</a>{% endif %}
+    <span class="pagination-info">Page {{ bp }} of {{ brand_pages }}</span>
+    {% if bp < brand_pages %}<a href="?bp={{ bp + 1 }}&tp={{ tp }}&sp={{ sp }}" class="pagination-btn">Next &rarr;</a>{% endif %}
+</div>
+{% endif %}
 {% else %}
 <div class="empty-state">
     <div class="empty-state-sub">No brand voices defined. Use the API to create one.</div>
 </div>
 {% endif %}
 
-<!-- Templates Section -->
-<h2 class="section-header" style="margin-top: 2.5rem;">Templates ({{ templates|length }})</h2>
-{% if templates %}
-<table class="data-table">
-    <thead>
-        <tr>
-            <th>Content</th>
-            <th>Category</th>
-            <th>Description</th>
-            <th>Created</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for tmpl in templates %}
-        <tr>
-            <td class="cell-primary cell-truncate">{{ tmpl.content[:100] }}{% if tmpl.content|length > 100 %}&hellip;{% endif %}</td>
-            <td><span class="category-badge">{{ tmpl.category.value }}</span></td>
-            <td class="cell-truncate">{{ tmpl.description[:80] if tmpl.description else '—' }}</td>
-            <td class="timestamp">{{ tmpl.created_at.strftime('%b %d, %Y') }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% else %}
-<div class="empty-state">
-    <div class="empty-state-sub">No templates yet. Use the templatize tool or API to extract and store templates.</div>
-</div>
-{% endif %}
-
 <!-- Source Content Section -->
-<h2 class="section-header" style="margin-top: 2.5rem;">Source Content ({{ source_content|length }}{% if source_content|length >= 100 %}+{% endif %})</h2>
+<h2 class="section-header section-header-gap">Source Content ({{ sc_total }})</h2>
 {% if source_content %}
 <table class="data-table">
     <thead>
@@ -91,9 +69,52 @@
         {% endfor %}
     </tbody>
 </table>
+{% if sc_pages > 1 %}
+<div class="pagination">
+    {% if sp > 1 %}<a href="?bp={{ bp }}&tp={{ tp }}&sp={{ sp - 1 }}" class="pagination-btn">&larr; Prev</a>{% endif %}
+    <span class="pagination-info">Page {{ sp }} of {{ sc_pages }}</span>
+    {% if sp < sc_pages %}<a href="?bp={{ bp }}&tp={{ tp }}&sp={{ sp + 1 }}" class="pagination-btn">Next &rarr;</a>{% endif %}
+</div>
+{% endif %}
 {% else %}
 <div class="empty-state">
     <div class="empty-state-sub">No source content imported. Use the API to add content, upload files, or import from Twitter/LinkedIn/YouTube.</div>
+</div>
+{% endif %}
+
+<!-- Templates Section -->
+<h2 class="section-header section-header-gap">Templates ({{ tmpl_total }})</h2>
+{% if templates %}
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>Content</th>
+            <th>Category</th>
+            <th>Description</th>
+            <th>Created</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for tmpl in templates %}
+        <tr>
+            <td class="cell-primary cell-truncate">{{ tmpl.content[:100] }}{% if tmpl.content|length > 100 %}&hellip;{% endif %}</td>
+            <td><span class="category-badge">{{ tmpl.category.value }}</span></td>
+            <td class="cell-truncate">{{ tmpl.description[:80] if tmpl.description else '—' }}</td>
+            <td class="timestamp">{{ tmpl.created_at.strftime('%b %d, %Y') }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% if tmpl_pages > 1 %}
+<div class="pagination">
+    {% if tp > 1 %}<a href="?bp={{ bp }}&tp={{ tp - 1 }}&sp={{ sp }}" class="pagination-btn">&larr; Prev</a>{% endif %}
+    <span class="pagination-info">Page {{ tp }} of {{ tmpl_pages }}</span>
+    {% if tp < tmpl_pages %}<a href="?bp={{ bp }}&tp={{ tp + 1 }}&sp={{ sp }}" class="pagination-btn">Next &rarr;</a>{% endif %}
+</div>
+{% endif %}
+{% else %}
+<div class="empty-state">
+    <div class="empty-state-sub">No templates yet. Use the templatize tool or API to extract and store templates.</div>
 </div>
 {% endif %}
 {% endblock %}

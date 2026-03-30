@@ -5,7 +5,7 @@
 
 {% block content %}
 <div class="filter-bar">
-    <a href="/ui/generations" class="filter-btn {% if not status_filter %}active{% endif %}">All</a>
+    <a href="/ui/generations?status=all" class="filter-btn {% if status_filter == 'all' %}active{% endif %}">All</a>
     <a href="/ui/generations?status=new" class="filter-btn {% if status_filter == 'new' %}active{% endif %}">New</a>
     <a href="/ui/generations?status=approved" class="filter-btn {% if status_filter == 'approved' %}active{% endif %}">Approved</a>
     <a href="/ui/generations?status=disapproved" class="filter-btn {% if status_filter == 'disapproved' %}active{% endif %}">Disapproved</a>
@@ -22,8 +22,8 @@
             <th>Date</th>
         </tr>
     </thead>
-    <tbody>
-        {% for item in items %}
+    {% for item in items %}
+    <tbody class="gen-item-group" id="item-{{ item.id }}">
         <tr class="gen-row" onclick="this.classList.toggle('expanded'); this.nextElementSibling.classList.toggle('expanded')">
             <td class="cell-primary gen-content-preview">{{ item.output[:80] }}{% if item.output|length > 80 %}&hellip;{% endif %}</td>
             <td><span class="status-badge status-{{ item.status.value }}" id="badge-{{ item.id }}">{{ item.status.value }}</span></td>
@@ -57,14 +57,32 @@
                 </div>
             </td>
         </tr>
-        {% endfor %}
     </tbody>
+    {% endfor %}
 </table>
 {% else %}
 <div class="empty-state">
     <div class="empty-state-icon">&#9998;</div>
-    <div class="empty-state-text">No generations{% if status_filter %} with status "{{ status_filter }}"{% endif %}</div>
+    <div class="empty-state-text">No generations{% if status_filter and status_filter != 'all' %} with status "{{ status_filter }}"{% endif %}</div>
     <div class="empty-state-sub">Generate content via the API or MCP tools to see it here.</div>
 </div>
 {% endif %}
+
+<script>
+document.body.addEventListener('htmx:afterRequest', function(evt) {
+    if (!evt.detail.successful) return;
+    var el = evt.detail.elt;
+    if (!el.classList.contains('status-btn')) return;
+
+    var filter = new URLSearchParams(window.location.search).get('status');
+    if (!filter || filter === 'all') return;
+
+    var group = el.closest('.gen-item-group');
+    if (group) {
+        group.style.transition = 'opacity 0.3s ease';
+        group.style.opacity = '0';
+        setTimeout(function() { group.remove(); }, 300);
+    }
+});
+</script>
 {% endblock %}

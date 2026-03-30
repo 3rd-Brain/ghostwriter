@@ -1,5 +1,7 @@
+import math
+
 from fastapi import APIRouter, Depends, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import select, func, or_
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -67,13 +69,16 @@ async def generations_page(
     account: Account = Depends(get_current_account),
     db: AsyncSession = Depends(get_db),
 ):
+    if status is None:
+        return RedirectResponse("/ui/generations?status=new", status_code=302)
+
     stmt = (
         select(GeneratedContent)
         .where(GeneratedContent.account_id == account.id)
         .order_by(GeneratedContent.created_at.desc())
         .limit(100)
     )
-    if status:
+    if status != "all":
         stmt = stmt.where(GeneratedContent.status == ContentStatus(status))
 
     result = await db.execute(stmt)
@@ -90,21 +95,54 @@ async def generations_page(
 @router.get("/library", response_class=HTMLResponse)
 async def library_page(
     request: Request,
+    bp: int = 1,
+    tp: int = 1,
+    sp: int = 1,
     account: Account = Depends(get_current_account),
     db: AsyncSession = Depends(get_db),
 ):
     aid = account.id
+    per_page = 10
 
-    brands = (await db.execute(select(BrandVoice).where(BrandVoice.account_id == aid).order_by(BrandVoice.created_at.desc()))).scalars().all()
-    tmpl = (await db.execute(select(Template).where(or_(Template.account_id == aid, Template.account_id.is_(None))).order_by(Template.created_at.desc()).limit(100))).scalars().all()
-    sc = (await db.execute(select(SourceContent).where(SourceContent.account_id == aid).order_by(SourceContent.created_at.desc()).limit(100))).scalars().all()
+    # Brands
+    brand_total = (await db.execute(select(func.count()).select_from(BrandVoice).where(BrandVoice.account_id == aid))).scalar()
+    brands = (await db.execute(
+        select(BrandVoice).where(BrandVoice.account_id == aid)
+        .order_by(BrandVoice.created_at.desc())
+        .limit(per_page).offset((bp - 1) * per_page)
+    )).scalars().all()
+
+    # Templates
+    tmpl_total = (await db.execute(select(func.count()).select_from(Template).where(or_(Template.account_id == aid, Template.account_id.is_(None))))).scalar()
+    tmpl = (await db.execute(
+        select(Template).where(or_(Template.account_id == aid, Template.account_id.is_(None)))
+        .order_by(Template.created_at.desc())
+        .limit(per_page).offset((tp - 1) * per_page)
+    )).scalars().all()
+
+    # Source Content
+    sc_total = (await db.execute(select(func.count()).select_from(SourceContent).where(SourceContent.account_id == aid))).scalar()
+    sc = (await db.execute(
+        select(SourceContent).where(SourceContent.account_id == aid)
+        .order_by(SourceContent.created_at.desc())
+        .limit(per_page).offset((sp - 1) * per_page)
+    )).scalars().all()
 
     return templates.TemplateResponse("library.html", {
         "request": request,
         "active_page": "library",
         "brands": brands,
+        "brand_total": brand_total,
+        "brand_pages": math.ceil(brand_total / per_page),
+        "bp": bp,
         "templates": tmpl,
+        "tmpl_total": tmpl_total,
+        "tmpl_pages": math.ceil(tmpl_total / per_page),
+        "tp": tp,
         "source_content": sc,
+        "sc_total": sc_total,
+        "sc_pages": math.ceil(sc_total / per_page),
+        "sp": sp,
     })
 
 
