@@ -1,5 +1,10 @@
 # Ghostwriter V2 MCP Server Design
 
+> **Implementation note:** Design originally specified manual tool wrappers using the `mcp` SDK.
+> Implementation uses `fastapi-mcp==0.4.0` instead, which auto-generates MCP tools from existing
+> FastAPI routes via ASGI transport. This eliminates the need for `app/mcp/server.py` and
+> `app/mcp/tools.py` — the entire MCP layer is ~10 lines in `main.py`.
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Add an MCP (Model Context Protocol) server to Ghostwriter V2 so AI agents can connect via SSE and use all Ghostwriter capabilities as native tools.
