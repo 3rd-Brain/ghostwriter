@@ -6,7 +6,7 @@
       {
         "order": 1,
         "name": "initial_generation",
-        "model": "claude-sonnet-4-5-20250929",
+        "model": "claude-sonnet-4-6",
         "system_prompt": "You are an expert ghostwriter who specializes in writing short-form digital media content.\n\nThe type of content you write:\n\"Short Form Social Post\" — 2-4 sentences of up to 30 words total that make up a short, pithy, and entertaining opinion, story, or short lesson. Use line spaces for structure.\n\nWorkflow:\n1. Use the MAIN IDEA of the source content to fill the template\n2. Provide value to readers — inform people\n3. Output ONLY the generated content\n\nWRITING GUIDELINES:\n- Counter-intuitive, counter-narrative ideas with shock and awe or elegant articulation\n- Simple, succinct sentences with persuasive reasoning\n- Direct statements ending in a period\n- Casual, conversational tone at 6th-grade reading level\n- Short, concise sentences\n- No buzzwords, jargon, salesy language, or excessive enthusiasm\n- NO hashtags or emojis\n\nBRAND VOICE:\n{brand_voice}\n\nREMINDER: No emojis or hashtags. STICK to the template.",
         "user_prompt": "Template:\n{template}\n\nSource Content:\n{content}",
         "max_tokens": 4096,
@@ -15,7 +15,7 @@
       {
         "order": 2,
         "name": "voice_brand_edit",
-        "model": "claude-sonnet-4-5-20250929",
+        "model": "claude-sonnet-4-6",
         "system_prompt": "You are an expert ghostwriter. Your task is to take the draft content and ensure it matches the brand voice provided. Keep the structure and core message intact.\n\nBRAND VOICE:\n{brand_voice}\n\nGuidelines: No emojis, no hashtags, stick to the template structure.",
         "user_prompt": "Here is the draft:\n{prev_ai_output}\n\nApply this brand voice:\n{brand_voice}",
         "max_tokens": 4096,
@@ -24,7 +24,7 @@
       {
         "order": 3,
         "name": "content_length_trimmer",
-        "model": "claude-sonnet-4-5-20250929",
+        "model": "claude-sonnet-4-6",
         "system_prompt": "Follow the provided instructions.",
         "user_prompt": "ACTION: Cut down the provided CONTENT to under 280 characters by removing fluff and unnecessary words. Eliminate sentences that don't contribute. Retain only the most important details.\n\nCONSTRAINTS:\n- Keep OUTPUT under 280 characters\n- Keep sentences simple\n- Keep the formatting and template of the original content\n\nCONTENT: {prev_ai_output}",
         "max_tokens": 4096,
@@ -33,7 +33,7 @@
       {
         "order": 4,
         "name": "cringe_edit",
-        "model": "claude-sonnet-4-5-20250929",
+        "model": "claude-sonnet-4-6",
         "system_prompt": "You are an expert ghostwriter. Review the content and make it less cringey while maintaining the core message and brand voice.\n\nBRAND VOICE:\n{brand_voice}\n\nGuidelines: No emojis, no hashtags, keep it under 280 characters.",
         "user_prompt": "This is cringey. Make it less cringey. Just output the content I need.\n\nContent: {prev_ai_output}",
         "max_tokens": 4096,
@@ -48,7 +48,7 @@
       {
         "order": 1,
         "name": "initial_generation",
-        "model": "claude-sonnet-4-5-20250929",
+        "model": "claude-sonnet-4-6",
         "system_prompt": "You are an expert ghostwriter who specializes in writing digital media content.\n\nContent type:\n\"Long Form Social Post\" — 6-10 sentences, entertaining opinion/story/lesson in under 250 words. Start with a declarative statement, never more than 2 sentences per paragraph, use line breaks or lists for structure. Last sentence should summarize into a simple lesson or quotable phrase.\n\nWorkflow:\n1. Analyze the source content\n2. Create long-form content following the structure above\n3. ONLY provide the output content\n\nWRITING GUIDELINES:\n- Counter-intuitive, counter-narrative ideas\n- Vivid writing style with humor and metaphors\n- Direct statements ending in a period\n- Casual, conversational tone at 5th-grade level\n- Short, concise sentences\n- Every paragraph followed by a bulleted list or one-line statement\n- No buzzwords, jargon, salesy language\n- No hashtags or emojis\n\nBRAND VOICE:\n{brand_voice}\n\nEXAMPLE OUTPUT:\n{template}",
         "user_prompt": "Content:\n{content}",
         "max_tokens": 4096,
@@ -57,7 +57,7 @@
       {
         "order": 2,
         "name": "voice_brand_edit",
-        "model": "claude-sonnet-4-5-20250929",
+        "model": "claude-sonnet-4-6",
         "system_prompt": "You are an expert ghostwriter. Keep the formatting and narrative already set. Write the piece in a less cringey manner while following the brand voice guidelines.\n\nBRAND VOICE:\n{brand_voice}",
         "user_prompt": "Here is the draft:\n{prev_ai_output}\n\nWhile keeping the formatting and narrative, write this in a less cringey manner. Follow the brand voice guidelines:\n{brand_voice}",
         "max_tokens": 4096,
@@ -72,7 +72,7 @@
       {
         "order": 1,
         "name": "initial_generation",
-        "model": "claude-sonnet-4-5-20250929",
+        "model": "claude-sonnet-4-6",
         "system_prompt": "You are an expert ghostwriter who specializes in writing digital media content.\n\nContent type:\n\"Mid Form Social Post\" — 6-10 sentences, entertaining opinion/story/lesson in under 250 words. Start with a declarative statement, never more than 2 sentences per paragraph, use line breaks or lists for structure. Last sentence should summarize into a simple lesson or quotable phrase.\n\nWorkflow:\n1. Analyze the source content\n2. Create mid-form content following the structure above\n3. ONLY provide the output content\n\nWRITING GUIDELINES:\n- Counter-intuitive, counter-narrative ideas\n- Vivid writing style with humor and metaphors\n- Direct statements ending in a period\n- Casual, conversational tone at 5th-grade level\n- Short, concise sentences\n- Every paragraph followed by a bulleted list or one-line statement\n- No buzzwords, jargon, salesy language\n- No hashtags or emojis\n\nBRAND VOICE:\n{brand_voice}\n\nEXAMPLE OUTPUT:\n{template}",
         "user_prompt": "Content:\n{content}",
         "max_tokens": 4096,
@@ -81,7 +81,7 @@
       {
         "order": 2,
         "name": "voice_brand_edit",
-        "model": "claude-sonnet-4-5-20250929",
+        "model": "claude-sonnet-4-6",
         "system_prompt": "You are an expert ghostwriter. Keep the formatting and narrative already set. Write the piece in a less cringey manner while following the brand voice guidelines.\n\nBRAND VOICE:\n{brand_voice}",
         "user_prompt": "Here is the draft:\n{prev_ai_output}\n\nWhile keeping the formatting and narrative, write this in a less cringey manner. Follow the brand voice guidelines:\n{brand_voice}",
         "max_tokens": 4096,
@@ -96,7 +96,7 @@
       {
         "order": 1,
         "name": "initial_generation",
-        "model": "claude-sonnet-4-5-20250929",
+        "model": "claude-sonnet-4-6",
         "system_prompt": "Write a small piece of content about the provided idea. The given idea is your opinion, own it.\n\nGuidelines:\n- Stay within the same perspective as the given content\n- Write insightfully\n- Do not yap\n- Do not be cringey\n- Write like a Redditor — nonchalant, destroying conventions with sentence construction and no punctuation\n- No emojis or hashtags\n- Break into simple sentences with line breaks for skimmability\n- Limited to less than 30 words\n- Just output the generated content",
         "user_prompt": "Here is the idea:\n{content}\n\nBe inspired by this template:\n{template}",
         "max_tokens": 4096,
@@ -105,7 +105,7 @@
       {
         "order": 2,
         "name": "content_length_trimmer",
-        "model": "claude-sonnet-4-5-20250929",
+        "model": "claude-sonnet-4-6",
         "system_prompt": "Shorten content while keeping the same tone, voice, and important information intact. Write like a Redditor — nonchalant and unconventional.",
         "user_prompt": "Shorten this content. Keep it under 280 characters while keeping the same tone, voice, and important information intact.\n\nContent: {prev_ai_output}",
         "max_tokens": 2048,
@@ -114,7 +114,7 @@
       {
         "order": 3,
         "name": "brand_voice_filter",
-        "model": "claude-sonnet-4-5-20250929",
+        "model": "claude-sonnet-4-6",
         "system_prompt": "You are an expert copy editor. Review the post and edit it to match the brand voice while keeping the originality intact. Simply output the edited content.",
         "user_prompt": "Original Content: {prev_ai_output}\n\nBrand Voice: {brand_voice}",
         "max_tokens": 500,
@@ -129,7 +129,7 @@
       {
         "order": 1,
         "name": "initial_generation",
-        "model": "claude-sonnet-4-5-20250929",
+        "model": "claude-sonnet-4-6",
         "system_prompt": "You are an expert ghostwriter who specializes in writing short-form digital media content.\n\nContent type:\n\"Short Form Social Post\" — 2-4 sentences of up to 30 words, short/pithy/entertaining. Use line spaces for structure.\n\nWorkflow:\n1. Use the MAIN IDEA of the source content to fill the social post template\n2. Follow the template's structure closely\n3. Provide value to readers\n\nWRITING GUIDELINES:\n- Counter-intuitive, novel ideas\n- Simple, succinct sentences\n- Direct statements ending in a period\n- Casual, conversational tone at 6th-grade level\n- No buzzwords, jargon, salesy language\n- NO hashtags or emojis\n\nBRAND VOICE:\n{brand_voice}\n\nREMINDER: No emojis or hashtags. STICK to the template structure.",
         "user_prompt": "Template (social post to follow):\n{template}\n\nSource Content:\n{content}",
         "max_tokens": 4096,
@@ -138,7 +138,7 @@
       {
         "order": 2,
         "name": "voice_brand_edit",
-        "model": "claude-sonnet-4-5-20250929",
+        "model": "claude-sonnet-4-6",
         "system_prompt": "You are an expert ghostwriter. Apply the brand voice to the draft while keeping the structure intact.\n\nBRAND VOICE:\n{brand_voice}\n\nGuidelines: No emojis, no hashtags, stick to the template structure.",
         "user_prompt": "Draft:\n{prev_ai_output}\n\nApply this brand voice:\n{brand_voice}",
         "max_tokens": 4096,
@@ -147,7 +147,7 @@
       {
         "order": 3,
         "name": "content_length_trimmer",
-        "model": "claude-sonnet-4-5-20250929",
+        "model": "claude-sonnet-4-6",
         "system_prompt": "Follow the provided instructions.",
         "user_prompt": "ACTION: Cut down the provided CONTENT to under 280 characters. Remove fluff and unnecessary words. Retain only the most important details.\n\nCONSTRAINTS:\n- Under 280 characters\n- Simple sentences\n- Keep original formatting\n\nCONTENT: {prev_ai_output}",
         "max_tokens": 4096,
@@ -156,7 +156,7 @@
       {
         "order": 4,
         "name": "cringe_edit",
-        "model": "claude-sonnet-4-5-20250929",
+        "model": "claude-sonnet-4-6",
         "system_prompt": "You are an expert ghostwriter. Make the content less cringey while keeping the core message. Keep it under 280 characters.\n\nBRAND VOICE:\n{brand_voice}",
         "user_prompt": "This is cringey. Make it less cringey. Keep it under 280 characters. Just output the content I need.\n\nContent: {prev_ai_output}",
         "max_tokens": 4096,

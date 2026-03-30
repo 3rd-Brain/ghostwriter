@@ -29,6 +29,28 @@ Templates    ─── "structural patterns"                  (the engine)      
 Source Content ── "raw material (vector-embedded)"
 ```
 
+## What's Pre-loaded
+
+The system ships with seed data — you can start generating immediately:
+
+**5 System Workflows** (`GET /workflows`):
+
+- **Standard Short-Form Flow (Tweets)** — 4 steps: generate → brand voice → trim to 280 chars → de-cringe
+- **Atomic Essay Flow** — 2 steps: generate long-form (6-10 sentences, <250 words) → brand voice edit
+- **Mid Form Flow** — 2 steps: generate mid-form → brand voice edit
+- **Informal/Casual Short-Form Flow** — 3 steps: Redditor-style generation → trim → brand voice
+- **Tweets-as-Templates Flow** — 4 steps: use social posts as structural templates → brand voice → trim → de-cringe
+
+All use `claude-sonnet-4-6`. Use these directly or create custom workflows.
+
+**369 System Templates** (`POST /templates/search`):
+
+- 227 short_form, 85 atomic, 57 mid_form
+- Searchable by semantic query (e.g., `{"query": "personal story hook"}`)
+- Covers: listicles, transformation stories, comparison posts, step-by-step guides, motivational hooks, industry analysis, and more
+
+**Only brand voice and source content need to be created** before generating.
+
 ## Endpoints Quick Reference
 
 | Resource | Create | List | Get | Update | Delete | Search |
@@ -38,7 +60,7 @@ Source Content ── "raw material (vector-embedded)"
 | Workflows | `POST /workflows` | `GET /workflows` | `GET /workflows/{id}` | `PUT /workflows/{id}` | `DELETE /workflows/{id}` | — |
 | Templates | `POST /templates` | `GET /templates` | `GET /templates/{id}` | — | `DELETE /templates/{id}` | `POST /templates/search` |
 | Source Content | `POST /source-content` | `GET /source-content` | — | — | `DELETE /source-content/{id}` | `POST /source-content/search` |
-| Generated Content | — | `GET /generated-content` | `GET /generated-content/{id}` | — | — | — |
+| Generated Content | — | `GET /generated-content` | `GET /generated-content/{id}` | `PATCH /generated-content/{id}/status` | — | — |
 
 Special endpoints:
 - `POST /source-content/batch` — bulk import with metadata
@@ -49,10 +71,11 @@ Special endpoints:
 - `POST /source-content/import-youtube/video` — extract single YouTube video transcript via Apify, embed
 - `POST /generate` — run a workflow against resolved inputs
 - `POST /templatize` — extract structural template from a concrete post
+- `PATCH /generated-content/{id}/status` — set review status (`new`, `approved`, `disapproved`, `posted`)
 
 ## Setup Lifecycle
 
-Before generating, stock the system with material. Order matters:
+The system comes with 5 workflows and 369 templates pre-loaded. You only need to add source content and a brand voice before generating. Steps 3 and 4 are optional.
 
 ### 1. Import source content (your raw material)
 
@@ -103,7 +126,7 @@ POST /brands
 
 Create multiple brands for different contexts (LinkedIn vs Twitter, CEO vs company page, etc.)
 
-### 3. Build templates (optional but powerful)
+### 3. Build templates (optional — 369 already pre-loaded)
 
 Extract a structural pattern from a high-performing post:
 
@@ -126,7 +149,7 @@ POST /templates
 
 Templates are vector-embedded too. Categories: `short_form`, `atomic`, `mid_form`.
 
-### 4. Create a workflow (the generation recipe)
+### 4. Create a workflow (optional — 5 already pre-loaded)
 
 A workflow is an ordered list of LLM steps. Each step can use a different model. Output chains via `{prev_ai_output}`.
 
@@ -333,4 +356,5 @@ POST /generate
 - Source content and templates are vector-embedded at creation time — you cannot update them, only delete and recreate
 - Workflows can mix models across steps (e.g., Sonnet for drafting, Haiku for polish)
 - `provider_keys` in generate requests are per-request only, not stored
+- Generated content has a `status` field: `new` → `approved` / `disapproved` / `posted` (use `PATCH /generated-content/{id}/status`)
 - Token usage is tracked per generation for future billing but no credit system exists yet

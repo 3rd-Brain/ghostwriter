@@ -35,6 +35,26 @@ Templates    ─── "structural patterns"                (the engine)    (rea
 Source Content ── "raw material (vector-embedded)"
 ```
 
+## What's Pre-loaded
+
+The system ships with seed data — you can start generating immediately without setup:
+
+**5 System Workflows** (use `list_workflows` to see them):
+- **Standard Short-Form Flow (Tweets)** — 4 steps: generate → brand voice → trim to 280 chars → de-cringe
+- **Atomic Essay Flow** — 2 steps: generate long-form (6-10 sentences, <250 words) → brand voice edit
+- **Mid Form Flow** — 2 steps: generate mid-form → brand voice edit
+- **Informal/Casual Short-Form Flow** — 3 steps: Redditor-style generation → trim → brand voice
+- **Tweets-as-Templates Flow** — 4 steps: use social posts as structural templates → brand voice → trim → de-cringe
+
+All use `claude-sonnet-4-6`. You can use these directly or create custom workflows.
+
+**369 System Templates** (use `search_templates` to find them):
+- 227 short_form, 85 atomic, 57 mid_form
+- Searchable by semantic query (e.g., `search_templates(query="personal story hook")`)
+- Covers: listicles, transformation stories, comparison posts, step-by-step guides, motivational hooks, industry analysis, and more
+
+**Only brand voice and source content need to be created** before generating.
+
 ## Available Tools
 
 ### Accounts
@@ -89,6 +109,7 @@ Source Content ── "raw material (vector-embedded)"
 | `generate` | `workflow_id`, `content?`, `content_query?`, `template?`, `template_query?`, `template_count?`, `brand_id?`, `provider_keys?` | Execute workflow to generate content |
 | `list_generated_content` | `limit?`, `offset?` | List generation history |
 | `get_generated_content` | `content_id` | Get a specific generation |
+| `update_content_status` | `content_id`, `status` | Set review status: `new`, `approved`, `disapproved`, `posted` |
 
 ### Templatize
 | Tool | Params | What it does |
@@ -101,7 +122,7 @@ Source Content ── "raw material (vector-embedded)"
 
 ## Setup Lifecycle
 
-Before generating, stock the system with material:
+The system comes with 5 workflows and 369 templates pre-loaded. You only need to add source content and a brand voice before generating. Steps 3 and 4 are optional.
 
 ### 1. Import source content
 
@@ -138,9 +159,9 @@ create_brand(
 )
 ```
 
-### 3. Build templates (optional)
+### 3. Build templates (optional — 369 already pre-loaded)
 
-Extract a pattern from a high-performing post:
+Extract a pattern from a high-performing post, or use `search_templates` to find one that already exists:
 ```
 templatize(content="I spent 10 years building startups...")
 → "I spent [X time] [doing activity] and here's [the insight]..."
@@ -157,7 +178,9 @@ create_template(
 
 Categories: `short_form`, `atomic`, `mid_form`.
 
-### 4. Create a workflow
+### 4. Create a workflow (optional — 5 already pre-loaded)
+
+Use `list_workflows` to see the pre-built workflows, or create a custom one:
 
 ```
 create_workflow(
@@ -194,6 +217,24 @@ generate(
 
 ## Common Patterns
 
+### Quick start (use pre-loaded workflows + templates)
+
+```
+# 1. Pick a workflow
+workflows = list_workflows()  # → choose one, e.g. "Standard Short-Form Flow (Tweets)"
+
+# 2. Create a brand voice
+brand = create_brand(name="My Brand", voice_guidelines="Direct, witty, no jargon.")
+
+# 3. Generate using semantic search for templates
+generate(
+  workflow_id=workflows[0].id,
+  content="Your source material here...",
+  template_query="personal story hook",
+  brand_id=brand.id
+)
+```
+
 ### Full control
 ```
 generate(workflow_id="...", content="exact text", template="pattern", brand_id="...")
@@ -218,4 +259,5 @@ generate(workflow_id="...", content_query="my topic", template_query="viral hook
 - Source content and templates are vector-embedded at creation, cannot be updated (delete + recreate)
 - Workflows can mix models across steps
 - `provider_keys` are per-request, not stored
+- Generated content has a `status` field: `new` → `approved` / `disapproved` / `posted` (use `update_content_status` to change)
 - Token usage tracked per generation for future billing
