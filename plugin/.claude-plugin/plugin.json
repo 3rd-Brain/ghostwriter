@@ -1,0 +1,10 @@
+{
+  "name": "ghostwriter",
+  "description": "Ghostwriter content generation tools — generate social media posts using multi-step LLM workflows with brand voices and templates.",
+  "version": "2.0.0",
+  "author": {
+    "name": "3rd Brain"
+  },
+  "repository": "https://github.com/3rd-Brain/ghostwriter",
+  "license": "UNLICENSED"
+}

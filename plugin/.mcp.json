@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "ghostwriter": {
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "https://ghostwriter.3rdbrainhosting.com/mcp",
+        "--header",
+        "Authorization:${GW_API_KEY}"
+      ],
+      "env": {
+        "GW_API_KEY": "Bearer ${GHOSTWRITER_API_KEY}"
+      }
+    }
+  }
+}
