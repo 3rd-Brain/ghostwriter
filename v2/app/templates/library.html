@@ -17,10 +17,18 @@
     </thead>
     <tbody>
         {% for brand in brands %}
-        <tr>
+        <tr class="brand-row" onclick="this.nextElementSibling.classList.toggle('expanded')">
             <td class="cell-primary">{{ brand.name }}</td>
-            <td class="cell-truncate">{{ brand.voice_guidelines[:120] }}{% if brand.voice_guidelines|length > 120 %}...{% endif %}</td>
+            <td class="cell-truncate">{{ brand.voice_guidelines[:120] }}{% if brand.voice_guidelines|length > 120 %}&hellip;{% endif %}</td>
             <td class="timestamp">{{ brand.created_at.strftime('%b %d, %Y') }}</td>
+        </tr>
+        <tr class="brand-expanded-row">
+            <td colspan="3">
+                <div class="brand-guidelines-full">
+                    <div class="brand-guidelines-label">Full Voice Guidelines</div>
+                    <div class="brand-guidelines-text">{{ brand.voice_guidelines }}</div>
+                </div>
+            </td>
         </tr>
         {% endfor %}
     </tbody>
@@ -46,7 +54,7 @@
     <tbody>
         {% for tmpl in templates %}
         <tr>
-            <td class="cell-primary cell-truncate">{{ tmpl.content[:100] }}{% if tmpl.content|length > 100 %}...{% endif %}</td>
+            <td class="cell-primary cell-truncate">{{ tmpl.content[:100] }}{% if tmpl.content|length > 100 %}&hellip;{% endif %}</td>
             <td><span class="category-badge">{{ tmpl.category.value }}</span></td>
             <td class="cell-truncate">{{ tmpl.description[:80] if tmpl.description else '—' }}</td>
             <td class="timestamp">{{ tmpl.created_at.strftime('%b %d, %Y') }}</td>
@@ -75,7 +83,7 @@
     <tbody>
         {% for sc in source_content %}
         <tr>
-            <td class="cell-primary cell-truncate">{{ sc.content[:120] }}{% if sc.content|length > 120 %}...{% endif %}</td>
+            <td class="cell-primary cell-truncate">{{ sc.content[:120] }}{% if sc.content|length > 120 %}&hellip;{% endif %}</td>
             <td>{{ sc.source }}</td>
             <td><span class="category-badge">{{ sc.channel_source }}</span></td>
             <td class="timestamp">{{ sc.created_at.strftime('%b %d, %Y') }}</td>

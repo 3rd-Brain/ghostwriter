@@ -204,7 +204,7 @@ body {
     margin-top: 0.35rem;
 }
 
-/* ── Content Cards (generated content) ── */
+/* ── Content Cards (dashboard recent) ── */
 
 .content-card {
     background: var(--bg-card);
@@ -213,9 +213,15 @@ body {
     overflow: hidden;
     margin-bottom: 1rem;
     transition: border-color var(--transition);
+    animation: fadeIn 0.3s ease both;
 }
 
 .content-card:hover { border-color: var(--border-strong); }
+
+.content-card:nth-child(2) { animation-delay: 0.05s; }
+.content-card:nth-child(3) { animation-delay: 0.1s; }
+.content-card:nth-child(4) { animation-delay: 0.15s; }
+.content-card:nth-child(5) { animation-delay: 0.2s; }
 
 .content-card-header {
     padding: 1rem 1.25rem;
@@ -238,8 +244,8 @@ body {
 }
 
 .content-output {
-    background: var(--bg-content);
-    color: var(--text-on-light);
+    background: var(--bg-surface);
+    color: var(--text-primary);
     padding: 1.25rem 1.5rem;
     border-radius: var(--radius);
     border-left: 3px solid var(--accent);
@@ -249,21 +255,104 @@ body {
     font-family: var(--font-body);
 }
 
-.content-card-footer {
-    padding: 0.75rem 1.25rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-top: 1px solid var(--border);
+/* ── Generations Table ── */
+
+.generations-table .gen-row {
+    cursor: pointer;
+    transition: background var(--transition);
 }
 
-.content-input-preview {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    max-width: 60%;
+.generations-table .gen-row:hover td { background: rgba(255, 255, 255, 0.03); }
+
+.gen-content-preview {
+    max-width: 500px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.gen-expanded-row {
+    display: none;
+}
+
+.gen-expanded-row.expanded {
+    display: table-row;
+}
+
+.gen-expanded-row td {
+    padding: 0 !important;
+    border-bottom: 1px solid var(--border-strong) !important;
+}
+
+.gen-expanded-content {
+    padding: 1.25rem 1.5rem;
+    background: var(--bg-surface);
+    border-left: 3px solid var(--accent);
+    animation: fadeIn 0.2s ease both;
+}
+
+.gen-output {
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    line-height: 1.65;
+    white-space: pre-wrap;
+    margin-bottom: 1rem;
+}
+
+.gen-source {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border);
+}
+
+.gen-expanded-content .status-actions {
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border);
+}
+
+/* ── Brand Voice Expandable Row ── */
+
+.brand-row {
+    cursor: pointer;
+    transition: background var(--transition);
+}
+
+.brand-row:hover td { background: rgba(255, 255, 255, 0.03); }
+
+.brand-expanded-row {
+    display: none;
+}
+
+.brand-expanded-row.expanded {
+    display: table-row;
+}
+
+.brand-expanded-row td {
+    padding: 0 !important;
+}
+
+.brand-guidelines-full {
+    padding: 1.25rem 1.5rem;
+    background: var(--bg-surface);
+    border-left: 3px solid var(--accent);
+    animation: fadeIn 0.2s ease both;
+}
+
+.brand-guidelines-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: 0.75rem;
+}
+
+.brand-guidelines-text {
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    line-height: 1.7;
+    white-space: pre-wrap;
 }
 
 /* ── Status Badges ── */
@@ -480,9 +569,24 @@ body {
 .workflow-card-header:hover { background: rgba(255, 255, 255, 0.02); }
 
 .workflow-name {
-    font-family: var(--font-display);
-    font-size: 1.1rem;
+    font-family: var(--font-body);
+    font-size: 1.05rem;
+    font-weight: 500;
     color: var(--text-primary);
+    letter-spacing: -0.01em;
+}
+
+.workflow-description {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+}
+
+.workflow-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-shrink: 0;
 }
 
 .workflow-step-count {
@@ -499,7 +603,8 @@ body {
 .workflow-card.expanded .workflow-steps { display: block; }
 
 .step-item {
-    display: flex;
+    display: grid;
+    grid-template-columns: 24px 1fr auto;
     align-items: flex-start;
     gap: 0.75rem;
     padding: 0.65rem 0;
@@ -535,6 +640,74 @@ body {
     font-family: monospace;
 }
 
+.step-config-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.3rem 0.65rem;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    font-family: var(--font-body);
+    cursor: pointer;
+    transition: all var(--transition);
+    flex-shrink: 0;
+    align-self: flex-start;
+    margin-top: 0.1rem;
+}
+
+.step-config-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--accent);
+    border-color: var(--accent);
+}
+
+.step-config-btn svg { stroke: currentColor; }
+
+.step-config-panel {
+    display: none;
+    width: 100%;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border);
+    grid-column: 1 / -1;
+}
+
+.step-config-panel.visible {
+    display: block;
+}
+
+.step-config-section {
+    margin-bottom: 1rem;
+}
+
+.step-config-section:last-child { margin-bottom: 0; }
+
+.step-config-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    margin-bottom: 0.4rem;
+    font-weight: 500;
+}
+
+.step-config-text {
+    background: var(--bg-deep);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.85rem 1rem;
+    font-size: 0.8rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-family: var(--font-body);
+    margin: 0;
+}
+
 /* ── Animations ── */
 
 @keyframes fadeIn {
@@ -542,14 +715,9 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
-.content-card, .stat-card, .workflow-card {
+.stat-card, .workflow-card {
     animation: fadeIn 0.3s ease both;
 }
-
-.content-card:nth-child(2) { animation-delay: 0.05s; }
-.content-card:nth-child(3) { animation-delay: 0.1s; }
-.content-card:nth-child(4) { animation-delay: 0.15s; }
-.content-card:nth-child(5) { animation-delay: 0.2s; }
 
 /* ── htmx transitions ── */
 
