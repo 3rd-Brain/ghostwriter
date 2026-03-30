@@ -1,4 +1,4 @@
-"""Seed system templates from seed_templates.json on first startup."""
+"""Seed system templates and workflows on first startup."""
 
 import json
 import logging
@@ -8,11 +8,13 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.template import Template, TemplateCategory
+from app.models.workflow import Workflow
 from app.services.embeddings import generate_embedding
 
 logger = logging.getLogger("ghostwriter.seed")
 
-SEED_FILE = Path(__file__).parent.parent / "scripts" / "seed_templates.json"
+SEED_TEMPLATES_FILE = Path(__file__).parent.parent / "scripts" / "seed_templates.json"
+SEED_WORKFLOWS_FILE = Path(__file__).parent.parent / "scripts" / "seed_workflows.json"
 
 CATEGORY_MAP = {
     "short_form": TemplateCategory.short_form,
@@ -31,11 +33,11 @@ async def seed_templates(db: AsyncSession) -> None:
         logger.info(f"Skipping seed — {count} system templates already exist")
         return
 
-    if not SEED_FILE.exists():
-        logger.warning(f"Seed file not found: {SEED_FILE}")
+    if not SEED_TEMPLATES_FILE.exists():
+        logger.warning(f"Seed file not found: {SEED_TEMPLATES_FILE}")
         return
 
-    with open(SEED_FILE, "r", encoding="utf-8") as f:
+    with open(SEED_TEMPLATES_FILE, "r", encoding="utf-8") as f:
         templates = json.load(f)
 
     logger.info(f"Seeding {len(templates)} system templates (this may take a few minutes on first run)...")
@@ -67,3 +69,35 @@ async def seed_templates(db: AsyncSession) -> None:
 
     await db.commit()
     logger.info(f"Seed complete — {len(templates)} system templates loaded")
+
+
+async def seed_workflows(db: AsyncSession) -> None:
+    """Load seed workflows if no system workflows exist."""
+    count = (await db.execute(
+        select(func.count()).select_from(Workflow).where(Workflow.account_id.is_(None))
+    )).scalar()
+
+    if count > 0:
+        logger.info(f"Skipping seed — {count} system workflows already exist")
+        return
+
+    if not SEED_WORKFLOWS_FILE.exists():
+        logger.warning(f"Seed file not found: {SEED_WORKFLOWS_FILE}")
+        return
+
+    with open(SEED_WORKFLOWS_FILE, "r", encoding="utf-8") as f:
+        workflows = json.load(f)
+
+    logger.info(f"Seeding {len(workflows)} system workflows...")
+
+    for wf in workflows:
+        workflow = Workflow(
+            account_id=None,
+            name=wf["name"],
+            description=wf.get("description", ""),
+            steps=wf["steps"],
+        )
+        db.add(workflow)
+
+    await db.commit()
+    logger.info(f"Seed complete — {len(workflows)} system workflows loaded")

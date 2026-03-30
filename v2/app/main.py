@@ -32,9 +32,10 @@ async def lifespan(app: FastAPI):
         async with async_session() as db:
             await get_or_create_default_account(db)
 
-    # Seed system templates on first startup
-    from app.seed import seed_templates
+    # Seed system templates and workflows on first startup
+    from app.seed import seed_templates, seed_workflows
     async with async_session() as db:
+        await seed_workflows(db)
         await seed_templates(db)
 
     yield
