@@ -1,7 +1,8 @@
 import uuid
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import HTMLResponse
 from sqlalchemy import select, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -13,7 +14,8 @@ from app.models.brand_voice import BrandVoice
 from app.models.template import Template
 from app.models.source_content import SourceContent
 from app.models.generated_content import GeneratedContent
-from app.schemas.generation import GenerateRequest, GenerateResponse, GenerationItem, GeneratedContentResponse
+from app.models.generated_content import ContentStatus
+from app.schemas.generation import GenerateRequest, GenerateResponse, GenerationItem, GeneratedContentResponse, UpdateStatusRequest
 from app.engine import execute_workflow
 from app.services.embeddings import generate_embedding
 
@@ -144,4 +146,26 @@ async def get_generated_content(
     gc = await db.get(GeneratedContent, content_id)
     if not gc or gc.account_id != account.id:
         raise HTTPException(status_code=404, detail="Generated content not found")
+    return gc
+
+
+@router.patch("/generated-content/{content_id}/status", response_model=GeneratedContentResponse, summary="Update content status", description="Update the review status of generated content (new, approved, disapproved, posted).")
+async def update_content_status(
+    content_id: uuid.UUID,
+    body: UpdateStatusRequest,
+    request: Request,
+    account: Account = Depends(get_current_account),
+    db: AsyncSession = Depends(get_db),
+):
+    gc = await db.get(GeneratedContent, content_id)
+    if not gc or gc.account_id != account.id:
+        raise HTTPException(status_code=404, detail="Generated content not found")
+    gc.status = ContentStatus(body.status)
+    await db.commit()
+    await db.refresh(gc)
+
+    # Return HTML fragment for htmx, JSON for API clients
+    if request.headers.get("HX-Request"):
+        badge_html = f'<span class="status-badge status-{gc.status.value}" id="badge-{gc.id}">{gc.status.value}</span>'
+        return HTMLResponse(badge_html)
     return gc

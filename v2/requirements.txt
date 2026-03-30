@@ -15,3 +15,4 @@ PyMuPDF==1.24.0
 python-docx==1.1.0
 markdown==3.7
 fastapi-mcp==0.4.0
+jinja2==3.1.4

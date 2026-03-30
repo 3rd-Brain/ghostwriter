@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — Ghostwriter{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-label">Generated</div>
+        <div class="stat-value">{{ stats.generations }}</div>
+        <div class="stat-sub">total generations</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Pending Review</div>
+        <div class="stat-value">{{ stats.pending }}</div>
+        <div class="stat-sub">awaiting decision</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Approved</div>
+        <div class="stat-value">{{ stats.approved }}</div>
+        <div class="stat-sub">ready to publish</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Posted</div>
+        <div class="stat-value">{{ stats.posted }}</div>
+        <div class="stat-sub">published</div>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-label">Brand Voices</div>
+        <div class="stat-value">{{ stats.brands }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Workflows</div>
+        <div class="stat-value">{{ stats.workflows }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Templates</div>
+        <div class="stat-value">{{ stats.templates }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Source Content</div>
+        <div class="stat-value">{{ stats.source_content }}</div>
+    </div>
+</div>
+
+{% if recent %}
+<h2 class="section-header">Recent Generations</h2>
+{% for item in recent %}
+<div class="content-card">
+    <div class="content-card-header">
+        <div class="content-card-meta">
+            <span class="timestamp">{{ item.created_at.strftime('%b %d, %H:%M') }}</span>
+            {% if item.token_usage and item.token_usage.total_tokens %}
+            <span class="token-count">{{ item.token_usage.total_tokens }} tokens</span>
+            {% endif %}
+        </div>
+        <span class="status-badge status-{{ item.status.value }}">{{ item.status.value }}</span>
+    </div>
+    <div class="content-card-body">
+        <div class="content-output">{{ item.output[:300] }}{% if item.output|length > 300 %}...{% endif %}</div>
+    </div>
+</div>
+{% endfor %}
+{% endif %}
+{% endblock %}

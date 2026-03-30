@@ -1,11 +1,19 @@
+import enum
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Text, DateTime, ForeignKey
+from sqlalchemy import String, Text, DateTime, ForeignKey, Enum as SAEnum
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base
+
+
+class ContentStatus(str, enum.Enum):
+    new = "new"
+    approved = "approved"
+    disapproved = "disapproved"
+    posted = "posted"
 
 
 class GeneratedContent(Base):
@@ -18,5 +26,6 @@ class GeneratedContent(Base):
     input_content: Mapped[str] = mapped_column(Text, default="")
     input_template: Mapped[str | None] = mapped_column(Text, nullable=True)
     output: Mapped[str] = mapped_column(Text, nullable=False)
+    status: Mapped[ContentStatus] = mapped_column(SAEnum(ContentStatus), default=ContentStatus.new)
     token_usage: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))

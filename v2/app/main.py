@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Depends
 from fastapi.routing import APIRoute
+from fastapi.staticfiles import StaticFiles
 from fastapi_mcp import FastApiMCP, AuthConfig
 
 from app.config import settings
@@ -9,6 +10,7 @@ from app.database import async_session
 from app.auth.service import get_or_create_default_account
 from app.auth import get_current_account
 from app.routers import accounts, brands, workflows, templates, source_content, generation, templatize
+from app.routers import ui
 
 
 def use_route_names_as_operation_ids(route: APIRoute) -> str:
@@ -38,6 +40,9 @@ app.include_router(templates.router)
 app.include_router(source_content.router)
 app.include_router(generation.router)
 app.include_router(templatize.router)
+app.include_router(ui.router)
+
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 
 @app.get("/health", summary="Health check", description="Returns API health status.")

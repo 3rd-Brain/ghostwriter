@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Generations — Ghostwriter{% endblock %}
+{% block page_title %}Generations{% endblock %}
+
+{% block content %}
+<div class="filter-bar">
+    <a href="/ui/generations" class="filter-btn {% if not status_filter %}active{% endif %}">All</a>
+    <a href="/ui/generations?status=new" class="filter-btn {% if status_filter == 'new' %}active{% endif %}">New</a>
+    <a href="/ui/generations?status=approved" class="filter-btn {% if status_filter == 'approved' %}active{% endif %}">Approved</a>
+    <a href="/ui/generations?status=disapproved" class="filter-btn {% if status_filter == 'disapproved' %}active{% endif %}">Disapproved</a>
+    <a href="/ui/generations?status=posted" class="filter-btn {% if status_filter == 'posted' %}active{% endif %}">Posted</a>
+</div>
+
+{% if items %}
+{% for item in items %}
+<div class="content-card" id="card-{{ item.id }}">
+    <div class="content-card-header">
+        <div class="content-card-meta">
+            <span class="timestamp">{{ item.created_at.strftime('%b %d, %Y at %H:%M') }}</span>
+            {% if item.token_usage and item.token_usage.total_tokens %}
+            <span class="token-count">{{ item.token_usage.total_tokens }} tokens</span>
+            {% endif %}
+        </div>
+        <span class="status-badge status-{{ item.status.value }}" id="badge-{{ item.id }}">{{ item.status.value }}</span>
+    </div>
+    <div class="content-card-body">
+        <div class="content-output">{{ item.output }}</div>
+    </div>
+    <div class="content-card-footer">
+        <div class="content-input-preview">
+            {% if item.input_content %}Source: {{ item.input_content[:80] }}{% endif %}
+        </div>
+        <div class="status-actions">
+            <button class="status-btn approve"
+                hx-patch="/generated-content/{{ item.id }}/status"
+                hx-vals='{"status": "approved"}'
+                hx-headers='{"Content-Type": "application/json"}'
+                hx-target="#badge-{{ item.id }}"
+                hx-swap="outerHTML">Approve</button>
+            <button class="status-btn disapprove"
+                hx-patch="/generated-content/{{ item.id }}/status"
+                hx-vals='{"status": "disapproved"}'
+                hx-headers='{"Content-Type": "application/json"}'
+                hx-target="#badge-{{ item.id }}"
+                hx-swap="outerHTML">Disapprove</button>
+            <button class="status-btn posted"
+                hx-patch="/generated-content/{{ item.id }}/status"
+                hx-vals='{"status": "posted"}'
+                hx-headers='{"Content-Type": "application/json"}'
+                hx-target="#badge-{{ item.id }}"
+                hx-swap="outerHTML">Mark Posted</button>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% else %}
+<div class="empty-state">
+    <div class="empty-state-icon">&#9998;</div>
+    <div class="empty-state-text">No generations{% if status_filter %} with status "{{ status_filter }}"{% endif %}</div>
+    <div class="empty-state-sub">Generate content via the API or MCP tools to see it here.</div>
+</div>
+{% endif %}
+{% endblock %}

@@ -54,7 +54,12 @@ class GeneratedContentResponse(BaseModel):
     input_content: str
     input_template: str | None
     output: str
+    status: str
     token_usage: dict | None
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class UpdateStatusRequest(BaseModel):
+    status: str = Field(pattern="^(new|approved|disapproved|posted)$")

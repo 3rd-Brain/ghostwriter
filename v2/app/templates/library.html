@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Content Library — Ghostwriter{% endblock %}
+{% block page_title %}Content Library{% endblock %}
+
+{% block content %}
+<!-- Brands Section -->
+<h2 class="section-header">Brand Voices ({{ brands|length }})</h2>
+{% if brands %}
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Voice Guidelines</th>
+            <th>Created</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for brand in brands %}
+        <tr>
+            <td class="cell-primary">{{ brand.name }}</td>
+            <td class="cell-truncate">{{ brand.voice_guidelines[:120] }}{% if brand.voice_guidelines|length > 120 %}...{% endif %}</td>
+            <td class="timestamp">{{ brand.created_at.strftime('%b %d, %Y') }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="empty-state">
+    <div class="empty-state-sub">No brand voices defined. Use the API to create one.</div>
+</div>
+{% endif %}
+
+<!-- Templates Section -->
+<h2 class="section-header" style="margin-top: 2.5rem;">Templates ({{ templates|length }})</h2>
+{% if templates %}
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>Content</th>
+            <th>Category</th>
+            <th>Description</th>
+            <th>Created</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for tmpl in templates %}
+        <tr>
+            <td class="cell-primary cell-truncate">{{ tmpl.content[:100] }}{% if tmpl.content|length > 100 %}...{% endif %}</td>
+            <td><span class="category-badge">{{ tmpl.category.value }}</span></td>
+            <td class="cell-truncate">{{ tmpl.description[:80] if tmpl.description else '—' }}</td>
+            <td class="timestamp">{{ tmpl.created_at.strftime('%b %d, %Y') }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="empty-state">
+    <div class="empty-state-sub">No templates yet. Use the templatize tool or API to extract and store templates.</div>
+</div>
+{% endif %}
+
+<!-- Source Content Section -->
+<h2 class="section-header" style="margin-top: 2.5rem;">Source Content ({{ source_content|length }}{% if source_content|length >= 100 %}+{% endif %})</h2>
+{% if source_content %}
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>Content</th>
+            <th>Source</th>
+            <th>Channel</th>
+            <th>Created</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for sc in source_content %}
+        <tr>
+            <td class="cell-primary cell-truncate">{{ sc.content[:120] }}{% if sc.content|length > 120 %}...{% endif %}</td>
+            <td>{{ sc.source }}</td>
+            <td><span class="category-badge">{{ sc.channel_source }}</span></td>
+            <td class="timestamp">{{ sc.created_at.strftime('%b %d, %Y') }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="empty-state">
+    <div class="empty-state-sub">No source content imported. Use the API to add content, upload files, or import from Twitter/LinkedIn/YouTube.</div>
+</div>
+{% endif %}
+{% endblock %}

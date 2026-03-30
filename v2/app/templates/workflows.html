@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Workflows — Ghostwriter{% endblock %}
+{% block page_title %}Workflows{% endblock %}
+
+{% block content %}
+{% if workflows %}
+{% for wf in workflows %}
+<div class="workflow-card" onclick="this.classList.toggle('expanded')">
+    <div class="workflow-card-header">
+        <div>
+            <div class="workflow-name">{{ wf.name }}</div>
+            {% if wf.description %}
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">{{ wf.description }}</div>
+            {% endif %}
+        </div>
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <span class="workflow-step-count">{{ wf.steps|length }} step{{ 's' if wf.steps|length != 1 }}</span>
+            <span class="timestamp">{{ wf.created_at.strftime('%b %d, %Y') }}</span>
+            {% if wf.account_id is none %}
+            <span class="category-badge">System</span>
+            {% endif %}
+        </div>
+    </div>
+    <div class="workflow-steps">
+        {% for step in wf.steps|sort(attribute='order') %}
+        <div class="step-item">
+            <div class="step-order">{{ step.order }}</div>
+            <div class="step-details">
+                <div class="step-name">{{ step.name }}</div>
+                <div class="step-model">{{ step.model }} &middot; temp {{ step.temperature }} &middot; max {{ step.max_tokens }} tokens</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endfor %}
+{% else %}
+<div class="empty-state">
+    <div class="empty-state-icon">&#9881;</div>
+    <div class="empty-state-text">No workflows configured</div>
+    <div class="empty-state-sub">Create a workflow via the API to define your content generation pipeline.</div>
+</div>
+{% endif %}
+{% endblock %}
