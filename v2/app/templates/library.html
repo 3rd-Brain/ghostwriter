@@ -84,6 +84,14 @@
 
 <!-- Templates Section -->
 <h2 class="section-header section-header-gap">Templates ({{ tmpl_total }})</h2>
+
+<div class="filter-pills">
+    <a href="?bp={{ bp }}&tp=1&sp={{ sp }}" class="filter-pill{% if not tc %} active{% endif %}">All</a>
+    <a href="?bp={{ bp }}&tp=1&sp={{ sp }}&tc=short_form" class="filter-pill{% if tc == 'short_form' %} active{% endif %}">Short Form</a>
+    <a href="?bp={{ bp }}&tp=1&sp={{ sp }}&tc=atomic" class="filter-pill{% if tc == 'atomic' %} active{% endif %}">Atomic</a>
+    <a href="?bp={{ bp }}&tp=1&sp={{ sp }}&tc=mid_form" class="filter-pill{% if tc == 'mid_form' %} active{% endif %}">Mid Form</a>
+</div>
+
 {% if templates %}
 <table class="data-table">
     <thead>
@@ -96,7 +104,7 @@
     </thead>
     <tbody>
         {% for tmpl in templates %}
-        <tr>
+        <tr class="tmpl-row" onclick="openTemplateModal(this)" data-content="{{ tmpl.content|e }}" data-category="{{ tmpl.category.value }}" data-description="{{ (tmpl.description or '')|e }}" data-created="{{ tmpl.created_at.strftime('%b %d, %Y') }}">
             <td class="cell-primary cell-truncate">{{ tmpl.content[:100] }}{% if tmpl.content|length > 100 %}&hellip;{% endif %}</td>
             <td><span class="category-badge">{{ tmpl.category.value }}</span></td>
             <td class="cell-truncate">{{ tmpl.description[:80] if tmpl.description else '—' }}</td>
@@ -107,14 +115,57 @@
 </table>
 {% if tmpl_pages > 1 %}
 <div class="pagination">
-    {% if tp > 1 %}<a href="?bp={{ bp }}&tp={{ tp - 1 }}&sp={{ sp }}" class="pagination-btn">&larr; Prev</a>{% endif %}
+    {% if tp > 1 %}<a href="?bp={{ bp }}&tp={{ tp - 1 }}&sp={{ sp }}{% if tc %}&tc={{ tc }}{% endif %}" class="pagination-btn">&larr; Prev</a>{% endif %}
     <span class="pagination-info">Page {{ tp }} of {{ tmpl_pages }}</span>
-    {% if tp < tmpl_pages %}<a href="?bp={{ bp }}&tp={{ tp + 1 }}&sp={{ sp }}" class="pagination-btn">Next &rarr;</a>{% endif %}
+    {% if tp < tmpl_pages %}<a href="?bp={{ bp }}&tp={{ tp + 1 }}&sp={{ sp }}{% if tc %}&tc={{ tc }}{% endif %}" class="pagination-btn">Next &rarr;</a>{% endif %}
 </div>
 {% endif %}
 {% else %}
 <div class="empty-state">
-    <div class="empty-state-sub">No templates yet. Use the templatize tool or API to extract and store templates.</div>
+    <div class="empty-state-sub">No templates {% if tc %}in this category{% else %}yet. Use the templatize tool or API to extract and store templates{% endif %}.</div>
 </div>
 {% endif %}
+
+<!-- Template Detail Modal -->
+<div id="tmpl-modal-overlay" class="tmpl-modal-overlay" onclick="if(event.target===this)closeTemplateModal()">
+    <div class="tmpl-modal">
+        <button class="tmpl-modal-close" onclick="closeTemplateModal()">&times;</button>
+        <div class="tmpl-modal-header">
+            <span class="category-badge" id="tmpl-modal-category"></span>
+            <span class="tmpl-modal-date" id="tmpl-modal-date"></span>
+        </div>
+        <div class="tmpl-modal-body">
+            <div class="tmpl-modal-label">Template</div>
+            <div class="tmpl-modal-content" id="tmpl-modal-content"></div>
+            <div class="tmpl-modal-label" id="tmpl-modal-desc-label" style="display:none">Description</div>
+            <div class="tmpl-modal-description" id="tmpl-modal-desc"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+function openTemplateModal(row) {
+    document.getElementById('tmpl-modal-content').textContent = row.dataset.content;
+    document.getElementById('tmpl-modal-category').textContent = row.dataset.category;
+    document.getElementById('tmpl-modal-date').textContent = row.dataset.created;
+    const desc = row.dataset.description;
+    const descEl = document.getElementById('tmpl-modal-desc');
+    const descLabel = document.getElementById('tmpl-modal-desc-label');
+    if (desc) {
+        descEl.textContent = desc;
+        descEl.style.display = '';
+        descLabel.style.display = '';
+    } else {
+        descEl.style.display = 'none';
+        descLabel.style.display = 'none';
+    }
+    document.getElementById('tmpl-modal-overlay').classList.add('visible');
+}
+function closeTemplateModal() {
+    document.getElementById('tmpl-modal-overlay').classList.remove('visible');
+}
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeTemplateModal();
+});
+</script>
 {% endblock %}

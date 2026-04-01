@@ -291,6 +291,17 @@ body {
     animation: fadeIn 0.2s ease both;
 }
 
+.gen-expanded-body {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+}
+
+.gen-expanded-text {
+    flex: 1;
+    min-width: 0;
+}
+
 .gen-output {
     color: var(--text-primary);
     font-size: 0.95rem;
@@ -308,8 +319,8 @@ body {
 }
 
 .gen-expanded-content .status-actions {
-    padding-top: 0.75rem;
-    border-top: 1px solid var(--border);
+    padding-top: 0;
+    border-top: none;
 }
 
 /* ── Brand Voice Expandable Row ── */
@@ -389,13 +400,16 @@ body {
 
 .status-actions {
     display: flex;
-    gap: 0.4rem;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex-shrink: 0;
 }
 
 .status-btn {
-    padding: 0.35rem 0.75rem;
-    border: 1px solid var(--border-strong);
+    padding: 0.45rem 1rem;
+    border: none;
     border-radius: var(--radius);
+    white-space: nowrap;
     background: transparent;
     color: var(--text-secondary);
     font-size: 0.75rem;
@@ -404,14 +418,25 @@ body {
     transition: all var(--transition);
 }
 
-.status-btn:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--text-primary);
-}
+.status-btn:hover { filter: brightness(1.2); }
 
-.status-btn.approve:hover { border-color: var(--status-approved); color: var(--status-approved); }
-.status-btn.disapprove:hover { border-color: var(--status-disapproved); color: var(--status-disapproved); }
-.status-btn.posted:hover { border-color: var(--status-posted); color: var(--status-posted); }
+.status-btn.approve {
+    background: rgba(107, 158, 107, 0.18);
+    color: var(--status-approved);
+}
+.status-btn.approve:hover { background: rgba(107, 158, 107, 0.3); }
+
+.status-btn.disapprove {
+    background: rgba(176, 96, 96, 0.18);
+    color: var(--status-disapproved);
+}
+.status-btn.disapprove:hover { background: rgba(176, 96, 96, 0.3); }
+
+.status-btn.posted {
+    background: rgba(201, 168, 76, 0.18);
+    color: var(--status-posted);
+}
+.status-btn.posted:hover { background: rgba(201, 168, 76, 0.3); }
 
 /* ── Filter Bar ── */
 
@@ -742,6 +767,144 @@ body {
     word-break: break-word;
     font-family: var(--font-body);
     margin: 0;
+}
+
+/* ── Filter Pills ── */
+
+.filter-pills {
+    display: flex;
+    gap: 0.5rem;
+    margin: 1rem 0;
+}
+
+.filter-pill {
+    padding: 0.3rem 0.85rem;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-family: var(--font-body);
+    color: var(--text-muted);
+    background: transparent;
+    border: 1px solid var(--border-strong);
+    text-decoration: none;
+    transition: all var(--transition);
+    cursor: pointer;
+}
+
+.filter-pill:hover {
+    color: var(--text-primary);
+    border-color: var(--accent);
+}
+
+.filter-pill.active {
+    background: var(--accent-dim);
+    color: var(--accent);
+    border-color: var(--accent);
+}
+
+/* ── Template Rows (clickable) ── */
+
+.tmpl-row { cursor: pointer; }
+
+/* ── Template Detail Modal ── */
+
+.tmpl-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.tmpl-modal-overlay.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.tmpl-modal {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-lg);
+    width: 90%;
+    max-width: 640px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    transform: translateY(12px);
+    transition: transform 0.2s ease;
+}
+
+.tmpl-modal-overlay.visible .tmpl-modal {
+    transform: translateY(0);
+}
+
+.tmpl-modal-close {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.5rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius);
+    transition: color var(--transition);
+}
+
+.tmpl-modal-close:hover { color: var(--text-primary); }
+
+.tmpl-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.25rem 1.5rem 0.75rem;
+    position: relative;
+}
+
+.tmpl-modal-date {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+.tmpl-modal-body {
+    padding: 0 1.5rem 1.5rem;
+    overflow-y: auto;
+}
+
+.tmpl-modal-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+    margin-top: 1rem;
+    font-weight: 500;
+}
+
+.tmpl-modal-content {
+    background: var(--bg-deep);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    font-size: 0.88rem;
+    line-height: 1.7;
+    color: var(--text-primary);
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-family: var(--font-body);
+}
+
+.tmpl-modal-description {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
 }
 
 /* ── Animations ── */

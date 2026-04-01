@@ -157,6 +157,7 @@ async def library_page(
     bp: int = 1,
     tp: int = 1,
     sp: int = 1,
+    tc: str | None = None,
     account: Account | None = Depends(get_ui_account),
     db: AsyncSession = Depends(get_db),
 ):
@@ -173,10 +174,16 @@ async def library_page(
         .limit(per_page).offset((bp - 1) * per_page)
     )).scalars().all()
 
-    # Templates
-    tmpl_total = (await db.execute(select(func.count()).select_from(Template).where(or_(Template.account_id == aid, Template.account_id.is_(None))))).scalar()
+    # Templates — optional category filter
+    tmpl_filter = or_(Template.account_id == aid, Template.account_id.is_(None))
+    active_category = None
+    if tc and tc in ("short_form", "atomic", "mid_form"):
+        from app.models.template import TemplateCategory
+        active_category = tc
+        tmpl_filter = tmpl_filter & (Template.category == TemplateCategory(tc))
+    tmpl_total = (await db.execute(select(func.count()).select_from(Template).where(tmpl_filter))).scalar()
     tmpl = (await db.execute(
-        select(Template).where(or_(Template.account_id == aid, Template.account_id.is_(None)))
+        select(Template).where(tmpl_filter)
         .order_by(Template.created_at.desc())
         .limit(per_page).offset((tp - 1) * per_page)
     )).scalars().all()
@@ -200,6 +207,7 @@ async def library_page(
         "tmpl_total": tmpl_total,
         "tmpl_pages": math.ceil(tmpl_total / per_page),
         "tp": tp,
+        "tc": active_category,
         "source_content": sc,
         "sc_total": sc_total,
         "sc_pages": math.ceil(sc_total / per_page),

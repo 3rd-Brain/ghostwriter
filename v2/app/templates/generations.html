@@ -33,26 +33,30 @@
         <tr class="gen-expanded-row" id="card-{{ item.id }}">
             <td colspan="4">
                 <div class="gen-expanded-content">
-                    <div class="gen-output">{{ item.output }}</div>
-                    {% if item.input_content %}
-                    <div class="gen-source">Source: {{ item.input_content[:120] }}{% if item.input_content|length > 120 %}&hellip;{% endif %}</div>
-                    {% endif %}
-                    <div class="status-actions">
-                        <button class="status-btn approve"
-                            hx-patch="/generated-content/{{ item.id }}/status"
-                            hx-vals='{"status": "approved"}'
-                            hx-target="#badge-{{ item.id }}"
-                            hx-swap="outerHTML">Approve</button>
-                        <button class="status-btn disapprove"
-                            hx-patch="/generated-content/{{ item.id }}/status"
-                            hx-vals='{"status": "disapproved"}'
-                            hx-target="#badge-{{ item.id }}"
-                            hx-swap="outerHTML">Disapprove</button>
-                        <button class="status-btn posted"
-                            hx-patch="/generated-content/{{ item.id }}/status"
-                            hx-vals='{"status": "posted"}'
-                            hx-target="#badge-{{ item.id }}"
-                            hx-swap="outerHTML">Mark Posted</button>
+                    <div class="gen-expanded-body">
+                        <div class="gen-expanded-text">
+                            <div class="gen-output">{{ item.output }}</div>
+                            {% if item.input_content %}
+                            <div class="gen-source">Source: {{ item.input_content[:120] }}{% if item.input_content|length > 120 %}&hellip;{% endif %}</div>
+                            {% endif %}
+                        </div>
+                        <div class="status-actions">
+                            <button class="status-btn approve"
+                                hx-patch="/generated-content/{{ item.id }}/status"
+                                hx-vals='{"status": "approved"}'
+                                hx-target="#badge-{{ item.id }}"
+                                hx-swap="outerHTML">Approve</button>
+                            <button class="status-btn disapprove"
+                                hx-patch="/generated-content/{{ item.id }}/status"
+                                hx-vals='{"status": "disapproved"}'
+                                hx-target="#badge-{{ item.id }}"
+                                hx-swap="outerHTML">Disapprove</button>
+                            <button class="status-btn posted"
+                                hx-patch="/generated-content/{{ item.id }}/status"
+                                hx-vals='{"status": "posted"}'
+                                hx-target="#badge-{{ item.id }}"
+                                hx-swap="outerHTML">Mark Posted</button>
+                        </div>
                     </div>
                 </div>
             </td>
