@@ -29,8 +29,14 @@ async def override_db():
             yield session
 
     app.dependency_overrides[get_db] = _get_test_db
+
+    # Also patch the session factory used by background tasks
+    from app.routers import generation as gen_module
+    original_factory = gen_module.session_factory
+    gen_module.session_factory = TestSession
     yield
     app.dependency_overrides.clear()
+    gen_module.session_factory = original_factory
 
 
 @pytest.fixture(autouse=True)

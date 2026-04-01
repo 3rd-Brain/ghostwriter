@@ -1,3 +1,5 @@
+import asyncio
+
 SAMPLE_STEP = {
     "order": 1,
     "name": "draft",
@@ -21,8 +23,17 @@ async def test_generate(authed_client, mock_provider):
     })
     assert resp.status_code == 200
     data = resp.json()
-    assert len(data["generations"]) == 1
-    assert data["generations"][0]["output"] == "Generated output"
+    assert data["status"] == "started"
+    assert data["template_count"] == 1
+
+    # Let background task complete
+    await asyncio.sleep(0.2)
+
+    # Verify content was created
+    list_resp = await authed_client.get("/generated-content")
+    items = list_resp.json()
+    assert len(items) >= 1
+    assert items[0]["output"] == "Generated output"
 
 
 async def test_generate_workflow_not_found(authed_client):
@@ -45,6 +56,10 @@ async def test_list_generated_content(authed_client, mock_provider):
         "workflow_id": wf_id,
         "content": "test",
     })
+
+    # Let background task complete
+    await asyncio.sleep(0.2)
+
     resp = await authed_client.get("/generated-content")
     assert resp.status_code == 200
     assert len(resp.json()) >= 1
@@ -57,11 +72,16 @@ async def test_get_generated_content_by_id(authed_client, mock_provider):
     })
     wf_id = wf_resp.json()["id"]
 
-    gen_resp = await authed_client.post("/generate", json={
+    await authed_client.post("/generate", json={
         "workflow_id": wf_id,
         "content": "test",
     })
-    gen_id = gen_resp.json()["generations"][0]["id"]
+
+    # Let background task complete
+    await asyncio.sleep(0.2)
+
+    list_resp = await authed_client.get("/generated-content")
+    gen_id = list_resp.json()[0]["id"]
 
     resp = await authed_client.get(f"/generated-content/{gen_id}")
     assert resp.status_code == 200

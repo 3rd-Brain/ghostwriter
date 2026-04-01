@@ -47,6 +47,12 @@ class GenerateResponse(BaseModel):
     generations: list[GenerationItem]
 
 
+class GenerateStartedResponse(BaseModel):
+    status: str
+    message: str
+    template_count: int
+
+
 class GeneratedContentResponse(BaseModel):
     id: uuid.UUID
     workflow_id: uuid.UUID

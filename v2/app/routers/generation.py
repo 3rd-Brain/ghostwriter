@@ -1,3 +1,5 @@
+import asyncio
+import logging
 import uuid
 from datetime import datetime
 
@@ -6,7 +8,7 @@ from fastapi.responses import HTMLResponse
 from sqlalchemy import select, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database import get_db
+from app.database import get_db, async_session as _default_session_factory
 from app.auth import get_current_account
 from app.models.account import Account
 from app.models.workflow import Workflow
@@ -15,14 +17,72 @@ from app.models.template import Template
 from app.models.source_content import SourceContent
 from app.models.generated_content import GeneratedContent
 from app.models.generated_content import ContentStatus
-from app.schemas.generation import GenerateRequest, GenerateResponse, GenerationItem, GeneratedContentResponse, UpdateStatusRequest
+from app.schemas.generation import GenerateRequest, GenerateStartedResponse, GeneratedContentResponse, UpdateStatusRequest
 from app.engine import execute_workflow
 from app.services.embeddings import generate_embedding
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter(tags=["generation"])
 
+# Session factory used by background tasks. Tests can patch this to inject
+# a test-scoped session factory (since background tasks don't go through
+# FastAPI's Depends(get_db) override).
+session_factory = _default_session_factory
 
-@router.post("/generate", response_model=GenerateResponse, summary="Generate content", description="Execute a workflow to generate social content. Resolves source content and templates by semantic similarity if queries are provided.")
+
+async def _run_generation_background(
+    account_id: uuid.UUID,
+    workflow_steps: list[dict],
+    workflow_id: uuid.UUID,
+    brand_id: uuid.UUID | None,
+    content: str,
+    brand_voice: str,
+    templates: list[str | None],
+    provider_keys: dict | None,
+):
+    """Run content generation in the background. Each piece of content is
+    committed to the DB as it completes so it appears in the UI immediately."""
+    for tmpl in templates:
+        try:
+            context = {
+                "content": content,
+                "template": tmpl or "",
+                "brand_voice": brand_voice,
+                "prev_ai_output": "",
+            }
+
+            step_results, final_output = await execute_workflow(
+                steps=workflow_steps,
+                context=context,
+                provider_keys=provider_keys,
+            )
+
+            total_tokens = sum(s["input_tokens"] + s["output_tokens"] for s in step_results)
+
+            async with session_factory() as db:
+                gc = GeneratedContent(
+                    account_id=account_id,
+                    workflow_id=workflow_id,
+                    brand_id=brand_id,
+                    input_content=content,
+                    input_template=tmpl,
+                    output=final_output,
+                    token_usage={"steps": step_results, "total_tokens": total_tokens},
+                )
+                db.add(gc)
+                await db.commit()
+
+            logger.info("Generation completed for template (workflow=%s)", workflow_id)
+
+        except Exception:
+            logger.exception(
+                "Background generation failed for template (workflow=%s)",
+                workflow_id,
+            )
+
+
+@router.post("/generate", response_model=GenerateStartedResponse, summary="Generate content", description="Fire-and-forget: validates inputs, starts generation in the background, and returns immediately. Generated content appears in the UI as each piece completes.")
 async def generate(
     body: GenerateRequest,
     account: Account = Depends(get_current_account),
@@ -80,45 +140,29 @@ async def generate(
     if body.provider_keys:
         provider_keys = body.provider_keys.model_dump(exclude_none=True)
 
-    # 6. Execute for each template
-    generations = []
-    for tmpl in templates_to_use:
-        context = {
-            "content": content,
-            "template": tmpl or "",
-            "brand_voice": brand_voice,
-            "prev_ai_output": "",
-        }
+    # Snapshot workflow steps so the background task doesn't depend on
+    # the request-scoped DB session (which closes after response).
+    workflow_steps = list(wf.steps)
 
-        step_results, final_output = await execute_workflow(
-            steps=wf.steps,
-            context=context,
-            provider_keys=provider_keys,
-        )
-
-        total_tokens = sum(s["input_tokens"] + s["output_tokens"] for s in step_results)
-
-        gc = GeneratedContent(
+    # 6. Fire off generation in the background — returns immediately
+    asyncio.create_task(
+        _run_generation_background(
             account_id=account.id,
+            workflow_steps=workflow_steps,
             workflow_id=wf.id,
             brand_id=body.brand_id,
-            input_content=content,
-            input_template=tmpl,
-            output=final_output,
-            token_usage={"steps": step_results, "total_tokens": total_tokens},
+            content=content,
+            brand_voice=brand_voice,
+            templates=templates_to_use,
+            provider_keys=provider_keys,
         )
-        db.add(gc)
-        await db.flush()
+    )
 
-        generations.append(GenerationItem(
-            id=gc.id,
-            output=final_output,
-            template_used=tmpl,
-            token_usage={"steps": step_results, "total_tokens": total_tokens},
-        ))
-
-    await db.commit()
-    return GenerateResponse(generations=generations)
+    return GenerateStartedResponse(
+        status="started",
+        message="Generation started. Content will appear in your dashboard as it completes.",
+        template_count=len(templates_to_use),
+    )
 
 
 @router.get("/generated-content", response_model=list[GeneratedContentResponse], summary="List generated content", description="List previously generated content with pagination.")
