@@ -55,6 +55,7 @@ async def execute_workflow(
             "model": step["model"],
             "input_tokens": result.input_tokens,
             "output_tokens": result.output_tokens,
+            "output": result.text,
         })
 
     return step_results, prev_output

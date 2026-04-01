@@ -39,6 +39,9 @@
                             {% if item.input_content %}
                             <div class="gen-source">Source: {{ item.input_content[:120] }}{% if item.input_content|length > 120 %}&hellip;{% endif %}</div>
                             {% endif %}
+                            {% if item.token_usage and item.token_usage.steps and item.token_usage.steps|length > 1 %}
+                            <button class="view-steps-btn" onclick="openStepsModal(this)" data-steps='{{ item.token_usage.steps | tojson }}' data-output="{{ item.output | e }}" data-date="{{ item.created_at.strftime('%b %d, %Y') }}">View {{ item.token_usage.steps|length }} Workflow Steps</button>
+                            {% endif %}
                         </div>
                         <div class="status-actions">
                             <button class="status-btn approve"
@@ -72,7 +75,78 @@
 </div>
 {% endif %}
 
+<!-- Steps Detail Modal -->
+<div id="steps-modal-overlay" class="steps-modal-overlay" onclick="if(event.target===this)closeStepsModal()">
+    <div class="steps-modal">
+        <button class="steps-modal-close" onclick="closeStepsModal()">&times;</button>
+        <div class="steps-modal-header">
+            <span class="steps-modal-title">Workflow Steps</span>
+            <span class="steps-modal-date" id="steps-modal-date"></span>
+        </div>
+        <div class="steps-modal-body" id="steps-modal-body"></div>
+    </div>
+</div>
+
 <script>
+function openStepsModal(btn) {
+    var steps = JSON.parse(btn.dataset.steps);
+    var finalOutput = btn.dataset.output;
+    var date = btn.dataset.date;
+    document.getElementById('steps-modal-date').textContent = date;
+
+    var body = document.getElementById('steps-modal-body');
+    var html = '';
+
+    for (var i = 0; i < steps.length; i++) {
+        var s = steps[i];
+        var tokens = (s.input_tokens || 0) + (s.output_tokens || 0);
+        var isLast = i === steps.length - 1;
+        html += '<div class="step-timeline-item">';
+        html += '<div class="step-timeline-marker">';
+        html += '<span class="step-timeline-num">' + s.step + '</span>';
+        if (!isLast) html += '<span class="step-timeline-line"></span>';
+        html += '</div>';
+        html += '<div class="step-timeline-body">';
+        html += '<div class="step-timeline-header">';
+        html += '<span class="step-timeline-name">' + escHtml(s.name) + '</span>';
+        html += '<span class="step-timeline-meta">' + escHtml(s.model) + ' &middot; ' + tokens + ' tokens</span>';
+        html += '</div>';
+        if (s.output) {
+            html += '<div class="step-timeline-output">' + escHtml(s.output) + '</div>';
+        }
+        html += '</div></div>';
+    }
+
+    // Final output at the bottom
+    html += '<div class="step-timeline-item">';
+    html += '<div class="step-timeline-marker">';
+    html += '<span class="step-timeline-num step-timeline-final">&#10003;</span>';
+    html += '</div>';
+    html += '<div class="step-timeline-body">';
+    html += '<div class="step-timeline-header">';
+    html += '<span class="step-timeline-name">Final Output</span>';
+    html += '</div>';
+    html += '<div class="step-timeline-output">' + escHtml(finalOutput) + '</div>';
+    html += '</div></div>';
+
+    body.innerHTML = html;
+    document.getElementById('steps-modal-overlay').classList.add('visible');
+}
+
+function closeStepsModal() {
+    document.getElementById('steps-modal-overlay').classList.remove('visible');
+}
+
+function escHtml(str) {
+    var d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeStepsModal();
+});
+
 document.body.addEventListener('htmx:afterRequest', function(evt) {
     if (!evt.detail.successful) return;
     var el = evt.detail.elt;
